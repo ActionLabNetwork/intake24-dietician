@@ -1,0 +1,29 @@
+version: "3.8"
+
+name: intake24-dietician-dev
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: intake24-dietician-db
+    restart: always
+    env_file:
+      - ../apps/api/__tests__/.env-test
+      - ../apps/api/.env
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=postgres
+    healthcheck:
+      test: pg_isready
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d/
+      - data-db:/var/lib/postgresql/data
+
+volumes:
+  data-db:
