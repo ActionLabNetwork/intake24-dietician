@@ -37,6 +37,9 @@
     "*.md": "prettier --write",
     "*.{ts,vue}": "eslint --fix"
   },
+  "dependencies": {
+    "zod": "^3.22.2"
+  },
   "devDependencies": {
     "@jest/types": "^29.6.1",
     "@types/jest": "^29.5.3",

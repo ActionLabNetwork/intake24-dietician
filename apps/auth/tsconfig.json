@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "type": "module",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@intake24-dietician/auth/*": ["src/*"],
+      "@intake24-dietician/auth-tests/*": ["__tests__/*"],
+      "@intake24-dietician/common/*": ["../../packages/common/src/*"],
+      "@intake24-dietician/db/*": ["../../packages/db/src/*"],
+      "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
+      "@intake24/*": ["../../packages/*/src"],
+      "tsoa": ["node_modules/tsoa/dist"]
+    },
+    "types": ["node", "jest", "jest-extended"]
+  },
+  "include": ["src/**/*.ts", "__tests__/**/*.ts"],
+  "exclude": ["node_modules"]
+}
