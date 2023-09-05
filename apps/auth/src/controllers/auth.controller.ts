@@ -1,45 +1,69 @@
-import { Body, Controller, Post, Route, SuccessResponse, Tags } from 'tsoa';
-import { AuthService } from '../services/auth.service';
-import { AuthRequest, AuthResponse } from '../types/auth';
+import { Body, Controller, Post, Route, SuccessResponse, Tags } from 'tsoa'
+import { AuthRequest, AuthResponse } from '../types/auth'
+import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import { createAuthService } from '../services/auth.service'
 
 @Route('auth')
 @Tags('Authentication')
 export class AuthController extends Controller {
+  // private readonly authService: IAuthService
+
+  // public constructor(authService: IAuthService) {
+  //   super()
+  //   this.authService = authService
+  // }
+
+  /**
+   * @summary Login user
+   * @param {AuthRequest} requestBody
+   * @returns {AuthResponse}
+   * @memberof AuthController
+   */
   @Post('login')
-  public async login(@Body() requestBody: AuthRequest) {
-    const { email, password } = requestBody;
-    const user = await AuthService.login(email, password);
+  public async login(@Body() requestBody: AuthRequest): Promise<AuthResponse> {
+    const { email, password } = requestBody.data
+    const user = await createAuthService().login(email, password)
 
     if (user === null) {
-      this.setStatus(401);
-      return {
-        errors: [
-          {
-            status: '401',
-            title: 'Unauthorized',
-            detail: 'Invalid credentials',
-          },
-        ],
-      };
+      this.setStatus(401)
+      return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    const response = {
-      data: {
-        email: user.email,
-        password: user.password,
-      },
-    };
-
-    return response;
+    return { data: { email: user.email, password: user.password } }
   }
 
-  @SuccessResponse('201', 'Created') // Custom success response
-  @Post()
-  public async createUser(@Body() requestBody: AuthRequest): Promise<AuthResponse> {
-    this.setStatus(201); // set return status 201
-    const { email, password } = requestBody;
-    const user = await AuthService.register(email, password);
+  /**
+   * @summary Register user
+   *
+   * @param {AuthRequest} requestBody
+   * @return {*}  {Promise<AuthResponse>}
+   * @memberof AuthController
+   */
+  @SuccessResponse('201', 'Created')
+  @Post('register')
+  public async register(
+    @Body() requestBody: AuthRequest,
+  ): Promise<AuthResponse> {
+    this.setStatus(201)
+    const { email, password } = requestBody.data
 
-    return { data: user };
+    try {
+      const user = await createAuthService().register(email, password)
+
+      if (user === null) {
+        this.setStatus(401)
+
+        return generateErrorResponse(
+          '401',
+          'Unauthorized',
+          'Invalid credentials',
+        )
+      }
+
+      return { data: { email: user.email, password: user.password } }
+    } catch (error: unknown) {
+      this.setStatus(400)
+      return generateErrorResponse('400', 'Bad Request', error)
+    }
   }
 }

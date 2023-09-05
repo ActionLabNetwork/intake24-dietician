@@ -12,7 +12,7 @@
       "@intake24/*": ["../../packages/*/src"],
       "tsoa": ["node_modules/tsoa/dist"]
     },
-    "types": ["node", "jest", "jest-extended"]
+    "types": ["node", "jest", "jest-extended"],
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts"],
   "exclude": ["node_modules"]

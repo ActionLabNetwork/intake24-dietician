@@ -5,6 +5,8 @@ const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
 
 const schema = z.object({
   PORT: withDevDefault(z.number(), 8080),
+  JWT_TTL: withDevDefault(z.number(), 60 * 60),
+  JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),
 });
 
 const parsed = schema.safeParse(process.env);

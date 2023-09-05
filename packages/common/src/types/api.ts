@@ -1,17 +1,12 @@
-export interface JSONResponse {
-  data: Resource | Resource[] | null;
-  errors: Error[] | null;
-
+interface ApiResponseWithData<T> {
+  data: T
 }
 
-export interface Resource {
-  id?: string;
-  type: ResourceType;
-  attributes?: Record<string, unknown>;
-  relationships?: Record<string, unknown>;
-  links?: Record<string, unknown>;
-  meta?: Record<string, unknown>;
+export interface ApiResponseWithError {
+  errors: { status: string; title: string; detail: string }[]
 }
 
-export type ResourceType = (typeof resourceTypes)[number];
-const resourceTypes = ['user'] as const;
+export interface ApiRequest<T> {
+  data: T
+}
+export type ApiResponse<T> = ApiResponseWithData<T> | ApiResponseWithError

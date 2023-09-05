@@ -1,18 +1,47 @@
-import * as argon2 from 'argon2';
-import User from '@intake24-dietician/db/models/auth/user.model';
+import * as argon2 from 'argon2'
+import * as jwt from 'jsonwebtoken'
 
-export class AuthService {
-  public static async register(email: string, password: string): Promise<User> {
-    const hashedPassword = await argon2.hash(password);
-    return User.create({ email, password: hashedPassword });
-  }
+import User from '@intake24-dietician/db/models/auth/user.model'
+import { getErrorMessage } from '@intake24-dietician/common/utils/error'
+import { env } from '../config/env'
+import { IAuthService } from '../types/auth'
 
-  public static async login(email: string, password: string): Promise<User | null> {
-    const user = await User.findOne({ where: { email } });
-    console.log({ user });
-    if (user && (await argon2.verify(user.password, password))) {
-      return user;
+export const createAuthService = (): IAuthService => {
+  const register = async (
+    email: string,
+    password: string,
+  ): Promise<(User & { token: string }) | null> => {
+    const hashedPassword = await argon2.hash(password)
+
+    try {
+      const user = await User.create({ email, password: hashedPassword })
+      const token = generateToken(user)
+      return { ...user.get({ plain: true }), token }
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
     }
-    return null;
   }
+
+  const login = async (
+    email: string,
+    password: string,
+  ): Promise<(User & { token: string }) | null> => {
+    const user = await User.findOne({ where: { email } })
+    if (user && (await argon2.verify(user.password, password))) {
+      const token = generateToken(user)
+      return { ...user.get({ plain: true }), token }
+    }
+
+    return null
+  }
+
+  const generateToken = (user: User): string => {
+    const payload = { userId: user.id, email: user.email }
+    const token = jwt.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_TTL,
+    })
+    return token
+  }
+
+  return { login, register }
 }

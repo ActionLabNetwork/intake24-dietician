@@ -1,5 +1,6 @@
 module.exports = {
   extends: ['alloy', 'alloy/typescript'],
+  ignorePatterns: ['**/*.js'],
   env: {
     browser: true,
     node: true,
@@ -15,4 +16,4 @@ module.exports = {
   rules: {
     // Customize your rules
   },
-};
+}
