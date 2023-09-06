@@ -1,16 +1,16 @@
 // src/server.ts
-import { app } from './app';
-import { env } from './config/env';
-import { sequelize, connect } from '@intake24-dietician/db/connection';
+import { app } from './app'
+import { env } from './config/env'
+import { connect } from '@intake24-dietician/db/connection'
 
-const port = env.PORT || 3000;
+const port = env.PORT || 3000
 
 connect()
   .then(() => {
-    app.listen(port, () => console.log(`Auth listening at http://localhost:${port}`));
-
-    console.log(sequelize.models);
+    app.listen(port, () =>
+      console.log(`Auth listening at http://localhost:${port}`),
+    )
   })
-  .catch((error) => {
-    console.error('❌ Unable to connect to database:', error);
-  });
+  .catch(error => {
+    console.error('❌ Unable to connect to database:', error)
+  })

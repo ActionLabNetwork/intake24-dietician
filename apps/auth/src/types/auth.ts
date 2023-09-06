@@ -5,7 +5,7 @@ export type AuthRequest = ApiRequest<{
   email: string
   password: string
 }>
-export type AuthResponse = ApiResponse<{ email: string; password: string }>
+export type AuthResponse = ApiResponse<{ email: string }>
 
 export interface IHashingService {
   hash: (password: string) => Promise<string>

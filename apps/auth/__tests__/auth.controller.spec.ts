@@ -11,13 +11,13 @@ describe('AuthController', () => {
   let mockRegister: jest.Mock
 
   beforeEach(() => {
-    authController = new AuthController()
     mockLogin = jest.fn()
     mockRegister = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
     })
+    authController = new AuthController(createAuthService())
   })
 
   afterEach(() => {
@@ -38,7 +38,7 @@ describe('AuthController', () => {
 
       const result = await authController.login(request)
 
-      expect(result).toEqual({ data: mockUser })
+      expect(result).toEqual({ data: { email: mockUser.email } })
     })
 
     it('should return unauthorized error on invalid credentials', async () => {
@@ -72,7 +72,7 @@ describe('AuthController', () => {
 
       const result = await authController.register(request)
 
-      expect(result).toEqual({ data: mockUser })
+      expect(result).toEqual({ data: { email: mockUser.email } })
     })
 
     it('should return unauthorized error if user is null', async () => {
@@ -91,11 +91,7 @@ describe('AuthController', () => {
       const result = await authController.register(request)
 
       expect(result).toEqual(
-        generateErrorResponse(
-          '400',
-          'Bad Request',
-          new Error('Some registration error'),
-        ),
+        generateErrorResponse('400', 'Bad Request', 'Some registration error'),
       )
     })
   })
