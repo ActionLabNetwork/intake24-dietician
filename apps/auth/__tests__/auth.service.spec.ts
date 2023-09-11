@@ -96,4 +96,35 @@ describe('AuthService', () => {
       expect(result).toBeNull()
     })
   })
+
+  describe('refreshAccessToken', () => {
+    it('should successfully refresh access token', async () => {
+      const decoded = { userId: 1 }
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce({
+        id: 1,
+        dataValues: { email },
+        get: jest.fn(() => ({ id: 1, email })),
+      })
+
+      const { refreshAccessToken } = createAuthServiceFactory()
+      const result = await refreshAccessToken(token)
+
+      expect(result).toMatchObject({
+        id: 1,
+        email,
+        token: { accessToken: token },
+      })
+    })
+
+    it('should throw an error if refresh token is invalid', async () => {
+      const errorMsg = 'Invalid token'
+      ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error(errorMsg)
+      })
+
+      const { refreshAccessToken } = createAuthServiceFactory()
+      await expect(refreshAccessToken(token)).rejects.toThrow(errorMsg)
+    })
+  })
 })

@@ -19,7 +19,6 @@ export interface TokenPayload {
   tokenType: 'access-token' | 'refresh-token'
 }
 
-
 export interface IHashingService {
   hash: (password: string) => Promise<string>
   verify: (hashedPassword: string, password: string) => Promise<boolean>

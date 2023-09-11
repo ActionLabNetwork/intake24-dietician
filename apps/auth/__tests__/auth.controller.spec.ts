@@ -19,6 +19,7 @@ describe('AuthController', () => {
 
   let mockLogin: jest.Mock
   let mockRegister: jest.Mock
+  let mockRefreshAccessToken: jest.Mock
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -28,9 +29,9 @@ describe('AuthController', () => {
     ;(container.resolve as jest.Mock).mockImplementation((key: string) => {
       switch (key) {
         case 'hashingService':
-          return {} // mock your hashingService here
+          return {}
         case 'tokenService':
-          return {} // mock your tokenService here
+          return {}
         default:
           return {}
       }
@@ -40,9 +41,11 @@ describe('AuthController', () => {
 
     mockLogin = jest.fn()
     mockRegister = jest.fn()
+    mockRefreshAccessToken = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
+      refreshAccessToken: mockRefreshAccessToken,
     })
 
     authController = new AuthController()
@@ -144,6 +147,47 @@ describe('AuthController', () => {
 
       expect(result).toEqual(
         generateErrorResponse('400', 'Bad Request', 'Some registration error'),
+      )
+    })
+  })
+
+  describe('refreshAccessToken', () => {
+    const response = {
+      data: {
+        email: 'test@example.com',
+        token: {
+          accessToken: 'accessToken',
+        },
+      },
+    }
+
+    it('should return user data on successful refresh', async () => {
+      const mockUser = {
+        id: '2',
+        email: response.data.email,
+        token: response.data.token,
+      }
+
+      mockRefreshAccessToken.mockResolvedValueOnce(mockUser)
+
+      const result = await authController.refreshAccessToken({
+        token: response.data.token.accessToken,
+      })
+
+      expect(result).toEqual(response)
+    })
+
+    it('should return unauthorized error if user is null', async () => {
+      mockRefreshAccessToken.mockRejectedValueOnce(
+        new Error('Some refresh error'),
+      )
+
+      const result = await authController.refreshAccessToken({
+        token: response.data.token.accessToken,
+      })
+
+      expect(result).toEqual(
+        generateErrorResponse('400', 'Bad request', 'Invalid refresh token'),
       )
     })
   })
