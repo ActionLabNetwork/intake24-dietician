@@ -1,17 +1,22 @@
-import * as argon2 from 'argon2'
-import * as jwt from 'jsonwebtoken'
-
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
-import { IAuthService } from '../types/auth'
+import {
+  IAuthService,
+  IHashingService,
+  ITokenService,
+  Token,
+} from '../types/auth'
 
-export const createAuthService = (): IAuthService => {
+export const createAuthService = (
+  hashingService: IHashingService,
+  tokenService: ITokenService,
+): IAuthService => {
   const register = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: string }) | null> => {
-    const hashedPassword = await argon2.hash(password)
+  ): Promise<(User & { token: Token }) | null> => {
+    const hashedPassword = await hashingService.hash(password)
 
     try {
       const user = await User.create({ email, password: hashedPassword })
@@ -25,9 +30,9 @@ export const createAuthService = (): IAuthService => {
   const login = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: string }) | null> => {
+  ): Promise<(User & { token: Token }) | null> => {
     const user = await User.findOne({ where: { email } })
-    if (user && (await argon2.verify(user.password, password))) {
+    if (user && (await hashingService.verify(user.password, password))) {
       const token = generateToken(user)
       return { ...user.get({ plain: true }), token }
     }
@@ -35,12 +40,15 @@ export const createAuthService = (): IAuthService => {
     return null
   }
 
-  const generateToken = (user: User): string => {
+  const generateToken = (user: User): Token => {
     const payload = { userId: user.id, email: user.email }
-    const token = jwt.sign(payload, env.JWT_SECRET, {
-      expiresIn: env.JWT_TTL,
+    const accessToken = tokenService.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_ACCESS_TOKEN_TTL,
     })
-    return token
+    const refreshToken = tokenService.sign(payload, env.JWT_SECRET, {
+      expiresIn: env.JWT_REFRESH_TOKEN_TTL,
+    })
+    return { accessToken, refreshToken }
   }
 
   return { login, register }

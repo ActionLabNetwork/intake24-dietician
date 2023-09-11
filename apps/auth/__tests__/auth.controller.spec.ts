@@ -1,7 +1,9 @@
 import { AuthController } from '../src/controllers/auth.controller'
 import { createAuthService } from '../src/services/auth.service'
-import { AuthRequest } from '../src/types/auth'
+import { AuthRequest, AuthResponse } from '../src/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
+import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
 
 jest.mock('../src/services/auth.service')
 
@@ -17,7 +19,9 @@ describe('AuthController', () => {
       login: mockLogin,
       register: mockRegister,
     })
-    authController = new AuthController(createAuthService())
+    authController = new AuthController(
+      createAuthService(createArgonHashingService(), createJwtTokenService()),
+    )
   })
 
   afterEach(() => {
@@ -26,19 +30,31 @@ describe('AuthController', () => {
 
   describe('login', () => {
     const request: AuthRequest = {
+      email: 'test@example.com',
+      password: 'password123',
+    }
+
+    const response: AuthResponse = {
       data: {
         email: 'test@example.com',
-        password: 'password123',
+        token: {
+          accessToken: 'accessToken',
+          refreshToken: 'refreshToken',
+        },
       },
     }
 
     it('should return user data on successful login', async () => {
-      const mockUser = { id: '1', email: 'test@example.com' }
+      const mockUser = {
+        id: '1',
+        email: response.data.email,
+        token: response.data.token,
+      }
       mockLogin.mockResolvedValueOnce(mockUser)
 
       const result = await authController.login(request)
 
-      expect(result).toEqual({ data: { email: mockUser.email } })
+      expect(result).toEqual(response)
     })
 
     it('should return unauthorized error on invalid credentials', async () => {
@@ -60,19 +76,31 @@ describe('AuthController', () => {
 
   describe('register', () => {
     const request: AuthRequest = {
+      email: 'test2@example.com',
+      password: 'password456',
+    }
+
+    const response: AuthResponse = {
       data: {
-        email: 'test2@example.com',
-        password: 'password456',
+        email: 'test@example.com',
+        token: {
+          accessToken: 'accessToken',
+          refreshToken: 'refreshToken',
+        },
       },
     }
 
     it('should return user data on successful registration', async () => {
-      const mockUser = { id: '2', email: 'test2@example.com' }
+      const mockUser = {
+        id: '2',
+        email: response.data.email,
+        token: response.data.token,
+      }
       mockRegister.mockResolvedValueOnce(mockUser)
 
       const result = await authController.register(request)
 
-      expect(result).toEqual({ data: { email: mockUser.email } })
+      expect(result).toEqual(response)
     })
 
     it('should return unauthorized error if user is null', async () => {

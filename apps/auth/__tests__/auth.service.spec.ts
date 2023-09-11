@@ -3,6 +3,8 @@ import * as argon2 from 'argon2'
 import * as jwt from 'jsonwebtoken'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { createAuthService } from '../src/services/auth.service'
+import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
+import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
 
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
@@ -13,6 +15,9 @@ describe('AuthService', () => {
   const password = 'password123'
   const hashedPassword = 'hashedPassword123'
   const token = 'testToken'
+
+  const createAuthServiceFactory = () =>
+    createAuthService(createArgonHashingService(), createJwtTokenService())
 
   beforeEach(() => {
     ;(argon2.hash as jest.Mock).mockResolvedValue(hashedPassword)
@@ -29,13 +34,13 @@ describe('AuthService', () => {
         get: jest.fn(() => ({ id: 1, email, password: hashedPassword })),
       })
 
-      const { register } = createAuthService()
+      const { register } = createAuthServiceFactory()
       const result = await register(email, password)
 
       expect(result).toMatchObject({
         id: 1,
         email,
-        token,
+        token: { accessToken: token, refreshToken: token },
       })
     })
 
@@ -43,7 +48,7 @@ describe('AuthService', () => {
       const errorMsg = 'User already exists'
       ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
 
-      const { register } = createAuthService()
+      const { register } = createAuthServiceFactory()
       await expect(register(email, password)).rejects.toThrow(errorMsg)
     })
   })
@@ -56,20 +61,20 @@ describe('AuthService', () => {
         get: jest.fn(() => ({ id: 1, email })),
       })
 
-      const { login } = createAuthService()
+      const { login } = createAuthServiceFactory()
       const result = await login(email, password)
 
       expect(result).toMatchObject({
         id: 1,
         email,
-        token,
+        token: { accessToken: token, refreshToken: token },
       })
     })
 
     it('should return null for a non-existent user', async () => {
       ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
 
-      const { login } = createAuthService()
+      const { login } = createAuthServiceFactory()
       const result = await login(email, password)
 
       expect(result).toBeNull()
@@ -82,7 +87,7 @@ describe('AuthService', () => {
         get: jest.fn(() => ({ id: 1, email })),
       })
 
-      const { login } = createAuthService()
+      const { login } = createAuthServiceFactory()
       const result = await login(email, password)
 
       expect(result).toBeNull()

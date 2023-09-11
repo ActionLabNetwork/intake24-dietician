@@ -1,11 +1,16 @@
-import { ApiRequest, ApiResponse } from '@intake24-dietician/common/types/api'
+import { ApiResponse } from '@intake24-dietician/common/types/api'
 import User from '@intake24-dietician/db/models/auth/user.model'
 
-export type AuthRequest = ApiRequest<{
+export interface AuthRequest {
   email: string
   password: string
-}>
-export type AuthResponse = ApiResponse<{ email: string }>
+}
+export type AuthResponse = ApiResponse<{ email: string; token: Token }>
+
+export interface Token {
+  accessToken: string
+  refreshToken: string
+}
 
 export interface IHashingService {
   hash: (password: string) => Promise<string>
@@ -13,6 +18,20 @@ export interface IHashingService {
 }
 
 export interface IAuthService {
-  login: (email: string, password: string) => Promise<User | null>
-  register: (email: string, password: string) => Promise<User | null>
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<(User & { token: Token }) | null>
+  register: (
+    email: string,
+    password: string,
+  ) => Promise<(User & { token: Token }) | null>
+}
+
+export interface ITokenService {
+  sign: (
+    payload: Record<string, unknown>,
+    secret: string,
+    options: { expiresIn: number },
+  ) => string
 }

@@ -20,7 +20,7 @@ export class AuthController extends Controller {
    */
   @Post('login')
   public async login(@Body() requestBody: AuthRequest): Promise<AuthResponse> {
-    const { email, password } = requestBody.data
+    const { email, password } = requestBody
     const user = await this.authService.login(email, password)
 
     if (user === null) {
@@ -28,7 +28,8 @@ export class AuthController extends Controller {
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    return { data: { email: user.email } }
+    // this.setAuthHeaders(user.token)
+    return { data: { email: user.email, token: user.token } }
   }
 
   /**
@@ -44,7 +45,7 @@ export class AuthController extends Controller {
     @Body() requestBody: AuthRequest,
   ): Promise<AuthResponse> {
     this.setStatus(201)
-    const { email, password } = requestBody.data
+    const { email, password } = requestBody
 
     try {
       const user = await this.authService.register(email, password)
@@ -59,10 +60,19 @@ export class AuthController extends Controller {
         )
       }
 
-      return { data: { email: user.email } }
+      // this.setAuthHeaders(user.token)
+      return { data: { email: user.email, token: user.token } }
     } catch (error: unknown) {
       this.setStatus(400)
       return generateErrorResponse('400', 'Bad Request', error)
     }
   }
+
+  // private setAuthHeaders(token: Token): void {
+  //   this.setHeader(
+  //     'Set-Cookie',
+  //     `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict`,
+  //   )
+  //   this.setHeader('Authorization', `Bearer ${token.accessToken}`)
+  // }
 }

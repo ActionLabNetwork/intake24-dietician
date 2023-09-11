@@ -1,25 +1,27 @@
-import { createContainer, asValue, asFunction, asClass } from 'awilix'
+import { createContainer, asValue, asFunction } from 'awilix'
 
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { createAuthService } from '../services/auth.service'
 import { createArgonHashingService } from '../services/hashing.service'
-import { IAuthService, IHashingService } from '../types/auth'
-import { AuthController } from '../controllers/auth.controller'
+import { IAuthService, IHashingService, ITokenService } from '../types/auth'
 import { Controller, IocContainer } from 'tsoa'
+import { createJwtTokenService } from '../services/token.service'
 
 interface IContainer {
+  authController: Controller
   authService: IAuthService
   hashingService: IHashingService
+  tokenService: ITokenService
   user: typeof User
-  authController: Controller
 }
 
-const container = createContainer<IContainer>()
+const container = createContainer<IContainer>({ injectionMode: 'CLASSIC' })
 container.register({
-  authService: asFunction(createAuthService),
-  hashingService: asFunction(createArgonHashingService),
+  // authController: asClass(AuthController).singleton().scoped(),
+  authService: asFunction(createAuthService).scoped(),
+  hashingService: asFunction(createArgonHashingService).scoped(),
+  tokenService: asFunction(createJwtTokenService).scoped(),
   user: asValue(User),
-  authController: asClass(AuthController).singleton(),
 })
 
 const iocContainer: IocContainer = {
