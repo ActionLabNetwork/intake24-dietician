@@ -14,6 +14,7 @@ describe('AuthController', () => {
   const mockAuthService: jest.Mocked<IAuthService> = {
     login: jest.fn(),
     register: jest.fn(),
+    refreshAccessToken: jest.fn(),
   }
 
   let mockLogin: jest.Mock

@@ -13,6 +13,13 @@ export interface Token {
   refreshToken: string
 }
 
+export interface TokenPayload {
+  userId: number
+  email: string
+  tokenType: 'access-token' | 'refresh-token'
+}
+
+
 export interface IHashingService {
   hash: (password: string) => Promise<string>
   verify: (hashedPassword: string, password: string) => Promise<boolean>
@@ -27,6 +34,7 @@ export interface IAuthService {
     email: string,
     password: string,
   ) => Promise<(User & { token: Token }) | null>
+  refreshAccessToken: (refreshToken: string) => Promise<User & { token: Token }>
 }
 
 export interface ITokenService {
