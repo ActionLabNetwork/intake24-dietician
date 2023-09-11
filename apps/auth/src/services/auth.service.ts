@@ -32,7 +32,11 @@ export const createAuthService = (
     password: string,
   ): Promise<(User & { token: Token }) | null> => {
     const user = await User.findOne({ where: { email } })
-    if (user && (await hashingService.verify(user.password, password))) {
+    console.log({ user: user?.dataValues.password })
+    if (
+      user &&
+      (await hashingService.verify(user.dataValues.password, password))
+    ) {
       const token = generateToken(user)
       return { ...user.get({ plain: true }), token }
     }
@@ -41,7 +45,7 @@ export const createAuthService = (
   }
 
   const generateToken = (user: User): Token => {
-    const payload = { userId: user.id, email: user.email }
+    const payload = { userId: user.id, email: user.dataValues.email }
     const accessToken = tokenService.sign(payload, env.JWT_SECRET, {
       expiresIn: env.JWT_ACCESS_TOKEN_TTL,
     })

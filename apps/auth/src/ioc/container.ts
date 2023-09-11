@@ -15,16 +15,17 @@ interface IContainer {
   user: typeof User
 }
 
-const container = createContainer<IContainer>({ injectionMode: 'CLASSIC' })
+const container = createContainer<IContainer>({ injectionMode: 'PROXY' })
 container.register({
-  // authController: asClass(AuthController).singleton().scoped(),
-  authService: asFunction(createAuthService).scoped(),
-  hashingService: asFunction(createArgonHashingService).scoped(),
-  tokenService: asFunction(createJwtTokenService).scoped(),
+  authService: asFunction(createAuthService),
+  hashingService: asFunction(createArgonHashingService),
+  tokenService: asFunction(createJwtTokenService),
   user: asValue(User),
+  // authController: asClass(AuthController),
 })
 
 const iocContainer: IocContainer = {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   get: <T>(controller: { prototype: T }): T => {
     return container.resolve<T>(controller as never)
   },

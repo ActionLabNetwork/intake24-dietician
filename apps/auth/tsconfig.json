@@ -3,6 +3,7 @@
   "type": "module",
   "compilerOptions": {
     "baseUrl": ".",
+    "lib": ["es6", "dom"],
     "paths": {
       "@intake24-dietician/auth/*": ["src/*"],
       "@intake24-dietician/auth-tests/*": ["__tests__/*"],
@@ -10,9 +11,9 @@
       "@intake24-dietician/db/*": ["../../packages/db/src/*"],
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
       "@intake24/*": ["../../packages/*/src"],
-      "tsoa": ["node_modules/tsoa/dist"]
+      "tsoa": ["node_modules/tsoa/dist", "reflect-metadata"]
     },
-    "types": ["node", "jest", "jest-extended"],
+    "types": ["node", "jest", "jest-extended"]
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts"],
   "exclude": ["node_modules"]

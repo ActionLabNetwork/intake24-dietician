@@ -1,15 +1,20 @@
 import { Body, Controller, Post, Route, SuccessResponse, Tags } from 'tsoa'
 import { AuthRequest, AuthResponse, IAuthService } from '../types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import { createAuthService } from '../services/auth.service'
+import { container } from '../ioc/container'
 
 @Route('auth')
 @Tags('Authentication')
 export class AuthController extends Controller {
   private readonly authService: IAuthService
 
-  public constructor(authService: IAuthService) {
+  public constructor() {
     super()
-    this.authService = authService
+    this.authService = createAuthService(
+      container.resolve('hashingService'),
+      container.resolve('tokenService'),
+    )
   }
 
   /**
