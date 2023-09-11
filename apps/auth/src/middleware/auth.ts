@@ -1,7 +1,12 @@
 import * as express from 'express'
 import * as jwt from 'jsonwebtoken'
+import { env } from '../config/env'
 
-export function authenticateJwt(request: express.Request, scopes?: string[]) {
+export function expressAuthentication(
+  request: express.Request,
+  _securityName: string,
+  scopes?: string[],
+) {
   const token =
     request.body.token ||
     request.query['token'] ||
@@ -11,7 +16,7 @@ export function authenticateJwt(request: express.Request, scopes?: string[]) {
     if (!token) {
       reject(new Error('No token provided'))
     }
-    jwt.verify(token, '[secret]', (err: any, decoded: any) => {
+    jwt.verify(token, env.JWT_SECRET, (err: any, decoded: any) => {
       if (err) {
         reject(err)
       } else {

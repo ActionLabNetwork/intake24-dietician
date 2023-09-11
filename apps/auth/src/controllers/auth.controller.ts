@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Route, SuccessResponse, Tags } from 'tsoa'
+import {
+  Body,
+  Controller,
+  Post,
+  Route,
+  Security,
+  SuccessResponse,
+  Tags,
+} from 'tsoa'
 import { AuthRequest, AuthResponse, IAuthService } from '../types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService } from '../services/auth.service'
@@ -97,6 +105,14 @@ export class AuthController extends Controller {
         'Invalid refresh token',
       )
     }
+  }
+
+  @Security('jwt')
+  @Post('protected')
+  public protectedRoute(@Body() body: { token: string }): string {
+    this.setStatus(200)
+    console.log({ body })
+    return 'Authentication setup success'
   }
 
   // private setAuthHeaders(token: Token): void {

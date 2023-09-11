@@ -4,10 +4,17 @@
   "controllerPathGlobs": ["src/controllers/*.controller.ts"],
   "spec": {
     "outputDirectory": "build",
-    "specVersion": 3
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "jwt",
+        "name": "JSON Web Token"
+      }
+    }
   },
   "routes": {
-    "routesDir": "build"
+    "routesDir": "build",
+    "authenticationModule": "src/middleware/auth.ts"
   },
   "compilerOptions": {
     "baseUrl": ".",
