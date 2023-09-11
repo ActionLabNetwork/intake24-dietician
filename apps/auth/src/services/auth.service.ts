@@ -32,7 +32,7 @@ export const createAuthService = (
     password: string,
   ): Promise<(User & { token: Token }) | null> => {
     const user = await User.findOne({ where: { email } })
-    console.log({ user: user?.dataValues.password })
+    console.log({ user })
     if (
       user &&
       (await hashingService.verify(user.dataValues.password, password))

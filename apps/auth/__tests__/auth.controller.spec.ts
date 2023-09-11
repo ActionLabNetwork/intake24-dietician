@@ -1,27 +1,50 @@
 import { AuthController } from '../src/controllers/auth.controller'
 import { createAuthService } from '../src/services/auth.service'
-import { AuthRequest, AuthResponse } from '../src/types/auth'
+import { AuthRequest, AuthResponse, IAuthService } from '../src/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
-import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
+
+import * as authServiceModule from '../src/services/auth.service'
+import { container } from '@intake24-dietician/auth/ioc/container'
 
 jest.mock('../src/services/auth.service')
+jest.mock('../src/ioc/container')
 
 describe('AuthController', () => {
   let authController: AuthController
+  const mockAuthService: jest.Mocked<IAuthService> = {
+    login: jest.fn(),
+    register: jest.fn(),
+  }
+
   let mockLogin: jest.Mock
   let mockRegister: jest.Mock
 
   beforeEach(() => {
+    jest.resetAllMocks()
+    ;(authServiceModule.createAuthService as jest.Mock).mockReturnValue(
+      mockAuthService,
+    )
+    ;(container.resolve as jest.Mock).mockImplementation((key: string) => {
+      switch (key) {
+        case 'hashingService':
+          return {} // mock your hashingService here
+        case 'tokenService':
+          return {} // mock your tokenService here
+        default:
+          return {}
+      }
+    })
+
+    authController = new AuthController()
+
     mockLogin = jest.fn()
     mockRegister = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
     })
-    authController = new AuthController(
-      createAuthService(createArgonHashingService(), createJwtTokenService()),
-    )
+
+    authController = new AuthController()
   })
 
   afterEach(() => {

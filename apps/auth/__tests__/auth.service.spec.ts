@@ -31,7 +31,12 @@ describe('AuthService', () => {
   describe('register', () => {
     it('should successfully register a user', async () => {
       ;(User.create as jest.Mock).mockResolvedValueOnce({
-        get: jest.fn(() => ({ id: 1, email, password: hashedPassword })),
+        id: 1,
+        dataValues: {
+          email: email,
+          password: hashedPassword,
+        },
+        get: jest.fn(() => ({ id: 1, email })),
       })
 
       const { register } = createAuthServiceFactory()
@@ -57,7 +62,8 @@ describe('AuthService', () => {
     it('should successfully login an existing user', async () => {
       ;(argon2.verify as jest.Mock).mockResolvedValueOnce(true)
       ;(User.findOne as jest.Mock).mockResolvedValueOnce({
-        password: hashedPassword,
+        id: 1,
+        dataValues: { email },
         get: jest.fn(() => ({ id: 1, email })),
       })
 
@@ -82,10 +88,7 @@ describe('AuthService', () => {
 
     it('should return null for a wrong password', async () => {
       ;(argon2.verify as jest.Mock).mockResolvedValueOnce(false)
-      ;(User.findOne as jest.Mock).mockResolvedValueOnce({
-        password: hashedPassword,
-        get: jest.fn(() => ({ id: 1, email })),
-      })
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
 
       const { login } = createAuthServiceFactory()
       const result = await login(email, password)

@@ -1,5 +1,6 @@
 import { ApiResponse } from '@intake24-dietician/common/types/api'
 import User from '@intake24-dietician/db/models/auth/user.model'
+import { JwtPayload } from 'jsonwebtoken'
 
 export interface AuthRequest {
   email: string
@@ -34,4 +35,5 @@ export interface ITokenService {
     secret: string,
     options: { expiresIn: number },
   ) => string
+  verify: (token: string, secret: string) => string | JwtPayload
 }

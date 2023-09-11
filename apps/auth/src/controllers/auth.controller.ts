@@ -1,5 +1,14 @@
-import { Body, Controller, Post, Route, SuccessResponse, Tags } from 'tsoa'
-import { AuthRequest, AuthResponse, IAuthService } from '../types/auth'
+import {
+  Body,
+  Controller,
+  Post,
+  Route,
+  SuccessResponse,
+  Tags,
+  Request,
+} from 'tsoa'
+import * as express from 'express'
+import { AuthRequest, AuthResponse, IAuthService, Token } from '../types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService } from '../services/auth.service'
 import { container } from '../ioc/container'
@@ -33,7 +42,7 @@ export class AuthController extends Controller {
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    // this.setAuthHeaders(user.token)
+    this.setAuthHeaders(user.token)
     return { data: { email: user.email, token: user.token } }
   }
 
@@ -65,7 +74,7 @@ export class AuthController extends Controller {
         )
       }
 
-      // this.setAuthHeaders(user.token)
+      this.setAuthHeaders(user.token)
       return { data: { email: user.email, token: user.token } }
     } catch (error: unknown) {
       this.setStatus(400)
@@ -73,11 +82,18 @@ export class AuthController extends Controller {
     }
   }
 
-  // private setAuthHeaders(token: Token): void {
-  //   this.setHeader(
-  //     'Set-Cookie',
-  //     `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict`,
-  //   )
-  //   this.setHeader('Authorization', `Bearer ${token.accessToken}`)
-  // }
+  @Post('refresh')
+  public async refreshAccessToken(
+    @Request() request: express.Request,
+  ): Promise<void> {
+    console.log(request.cookies)
+  }
+
+  private setAuthHeaders(token: Token): void {
+    this.setHeader(
+      'Set-Cookie',
+      `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict`,
+    )
+    this.setHeader('Authorization', `Bearer ${token.accessToken}`)
+  }
 }
