@@ -1,7 +1,7 @@
 <template>
   <v-row no-gutters>
     <v-col cols="5">
-      <LoginForm />
+      <RegisterForm />
     </v-col>
     <v-col cols="7">
       <div class="hero-image" />
@@ -10,10 +10,10 @@
 </template>
 
 <script lang="ts" setup>
-import LoginForm from '../components/LoginForm.vue'
+import RegisterForm from '../components/RegisterForm.vue'
 </script>
 
-<style>
+<style scoped>
 .hero-image {
   background-image: url('../assets/auth/register/RegisterHero.png');
   background-position: center;

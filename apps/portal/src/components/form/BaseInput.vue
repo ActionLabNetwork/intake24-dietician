@@ -3,9 +3,23 @@
     <div class="form-label pl-2 pb-2">
       <slot />
     </div>
-    <v-text-field variant="solo-filled" density="comfortable" />
+    <v-text-field
+      :type="type"
+      variant="solo-filled"
+      density="comfortable"
+      :append-inner-icon="suffixIcon"
+      @click:append-inner="handleIconClick"
+    />
   </div>
 </template>
+
+<script setup lang="ts">
+defineProps<{
+  type: HTMLInputElement['type']
+  suffixIcon?: string
+  handleIconClick?: () => void
+}>()
+</script>
 
 <style>
 .form-label {
