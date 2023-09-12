@@ -7,17 +7,17 @@
 // Components
 
 // Composables
-import { createApp } from 'vue';
-import App from './App.vue';
-import { useI18n } from '@intake24-dietician/i18n';
+import { createApp } from 'vue'
+import App from './App.vue'
+import { useI18n } from '@intake24-dietician/i18n'
 
 // Plugins
-import { registerPlugins } from '@intake24-dietician/portal/plugins';
+import { registerPlugins } from './plugins'
 
-const app = createApp(App);
-const i18n = useI18n().i18n;
+const i18n = useI18n().i18n
 
-app.use(i18n);
-registerPlugins(app);
+const app = createApp(App)
+registerPlugins(app)
 
-app.mount('#app');
+app.use(i18n)
+app.mount('#app')
