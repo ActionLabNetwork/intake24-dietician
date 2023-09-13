@@ -11,6 +11,15 @@
         <h1>{{ messages.title }}</h1>
         <h2>{{ messages.subtitle }}</h2>
       </div>
+      <div v-show="errorAlert" class="pt-10">
+        <v-alert
+          v-model="errorAlert"
+          closable
+          type="error"
+          title="Login failed"
+          :text="error"
+        ></v-alert>
+      </div>
       <div class="d-flex flex-column mt-16">
         <v-form v-model="form" @submit.prevent="handleSubmit">
           <!-- Email -->
@@ -119,6 +128,8 @@ const messages = {
 const loginMutation = useLogin()
 
 const form = ref(null)
+const error = ref('')
+const errorAlert = ref(false)
 
 // Form fields
 const email = ref('')
@@ -128,10 +139,18 @@ const passwordVisible = ref(false)
 const handleSubmit = () => {
   const isFormValid = form.value
   if (isFormValid) {
-    loginMutation.mutate({
-      email: email.value,
-      password: password.value,
-    })
+    loginMutation.mutate(
+      {
+        email: email.value,
+        password: password.value,
+      },
+      {
+        onError() {
+          error.value = 'Invalid credentials. Please try again'
+          errorAlert.value = true
+        },
+      },
+    )
   }
 }
 </script>

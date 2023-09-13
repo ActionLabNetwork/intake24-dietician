@@ -12,7 +12,7 @@ export const useRegister = () => {
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AuthResponse,
-    ApiResponseWithError,
+    unknown,
     AuthRequest
   >({
     mutationFn: registerBody => axios.post(registerUri, registerBody),

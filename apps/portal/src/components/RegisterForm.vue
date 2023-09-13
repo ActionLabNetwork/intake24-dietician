@@ -11,6 +11,15 @@
         <h1>{{ messages.title }}</h1>
         <h2>{{ messages.subtitle }}</h2>
       </div>
+      <div v-show="errorAlert" class="pt-10">
+        <v-alert
+          v-model="errorAlert"
+          closable
+          type="error"
+          title="Registration failed"
+          :text="error"
+        ></v-alert>
+      </div>
       <div class="d-flex flex-column mt-16">
         <v-form v-model="form" @submit.prevent="handleSubmit">
           <!-- Email -->
@@ -130,6 +139,9 @@ const messages = {
 const registerMutation = useRegister()
 
 const form = ref(null)
+const error = ref('')
+const errorAlert = ref(false)
+
 // Form fields
 const email = ref('')
 const password = ref('')
@@ -141,10 +153,19 @@ const confirmPasswordVisible = ref(false)
 const handleSubmit = () => {
   const isFormValid = form.value
   if (isFormValid) {
-    registerMutation.mutate({
-      email: email.value,
-      password: password.value,
-    })
+    registerMutation.mutate(
+      {
+        email: email.value,
+        password: password.value,
+      },
+      {
+        onError() {
+          error.value =
+            'Invalid credentials. Please try again with a different one.'
+          errorAlert.value = true
+        },
+      },
+    )
   }
 }
 </script>
