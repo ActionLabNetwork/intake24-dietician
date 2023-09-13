@@ -5,6 +5,8 @@ const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
 
 const schema = z.object({
   AUTH_API_HOST: withDevDefault(z.string(), 'http://localhost:8081'),
+  AUTH_API_REGISTER_URI: withDevDefault(z.string(), '/auth/register'),
+  AUTH_API_LOGIN_URI: withDevDefault(z.string(), '/auth/login'),
 })
 
 const parsed = schema.safeParse(process.env)

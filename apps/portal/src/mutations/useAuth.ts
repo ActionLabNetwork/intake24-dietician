@@ -8,7 +8,7 @@ import {
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const useRegister = () => {
-  const registerUri = `${env.AUTH_API_HOST}/auth/register`
+  const registerUri = `${env.AUTH_API_HOST}${env.AUTH_API_REGISTER_URI}}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AuthResponse,
@@ -28,4 +28,23 @@ export const useRegister = () => {
   }
 }
 
-export const useLogin = () => {}
+export const useLogin = () => {
+  const loginUri = `${env.AUTH_API_HOST}${env.AUTH_API_LOGIN_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AuthResponse,
+    ApiResponseWithError,
+    AuthRequest
+  >({
+    mutationFn: loginBody => axios.post(loginUri, loginBody),
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}

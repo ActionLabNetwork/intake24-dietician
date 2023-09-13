@@ -22,8 +22,8 @@
             :rules="[emailValidator]"
             :value="email"
             @update="newVal => (email = newVal)"
-            >{{ messages.form.email.label }}</BaseInput
-          >
+            >{{ messages.form.email.label }}
+          </BaseInput>
           <!-- Password -->
           <BaseInput
             :type="passwordVisible ? 'text' : 'password'"
@@ -67,7 +67,8 @@
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form"
+            :disabled="!form || registerMutation.isLoading.value"
+            :loading="registerMutation.isLoading.value"
           >
             {{ messages.form.createAccount }}
           </v-btn>
@@ -99,7 +100,7 @@ import {
   emailValidator,
   passwordValidator,
   confirmPasswordValidator,
-} from '../validators/auth/register'
+} from '../validators/auth'
 
 // TODO: Migrate this to i18n
 const messages = {
@@ -166,3 +167,4 @@ h2 {
   width: 90%;
 }
 </style>
+../validators/auth
