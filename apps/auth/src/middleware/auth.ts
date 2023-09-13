@@ -7,18 +7,25 @@ export function expressAuthentication(
   _securityName: string,
   scopes?: string[],
 ) {
-  const token =
+  let token =
     request.body.token ||
     request.query['token'] ||
     request.headers['x-access-token']
+
+  if (token) {
+    token = token.replace('Bearer ', '')
+  }
 
   return new Promise((resolve, reject) => {
     if (!token) {
       reject(new Error('No token provided'))
     }
+
     jwt.verify(token, env.JWT_SECRET, (err: any, decoded: any) => {
       if (err) {
         reject(err)
+      } else if (decoded.tokenType !== 'access-token') {
+        reject(new Error('Invalid token type'))
       } else {
         if (scopes === undefined) {
           resolve(decoded)

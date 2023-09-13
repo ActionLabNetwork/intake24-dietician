@@ -1,7 +1,12 @@
 import { AuthController } from '../src/controllers/auth.controller'
 import { createAuthService } from '../src/services/auth.service'
-import { AuthRequest, AuthResponse, IAuthService } from '../src/types/auth'
+import {
+  AuthRequest,
+  AuthResponse,
+  IAuthService,
+} from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import type { UserWithToken } from '@intake24-dietician/common/types/auth'
 
 import * as authServiceModule from '../src/services/auth.service'
 import { container } from '@intake24-dietician/auth/ioc/container'
@@ -64,18 +69,17 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
-        token: {
-          accessToken: 'accessToken',
-          refreshToken: 'refreshToken',
-        },
       },
     }
 
     it('should return user data on successful login', async () => {
-      const mockUser = {
-        id: '1',
+      const mockUser: UserWithToken = {
+        id: 1,
         email: response.data.email,
-        token: response.data.token,
+        token: {
+          accessToken: 'testAccessToken',
+          refreshToken: 'testRefreshToken',
+        },
       }
       mockLogin.mockResolvedValueOnce(mockUser)
 
@@ -110,18 +114,17 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
-        token: {
-          accessToken: 'accessToken',
-          refreshToken: 'refreshToken',
-        },
       },
     }
 
     it('should return user data on successful registration', async () => {
-      const mockUser = {
-        id: '2',
+      const mockUser: UserWithToken = {
+        id: 2,
         email: response.data.email,
-        token: response.data.token,
+        token: {
+          accessToken: 'testAccessToken',
+          refreshToken: 'testRefreshToken',
+        },
       }
       mockRegister.mockResolvedValueOnce(mockUser)
 
@@ -155,24 +158,22 @@ describe('AuthController', () => {
     const response = {
       data: {
         email: 'test@example.com',
-        token: {
-          accessToken: 'accessToken',
-        },
       },
     }
 
     it('should return user data on successful refresh', async () => {
-      const mockUser = {
-        id: '2',
+      const mockUser: UserWithToken = {
+        id: 2,
         email: response.data.email,
-        token: response.data.token,
+        token: {
+          accessToken: 'testAccessToken',
+          refreshToken: 'testRefreshToken',
+        },
       }
 
       mockRefreshAccessToken.mockResolvedValueOnce(mockUser)
 
-      const result = await authController.refreshAccessToken({
-        token: response.data.token.accessToken,
-      })
+      const result = await authController.refreshAccessToken('some token')
 
       expect(result).toEqual(response)
     })
@@ -182,9 +183,7 @@ describe('AuthController', () => {
         new Error('Some refresh error'),
       )
 
-      const result = await authController.refreshAccessToken({
-        token: response.data.token.accessToken,
-      })
+      const result = await authController.refreshAccessToken('invalid token')
 
       expect(result).toEqual(
         generateErrorResponse('400', 'Bad request', 'Invalid refresh token'),

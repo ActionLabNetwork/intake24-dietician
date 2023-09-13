@@ -1,7 +1,7 @@
 import { ApiResponse } from '@intake24-dietician/common/types/api'
 import { JwtPayload } from 'jsonwebtoken'
 
-interface UserWithToken {
+export interface UserWithToken {
   id: number
   email: string
   token: Token
@@ -11,7 +11,7 @@ export interface AuthRequest {
   email: string
   password: string
 }
-export type AuthResponse = ApiResponse<{ email: string; token: Token }>
+export type AuthResponse = ApiResponse<{ email: string }>
 
 export interface Token {
   accessToken: string

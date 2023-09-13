@@ -1,5 +1,5 @@
 import * as argon2 from 'argon2'
-import { IHashingService } from '../types/auth'
+import { IHashingService } from '@intake24-dietician/common/types/auth'
 
 export const createArgonHashingService = (): IHashingService => ({
   async hash(password: string): Promise<string> {

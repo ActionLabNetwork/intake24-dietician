@@ -7,7 +7,7 @@ import {
   ITokenService,
   Token,
   TokenPayload,
-} from '../types/auth'
+} from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
 

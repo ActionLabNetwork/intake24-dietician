@@ -3,7 +3,11 @@ import { createContainer, asValue, asFunction } from 'awilix'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { createAuthService } from '../services/auth.service'
 import { createArgonHashingService } from '../services/hashing.service'
-import { IAuthService, IHashingService, ITokenService } from '../types/auth'
+import {
+  IAuthService,
+  IHashingService,
+  ITokenService,
+} from '@intake24-dietician/common/types/auth'
 import { Controller, IocContainer } from 'tsoa'
 import { createJwtTokenService } from '../services/token.service'
 

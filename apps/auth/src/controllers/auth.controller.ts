@@ -1,13 +1,19 @@
 import {
   Body,
   Controller,
+  Header,
   Post,
   Route,
   Security,
   SuccessResponse,
   Tags,
 } from 'tsoa'
-import { AuthRequest, AuthResponse, IAuthService } from '../types/auth'
+import {
+  AuthRequest,
+  AuthResponse,
+  IAuthService,
+  Token,
+} from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService } from '../services/auth.service'
 import { container } from '../ioc/container'
@@ -41,8 +47,8 @@ export class AuthController extends Controller {
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    // this.setAuthHeaders(user.token)
-    return { data: { email: user.email, token: user.token } }
+    this.setAuthHeaders(user.token)
+    return { data: { email: user.email } }
   }
 
   /**
@@ -73,8 +79,8 @@ export class AuthController extends Controller {
         )
       }
 
-      // this.setAuthHeaders(user.token)
-      return { data: { email: user.email, token: user.token } }
+      this.setAuthHeaders(user.token)
+      return { data: { email: user.email } }
     } catch (error: unknown) {
       this.setStatus(400)
       return generateErrorResponse('400', 'Bad Request', error)
@@ -83,8 +89,9 @@ export class AuthController extends Controller {
 
   @Post('refresh')
   public async refreshAccessToken(
-    @Body() refreshToken: { token: string },
+    @Header('X-Refresh-Token') _token: string,
   ): Promise<AuthResponse> {
+    const refreshToken = _token ? _token.replace('Bearer ', '') : null
     if (!refreshToken) {
       this.setStatus(401)
       return generateErrorResponse(
@@ -95,8 +102,9 @@ export class AuthController extends Controller {
     }
 
     try {
-      const user = await this.authService.refreshAccessToken(refreshToken.token)
-      return { data: { email: user.email, token: user.token } }
+      const user = await this.authService.refreshAccessToken(refreshToken)
+      this.setAuthHeaders(user.token)
+      return { data: { email: user.email } }
     } catch (error) {
       this.setStatus(400)
       return generateErrorResponse(
@@ -109,17 +117,17 @@ export class AuthController extends Controller {
 
   @Security('jwt')
   @Post('protected')
-  public protectedRoute(@Body() body: { token: string }): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public protectedRoute(@Header('X-Access-Token') _: string): string {
     this.setStatus(200)
-    console.log({ body })
     return 'Authentication setup success'
   }
 
-  // private setAuthHeaders(token: Token): void {
-  //   this.setHeader(
-  //     'Set-Cookie',
-  //     `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict`,
-  //   )
-  //   this.setHeader('Authorization', `Bearer ${token.accessToken}`)
-  // }
+  private setAuthHeaders(token: Token): void {
+    this.setHeader(
+      'Set-Cookie',
+      `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict; Secure`,
+    )
+    this.setHeader('X-Access-Token', `Bearer ${token.accessToken}`)
+  }
 }

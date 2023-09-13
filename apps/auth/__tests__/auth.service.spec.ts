@@ -5,7 +5,7 @@ import User from '@intake24-dietician/db/models/auth/user.model'
 import { createAuthService } from '../src/services/auth.service'
 import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
 import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
-import { TokenPayload } from '@intake24-dietician/auth/types/auth'
+import { TokenPayload } from '@intake24-dietician/common/types/auth'
 
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
