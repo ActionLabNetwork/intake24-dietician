@@ -9,6 +9,7 @@ import {
   TokenPayload,
 } from '../types/auth'
 import { JwtPayload } from 'jsonwebtoken'
+import { z } from 'zod'
 
 export const createAuthService = (
   hashingService: IHashingService,
@@ -18,6 +19,15 @@ export const createAuthService = (
     email: string,
     password: string,
   ): Promise<(User & { token: Token }) | null> => {
+    const isValidEmail = z.string().email().safeParse(email)
+    const emailExists = await User.findOne({ where: { email } })
+
+    if (!isValidEmail.success || emailExists) {
+      throw new Error(
+        'Invalid email address. Please try again with a different one.',
+      )
+    }
+
     const hashedPassword = await hashingService.hash(password)
 
     try {
@@ -51,7 +61,6 @@ export const createAuthService = (
       refreshToken,
       env.JWT_SECRET,
     ) as JwtPayload
-    console.log({ decoded })
     const user = await User.findOne({ where: { id: decoded['userId'] } })
     if (!user) {
       throw new Error('User not found')

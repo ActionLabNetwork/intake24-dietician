@@ -56,6 +56,14 @@ describe('AuthService', () => {
       const { register } = createAuthServiceFactory()
       await expect(register(email, password)).rejects.toThrow(errorMsg)
     })
+
+    it('should throw an error if email is invalid', async () => {
+      const errorMsg = 'Invalid email address'
+      ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
+
+      const { register } = createAuthServiceFactory()
+      await expect(register('invalid', password)).rejects.toThrow(errorMsg)
+    })
   })
 
   describe('login', () => {

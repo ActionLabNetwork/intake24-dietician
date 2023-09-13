@@ -5,9 +5,15 @@
     </div>
     <v-text-field
       :type="type"
+      :placeholder="placeholder"
+      :autocomplete="autocomplete"
       variant="solo-filled"
       density="comfortable"
       :append-inner-icon="suffixIcon"
+      :name="name"
+      :v-model="value"
+      :rules="rules"
+      @input="updateValue"
       @click:append-inner="handleIconClick"
     />
   </div>
@@ -16,9 +22,18 @@
 <script setup lang="ts">
 defineProps<{
   type: HTMLInputElement['type']
+  placeholder?: string
+  autocomplete?: HTMLInputElement['autocomplete']
   suffixIcon?: string
+  name?: string
+  value?: HTMLInputElement['value']
+  rules?: ((value: string) => boolean | string)[]
   handleIconClick?: () => void
 }>()
+const emit = defineEmits<(e: 'update', value: string) => void>()
+const updateValue = (e: InputEvent) => {
+  emit('update', (e.target as HTMLInputElement).value)
+}
 </script>
 
 <style>

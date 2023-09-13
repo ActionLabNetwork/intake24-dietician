@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column justify-space-evenly">
+  <div class="d-flex flex-column justify-space-around h-screen">
     <div class="wrapper py-15 px-16 d-flex flex-column">
       <div class="pb-16">
         <v-img max-width="10rem" src="../assets/logo.svg" />
@@ -88,5 +88,9 @@ h2 {
   color: $base-color;
   font-size: 0.875rem;
   font-weight: 400;
+}
+
+.wrapper {
+  width: 90%;
 }
 </style>

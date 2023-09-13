@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
+    "@tanstack/vue-query": "^4.35.2",
+    "axios": "^1.5.0",
     "core-js": "^3.32.2",
     "pinia": "^2.1.6",
     "roboto-fontface": "^0.10.0",
@@ -20,18 +22,24 @@
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
+    "@babel/core": "^7.22.17",
+    "@babel/eslint-parser": "^7.22.15",
     "@babel/types": "^7.22.17",
     "@types/node": "^18.17.15",
     "@types/webfontloader": "^1.6.35",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
+    "@typescript-eslint/parser": "^6.4.0",
     "@vitejs/plugin-vue": "^4.3.4",
     "@vue/eslint-config-typescript": "^11.0.3",
     "eslint": "^8.49.0",
+    "eslint-config-alloy": "^5.1.1",
     "eslint-plugin-vue": "^9.17.0",
     "sass": "^1.66.1",
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vite-plugin-vuetify": "^1.0.2",
     "vite-tsconfig-paths": "^4.2.1",
+    "vue-eslint-parser": "^9.3.1",
     "vue-tsc": "^1.8.10"
   }
 }

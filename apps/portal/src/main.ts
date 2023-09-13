@@ -13,6 +13,7 @@ import { useI18n } from '@intake24-dietician/i18n'
 
 // Plugins
 import { registerPlugins } from './plugins'
+import { VueQueryPlugin } from '@tanstack/vue-query'
 
 const i18n = useI18n().i18n
 
@@ -20,4 +21,5 @@ const app = createApp(App)
 registerPlugins(app)
 
 app.use(i18n)
+app.use(VueQueryPlugin)
 app.mount('#app')
