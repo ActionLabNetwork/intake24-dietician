@@ -5,6 +5,7 @@ import User from '@intake24-dietician/db/models/auth/user.model'
 import { createAuthService } from '../src/services/auth.service'
 import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
 import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
+import { TokenPayload } from '@intake24-dietician/auth/types/auth'
 
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
@@ -26,10 +27,12 @@ describe('AuthService', () => {
 
   afterEach(() => {
     jest.clearAllMocks()
+    jest.resetAllMocks()
   })
 
   describe('register', () => {
     it('should successfully register a user', async () => {
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
       ;(User.create as jest.Mock).mockResolvedValueOnce({
         id: 1,
         dataValues: {
@@ -50,11 +53,12 @@ describe('AuthService', () => {
     })
 
     it('should throw an error if registration fails', async () => {
-      const errorMsg = 'User already exists'
+      const errorMsg =
+        'Invalid email address. Please try again with a different one.'
       ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
 
       const { register } = createAuthServiceFactory()
-      await expect(register(email, password)).rejects.toThrow(errorMsg)
+      expect(register(email, password)).rejects.toThrow(errorMsg)
     })
 
     it('should throw an error if email is invalid', async () => {
@@ -63,6 +67,15 @@ describe('AuthService', () => {
 
       const { register } = createAuthServiceFactory()
       await expect(register('invalid', password)).rejects.toThrow(errorMsg)
+    })
+
+    it('should throw an error if email already exists', async () => {
+      const errorMsg =
+        'Invalid email address. Please try again with a different one.'
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(new User())
+
+      const { register } = createAuthServiceFactory()
+      await expect(register(email, password)).rejects.toThrow(errorMsg)
     })
   })
 
@@ -107,7 +120,12 @@ describe('AuthService', () => {
 
   describe('refreshAccessToken', () => {
     it('should successfully refresh access token', async () => {
-      const decoded = { userId: 1 }
+      const decoded: TokenPayload = {
+        userId: 1,
+        email: 'test@example.com',
+        tokenType: 'refresh-token',
+      }
+
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       ;(User.findOne as jest.Mock).mockResolvedValueOnce({
         id: 1,
@@ -133,6 +151,26 @@ describe('AuthService', () => {
 
       const { refreshAccessToken } = createAuthServiceFactory()
       await expect(refreshAccessToken(token)).rejects.toThrow(errorMsg)
+    })
+
+    it('should throw an error if refresh token is not a refresh token', async () => {
+      const errMsg = 'Invalid token type. Please provide a refresh token.'
+      const decoded: TokenPayload = {
+        userId: 1,
+        email: 'test@example.com',
+        tokenType: 'access-token',
+      }
+
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce({
+        id: 1,
+        dataValues: { email },
+        get: jest.fn(() => ({ id: 1, email })),
+      })
+
+      const { refreshAccessToken } = createAuthServiceFactory()
+
+      await expect(refreshAccessToken(token)).rejects.toThrowError(errMsg)
     })
   })
 })

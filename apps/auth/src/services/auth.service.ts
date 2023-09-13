@@ -61,6 +61,11 @@ export const createAuthService = (
       refreshToken,
       env.JWT_SECRET,
     ) as JwtPayload
+
+    if (decoded['tokenType'] !== 'refresh-token') {
+      throw new Error('Invalid token type. Please provide a refresh token.')
+    }
+
     const user = await User.findOne({ where: { id: decoded['userId'] } })
     if (!user) {
       throw new Error('User not found')

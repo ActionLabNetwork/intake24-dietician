@@ -145,6 +145,9 @@ const handleSubmit = () => {
         password: password.value,
       },
       {
+        onSuccess(data) {
+          console.log({ data })
+        },
         onError() {
           error.value = 'Invalid credentials. Please try again'
           errorAlert.value = true
