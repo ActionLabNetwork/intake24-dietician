@@ -14,7 +14,7 @@ app.use(bodyParser.json())
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
   return res.send(swaggerUi.generateHTML(await import('../build/swagger.json')))
 })
-app.use(cors())
+app.use(cors({ exposedHeaders: 'x-access-token,x-refresh-token' }))
 
 RegisterRoutes(app)
 

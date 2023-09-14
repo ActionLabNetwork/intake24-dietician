@@ -4,6 +4,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@": ["src/*"],
       "@intake24-dietician/auth/*": ["src/*"],
       "@intake24-dietician/auth-tests/*": ["__tests__/*"],
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],

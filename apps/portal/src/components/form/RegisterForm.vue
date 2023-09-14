@@ -5,7 +5,7 @@
       class="wrapper py-15 px-16 d-flex flex-column"
     >
       <div class="pb-16">
-        <v-img max-width="10rem" src="../assets/logo.svg" />
+        <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
         <h1>{{ messages.title }}</h1>
@@ -103,13 +103,13 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import BaseInput from './form/BaseInput.vue'
-import { useRegister } from '../mutations/useAuth'
+import BaseInput from '@/components/form/BaseInput.vue'
+import { useRegister } from '@/mutations/useAuth'
 import {
   emailValidator,
   passwordValidator,
   confirmPasswordValidator,
-} from '../validators/auth'
+} from '@/validators/auth'
 
 // TODO: Migrate this to i18n
 const messages = {

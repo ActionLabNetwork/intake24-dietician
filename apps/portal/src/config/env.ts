@@ -7,6 +7,10 @@ const schema = z.object({
   AUTH_API_HOST: withDevDefault(z.string(), 'http://localhost:8081'),
   AUTH_API_REGISTER_URI: withDevDefault(z.string(), '/auth/register'),
   AUTH_API_LOGIN_URI: withDevDefault(z.string(), '/auth/login'),
+  AUTH_API_RESET_PASSWORD_URI: withDevDefault(
+    z.string(),
+    '/auth/reset-password',
+  ),
 })
 
 const parsed = schema.safeParse(process.env)

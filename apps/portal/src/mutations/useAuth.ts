@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/vue-query'
-import axios from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import { env } from '../config/env'
 import {
   AuthRequest,
@@ -11,11 +11,11 @@ export const useRegister = () => {
   const registerUri = `${env.AUTH_API_HOST}${env.AUTH_API_REGISTER_URI}}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AuthResponse,
-    unknown,
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiResponseWithError>,
     AuthRequest
   >({
-    mutationFn: registerBody => axios.post(registerUri, registerBody),
+    mutationFn: async registerBody => axios.post(registerUri, registerBody),
   })
 
   return {
@@ -32,11 +32,33 @@ export const useLogin = () => {
   const loginUri = `${env.AUTH_API_HOST}${env.AUTH_API_LOGIN_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AuthResponse,
-    ApiResponseWithError,
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiResponseWithError>,
     AuthRequest
   >({
     mutationFn: loginBody => axios.post(loginUri, loginBody),
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useResetPassword = () => {
+  const resetPasswordUri = `${env.AUTH_API_HOST}${env.AUTH_API_RESET_PASSWORD_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiResponseWithError>,
+    AuthRequest
+  >({
+    mutationFn: resetPasswordBody =>
+      axios.post(resetPasswordUri, resetPasswordBody),
   })
 
   return {

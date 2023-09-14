@@ -10,12 +10,12 @@
 </template>
 
 <script lang="ts" setup>
-import LoginForm from '../components/LoginForm.vue'
+import LoginForm from '@/components/form/LoginForm.vue'
 </script>
 
 <style>
 .hero-image {
-  background-image: url('../assets/auth/register/RegisterHero.png');
+  background-image: url('@/assets/auth/register/RegisterHero.png');
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
