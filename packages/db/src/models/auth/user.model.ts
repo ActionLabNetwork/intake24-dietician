@@ -1,19 +1,35 @@
-import { Table, Column, Model, PrimaryKey, AutoIncrement, Unique, IsEmail } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  PrimaryKey,
+  AutoIncrement,
+  Unique,
+  IsEmail,
+  HasOne,
+  AllowNull,
+} from 'sequelize-typescript'
+import Token from './token.model'
 
 @Table
 class User extends Model {
   @PrimaryKey
   @AutoIncrement
   @Column
-  public declare id: number;
+  public declare id: number
 
   @Unique
   @IsEmail
+  @AllowNull(false)
   @Column
-  public email!: string;
+  public declare email: string
 
+  @AllowNull(false)
   @Column
-  public password!: string;
+  public declare password: string
+
+  @HasOne(() => Token)
+  public declare passwordResetToken: Token
 }
 
-export default User;
+export default User

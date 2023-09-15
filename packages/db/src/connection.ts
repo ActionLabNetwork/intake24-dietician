@@ -8,7 +8,7 @@ sequelize.addModels([__dirname + '/**/*.model.ts'])
 const connect = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync()
+    await sequelize.sync({ force: false })
     console.log('✅ Connected to database')
   } catch (error) {
     console.error('❌ Unable to connect to database:', error)

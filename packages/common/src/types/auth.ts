@@ -25,6 +25,7 @@ export interface TokenPayload {
 }
 
 export interface IHashingService {
+  randomHash: () => Promise<string>
   hash: (password: string) => Promise<string>
   verify: (hashedPassword: string, password: string) => Promise<boolean>
 }
@@ -32,6 +33,8 @@ export interface IHashingService {
 export interface IAuthService {
   login: (email: string, password: string) => Promise<UserWithToken | null>
   register: (email: string, password: string) => Promise<UserWithToken | null>
+  forgotPassword: (email: string) => Promise<string>
+  resetPassword: (token: string, password: string) => Promise<void>
   refreshAccessToken: (refreshToken: string) => Promise<UserWithToken>
 }
 

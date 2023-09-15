@@ -21,12 +21,12 @@ const routes = [
     path: '/auth',
     children: [
       {
-        path: '/login',
+        path: 'login',
         name: 'Login',
         component: () => import('@/views/Login.vue'),
       },
       {
-        path: '/register',
+        path: 'register',
         name: 'Register',
         component: () => import('@/views/Register.vue'),
       },

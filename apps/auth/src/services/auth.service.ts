@@ -1,15 +1,19 @@
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
-import {
+import type {
   IAuthService,
   IHashingService,
   ITokenService,
-  Token,
+  Token as TokenType,
   TokenPayload,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
+import Token from '@intake24-dietician/db/models/auth/token.model'
+import moment from 'moment'
+import crypto from 'crypto'
+import { sequelize } from '@intake24-dietician/db/connection'
 
 export const createAuthService = (
   hashingService: IHashingService,
@@ -18,7 +22,7 @@ export const createAuthService = (
   const register = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: Token }) | null> => {
+  ): Promise<(User & { token: TokenType }) | null> => {
     const isValidEmail = z.string().email().safeParse(email)
     const emailExists = await User.findOne({ where: { email } })
 
@@ -42,7 +46,7 @@ export const createAuthService = (
   const login = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: Token }) | null> => {
+  ): Promise<(User & { token: TokenType }) | null> => {
     const user = await User.findOne({ where: { email } })
 
     if (
@@ -54,6 +58,69 @@ export const createAuthService = (
     }
 
     return null
+  }
+
+  const forgotPassword = async (email: string) => {
+    const user = await User.findOne({
+      where: { email },
+    })
+
+    let resetUrl = ''
+
+    if (user) {
+      try {
+        const token = crypto.randomBytes(32).toString('hex')
+        await Token.create({
+          userId: user.id,
+          token,
+          expiresAt: moment().add(1, 'hours').toDate(),
+        })
+
+        resetUrl = `${env.HOST}:${env.PORT}/auth/reset-password?token=${token}`
+        console.log({ resetUrl })
+      } catch (error) {
+        console.log({ error })
+      }
+    }
+
+    return resetUrl
+
+    // TODO: Send an email with the resetUrl
+  }
+
+  const resetPassword = async (
+    token: string,
+    password: string,
+  ): Promise<void> => {
+    try {
+      sequelize.transaction(async t => {
+        const tokenEntity = await Token.findOne({
+          where: { token },
+          lock: true,
+          transaction: t,
+        })
+
+        if (!tokenEntity) {
+          throw new Error('Invalid token')
+        }
+
+        if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+          throw new Error('Token has expired')
+        }
+
+        await User.update(
+          { password: await hashingService.hash(password) },
+          { where: { id: tokenEntity.userId }, transaction: t },
+        )
+
+        await Token.destroy({
+          where: { userId: tokenEntity.userId },
+          transaction: t,
+        })
+      })
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
   }
 
   const refreshAccessToken = async (refreshToken: string) => {
@@ -136,5 +203,5 @@ export const createAuthService = (
     return tokens
   }
 
-  return { login, register, refreshAccessToken }
+  return { login, register, forgotPassword, resetPassword, refreshAccessToken }
 }

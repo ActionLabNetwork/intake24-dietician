@@ -3,6 +3,7 @@ import {
   Controller,
   Header,
   Post,
+  Query,
   Route,
   Security,
   SuccessResponse,
@@ -113,6 +114,24 @@ export class AuthController extends Controller {
         'Invalid refresh token',
       )
     }
+  }
+
+  @Post('forgot-password')
+  public async forgotPassword(
+    @Body() requestBody: { email: string },
+  ): Promise<void> {
+    const { email } = requestBody
+    await this.authService.forgotPassword(email)
+  }
+
+  @Post('reset-password')
+  public async resetPassword(
+    @Query() token: string,
+    @Body() requestBody: { password: string },
+  ): Promise<void> {
+    console.log({ token })
+    const { password } = requestBody
+    await this.authService.resetPassword(token, password)
   }
 
   @Security('jwt')
