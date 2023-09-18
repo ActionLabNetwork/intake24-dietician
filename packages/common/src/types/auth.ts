@@ -46,3 +46,7 @@ export interface ITokenService {
   ) => string
   verify: (token: string, secret: string) => string | JwtPayload
 }
+
+export interface IEmailService {
+  sendPasswordResetEmail: (email: string, resetUrl: string) => void
+}

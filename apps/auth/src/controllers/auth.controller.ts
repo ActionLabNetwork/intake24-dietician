@@ -29,6 +29,7 @@ export class AuthController extends Controller {
     this.authService = createAuthService(
       container.resolve('hashingService'),
       container.resolve('tokenService'),
+      container.resolve('emailService'),
     )
   }
 

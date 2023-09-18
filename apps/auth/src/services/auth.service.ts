@@ -7,6 +7,7 @@ import type {
   ITokenService,
   Token as TokenType,
   TokenPayload,
+  IEmailService,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
@@ -18,6 +19,7 @@ import { sequelize } from '@intake24-dietician/db/connection'
 export const createAuthService = (
   hashingService: IHashingService,
   tokenService: ITokenService,
+  emailService: IEmailService,
 ): IAuthService => {
   const register = async (
     email: string,
@@ -83,9 +85,10 @@ export const createAuthService = (
       }
     }
 
-    return resetUrl
-
     // TODO: Send an email with the resetUrl
+    emailService.sendPasswordResetEmail(email, resetUrl)
+
+    return resetUrl
   }
 
   const resetPassword = async (
