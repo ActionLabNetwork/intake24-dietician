@@ -118,11 +118,23 @@ export class AuthController extends Controller {
   }
 
   @Post('forgot-password')
-  public async forgotPassword(
-    @Body() requestBody: { email: string },
-  ): Promise<void> {
+  public async forgotPassword(@Body() requestBody: { email: string }) {
     const { email } = requestBody
-    await this.authService.forgotPassword(email)
+
+    try {
+      await this.authService.forgotPassword(email)
+      return { emailSent: true, error: undefined }
+    } catch (_) {
+      this.setStatus(500)
+      return {
+        emailSent: false,
+        error: generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      }
+    }
   }
 
   @Post('reset-password')

@@ -19,7 +19,8 @@ import { sequelize } from '@intake24-dietician/db/connection'
 export const createAuthService = (
   hashingService: IHashingService,
   tokenService: ITokenService,
-  emailService: IEmailService,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _emailService: IEmailService,
 ): IAuthService => {
   const register = async (
     email: string,
@@ -67,26 +68,28 @@ export const createAuthService = (
       where: { email },
     })
 
-    let resetUrl = ''
-
-    if (user) {
-      try {
-        const token = crypto.randomBytes(32).toString('hex')
-        await Token.create({
-          userId: user.id,
-          token,
-          expiresAt: moment().add(1, 'hours').toDate(),
-        })
-
-        resetUrl = `${env.HOST}:${env.PORT}/auth/reset-password?token=${token}`
-        console.log({ resetUrl })
-      } catch (error) {
-        console.log({ error })
-      }
+    if (!user) {
+      throw new Error('User not found')
     }
 
-    // TODO: Send an email with the resetUrl
-    emailService.sendPasswordResetEmail(email, resetUrl)
+    let resetUrl = ''
+
+    try {
+      const token = crypto.randomBytes(32).toString('hex')
+      await Token.create({
+        userId: user.id,
+        token,
+        expiresAt: moment().add(1, 'hours').toDate(),
+      })
+
+      resetUrl = `${env.HOST}:${env.PORT}/auth/reset-password?token=${token}`
+      console.log({ resetUrl })
+    } catch (error) {
+      console.log({ error })
+      throw new Error(getErrorMessage(error))
+    }
+
+    // emailService.sendPasswordResetEmail(email, resetUrl)
 
     return resetUrl
   }

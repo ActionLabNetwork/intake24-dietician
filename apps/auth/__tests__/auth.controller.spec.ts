@@ -20,11 +20,14 @@ describe('AuthController', () => {
     login: jest.fn(),
     register: jest.fn(),
     refreshAccessToken: jest.fn(),
+    forgotPassword: jest.fn(),
+    resetPassword: jest.fn(),
   }
 
   let mockLogin: jest.Mock
   let mockRegister: jest.Mock
   let mockRefreshAccessToken: jest.Mock
+  let mockForgotPassword: jest.Mock
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -37,6 +40,8 @@ describe('AuthController', () => {
           return {}
         case 'tokenService':
           return {}
+        case 'emailService':
+          return {}
         default:
           return {}
       }
@@ -47,10 +52,12 @@ describe('AuthController', () => {
     mockLogin = jest.fn()
     mockRegister = jest.fn()
     mockRefreshAccessToken = jest.fn()
+    mockForgotPassword = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
       refreshAccessToken: mockRefreshAccessToken,
+      forgotPassword: mockForgotPassword,
     })
 
     authController = new AuthController()
@@ -188,6 +195,39 @@ describe('AuthController', () => {
       expect(result).toEqual(
         generateErrorResponse('400', 'Bad request', 'Invalid refresh token'),
       )
+    })
+  })
+
+  describe('forgotPassword', () => {
+    it('should return { emailSent: true, error: undefined } when called with a valid email', async () => {
+      const email = 'valid@example.com'
+      const requestBody = { email }
+      mockForgotPassword.mockResolvedValueOnce(email)
+
+      const result = await authController.forgotPassword(requestBody)
+
+      expect(result).toEqual({ emailSent: true, error: undefined })
+    })
+
+    it('should handle unregistered email', async () => {
+      const email = 'unregistered@example.com'
+      const requestBody = { email }
+      mockForgotPassword.mockRejectedValueOnce(new Error('User not found'))
+
+      const result = await authController.forgotPassword(requestBody)
+
+      expect(result).toEqual({
+        emailSent: false,
+        error: {
+          errors: [
+            {
+              status: '500',
+              title: 'Internal server error',
+              detail: 'An unknown error occurred. Please try again.',
+            },
+          ],
+        },
+      })
     })
   })
 })
