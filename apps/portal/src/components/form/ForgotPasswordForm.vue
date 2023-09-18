@@ -1,7 +1,7 @@
 <template>
   <div class="d-flex flex-column justify-space-around h-screen">
     <div
-      v-if="loginMutation.data.value === undefined"
+      v-if="forgotPasswordMutation.data.value === undefined"
       class="wrapper py-15 px-16 d-flex flex-column"
     >
       <div class="pb-16">
@@ -16,7 +16,7 @@
           v-model="errorAlert"
           closable
           type="error"
-          title="Login failed"
+          :title="messages.form.error.invalidEmail"
           :text="error"
         ></v-alert>
       </div>
@@ -40,15 +40,15 @@
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form || loginMutation.isLoading.value"
-            :loading="loginMutation.isLoading.value"
+            :disabled="!form || forgotPasswordMutation.isLoading.value"
+            :loading="forgotPasswordMutation.isLoading.value"
           >
             {{ messages.form.resetPassword }}
           </v-btn>
         </v-form>
       </div>
     </div>
-    <div v-if="loginMutation.data.value === undefined">
+    <div v-if="forgotPasswordMutation.data.value === undefined">
       <div class="text-center">
         {{ messages.form.createAccount.label }}
         <router-link
@@ -59,8 +59,14 @@
         </router-link>
       </div>
     </div>
-    <div v-else class="pl-16">
-      <h1>Welcome</h1>
+    <div v-else class="px-16">
+      <v-alert
+        v-model="successAlert"
+        closable
+        type="success"
+        :title="messages.form.success.title"
+        :text="messages.form.success.text"
+      ></v-alert>
     </div>
   </div>
 </template>
@@ -70,7 +76,7 @@ import { ref } from 'vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { emailValidator } from '@/validators/auth'
-import { useLogin } from '@/mutations/useAuth'
+import { useForgotPassword } from '@/mutations/useAuth'
 
 // TODO: Migrate this to i18n
 const messages = {
@@ -86,33 +92,40 @@ const messages = {
       label: 'Don’t have an account yet?',
       link: 'Create account',
     },
+    success: {
+      title: 'Email sent',
+      text: 'An email has been sent to your email address. Please check your inbox.',
+    },
+    error: {
+      invalidEmail: 'Invalid email. Please try again',
+    },
   },
 } as const
 
-const loginMutation = useLogin()
+const forgotPasswordMutation = useForgotPassword()
 
 const form = ref(null)
 const error = ref('')
+const successAlert = ref(false)
 const errorAlert = ref(false)
 
 // Form fields
 const email = ref('')
-const password = ref('')
 
 const handleSubmit = () => {
   const isFormValid = form.value
   if (isFormValid) {
-    loginMutation.mutate(
+    forgotPasswordMutation.mutate(
       {
         email: email.value,
-        password: password.value,
       },
       {
         onSuccess(data) {
+          successAlert.value = true
           console.log({ data })
         },
         onError() {
-          error.value = 'Invalid credentials. Please try again'
+          error.value = 'Invalid email. Please try again'
           errorAlert.value = true
         },
       },

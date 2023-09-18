@@ -49,16 +49,46 @@ export const useLogin = () => {
   }
 }
 
+export const useForgotPassword = () => {
+  const forgotPasswordUri = `${env.AUTH_API_HOST}${env.AUTH_API_FORGOT_PASSWORD_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<AuthResponse>,
+    AxiosError<ApiResponseWithError>,
+    { email: string }
+  >({
+    mutationFn: forgotPasswordBody =>
+      axios.post(forgotPasswordUri, forgotPasswordBody),
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
 export const useResetPassword = () => {
   const resetPasswordUri = `${env.AUTH_API_HOST}${env.AUTH_API_RESET_PASSWORD_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<AuthResponse>,
     AxiosError<ApiResponseWithError>,
-    AuthRequest
+    { token: string; password: string }
   >({
-    mutationFn: resetPasswordBody =>
-      axios.post(resetPasswordUri, resetPasswordBody),
+    mutationFn: resetPasswordBody => {
+      console.log({ resetPasswordBody })
+      return axios.post(
+        resetPasswordUri,
+        { password: resetPasswordBody.password },
+        {
+          params: { token: resetPasswordBody.token },
+        },
+      )
+    },
   })
 
   return {

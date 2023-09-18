@@ -3,7 +3,7 @@ import { app } from './app'
 import { env } from './config/env'
 import { connect } from '@intake24-dietician/db/connection'
 
-const port = env.PORT || 3000
+const port = env.AUTH_API_PORT || 3000
 
 connect()
   .then(() => {

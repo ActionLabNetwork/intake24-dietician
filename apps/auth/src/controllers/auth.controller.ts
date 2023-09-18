@@ -141,10 +141,26 @@ export class AuthController extends Controller {
   public async resetPassword(
     @Query() token: string,
     @Body() requestBody: { password: string },
-  ): Promise<void> {
+  ) {
     console.log({ token })
     const { password } = requestBody
-    await this.authService.resetPassword(token, password)
+    try {
+      await this.authService.resetPassword(token, password)
+      return {
+        passwordChanged: true,
+        error: undefined,
+      }
+    } catch (error) {
+      this.setStatus(500)
+      return {
+        passwordChanged: false,
+        error: generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      }
+    }
   }
 
   @Security('jwt')

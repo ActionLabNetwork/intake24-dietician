@@ -82,7 +82,7 @@ export const createAuthService = (
         expiresAt: moment().add(1, 'hours').toDate(),
       })
 
-      resetUrl = `${env.HOST}:${env.PORT}/auth/reset-password?token=${token}`
+      resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
       console.log({ resetUrl })
     } catch (error) {
       console.log({ error })
@@ -98,35 +98,31 @@ export const createAuthService = (
     token: string,
     password: string,
   ): Promise<void> => {
-    try {
-      sequelize.transaction(async t => {
-        const tokenEntity = await Token.findOne({
-          where: { token },
-          lock: true,
-          transaction: t,
-        })
-
-        if (!tokenEntity) {
-          throw new Error('Invalid token')
-        }
-
-        if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-          throw new Error('Token has expired')
-        }
-
-        await User.update(
-          { password: await hashingService.hash(password) },
-          { where: { id: tokenEntity.userId }, transaction: t },
-        )
-
-        await Token.destroy({
-          where: { userId: tokenEntity.userId },
-          transaction: t,
-        })
+    return sequelize.transaction(async t => {
+      const tokenEntity = await Token.findOne({
+        where: { token },
+        lock: true,
+        transaction: t,
       })
-    } catch (error) {
-      throw new Error(getErrorMessage(error))
-    }
+
+      if (!tokenEntity) {
+        throw new Error('Invalid token')
+      }
+
+      if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+        throw new Error('Token has expired')
+      }
+
+      await User.update(
+        { password: await hashingService.hash(password) },
+        { where: { id: tokenEntity.userId }, transaction: t },
+      )
+
+      await Token.destroy({
+        where: { userId: tokenEntity.userId },
+        transaction: t,
+      })
+    })
   }
 
   const refreshAccessToken = async (refreshToken: string) => {

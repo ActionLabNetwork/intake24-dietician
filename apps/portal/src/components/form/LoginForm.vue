@@ -61,7 +61,7 @@
               />
             </div>
             <div>
-              <router-link to="/forgot-password">
+              <router-link to="/auth/forgot-password">
                 {{ messages.form.forgotIdOrPwd }}
               </router-link>
             </div>

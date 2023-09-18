@@ -5,7 +5,8 @@ const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
 
 const schema = z.object({
   HOST: withDevDefault(z.string(), 'http://localhost'),
-  PORT: withDevDefault(z.number(), 8081),
+  AUTH_API_PORT: withDevDefault(z.number(), 8081),
+  PORTAL_APP_PORT: withDevDefault(z.number(), 3001),
   JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
   JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
   JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),

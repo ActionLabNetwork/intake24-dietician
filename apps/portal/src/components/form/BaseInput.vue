@@ -13,6 +13,7 @@
       :name="name"
       :v-model="value"
       :rules="rules"
+      :readonly="readonly"
       @input="updateValue"
       @click:append-inner="handleIconClick"
     />
@@ -28,6 +29,7 @@ defineProps<{
   name?: string
   value?: HTMLInputElement['value']
   rules?: ((value: string) => boolean | string)[]
+  readonly?: boolean
   handleIconClick?: () => void
 }>()
 const emit = defineEmits<(e: 'update', value: string) => void>()
