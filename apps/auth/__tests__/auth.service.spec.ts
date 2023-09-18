@@ -8,11 +8,17 @@ import { createAuthService } from '../src/services/auth.service'
 import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
 import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
 import { createEmailService } from '../src/services/email.service'
+import { sequelize } from '@intake24-dietician/db/connection'
 import { TokenPayload } from '@intake24-dietician/common/types/auth'
+import crypto from 'crypto'
+import moment from 'moment'
 
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
 jest.mock('nodemailer')
+jest.mock('@intake24-dietician/db/connection', () => ({
+  sequelize: { transaction: jest.fn() },
+}))
 jest.mock('@intake24-dietician/db/models/auth/user.model')
 jest.mock('@intake24-dietician/db/models/auth/token.model')
 
@@ -28,15 +34,22 @@ describe('AuthService', () => {
       createJwtTokenService(),
       createEmailService(),
     )
+  const mockSendMail = jest.fn()
+
+  let mockedSequelizeTransaction: jest.Mock
 
   beforeEach(() => {
     ;(argon2.hash as jest.Mock).mockResolvedValue(hashedPassword)
     ;(jwt.sign as jest.Mock).mockReturnValue(token)
-    ;(nodemailer.createTransport as jest.Mock).mockReturnValue({})
+    ;(nodemailer.createTransport as jest.Mock).mockReturnValue({
+      sendMail: mockSendMail,
+    })
+
+    mockedSequelizeTransaction = jest.fn()
+    sequelize.transaction = mockedSequelizeTransaction
   })
 
   afterEach(() => {
-    jest.clearAllMocks()
     jest.resetAllMocks()
   })
 
@@ -186,19 +199,97 @@ describe('AuthService', () => {
   })
 
   describe('forgotPassword', () => {
-    it('should successfully send a password reset email', async () => {
-      ;(Token.create as jest.Mock).mockResolvedValueOnce({
-        id: 1,
-        dataValues: {
-          userId: email,
-          author: hashedPassword,
-          passwordResetToken: null,
-        },
-        get: jest.fn(() => ({ id: 1, email })),
+    it('should successfully generate a password reset URL', async () => {
+      const resetToken = 'someResetToken'
+
+      crypto.randomBytes = jest.fn().mockReturnValueOnce({
+        toString: jest.fn().mockReturnValueOnce(resetToken),
       })
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce({ id: 1 })
+      ;(Token.create as jest.Mock).mockResolvedValueOnce({})
 
       const { forgotPassword } = createAuthServiceFactory()
-      expect(forgotPassword(email)).resolves.toBeUndefined()
+      const result = await forgotPassword(email)
+
+      expect(result).toContain(`/auth/reset-password?token=${resetToken}`)
+    })
+
+    it('should throw an error if user is not found', async () => {
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
+
+      const { forgotPassword } = createAuthServiceFactory()
+
+      await expect(forgotPassword(email)).rejects.toThrow('User not found')
+    })
+
+    it('should throw an error if token creation fails', async () => {
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce({ id: 1 })
+      ;(Token.create as jest.Mock).mockRejectedValueOnce(
+        new Error('Token creation failed'),
+      )
+
+      const { forgotPassword } = createAuthServiceFactory()
+
+      await expect(forgotPassword(email)).rejects.toThrow(
+        'Token creation failed',
+      )
+    })
+  })
+
+  describe('resetPassword', () => {
+    it('should successfully reset the password', async () => {
+      const newPassword = 'newPassword123'
+      const resetToken = 'someResetToken'
+
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
+      ;(Token.findOne as jest.Mock).mockResolvedValueOnce({
+        userId: 1,
+        expiresAt: moment().add(10, 'minutes').toDate(),
+      })
+      ;(User.update as jest.Mock).mockResolvedValueOnce([1])
+      ;(Token.destroy as jest.Mock).mockResolvedValueOnce(1)
+
+      const { resetPassword } = createAuthServiceFactory()
+      await resetPassword(resetToken, newPassword)
+
+      expect(User.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          password: hashedPassword,
+        }),
+        expect.objectContaining({ where: { id: 1 } }),
+      )
+    })
+
+    it('should throw an error if the token is invalid', async () => {
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
+      ;(Token.findOne as jest.Mock).mockResolvedValueOnce(null)
+      const { resetPassword } = createAuthServiceFactory()
+
+      await expect(
+        resetPassword('invalidToken', 'newPassword'),
+      ).rejects.toThrow('Invalid token')
+    })
+
+    it('should throw an error if the token has expired', async () => {
+      const newPassword = 'newPassword123'
+      const expiredResetToken = 'expiredResetToken'
+
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
+      ;(Token.findOne as jest.Mock).mockResolvedValueOnce({
+        userId: 1,
+        expiresAt: moment().subtract(10, 'minutes').toDate(),
+      })
+
+      const { resetPassword } = createAuthServiceFactory()
+      await expect(
+        resetPassword(expiredResetToken, newPassword),
+      ).rejects.toThrow('Token has expired')
     })
   })
 })

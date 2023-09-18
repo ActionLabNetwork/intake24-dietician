@@ -22,23 +22,23 @@ class Token extends Model {
 
   @ForeignKey(() => User)
   @Column
-  public declare userId: number
+  public userId!: number
 
   @BelongsTo(() => User, 'userId')
-  public declare author: User
+  public author!: User
 
   @Unique
   @AllowNull(false)
   @Column
-  public declare token: string
+  public token!: string
 
   @AllowNull(false)
   @Column(DataType.DATE(6))
-  public declare expiresAt: Date
+  public expiresAt!: Date
 
   @Default(true)
   @Column
-  public declare isActive: boolean
+  public isActive!: boolean
 }
 
 export default Token

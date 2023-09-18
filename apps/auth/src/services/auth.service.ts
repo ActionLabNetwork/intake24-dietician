@@ -85,10 +85,10 @@ export const createAuthService = (
       resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
       console.log({ resetUrl })
     } catch (error) {
-      console.log({ error })
-      throw new Error(getErrorMessage(error))
+      throw new Error('Token creation failed')
     }
 
+    // INFO: Uncomment this to test out mail sending
     // emailService.sendPasswordResetEmail(email, resetUrl)
 
     return resetUrl

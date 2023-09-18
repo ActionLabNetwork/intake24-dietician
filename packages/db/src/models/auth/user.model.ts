@@ -6,8 +6,8 @@ import {
   AutoIncrement,
   Unique,
   IsEmail,
-  HasOne,
   AllowNull,
+  HasMany,
 } from 'sequelize-typescript'
 import Token from './token.model'
 
@@ -22,14 +22,14 @@ class User extends Model {
   @IsEmail
   @AllowNull(false)
   @Column
-  public declare email: string
+  public email!: string
 
   @AllowNull(false)
   @Column
-  public declare password: string
+  public password!: string
 
-  @HasOne(() => Token)
-  public declare passwordResetToken: Token
+  @HasMany(() => Token)
+  public passwordResetToken!: Token[]
 }
 
 export default User
