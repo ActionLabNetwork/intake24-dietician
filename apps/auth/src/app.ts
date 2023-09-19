@@ -8,13 +8,17 @@ import { RegisterRoutes } from '../build/routes'
 import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import { ValidateError } from 'tsoa'
+import pino from 'pino-http'
+import { createLogger } from './middleware/logger'
 
 export const app = express()
+
 app.use(bodyParser.json())
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
   return res.send(swaggerUi.generateHTML(await import('../build/swagger.json')))
 })
 app.use(cors({ exposedHeaders: 'x-access-token,x-refresh-token' }))
+app.use(pino({ logger: createLogger() }))
 
 RegisterRoutes(app)
 

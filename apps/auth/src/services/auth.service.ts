@@ -15,6 +15,7 @@ import Token from '@intake24-dietician/db/models/auth/token.model'
 import moment from 'moment'
 import crypto from 'crypto'
 import { sequelize } from '@intake24-dietician/db/connection'
+import { createLogger } from '../middleware/logger'
 
 export const createAuthService = (
   hashingService: IHashingService,
@@ -22,6 +23,8 @@ export const createAuthService = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _emailService: IEmailService,
 ): IAuthService => {
+  const logger = createLogger('auth-service')
+
   const register = async (
     email: string,
     password: string,
@@ -29,9 +32,15 @@ export const createAuthService = (
     const isValidEmail = z.string().email().safeParse(email)
     const emailExists = await User.findOne({ where: { email } })
 
-    if (!isValidEmail.success || emailExists) {
+    if (!isValidEmail.success) {
       throw new Error(
         'Invalid email address. Please try again with a different one.',
+      )
+    }
+
+    if (emailExists) {
+      throw new Error(
+        'An account with this email address already exists. Please try again with a different one.',
       )
     }
 
@@ -83,13 +92,13 @@ export const createAuthService = (
       })
 
       resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
-      console.log({ resetUrl })
+      logger.debug({ resetUrl })
     } catch (error) {
       throw new Error('Token creation failed')
     }
 
     // INFO: Uncomment this to test out mail sending
-    _emailService.sendPasswordResetEmail(email, resetUrl)
+    // _emailService.sendPasswordResetEmail(email, resetUrl)
 
     return resetUrl
   }

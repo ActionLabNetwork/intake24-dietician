@@ -16,6 +16,7 @@ import moment from 'moment'
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
 jest.mock('nodemailer')
+jest.mock('crypto')
 jest.mock('@intake24-dietician/db/connection', () => ({
   sequelize: { transaction: jest.fn() },
 }))
@@ -44,6 +45,20 @@ describe('AuthService', () => {
     ;(nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: mockSendMail,
     })
+
+    const mockUpdate = jest.fn()
+    const mockDigest = jest.fn()
+
+    ;(crypto.createHash as jest.Mock).mockReturnValue({
+      update: mockUpdate,
+      digest: mockDigest,
+    })
+
+    mockUpdate.mockReturnValue({
+      digest: mockDigest,
+    })
+
+    mockDigest.mockReturnValue('mocked_hash_value')
 
     mockedSequelizeTransaction = jest.fn()
     sequelize.transaction = mockedSequelizeTransaction
@@ -95,7 +110,7 @@ describe('AuthService', () => {
 
     it('should throw an error if email already exists', async () => {
       const errorMsg =
-        'Invalid email address. Please try again with a different one.'
+        'An account with this email address already exists. Please try again with a different one.'
       ;(User.findOne as jest.Mock).mockResolvedValueOnce(new User())
 
       const { register } = createAuthServiceFactory()

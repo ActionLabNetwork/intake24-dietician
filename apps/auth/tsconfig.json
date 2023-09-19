@@ -15,6 +15,6 @@
     },
     "types": ["node", "jest", "jest-extended"]
   },
-  "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts"],
+  "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts", "src/server.ts"],
   "exclude": ["node_modules"]
 }

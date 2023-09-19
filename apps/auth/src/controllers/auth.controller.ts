@@ -18,10 +18,13 @@ import {
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService } from '../services/auth.service'
 import { container } from '../ioc/container'
+import { createLogger } from '../middleware/logger'
+import { hash } from '@intake24-dietician/common/utils/index'
 
 @Route('auth')
 @Tags('Authentication')
 export class AuthController extends Controller {
+  private readonly logger = createLogger('AuthController')
   private readonly authService: IAuthService
 
   public constructor() {
@@ -46,10 +49,12 @@ export class AuthController extends Controller {
 
     if (user === null) {
       this.setStatus(401)
+      this.logger.error(`Invalid credentials for email: ${hash(email)} `)
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
     this.setAuthHeaders(user.token)
+    this.logger.info({ email: hash(email), action: 'login' }, 'User logged in')
     return { data: { email: user.email } }
   }
 
@@ -73,6 +78,10 @@ export class AuthController extends Controller {
 
       if (user === null) {
         this.setStatus(401)
+        this.logger.error(
+          { email: hash(email), action: 'register', statusCode: 401 },
+          'Invalid credentials',
+        )
 
         return generateErrorResponse(
           '401',
@@ -82,9 +91,17 @@ export class AuthController extends Controller {
       }
 
       this.setAuthHeaders(user.token)
+      this.logger.info(
+        { email: hash(email), action: 'register', statusCode: 201 },
+        'User registered',
+      )
       return { data: { email: user.email } }
     } catch (error: unknown) {
       this.setStatus(400)
+      this.logger.info(
+        { email: hash(email), action: 'register', statusCode: 400 },
+        'User registration failed',
+      )
       return generateErrorResponse('400', 'Bad Request', error)
     }
   }
@@ -96,6 +113,10 @@ export class AuthController extends Controller {
     const refreshToken = _token ? _token.replace('Bearer ', '') : null
     if (!refreshToken) {
       this.setStatus(401)
+      this.logger.error(
+        { action: 'refresh', statusCode: 401 },
+        'No refresh token provided.',
+      )
       return generateErrorResponse(
         '401',
         'Access Denied',
@@ -123,9 +144,17 @@ export class AuthController extends Controller {
 
     try {
       await this.authService.forgotPassword(email)
+      this.logger.info(
+        { email: hash(email), action: 'forgot password', statusCode: 200 },
+        'Password reset email sent',
+      )
       return { emailSent: true, error: undefined }
     } catch (_) {
       this.setStatus(500)
+      this.logger.error(
+        { email: hash(email), action: 'forgot password', statusCode: 500 },
+        'Password reset email failed',
+      )
       return {
         emailSent: false,
         error: generateErrorResponse(
@@ -142,16 +171,23 @@ export class AuthController extends Controller {
     @Query() token: string,
     @Body() requestBody: { password: string },
   ) {
-    console.log({ token })
     const { password } = requestBody
     try {
       await this.authService.resetPassword(token, password)
+      this.logger.info(
+        { action: 'reset password', statusCode: 200 },
+        'Password reset success',
+      )
       return {
         passwordChanged: true,
         error: undefined,
       }
     } catch (error) {
       this.setStatus(500)
+      this.logger.error(
+        { action: 'reset password', statusCode: 500 },
+        'Password reset failed',
+      )
       return {
         passwordChanged: false,
         error: generateErrorResponse(

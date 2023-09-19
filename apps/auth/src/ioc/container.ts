@@ -24,10 +24,10 @@ interface IContainer {
 
 const container = createContainer<IContainer>({ injectionMode: 'PROXY' })
 container.register({
-  authService: asFunction(createAuthService),
-  hashingService: asFunction(createArgonHashingService),
-  tokenService: asFunction(createJwtTokenService),
-  emailService: asFunction(createEmailService),
+  authService: asFunction(createAuthService).singleton(),
+  hashingService: asFunction(createArgonHashingService).singleton(),
+  tokenService: asFunction(createJwtTokenService).singleton(),
+  emailService: asFunction(createEmailService).singleton(),
   user: asValue(User),
   token: asValue(Token),
 })
