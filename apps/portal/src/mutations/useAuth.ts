@@ -8,7 +8,7 @@ import {
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const useRegister = () => {
-  const registerUri = `${env.AUTH_API_HOST}${env.AUTH_API_REGISTER_URI}}`
+  const registerUri = `${env.AUTH_API_HOST}${env.AUTH_API_REGISTER_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<AuthResponse>,
@@ -80,7 +80,6 @@ export const useResetPassword = () => {
     { token: string; password: string }
   >({
     mutationFn: resetPasswordBody => {
-      console.log({ resetPasswordBody })
       return axios.post(
         resetPasswordUri,
         { password: resetPasswordBody.password },

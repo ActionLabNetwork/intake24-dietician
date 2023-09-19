@@ -1,9 +1,7 @@
 import { Sequelize } from 'sequelize-typescript'
 import { getDBUrl } from './config/env'
 
-const sequelize = new Sequelize(getDBUrl('intake24-dietician-auth'), {
-  dialect: 'postgres',
-})
+const sequelize = new Sequelize(getDBUrl('intake24-dietician-auth'))
 
 sequelize.addModels([__dirname + '/**/*.model.ts'])
 

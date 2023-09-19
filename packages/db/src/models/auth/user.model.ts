@@ -22,14 +22,14 @@ class User extends Model {
   @IsEmail
   @AllowNull(false)
   @Column
-  public email!: string
+  public declare email: string
 
   @AllowNull(false)
   @Column
-  public password!: string
+  public declare password: string
 
   @HasMany(() => Token)
-  public passwordResetToken!: Token[]
+  public declare passwordResetToken: Token[]
 }
 
 export default User

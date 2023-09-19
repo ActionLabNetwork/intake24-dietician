@@ -16,8 +16,8 @@
           v-model="errorAlert"
           closable
           type="error"
-          title="Registration failed"
-          :text="error"
+          :title="messages.form.error.title"
+          :text="messages.form.error.text"
         ></v-alert>
       </div>
       <div class="d-flex flex-column mt-16">
@@ -112,7 +112,10 @@ const messages = {
       title: 'Your password has been reset successfully.',
       text: 'You can now login with your new password.',
     },
-    error: 'Invalid credentials. Please try again with a different one.',
+    error: {
+      title: 'Reset password failed',
+      text: 'Invalid credentials. Please try again with a different one.',
+    },
   },
 } as const
 

@@ -89,7 +89,7 @@ export const createAuthService = (
     }
 
     // INFO: Uncomment this to test out mail sending
-    // emailService.sendPasswordResetEmail(email, resetUrl)
+    _emailService.sendPasswordResetEmail(email, resetUrl)
 
     return resetUrl
   }

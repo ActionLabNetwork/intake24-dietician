@@ -120,9 +120,8 @@ const handleSubmit = () => {
         email: email.value,
       },
       {
-        onSuccess(data) {
+        onSuccess() {
           successAlert.value = true
-          console.log({ data })
         },
         onError() {
           error.value = 'Invalid email. Please try again'
