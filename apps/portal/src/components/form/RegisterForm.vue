@@ -8,8 +8,8 @@
         <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
-        <h1>{{ messages.title }}</h1>
-        <h2>{{ messages.subtitle }}</h2>
+        <h1>{{ t('register.title') }}</h1>
+        <h2>{{ t('register.subtitle') }}</h2>
       </div>
       <div v-show="errorAlert" class="pt-10">
         <v-alert
@@ -25,18 +25,18 @@
           <!-- Email -->
           <BaseInput
             type="text"
-            :placeholder="messages.form.email.placeholder"
+            :placeholder="t('register.form.email.placeholder')"
             autocomplete="username"
             name="email"
             :rules="[emailValidator]"
             :value="email"
             @update="newVal => (email = newVal)"
-            >{{ messages.form.email.label }}
+            >{{ t('register.form.email.label') }}
           </BaseInput>
           <!-- Password -->
           <BaseInput
             :type="passwordVisible ? 'text' : 'password'"
-            :placeholder="messages.form.password.placeholder"
+            :placeholder="t('register.form.password.placeholder')"
             autocomplete="new-password"
             name="password"
             :suffix-icon="
@@ -47,12 +47,12 @@
             :value="password"
             @update="newVal => (password = newVal)"
           >
-            {{ messages.form.password.label }}
+            {{ t('register.form.password.label') }}
           </BaseInput>
           <!-- Confirm password -->
           <BaseInput
             :type="confirmPasswordVisible ? 'text' : 'password'"
-            :placeholder="messages.form.confirmPassword.placeholder"
+            :placeholder="t('register.form.confirmPassword.placeholder')"
             autocomplete="new-password"
             name="confirmPassword"
             :rules="[
@@ -67,7 +67,7 @@
             "
             @update="newVal => (confirmPassword = newVal)"
           >
-            {{ messages.form.confirmPassword.label }}
+            {{ t('register.form.confirmPassword.label') }}
           </BaseInput>
           <!-- Create account button -->
           <v-btn
@@ -79,19 +79,19 @@
             :disabled="!form || registerMutation.isLoading.value"
             :loading="registerMutation.isLoading.value"
           >
-            {{ messages.form.createAccount }}
+            {{ t('register.form.createAccount') }}
           </v-btn>
         </v-form>
       </div>
     </div>
     <div v-if="registerMutation.data.value === undefined">
       <div class="text-center">
-        {{ messages.form.login.label }}
+        {{ t('register.form.login.label') }}
         <router-link
           to="login"
           class="text-decoration-none text-primary font-weight-bold"
         >
-          {{ messages.form.login.link }}
+          {{ t('register.form.login.link') }}
         </router-link>
       </div>
     </div>
@@ -103,7 +103,9 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+
 import BaseInput from '@/components/form/BaseInput.vue'
+
 import { useRegister } from '@/mutations/useAuth'
 import {
   emailValidator,
@@ -111,30 +113,11 @@ import {
   confirmPasswordValidator,
 } from '@/validators/auth'
 
-// TODO: Migrate this to i18n
-const messages = {
-  title: "Let's create your account",
-  subtitle: 'Signup to gain access to Intake24 tool',
-  form: {
-    email: {
-      label: 'Work email*',
-      placeholder: 'name@email.com',
-    },
-    password: {
-      label: 'Password',
-      placeholder: '********',
-    },
-    confirmPassword: {
-      label: 'Confirm password',
-      placeholder: '********',
-    },
-    createAccount: 'Create Account',
-    login: {
-      label: 'Already have an account?',
-      link: 'Log in',
-    },
-  },
-} as const
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 
 const registerMutation = useRegister()
 

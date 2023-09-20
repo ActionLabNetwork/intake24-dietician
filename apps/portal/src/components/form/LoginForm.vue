@@ -8,8 +8,8 @@
         <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
-        <h1>{{ messages.title }}</h1>
-        <h2>{{ messages.subtitle }}</h2>
+        <h1>{{ t('login.title') }}</h1>
+        <h2>{{ t('login.subtitle') }}</h2>
       </div>
       <div v-show="errorAlert" class="pt-10">
         <v-alert
@@ -25,19 +25,19 @@
           <!-- Email -->
           <BaseInput
             type="text"
-            :placeholder="messages.form.email.placeholder"
+            :placeholder="t('login.form.email.placeholder')"
             autocomplete="username"
             name="email"
             :rules="[emailValidator]"
             :value="email"
             @update="newVal => (email = newVal)"
           >
-            {{ messages.form.email.label }}
+            {{ t('login.form.email.label') }}
           </BaseInput>
           <!-- Password -->
           <BaseInput
             :type="passwordVisible ? 'text' : 'password'"
-            :placeholder="messages.form.password.placeholder"
+            :placeholder="t('login.form.password.placeholder')"
             autocomplete="new-password"
             name="password"
             :suffix-icon="
@@ -48,7 +48,7 @@
             :value="password"
             @update="newVal => (password = newVal)"
           >
-            {{ messages.form.password.label }}
+            {{ t('login.form.password.label') }}
           </BaseInput>
           <div
             class="d-flex flex-column flex-lg-row align-center justify-space-between"
@@ -56,13 +56,13 @@
             <div>
               <v-switch
                 class="d-flex justify-center"
-                :label="messages.form.keepLoggedIn"
+                :label="t('login.form.keepLoggedIn')"
                 color="success"
               />
             </div>
             <div>
               <router-link to="/auth/forgot-password">
-                {{ messages.form.forgotIdOrPwd }}
+                {{ t('login.form.forgotIdOrPwd') }}
               </router-link>
             </div>
           </div>
@@ -75,19 +75,19 @@
             :disabled="!form || loginMutation.isLoading.value"
             :loading="loginMutation.isLoading.value"
           >
-            {{ messages.form.login }}
+            {{ t('login.form.login') }}
           </v-btn>
         </v-form>
       </div>
     </div>
     <div v-if="loginMutation.data.value === undefined">
       <div class="text-center">
-        {{ messages.form.createAccount.label }}
+        {{ t('login.form.createAccount.label') }}
         <router-link
           to="register"
           class="text-decoration-none text-primary font-weight-bold"
         >
-          {{ messages.form.createAccount.link }}
+          {{ t('login.form.createAccount.link') }}
         </router-link>
       </div>
     </div>
@@ -99,33 +99,17 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { emailValidator, passwordValidator } from '@/validators/auth'
 import { useLogin } from '@/mutations/useAuth'
 
-// TODO: Migrate this to i18n
-const messages = {
-  title: 'Welcome back',
-  subtitle: 'Login to your Intake24 clinical tool',
-  form: {
-    email: {
-      label: 'Log in with your registered email address',
-      placeholder: 'Enter your email address',
-    },
-    password: {
-      label: 'Password',
-      placeholder: 'Enter your password',
-    },
-    keepLoggedIn: 'Keep me logged in',
-    forgotIdOrPwd: 'forgot password?',
-    login: 'Log in',
-    createAccount: {
-      label: 'Don’t have an account yet?',
-      link: 'Create account',
-    },
-  },
-} as const
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 
 const loginMutation = useLogin()
 

@@ -8,15 +8,15 @@
         <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
-        <h1>{{ messages.title }}</h1>
-        <h2>{{ messages.subtitle }}</h2>
+        <h1>{{ t('forgotPassword.title') }}</h1>
+        <h2>{{ t('forgotPassword.subtitle') }}</h2>
       </div>
       <div v-show="errorAlert" class="pt-10">
         <v-alert
           v-model="errorAlert"
           closable
           type="error"
-          :title="messages.form.error.invalidEmail"
+          :title="t('forgotPassword.form.error.invalidEmail')"
           :text="error"
         ></v-alert>
       </div>
@@ -25,14 +25,14 @@
           <!-- Email -->
           <BaseInput
             type="text"
-            :placeholder="messages.form.email.placeholder"
+            :placeholder="t('forgotPassword.form.email.placeholder')"
             autocomplete="username"
             name="email"
             :rules="[emailValidator]"
             :value="email"
             @update="newVal => (email = newVal)"
           >
-            {{ messages.form.email.label }}
+            {{ t('forgotPassword.form.email.label') }}
           </BaseInput>
           <v-btn
             class="text-subtitle-1 w-75 mt-6"
@@ -43,19 +43,19 @@
             :disabled="!form || forgotPasswordMutation.isLoading.value"
             :loading="forgotPasswordMutation.isLoading.value"
           >
-            {{ messages.form.resetPassword }}
+            {{ t('forgotPassword.form.resetPassword') }}
           </v-btn>
         </v-form>
       </div>
     </div>
     <div v-if="forgotPasswordMutation.data.value === undefined">
       <div class="text-center">
-        {{ messages.form.createAccount.label }}
+        {{ t('forgotPassword.form.createAccount.label') }}
         <router-link
           to="register"
           class="text-decoration-none text-primary font-weight-bold"
         >
-          {{ messages.form.createAccount.link }}
+          {{ t('forgotPassword.form.createAccount.link') }}
         </router-link>
       </div>
     </div>
@@ -64,8 +64,8 @@
         v-model="successAlert"
         closable
         type="success"
-        :title="messages.form.success.title"
-        :text="messages.form.success.text"
+        :title="t('forgotPassword.form.success.title')"
+        :text="t('forgotPassword.form.success.text')"
       ></v-alert>
     </div>
   </div>
@@ -73,34 +73,17 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { emailValidator } from '@/validators/auth'
 import { useForgotPassword } from '@/mutations/useAuth'
 
-// TODO: Migrate this to i18n
-const messages = {
-  title: 'Welcome back',
-  subtitle: 'Reset your email address',
-  form: {
-    email: {
-      label: 'Enter your registered email address',
-      placeholder: 'Enter your email address',
-    },
-    resetPassword: 'Reset password',
-    createAccount: {
-      label: 'Don’t have an account yet?',
-      link: 'Create account',
-    },
-    success: {
-      title: 'Email sent',
-      text: 'An email has been sent to your email address. Please check your inbox.',
-    },
-    error: {
-      invalidEmail: 'Invalid email. Please try again',
-    },
-  },
-} as const
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 
 const forgotPasswordMutation = useForgotPassword()
 

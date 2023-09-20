@@ -8,16 +8,16 @@
         <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
-        <h1>{{ messages.title }}</h1>
-        <h2>{{ messages.subtitle }}</h2>
+        <h1>{{ t('resetPassword.title') }}</h1>
+        <h2>{{ t('resetPassword.subtitle') }}</h2>
       </div>
       <div v-show="errorAlert" class="pt-10">
         <v-alert
           v-model="errorAlert"
           closable
           type="error"
-          :title="messages.form.error.title"
-          :text="messages.form.error.text"
+          :title="t('resetPassword.form.error.title')"
+          :text="t('resetPassword.form.error.text')"
         ></v-alert>
       </div>
       <div class="d-flex flex-column mt-16">
@@ -25,7 +25,7 @@
           <!-- New Password -->
           <BaseInput
             :type="passwordVisible ? 'text' : 'password'"
-            :placeholder="messages.form.password.placeholder"
+            :placeholder="t('resetPassword.form.password.placeholder')"
             autocomplete="new-password"
             name="password"
             :suffix-icon="
@@ -36,12 +36,12 @@
             :value="password"
             @update="newVal => (password = newVal)"
           >
-            {{ messages.form.password.label }}
+            {{ t('resetPassword.form.password.label') }}
           </BaseInput>
           <!-- Confirm new password -->
           <BaseInput
             :type="confirmPasswordVisible ? 'text' : 'password'"
-            :placeholder="messages.form.confirmPassword.placeholder"
+            :placeholder="t('resetPassword.form.confirmPassword.placeholder')"
             autocomplete="new-password"
             name="confirmPassword"
             :rules="[
@@ -56,7 +56,7 @@
             "
             @update="newVal => (confirmPassword = newVal)"
           >
-            {{ messages.form.confirmPassword.label }}
+            {{ t('resetPassword.form.confirmPassword.label') }}
           </BaseInput>
           <!-- Reset password button -->
           <v-btn
@@ -68,7 +68,7 @@
             :disabled="!form || resetPasswordMutation.isLoading.value"
             :loading="resetPasswordMutation.isLoading.value"
           >
-            {{ messages.form.resetPassword }}
+            {{ t('resetPassword.form.resetPassword') }}
           </v-btn>
         </v-form>
       </div>
@@ -78,8 +78,8 @@
         v-model="successAlert"
         closable
         type="success"
-        :title="messages.form.success.title"
-        :text="messages.form.success.text"
+        :title="t('resetPassword.form.success.title')"
+        :text="t('resetPassword.form.success.text')"
       ></v-alert>
     </div>
   </div>
@@ -87,37 +87,19 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+
 import BaseInput from '@/components/form/BaseInput.vue'
+
 import { useResetPassword } from '@/mutations/useAuth'
 import { passwordValidator, confirmPasswordValidator } from '@/validators/auth'
 
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+
 const props = defineProps<{ token: string }>()
 
-// TODO: Migrate this to i18n
-const messages = {
-  title: 'Reset your password',
-  subtitle:
-    'Enter a new password to be used for your Intake24 Dietician account.',
-  form: {
-    password: {
-      label: 'New Password',
-      placeholder: '********',
-    },
-    confirmPassword: {
-      label: 'Confirm new password',
-      placeholder: '********',
-    },
-    resetPassword: 'Reset password',
-    success: {
-      title: 'Your password has been reset successfully.',
-      text: 'You can now login with your new password.',
-    },
-    error: {
-      title: 'Reset password failed',
-      text: 'Invalid credentials. Please try again with a different one.',
-    },
-  },
-} as const
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 
 const resetPasswordMutation = useResetPassword()
 
