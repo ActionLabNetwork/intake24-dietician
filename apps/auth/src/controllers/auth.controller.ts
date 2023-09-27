@@ -18,13 +18,12 @@ import {
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService } from '../services/auth.service'
 import { container } from '../ioc/container'
-import { createLogger } from '../middleware/logger'
 import { hash } from '@intake24-dietician/common/utils/index'
 
 @Route('auth')
 @Tags('Authentication')
 export class AuthController extends Controller {
-  private readonly logger = createLogger('AuthController')
+  private readonly logger
   private readonly authService: IAuthService
 
   public constructor() {
@@ -34,6 +33,8 @@ export class AuthController extends Controller {
       container.resolve('tokenService'),
       container.resolve('emailService'),
     )
+
+    this.logger = container.resolve('createLogger')(AuthController.name)
   }
 
   /**
@@ -53,7 +54,6 @@ export class AuthController extends Controller {
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    this.setAuthHeaders(user.token)
     this.logger.info({ email: hash(email), action: 'login' }, 'User logged in')
     return { data: { email: user.email } }
   }

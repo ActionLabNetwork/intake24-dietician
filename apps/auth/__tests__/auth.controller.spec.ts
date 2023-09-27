@@ -13,6 +13,15 @@ import { container } from '@intake24-dietician/auth/ioc/container'
 
 jest.mock('../src/services/auth.service')
 jest.mock('../src/ioc/container')
+jest.mock('../src/middleware/logger', () => {
+  return {
+    createLogger: jest.fn(() => () => ({
+      info: jest.fn(),
+      error: jest.fn(),
+      debug: jest.fn(),
+    })),
+  }
+})
 
 describe('AuthController', () => {
   let authController: AuthController
@@ -23,6 +32,11 @@ describe('AuthController', () => {
     forgotPassword: jest.fn(),
     resetPassword: jest.fn(),
   }
+  const mockLoggerFactory = () => ({
+    info: jest.fn(),
+    error: jest.fn(),
+    debug: jest.fn(),
+  })
 
   let mockLogin: jest.Mock
   let mockRegister: jest.Mock
@@ -42,6 +56,8 @@ describe('AuthController', () => {
           return {}
         case 'emailService':
           return {}
+        case 'createLogger':
+          return () => mockLoggerFactory()
         default:
           return {}
       }
@@ -97,7 +113,6 @@ describe('AuthController', () => {
 
     it('should return unauthorized error on invalid credentials', async () => {
       mockLogin.mockResolvedValueOnce(null)
-
       const result = await authController.login(request)
 
       expect(result).toEqual({

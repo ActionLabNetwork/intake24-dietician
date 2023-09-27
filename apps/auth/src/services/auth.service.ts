@@ -17,14 +17,14 @@ import crypto from 'crypto'
 import { sequelize } from '@intake24-dietician/db/connection'
 import { createLogger } from '../middleware/logger'
 
+const logger = createLogger('AuthService')
+
 export const createAuthService = (
   hashingService: IHashingService,
   tokenService: ITokenService,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _emailService: IEmailService,
 ): IAuthService => {
-  const logger = createLogger('auth-service')
-
   const register = async (
     email: string,
     password: string,

@@ -6,6 +6,7 @@ import { createAuthService } from '../services/auth.service'
 import { createArgonHashingService } from '../services/hashing.service'
 import { createEmailService } from '../services/email.service'
 import { createJwtTokenService } from '../services/token.service'
+import { createLogger } from '../middleware/logger'
 import {
   IAuthService,
   IEmailService,
@@ -20,6 +21,7 @@ interface IContainer {
   emailService: IEmailService
   user: typeof User
   token: typeof Token
+  createLogger: typeof createLogger
 }
 
 const container = createContainer<IContainer>({ injectionMode: 'PROXY' })
@@ -30,6 +32,7 @@ container.register({
   emailService: asFunction(createEmailService).singleton(),
   user: asValue(User),
   token: asValue(Token),
+  createLogger: asFunction(() => createLogger),
 })
 
 export { container }
