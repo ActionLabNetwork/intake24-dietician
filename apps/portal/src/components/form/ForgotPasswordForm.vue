@@ -21,7 +21,11 @@
         ></v-alert>
       </div>
       <div class="d-flex flex-column mt-16">
-        <v-form v-model="form" @submit.prevent="handleSubmit">
+        <v-form
+          v-model="form"
+          class="d-flex flex-column justify-center"
+          @submit.prevent="handleSubmit"
+        >
           <!-- Email -->
           <BaseInput
             type="text"
@@ -35,7 +39,7 @@
             {{ t('forgotPassword.form.email.label') }}
           </BaseInput>
           <v-btn
-            class="text-subtitle-1 w-75 mt-6"
+            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0"
             color="#EE672D"
             size="large"
             variant="flat"

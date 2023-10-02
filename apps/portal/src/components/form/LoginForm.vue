@@ -16,12 +16,16 @@
           v-model="errorAlert"
           closable
           type="error"
-          title="Login failed"
+          :title="t('login.errors.loginFailed')"
           :text="error"
         ></v-alert>
       </div>
       <div class="d-flex flex-column mt-16">
-        <v-form v-model="form" @submit.prevent="handleSubmit">
+        <v-form
+          v-model="form"
+          class="d-flex flex-column justify-center"
+          @submit.prevent="handleSubmit"
+        >
           <!-- Email -->
           <BaseInput
             type="text"
@@ -67,7 +71,7 @@
             </div>
           </div>
           <v-btn
-            class="text-subtitle-1 w-75 mt-6"
+            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0"
             color="#EE672D"
             size="large"
             variant="flat"

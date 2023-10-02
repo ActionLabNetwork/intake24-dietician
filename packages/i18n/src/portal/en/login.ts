@@ -18,4 +18,8 @@ export const login = {
       link: 'Create account',
     },
   },
+  errors: {
+    loginFailed: 'Login failed',
+    invalidCredentials: 'Invalid credentials',
+  },
 }
