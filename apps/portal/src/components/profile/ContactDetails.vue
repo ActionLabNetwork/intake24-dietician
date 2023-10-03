@@ -14,8 +14,12 @@
                 class="base-input"
                 @update="(newVal: string) => (emailAddress = newVal)"
               >
-                <span class="input-label">Email address </span>
-                <span class="input-label suffix">(required)</span>
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.email.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{ t('profile.form.contactDetails.email.labelSuffix') }}
+                </span>
               </BaseInput>
             </v-col>
             <v-col>
@@ -27,8 +31,14 @@
                 :value="mobileNumber"
                 @update="(newVal: string) => (mobileNumber = newVal)"
               >
-                <span class="input-label">Mobile number </span>
-                <span class="input-label suffix">(required)</span>
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.mobileNumber.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{
+                    t('profile.form.contactDetails.mobileNumber.labelSuffix')
+                  }}
+                </span>
               </BaseInput>
             </v-col>
             <v-col>
@@ -40,7 +50,9 @@
                 :value="businessNumber"
                 @update="(newVal: string) => (businessNumber = newVal)"
               >
-                <span class="input-label">Business number</span>
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.businessNumber.label') }}
+                </span>
               </BaseInput>
             </v-col>
           </v-row>
@@ -55,7 +67,9 @@
                 :value="businessAddress"
                 @update="(newVal: string) => (businessAddress = newVal)"
               >
-                <span class="input-label">Business address</span>
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.businessAddress.label') }}
+                </span>
               </BaseInput>
             </v-col>
           </v-row>
@@ -70,7 +84,13 @@ import BaseInput from '@/components/form/BaseInput.vue'
 
 import { useDisplay } from 'vuetify'
 
+import { i18nOptions } from '@intake24-dietician/i18n/index'
+import { useI18n } from 'vue-i18n'
+
 const { mdAndUp } = useDisplay()
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 
 const form = ref(null)
 const emailAddress = ref('')

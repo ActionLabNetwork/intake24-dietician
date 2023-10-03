@@ -18,4 +18,8 @@ export const login = {
       link: 'Buat akun',
     },
   },
+  errors: {
+    loginFailed: 'Gagal masuk',
+    invalidCredentials: 'Kredensial tidak valid',
+  },
 }

@@ -1,11 +1,13 @@
 <template>
   <div>
-    <p class="font-weight-medium">Short bio - about yourself</p>
+    <p class="font-weight-medium">
+      {{ t('profile.form.shortBio.title') }}
+    </p>
     <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
           <v-textarea
-            label="Write something about yourself..."
+            :label="t('profile.form.shortBio.placeholder')"
             variant="solo-filled"
           ></v-textarea>
         </v-row>
@@ -16,5 +18,11 @@
 <script setup lang="ts">
 import { useDisplay } from 'vuetify'
 
+import { i18nOptions } from '@intake24-dietician/i18n/index'
+import { useI18n } from 'vue-i18n'
+
 const { mdAndUp } = useDisplay()
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 </script>

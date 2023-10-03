@@ -5,16 +5,15 @@
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
         <div>
-          <h1 class="text heading">Your account information</h1>
+          <h1 class="text heading">{{ t('profile.title') }}</h1>
           <h3 class="text subheading">
-            Update your profile details, as some of them will reflect across the
-            feedbacks you share with your patients
+            {{ t('profile.subtitle') }}
           </h3>
         </div>
         <div>
           <v-btn color="primary text-capitalize" class="mt-3 mt-sm-0">
-            Update profile information</v-btn
-          >
+            {{ t('profile.cta') }}
+          </v-btn>
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
@@ -22,9 +21,9 @@
       <ContactDetails class="mt-10" />
       <Bio class="mt-16" />
       <div class="mt-16">
-        <p class="font-weight-bold">Confirm changes to your personal details</p>
+        <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
         <v-btn color="primary text-capitalize" class="mt-3">
-          Update profile information
+          {{ t('profile.cta') }}
         </v-btn>
       </div>
     </v-container>
@@ -35,6 +34,11 @@
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import Bio from '@/components/profile/Bio.vue'
+import { i18nOptions } from '@intake24-dietician/i18n/index'
+import { useI18n } from 'vue-i18n'
+
+const { t, locale } = useI18n<i18nOptions>()
+locale.value = 'en'
 </script>
 
 <style scoped lang="scss">
