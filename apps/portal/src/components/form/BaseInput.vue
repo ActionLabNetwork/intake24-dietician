@@ -4,6 +4,7 @@
       <slot />
     </div>
     <v-text-field
+      flat
       :type="type"
       :placeholder="placeholder"
       :autocomplete="autocomplete"

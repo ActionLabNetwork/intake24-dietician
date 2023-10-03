@@ -24,7 +24,7 @@
         <v-icon icon="mdi-bell-outline" size="large" />
       </v-btn>
       <v-btn class="mr-16 mr-3">
-        <v-avatar image="@/assets/dashboard/avatar.png"></v-avatar>
+        <v-avatar image="@/assets/dashboard/avatar.svg"></v-avatar>
         <v-icon icon="mdi-chevron-down" size="large" />
       </v-btn>
     </div>
