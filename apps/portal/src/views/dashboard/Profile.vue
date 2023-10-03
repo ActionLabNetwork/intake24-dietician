@@ -2,7 +2,7 @@
   <v-layout>
     <v-app-bar></v-app-bar>
   </v-layout>
-  Home
+  Profile
 </template>
 
 <script lang="ts" setup>

@@ -12,8 +12,7 @@ const routes = [
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () =>
-          import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
+        component: () => import('@/views/Home.vue'),
       },
     ],
   },
@@ -39,6 +38,27 @@ const routes = [
         path: 'reset-password',
         name: 'Reset Password',
         component: () => import('@/views/ResetPassword.vue'),
+      },
+    ],
+  },
+  {
+    path: '/dashboard',
+    component: () => import('@/layouts/default/Default.vue'),
+    children: [
+      {
+        path: 'my-patients',
+        name: 'My Patients',
+        component: () => import('@/views/dashboard/Patients.vue'),
+      },
+      {
+        path: 'master-settings',
+        name: 'Master Settings',
+        component: () => import('@/views/dashboard/MasterSettings.vue'),
+      },
+      {
+        path: 'my-profile',
+        name: 'My Profile',
+        component: () => import('@/views/dashboard/Profile.vue'),
       },
     ],
   },
