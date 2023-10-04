@@ -6,7 +6,7 @@
 
 // Plugins
 import type { App } from 'vue'
-import pinia from '../store'
+import pinia from '../stores'
 import router from '../router'
 import { loadFonts } from './webfontloader'
 import vuetify from './vuetify'

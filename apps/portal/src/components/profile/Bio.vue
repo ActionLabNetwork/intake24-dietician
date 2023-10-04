@@ -23,6 +23,5 @@ import { useI18n } from 'vue-i18n'
 
 const { mdAndUp } = useDisplay()
 
-const { t, locale } = useI18n<i18nOptions>()
-locale.value = 'en'
+const { t } = useI18n<i18nOptions>()
 </script>

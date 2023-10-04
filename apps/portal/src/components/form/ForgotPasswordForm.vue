@@ -86,8 +86,7 @@ import { useForgotPassword } from '@/mutations/useAuth'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 
-const { t, locale } = useI18n<i18nOptions>()
-locale.value = 'en'
+const { t } = useI18n<i18nOptions>()
 
 const forgotPasswordMutation = useForgotPassword()
 

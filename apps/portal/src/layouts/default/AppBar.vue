@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :elevation="2">
+  <v-app-bar :elevation="2" flat>
     <v-app-bar-title>
       <div class="d-flex">
         <v-img max-width="10rem" src="@/assets/logo.svg" class="pl-3 ml-16" />
@@ -19,20 +19,18 @@
         </ul>
       </div>
     </v-app-bar-title>
-    <div>
+    <div class="d-flex">
       <v-btn icon class="mr-5">
         <v-icon icon="mdi-bell-outline" size="large" />
       </v-btn>
-      <v-btn class="mr-16 mr-3">
-        <v-avatar image="@/assets/dashboard/avatar.svg"></v-avatar>
-        <v-icon icon="mdi-chevron-down" size="large" />
-      </v-btn>
+      <BaseAvatar />
     </div>
   </v-app-bar>
 </template>
 
 <script lang="ts" setup>
 import { useRoute } from 'vue-router'
+import BaseAvatar from '@/components/common/BaseAvatar.vue'
 
 const route = useRoute()
 console.log(route.path)

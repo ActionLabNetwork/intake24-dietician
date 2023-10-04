@@ -98,8 +98,7 @@ import type { i18nOptions } from '@intake24-dietician/i18n'
 
 const props = defineProps<{ token: string }>()
 
-const { t, locale } = useI18n<i18nOptions>()
-locale.value = 'en'
+const { t } = useI18n<i18nOptions>()
 
 const resetPasswordMutation = useResetPassword()
 

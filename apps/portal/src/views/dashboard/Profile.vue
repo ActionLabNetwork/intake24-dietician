@@ -1,5 +1,5 @@
 <template>
-  <v-main>
+  <v-main class="wrapper">
     <v-container>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -37,16 +37,29 @@ import Bio from '@/components/profile/Bio.vue'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 
-const { t, locale } = useI18n<i18nOptions>()
-locale.value = 'en'
+const { t } = useI18n<i18nOptions>()
 </script>
 
 <style scoped lang="scss">
-v-btn {
-  background-color: #1e88e5;
-  color: white;
+.wrapper {
+  background: rgb(252, 249, 244);
+  background: -moz-linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  background: linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
 }
-
 .text {
   max-width: 75%;
   padding-bottom: 0.5rem;
