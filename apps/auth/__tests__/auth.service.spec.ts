@@ -8,7 +8,7 @@ import { createAuthService } from '../src/services/auth.service'
 import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
 import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
 import { createEmailService } from '../src/services/email.service'
-import { sequelize } from '@intake24-dietician/db/connection'
+import { redis, sequelize } from '@intake24-dietician/db/connection'
 import { TokenPayload } from '@intake24-dietician/common/types/auth'
 import crypto from 'crypto'
 import moment from 'moment'
@@ -19,6 +19,7 @@ jest.mock('nodemailer')
 jest.mock('crypto')
 jest.mock('@intake24-dietician/db/connection', () => ({
   sequelize: { transaction: jest.fn() },
+  redis: { set: jest.fn(), get: jest.fn() },
 }))
 jest.mock('@intake24-dietician/db/models/auth/user.model')
 jest.mock('@intake24-dietician/db/models/auth/token.model')
@@ -44,6 +45,9 @@ describe('AuthService', () => {
     ;(jwt.sign as jest.Mock).mockReturnValue(token)
     ;(nodemailer.createTransport as jest.Mock).mockReturnValue({
       sendMail: mockSendMail,
+    })
+    crypto.randomBytes = jest.fn().mockReturnValueOnce({
+      toString: jest.fn().mockReturnValueOnce('jti'),
     })
 
     const mockUpdate = jest.fn()
@@ -163,8 +167,10 @@ describe('AuthService', () => {
         userId: 1,
         email: 'test@example.com',
         tokenType: 'refresh-token',
+        jti: '123',
       }
 
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       ;(User.findOne as jest.Mock).mockResolvedValueOnce({
         id: 1,
@@ -184,6 +190,7 @@ describe('AuthService', () => {
 
     it('should throw an error if refresh token is invalid', async () => {
       const errorMsg = 'Invalid token'
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
         throw new Error(errorMsg)
       })
@@ -198,8 +205,10 @@ describe('AuthService', () => {
         userId: 1,
         email: 'test@example.com',
         tokenType: 'access-token',
+        jti: '123',
       }
 
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       ;(User.findOne as jest.Mock).mockResolvedValueOnce({
         id: 1,

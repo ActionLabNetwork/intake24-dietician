@@ -1,1 +1,1 @@
-export type DBName = 'intake24-dietician-auth' | 'intake24-dietician';
+export type DBName = 'intake24-dietician-db' | 'intake24-dietician';

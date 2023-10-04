@@ -1,11 +1,17 @@
 import { Sequelize } from 'sequelize-typescript'
 import { getDBUrl } from './config/env'
 
-const sequelize = new Sequelize(getDBUrl('intake24-dietician-auth'))
+import Redis from 'ioredis'
 
+const sequelize = new Sequelize(getDBUrl('intake24-dietician-db'), {
+  logging: false,
+
+})
 sequelize.addModels([__dirname + '/**/*.model.ts'])
 
-const connect = async () => {
+const redis = new Redis({ lazyConnect: true })
+
+const connectPostgres = async () => {
   try {
     await sequelize.authenticate()
     await sequelize.sync({ force: false })
@@ -15,4 +21,13 @@ const connect = async () => {
   }
 }
 
-export { sequelize, connect }
+const connectRedis = async () => {
+  try {
+    await redis.connect()
+    console.log('✅ Connected to Redis')
+  } catch (error) {
+    console.error('❌ Unable to connect to Redis:', error)
+  }
+}
+
+export { sequelize, connectPostgres, redis, connectRedis }

@@ -14,7 +14,7 @@ import { z } from 'zod'
 import Token from '@intake24-dietician/db/models/auth/token.model'
 import moment from 'moment'
 import crypto from 'crypto'
-import { sequelize } from '@intake24-dietician/db/connection'
+import { sequelize, redis } from '@intake24-dietician/db/connection'
 import { createLogger } from '../middleware/logger'
 
 const logger = createLogger('AuthService')
@@ -48,7 +48,7 @@ export const createAuthService = (
 
     try {
       const user = await User.create({ email, password: hashedPassword })
-      const token = generateToken(user, 'both')
+      const token = await generateToken(user, 'both')
       return { ...user.get({ plain: true }), token }
     } catch (error) {
       throw new Error(getErrorMessage(error))
@@ -65,7 +65,7 @@ export const createAuthService = (
       user &&
       (await hashingService.verify(user.dataValues.password, password))
     ) {
-      const token = generateToken(user, 'both')
+      const token = await generateToken(user, 'both')
       return { ...user.get({ plain: true }), token }
     }
 
@@ -135,6 +135,11 @@ export const createAuthService = (
   }
 
   const refreshAccessToken = async (refreshToken: string) => {
+    const tokenInRedis = await redis.get(`token:${refreshToken}`)
+    if (!tokenInRedis) {
+      throw new Error('Token is either invalid or expired.')
+    }
+
     const decoded = tokenService.verify(
       refreshToken,
       env.JWT_SECRET,
@@ -148,7 +153,7 @@ export const createAuthService = (
     if (!user) {
       throw new Error('User not found')
     }
-    const token = generateToken(user, 'access')
+    const token = await generateToken(user, 'access')
     return { ...user.get({ plain: true }), token }
   }
 
@@ -164,20 +169,24 @@ export const createAuthService = (
     )
   }
 
-  const generateToken = (
+  const generateToken = async (
     user: User,
     type: 'access' | 'refresh' | 'both',
-  ): Partial<{ accessToken: string; refreshToken: string }> => {
+  ): Promise<Partial<{ accessToken: string; refreshToken: string }>> => {
+    const jti = crypto.randomBytes(16).toString('hex')
+
     const accessTokenPayload: TokenPayload = {
       userId: user.id,
       email: user.dataValues.email,
       tokenType: 'access-token',
+      jti,
     }
 
     const refreshTokenPayload: TokenPayload = {
       userId: user.id,
       email: user.dataValues.email,
       tokenType: 'refresh-token',
+      jti,
     }
 
     let tokens: Partial<{ accessToken: string; refreshToken: string }> = {}
@@ -211,8 +220,49 @@ export const createAuthService = (
         break
     }
 
+    await saveTokenIntoRedis(tokens, jti)
     return tokens
   }
 
-  return { login, register, forgotPassword, resetPassword, refreshAccessToken }
+  const saveTokenIntoRedis = async (
+    tokens: Partial<TokenType>,
+    jti: string,
+  ) => {
+    if (tokens.accessToken) {
+      await redis.set(
+        `access:${jti}`,
+        tokens.accessToken,
+        'EX',
+        env.JWT_ACCESS_TOKEN_TTL,
+      )
+    }
+
+    if (tokens.refreshToken) {
+      await redis.set(
+        `refresh:${jti}`,
+        tokens.refreshToken,
+        'EX',
+        env.JWT_REFRESH_TOKEN_TTL,
+      )
+    }
+  }
+
+  // const logout = async (accessToken: string, refreshToken: string) => {
+  //   if (accessToken) {
+  //     await redis.del(`token:${accessToken}`)
+  //   }
+
+  //   if (refreshToken) {
+  //     await redis.del(`token:${refreshToken}`)
+  //   }
+  // }
+
+  return {
+    login,
+    register,
+    forgotPassword,
+    resetPassword,
+    refreshAccessToken,
+    // logout,
+  }
 }

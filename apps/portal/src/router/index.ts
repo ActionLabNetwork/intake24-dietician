@@ -12,7 +12,7 @@ const routes = [
         // route level code-splitting
         // this generates a separate chunk (about.[hash].js) for this route
         // which is lazy-loaded when the route is visited.
-        component: () => import('@/views/Home.vue'),
+        component: () => import('@/views/Login.vue'),
       },
     ],
   },
@@ -49,16 +49,25 @@ const routes = [
         path: 'my-patients',
         name: 'My Patients',
         component: () => import('@/views/dashboard/Patients.vue'),
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: 'master-settings',
         name: 'Master Settings',
         component: () => import('@/views/dashboard/MasterSettings.vue'),
+        meta: {
+          requiresAuth: true,
+        },
       },
       {
         path: 'my-profile',
         name: 'My Profile',
         component: () => import('@/views/dashboard/Profile.vue'),
+        meta: {
+          requiresAuth: true,
+        },
       },
     ],
   },

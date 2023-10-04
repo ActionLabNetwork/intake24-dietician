@@ -22,6 +22,7 @@ export interface TokenPayload {
   userId: number
   email: string
   tokenType: 'access-token' | 'refresh-token'
+  jti: string
 }
 
 export interface IHashingService {
