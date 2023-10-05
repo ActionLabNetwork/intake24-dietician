@@ -29,11 +29,8 @@
 </template>
 
 <script lang="ts" setup>
-import { useRoute } from 'vue-router'
 import BaseAvatar from '@/components/common/BaseAvatar.vue'
 
-const route = useRoute()
-console.log(route.path)
 </script>
 <style scoped lang="scss">
 .nav-items {

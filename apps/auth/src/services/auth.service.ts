@@ -1,4 +1,7 @@
-import User from '@intake24-dietician/db/models/auth/user.model'
+import User, {
+  UserAttributes,
+  UserRole,
+} from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
 import type {
@@ -28,7 +31,7 @@ export const createAuthService = (
   const register = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: TokenType }) | null> => {
+  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
     const isValidEmail = z.string().email().safeParse(email)
     const emailExists = await User.findOne({ where: { email } })
 
@@ -47,9 +50,14 @@ export const createAuthService = (
     const hashedPassword = await hashingService.hash(password)
 
     try {
-      const user = await User.create({ email, password: hashedPassword })
-      const token = await generateToken(user, 'both')
-      return { ...user.get({ plain: true }), token }
+      const user = await User.create({
+        email,
+        password: hashedPassword,
+        role: UserRole.DIETICIAN,
+      })
+      const { jti, token } = await generateToken(user, 'both')
+
+      return { ...user.get({ plain: true }), token: token as TokenType, jti }
     } catch (error) {
       throw new Error(getErrorMessage(error))
     }
@@ -58,15 +66,15 @@ export const createAuthService = (
   const login = async (
     email: string,
     password: string,
-  ): Promise<(User & { token: TokenType }) | null> => {
+  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
     const user = await User.findOne({ where: { email } })
 
     if (
       user &&
       (await hashingService.verify(user.dataValues.password, password))
     ) {
-      const token = await generateToken(user, 'both')
-      return { ...user.get({ plain: true }), token }
+      const { jti, token } = await generateToken(user, 'both')
+      return { ...user.get({ plain: true }), token: token as TokenType, jti }
     }
 
     return null
@@ -134,7 +142,9 @@ export const createAuthService = (
     })
   }
 
-  const refreshAccessToken = async (refreshToken: string) => {
+  const refreshAccessToken = async (
+    refreshToken: string,
+  ): Promise<UserAttributes & { token: TokenType; jti: string }> => {
     const tokenInRedis = await redis.get(`token:${refreshToken}`)
     if (!tokenInRedis) {
       throw new Error('Token is either invalid or expired.')
@@ -145,6 +155,10 @@ export const createAuthService = (
       env.JWT_SECRET,
     ) as JwtPayload
 
+    if (decoded === null) {
+      throw new Error('Invalid token')
+    }
+
     if (decoded['tokenType'] !== 'refresh-token') {
       throw new Error('Invalid token type. Please provide a refresh token.')
     }
@@ -153,8 +167,65 @@ export const createAuthService = (
     if (!user) {
       throw new Error('User not found')
     }
-    const token = await generateToken(user, 'access')
-    return { ...user.get({ plain: true }), token }
+    const { jti, token } = await generateToken(user, 'access')
+    return {
+      ...user.get({ plain: true }),
+      token,
+      jti,
+    }
+  }
+
+  const session = async (
+    jti: string,
+  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
+    const tokenInRedis = await redis.get(`access:${jti}`)
+    if (!tokenInRedis) {
+      throw new Error('Token is either invalid or expired.')
+    }
+
+    const decoded = tokenService.verify(
+      tokenInRedis,
+      env.JWT_SECRET,
+    ) as JwtPayload
+
+    if (decoded['tokenType'] !== 'access-token') {
+      throw new Error('Invalid token type. Please provide an access token.')
+    }
+
+    const user = await User.findOne({ where: { id: decoded['userId'] } })
+    if (!user) {
+      throw new Error('User not found')
+    }
+
+    return {
+      ...user.get({ plain: true }),
+      token: { accessToken: tokenInRedis, refreshToken: '' },
+      jti: jti,
+    }
+  }
+
+  const validateJwt = async (token: string): Promise<boolean> => {
+    const decoded = tokenService.verify(token, env.JWT_SECRET) as JwtPayload
+    const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
+
+    if (!tokenInRedis) {
+      throw new Error('Token is either invalid or expired.')
+    }
+
+    return !!decoded
+  }
+
+  const logout = async (accessToken: string) => {
+    const decoded = tokenService.verify(accessToken, env.JWT_SECRET)
+
+    if (decoded === null) {
+      throw new Error('Invalid token')
+    }
+
+    const jti = (decoded as JwtPayload)['jti']
+
+    await redis.del(`access:${jti}`)
+    await redis.del(`refresh:${jti}`)
   }
 
   const createToken = (
@@ -172,7 +243,7 @@ export const createAuthService = (
   const generateToken = async (
     user: User,
     type: 'access' | 'refresh' | 'both',
-  ): Promise<Partial<{ accessToken: string; refreshToken: string }>> => {
+  ): Promise<{ jti: string; token: TokenType }> => {
     const jti = crypto.randomBytes(16).toString('hex')
 
     const accessTokenPayload: TokenPayload = {
@@ -189,30 +260,30 @@ export const createAuthService = (
       jti,
     }
 
-    let tokens: Partial<{ accessToken: string; refreshToken: string }> = {}
+    const token: TokenType = { accessToken: '', refreshToken: '' }
 
     switch (type) {
       case 'access':
-        tokens.accessToken = createToken(
+        token.accessToken = createToken(
           accessTokenPayload,
           env.JWT_SECRET,
           env.JWT_ACCESS_TOKEN_TTL,
         )
         break
       case 'refresh':
-        tokens.refreshToken = createToken(
+        token.refreshToken = createToken(
           refreshTokenPayload,
           env.JWT_SECRET,
           env.JWT_REFRESH_TOKEN_TTL,
         )
         break
       case 'both':
-        tokens.accessToken = createToken(
+        token.accessToken = createToken(
           accessTokenPayload,
           env.JWT_SECRET,
           env.JWT_ACCESS_TOKEN_TTL,
         )
-        tokens.refreshToken = createToken(
+        token.refreshToken = createToken(
           refreshTokenPayload,
           env.JWT_SECRET,
           env.JWT_REFRESH_TOKEN_TTL,
@@ -220,8 +291,8 @@ export const createAuthService = (
         break
     }
 
-    await saveTokenIntoRedis(tokens, jti)
-    return tokens
+    await saveTokenIntoRedis(token, jti)
+    return { jti, token }
   }
 
   const saveTokenIntoRedis = async (
@@ -247,22 +318,14 @@ export const createAuthService = (
     }
   }
 
-  // const logout = async (accessToken: string, refreshToken: string) => {
-  //   if (accessToken) {
-  //     await redis.del(`token:${accessToken}`)
-  //   }
-
-  //   if (refreshToken) {
-  //     await redis.del(`token:${refreshToken}`)
-  //   }
-  // }
-
   return {
     login,
     register,
     forgotPassword,
     resetPassword,
     refreshAccessToken,
-    // logout,
+    session,
+    validateJwt,
+    logout,
   }
 }

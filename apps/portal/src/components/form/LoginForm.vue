@@ -112,10 +112,17 @@ import { useLogin } from '@/mutations/useAuth'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 
+import router from '@/router'
+
+// Stores
+
+// i18n
 const { t } = useI18n<i18nOptions>()
 
+// Mutations
 const loginMutation = useLogin()
 
+// Refs
 const form = ref(null)
 const error = ref('')
 const errorAlert = ref(false)
@@ -125,6 +132,7 @@ const email = ref('')
 const password = ref('')
 const passwordVisible = ref(false)
 
+// Functions
 const handleSubmit = () => {
   const isFormValid = form.value
   if (isFormValid) {
@@ -134,8 +142,8 @@ const handleSubmit = () => {
         password: password.value,
       },
       {
-        onSuccess(data) {
-          console.log({ data })
+        onSuccess() {
+          router.push('/dashboard/my-profile')
         },
         onError() {
           error.value = 'Invalid credentials. Please try again'

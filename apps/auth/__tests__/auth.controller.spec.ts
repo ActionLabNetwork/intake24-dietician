@@ -31,6 +31,9 @@ describe('AuthController', () => {
     refreshAccessToken: jest.fn(),
     forgotPassword: jest.fn(),
     resetPassword: jest.fn(),
+    session: jest.fn(),
+    validateJwt: jest.fn(),
+    logout: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),
@@ -92,6 +95,7 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
+        jti: 'testJti',
       },
     }
 
@@ -103,6 +107,7 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
+        jti: response.data.jti,
       }
       mockLogin.mockResolvedValueOnce(mockUser)
 
@@ -136,6 +141,7 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
+        jti: 'testJti',
       },
     }
 
@@ -147,6 +153,7 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
+        jti: response.data.jti,
       }
       mockRegister.mockResolvedValueOnce(mockUser)
 
@@ -180,6 +187,7 @@ describe('AuthController', () => {
     const response = {
       data: {
         email: 'test@example.com',
+        jti: 'testJti',
       },
     }
 
@@ -191,6 +199,7 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
+        jti: 'testJti',
       }
 
       mockRefreshAccessToken.mockResolvedValueOnce(mockUser)

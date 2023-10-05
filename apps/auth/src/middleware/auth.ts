@@ -7,10 +7,7 @@ export function expressAuthentication(
   _securityName: string,
   scopes?: string[],
 ) {
-  let token =
-    request.body.token ||
-    request.query['token'] ||
-    request.headers['x-access-token']
+  let token = request.cookies['accessToken']
 
   if (token) {
     token = token.replace('Bearer ', '')

@@ -9,7 +9,9 @@ import { useI18nStore } from '@/stores/i18n'
 import { storeToRefs } from 'pinia'
 import { watch } from 'vue'
 
+// Stores
 const i18nStore = useI18nStore()
+
 const { locale } = useI18n<i18nOptions>()
 const { systemLocale } = storeToRefs(i18nStore)
 

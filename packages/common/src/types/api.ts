@@ -1,4 +1,4 @@
-interface ApiResponseWithData<T> {
+export interface ApiResponseWithData<T> {
   data: T
 }
 

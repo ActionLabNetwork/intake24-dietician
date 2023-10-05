@@ -1,14 +1,17 @@
 import {
   Body,
   Controller,
+  Get,
   Header,
   Post,
   Query,
+  Request,
   Route,
   Security,
   SuccessResponse,
   Tags,
 } from 'tsoa'
+import express from 'express'
 import {
   AuthRequest,
   AuthResponse,
@@ -46,16 +49,17 @@ export class AuthController extends Controller {
   @Post('login')
   public async login(@Body() requestBody: AuthRequest): Promise<AuthResponse> {
     const { email, password } = requestBody
-    const user = await this.authService.login(email, password)
+    const userWithTokens = await this.authService.login(email, password)
 
-    if (user === null) {
+    if (userWithTokens === null) {
       this.setStatus(401)
       this.logger.error(`Invalid credentials for email: ${hash(email)} `)
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
     this.logger.info({ email: hash(email), action: 'login' }, 'User logged in')
-    return { data: { email: user.email } }
+    this.setAuthHeaders(userWithTokens.token)
+    return { data: { email: userWithTokens.email, jti: userWithTokens.jti } }
   }
 
   /**
@@ -95,7 +99,7 @@ export class AuthController extends Controller {
         { email: hash(email), action: 'register', statusCode: 201 },
         'User registered',
       )
-      return { data: { email: user.email } }
+      return { data: { email: user.email, jti: user.jti } }
     } catch (error: unknown) {
       this.setStatus(400)
       this.logger.info(
@@ -127,7 +131,7 @@ export class AuthController extends Controller {
     try {
       const user = await this.authService.refreshAccessToken(refreshToken)
       this.setAuthHeaders(user.token)
-      return { data: { email: user.email } }
+      return { data: { email: user.email, jti: user.jti } }
     } catch (error) {
       this.setStatus(400)
       return generateErrorResponse(
@@ -207,11 +211,62 @@ export class AuthController extends Controller {
     return 'Authentication setup success'
   }
 
+  @Post('session')
+  @Security('jwt')
+  public async session(
+    @Request() request: express.Request,
+    @Body() requestBody: { jti: string },
+  ) {
+    console.log({ request: request.cookies })
+    if (!requestBody) {
+      return { data: { userWithToken: null } }
+    }
+
+    const { jti } = requestBody
+    const user = await this.authService.session(jti)
+
+    if (!user) {
+      this.setStatus(401)
+      return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
+    }
+
+    return { data: { userWithToken: user } }
+  }
+
+  @Get('validate-jwt')
+  public async validateJwt(@Request() request: express.Request) {
+    const { accessToken } = request.cookies
+
+    if (!accessToken) {
+      return { isAuthenticated: false }
+    }
+
+    let isJwtValid = false
+    try {
+      isJwtValid = await this.authService.validateJwt(accessToken)
+    } catch (error) {
+      this.setStatus(400)
+      return generateErrorResponse('400', 'Bad request', error)
+    }
+
+    return { isAuthenticated: isJwtValid }
+  }
+
+  @Post('logout')
+  public async logout(@Request() request: express.Request) {
+    this.setHeader('Set-Cookie', [
+      `accessToken='';HttpOnly;SameSite=none;Secure;Max-Age=0`,
+      `refreshToken='';HttpOnly;SameSite=none;Secure;Max-Age=0`,
+    ])
+    await this.authService.logout(request.cookies['accessToken'])
+  }
+
   private setAuthHeaders(token: Token): void {
-    this.setHeader(
-      'Set-Cookie',
-      `refreshToken=${token.refreshToken}; HttpOnly; SameSite=Strict; Secure`,
-    )
+    this.setHeader('Set-Cookie', [
+      `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure`,
+      `refreshToken=${token.refreshToken};HttpOnly;SameSite=none;Secure`,
+    ])
+
     this.setHeader('X-Access-Token', `Bearer ${token.accessToken}`)
   }
 }

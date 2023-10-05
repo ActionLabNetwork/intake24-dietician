@@ -21,7 +21,9 @@
               <v-divider class="my-3"></v-divider>
               <LanguageSelect />
               <v-divider class="my-3"></v-divider>
-              <v-btn rounded variant="text"> Log Out </v-btn>
+              <v-btn rounded variant="text" @click="handleLogout">
+                Log Out
+              </v-btn>
             </div>
           </v-card-text>
         </v-card>
@@ -32,10 +34,25 @@
 
 <script setup lang="ts">
 import LanguageSelect from '@/components/app-bar/LanguageSelect.vue'
+import { useLogout } from '@/mutations/useAuth'
+import router from '@/router'
+
+const logoutMutation = useLogout()
 
 const user = {
   initials: 'JD',
   fullName: 'John Doe',
   email: 'john.doe@doe.com',
+}
+
+const handleLogout = () => {
+  logoutMutation.mutate(
+    {},
+    {
+      onSuccess: () => {
+        router.push({ path: '/auth/login' })
+      },
+    },
+  )
 }
 </script>

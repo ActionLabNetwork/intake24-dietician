@@ -20,8 +20,24 @@ export enum UserRole {
   PATIENT = 'Patient',
 }
 
+export interface UserAttributes {
+  id: number
+  email: string
+  password: string
+  role: UserRole
+  passwordResetToken: Token[]
+  dieticians?: User[]
+  patients?: User[]
+}
+
+interface UserCreationAttributes {
+  email: string
+  password: string
+  role: UserRole
+}
+
 @Table
-class User extends Model {
+class User extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column

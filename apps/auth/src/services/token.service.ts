@@ -6,6 +6,10 @@ export const createJwtTokenService = (): ITokenService => ({
     return jwt.sign(payload, secret, { expiresIn: options.expiresIn })
   },
   verify(token, secret) {
-    return jwt.verify(token, secret)
+    try {
+      return jwt.verify(token, secret)
+    } catch (error) {
+      return null
+    }
   },
 })
