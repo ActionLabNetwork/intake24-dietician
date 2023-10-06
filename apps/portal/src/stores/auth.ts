@@ -1,44 +1,25 @@
 import { defineStore } from 'pinia'
-import { useStorage } from '@vueuse/core'
-import { computed, ref } from 'vue'
-import { useSession } from '@/mutations/useAuth'
+import { useProfile } from '@/mutations/useAuth'
+import { ref } from 'vue'
+import { UserAttributes } from '@intake24-dietician/common/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-  // Refs
-  const jti = useStorage('i24-d-jti', '', localStorage)
-  const isLoggedInStorage = useStorage(
-    'i24-d-is-logged-in',
-    false,
-    localStorage,
-  )
-  const accessToken = ref('')
-
-  // Computed
-  const isLoggedIn = computed(() => !!accessToken.value)
+  const user = ref<UserAttributes | null>(null)
 
   function getSession() {
-    const sessionMutation = useSession()
+    const sessionMutation = useProfile()
     sessionMutation.mutate(
-      {
-        jti: jti.value,
-      },
+      {},
       {
         onSuccess: res => {
-          accessToken.value = res.data.data.userWithToken.token.accessToken
-          isLoggedInStorage.value = true
+          console.log({ res })
+          user.value = res.data.data.user
+          console.log({ user: res.data.data.user })
         },
-        onError: () => {
-          isLoggedInStorage.value = false
-        },
+        onError: () => {},
       },
     )
   }
 
-  function logout() {
-    jti.value = ''
-    accessToken.value = ''
-    isLoggedInStorage.value = false
-  }
-
-  return { jti, isLoggedInStorage, accessToken, getSession, isLoggedIn, logout }
+  return { user, getSession }
 })

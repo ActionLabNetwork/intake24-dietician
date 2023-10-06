@@ -4,6 +4,7 @@ import { env } from '../config/env'
 import {
   AuthRequest,
   AuthResponse,
+  UserAttributes,
 } from '@intake24-dietician/common/types/auth'
 import {
   ApiResponseWithData,
@@ -110,18 +111,16 @@ export const useResetPassword = () => {
   }
 }
 
-export const useSession = () => {
-  const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_SESSION_URI}`
+export const useProfile = () => {
+  const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_PROFILE_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<
-      ApiResponseWithData<{ userWithToken: { token: { accessToken: string } } }>
-    >,
+    AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
     AxiosError<ApiResponseWithError>,
-    { jti: string }
+    {}
   >({
-    mutationFn: sessionBody => {
-      return axios.post(sessionUri, sessionBody)
+    mutationFn: () => {
+      return axios.get(sessionUri)
     },
   })
 

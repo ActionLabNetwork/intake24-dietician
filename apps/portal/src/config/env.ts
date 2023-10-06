@@ -15,7 +15,7 @@ const schema = z.object({
     z.string(),
     '/auth/reset-password',
   ),
-  AUTH_API_SESSION_URI: withDevDefault(z.string(), '/auth/session'),
+  AUTH_API_PROFILE_URI: withDevDefault(z.string(), '/auth/profile'),
   AUTH_API_VALIDATE_JWT_URI: withDevDefault(z.string(), '/auth/validate-jwt'),
   AUTH_API_LOGOUT_URI: withDevDefault(z.string(), '/auth/logout'),
 })

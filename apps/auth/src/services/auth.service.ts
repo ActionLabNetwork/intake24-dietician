@@ -1,7 +1,4 @@
-import User, {
-  UserAttributes,
-  UserRole,
-} from '@intake24-dietician/db/models/auth/user.model'
+import User, { UserRole } from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
 import type {
@@ -11,6 +8,7 @@ import type {
   Token as TokenType,
   TokenPayload,
   IEmailService,
+  UserAttributes,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
@@ -21,6 +19,8 @@ import { sequelize, redis } from '@intake24-dietician/db/connection'
 import { createLogger } from '../middleware/logger'
 
 const logger = createLogger('AuthService')
+const TOKEN_TYPE = 'access-token'
+const ACCESS_PREFIX = 'access:'
 
 export const createAuthService = (
   hashingService: IHashingService,
@@ -176,31 +176,17 @@ export const createAuthService = (
   }
 
   const session = async (
-    jti: string,
-  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
-    const tokenInRedis = await redis.get(`access:${jti}`)
-    if (!tokenInRedis) {
-      throw new Error('Token is either invalid or expired.')
-    }
-
-    const decoded = tokenService.verify(
-      tokenInRedis,
-      env.JWT_SECRET,
-    ) as JwtPayload
-
-    if (decoded['tokenType'] !== 'access-token') {
-      throw new Error('Invalid token type. Please provide an access token.')
-    }
-
-    const user = await User.findOne({ where: { id: decoded['userId'] } })
+    accessToken: string,
+  ): Promise<UserAttributes | null> => {
+    const decodedToken = verifyAccessToken(accessToken)
+    await checkTokenInRedis(decodedToken['jti'] ?? '')
+    const user = await User.findOne({ where: { id: decodedToken['userId'] } })
     if (!user) {
       throw new Error('User not found')
     }
 
     return {
       ...user.get({ plain: true }),
-      token: { accessToken: tokenInRedis, refreshToken: '' },
-      jti: jti,
     }
   }
 
@@ -316,6 +302,25 @@ export const createAuthService = (
         env.JWT_REFRESH_TOKEN_TTL,
       )
     }
+  }
+
+  const verifyAccessToken = (token: string): JwtPayload => {
+    const decoded = tokenService.verify(token, env.JWT_SECRET) as JwtPayload
+
+    if (decoded['tokenType'] !== TOKEN_TYPE) {
+      throw new Error('Invalid token type. Please provide an access token.')
+    }
+
+    return decoded
+  }
+
+  const checkTokenInRedis = async (jti: string): Promise<string> => {
+    const tokenInRedis = await redis.get(`${ACCESS_PREFIX}${jti}`)
+    if (!tokenInRedis) {
+      throw new Error('Token is either invalid or expired.')
+    }
+
+    return tokenInRedis
   }
 
   return {

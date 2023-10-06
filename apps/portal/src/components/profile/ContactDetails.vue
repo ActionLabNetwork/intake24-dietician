@@ -10,6 +10,7 @@
                 type="email"
                 name="emailAddress"
                 autocomplete="email"
+                :placeholder="emailAddress"
                 :value="emailAddress"
                 class="base-input"
                 @update="(newVal: string) => (emailAddress = newVal)"
@@ -79,7 +80,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { useDisplay } from 'vuetify'
@@ -87,15 +88,23 @@ import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 
+const props = defineProps<{ email: string }>()
+
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
 const form = ref(null)
-const emailAddress = ref('')
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+const emailAddress = ref(props.email)
 const mobileNumber = ref('')
 const businessNumber = ref('')
 const businessAddress = ref('')
+
+watch(emailAddress, newVal => {
+  console.log({ emailAddress: newVal })
+})
 
 const handleSubmit = () => {}
 </script>

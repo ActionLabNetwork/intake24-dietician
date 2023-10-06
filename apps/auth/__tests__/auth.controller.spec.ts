@@ -95,11 +95,10 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
-        jti: 'testJti',
       },
     }
 
-    it('should return user data on successful login', async () => {
+    it('should return email on successful login', async () => {
       const mockUser: UserWithToken = {
         id: 1,
         email: response.data.email,
@@ -107,7 +106,6 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
-        jti: response.data.jti,
       }
       mockLogin.mockResolvedValueOnce(mockUser)
 
@@ -141,7 +139,6 @@ describe('AuthController', () => {
     const response: AuthResponse = {
       data: {
         email: 'test@example.com',
-        jti: 'testJti',
       },
     }
 
@@ -153,7 +150,6 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
-        jti: response.data.jti,
       }
       mockRegister.mockResolvedValueOnce(mockUser)
 
@@ -187,7 +183,6 @@ describe('AuthController', () => {
     const response = {
       data: {
         email: 'test@example.com',
-        jti: 'testJti',
       },
     }
 
@@ -199,7 +194,6 @@ describe('AuthController', () => {
           accessToken: 'testAccessToken',
           refreshToken: 'testRefreshToken',
         },
-        jti: 'testJti',
       }
 
       mockRefreshAccessToken.mockResolvedValueOnce(mockUser)

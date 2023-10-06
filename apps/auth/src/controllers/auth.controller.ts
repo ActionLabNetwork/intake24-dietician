@@ -59,7 +59,7 @@ export class AuthController extends Controller {
 
     this.logger.info({ email: hash(email), action: 'login' }, 'User logged in')
     this.setAuthHeaders(userWithTokens.token)
-    return { data: { email: userWithTokens.email, jti: userWithTokens.jti } }
+    return { data: { email: userWithTokens.email } }
   }
 
   /**
@@ -99,7 +99,7 @@ export class AuthController extends Controller {
         { email: hash(email), action: 'register', statusCode: 201 },
         'User registered',
       )
-      return { data: { email: user.email, jti: user.jti } }
+      return { data: { email: user.email } }
     } catch (error: unknown) {
       this.setStatus(400)
       this.logger.info(
@@ -131,7 +131,7 @@ export class AuthController extends Controller {
     try {
       const user = await this.authService.refreshAccessToken(refreshToken)
       this.setAuthHeaders(user.token)
-      return { data: { email: user.email, jti: user.jti } }
+      return { data: { email: user.email } }
     } catch (error) {
       this.setStatus(400)
       return generateErrorResponse(
@@ -211,26 +211,28 @@ export class AuthController extends Controller {
     return 'Authentication setup success'
   }
 
-  @Post('session')
+  @Get('profile')
   @Security('jwt')
-  public async session(
-    @Request() request: express.Request,
-    @Body() requestBody: { jti: string },
-  ) {
-    console.log({ request: request.cookies })
-    if (!requestBody) {
-      return { data: { userWithToken: null } }
-    }
+  public async profile(@Request() request: express.Request) {
+    const { accessToken } = request.cookies
 
-    const { jti } = requestBody
-    const user = await this.authService.session(jti)
-
-    if (!user) {
+    if (!accessToken) {
       this.setStatus(401)
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    return { data: { userWithToken: user } }
+    const user = await this.authService.session(accessToken)
+
+    if (!user) {
+      this.setStatus(500)
+      return generateErrorResponse(
+        '500',
+        'Internal server error',
+        'An unknown error occurred. Please try again.',
+      )
+    }
+
+    return { data: { user: user } }
   }
 
   @Get('validate-jwt')

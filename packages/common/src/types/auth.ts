@@ -1,18 +1,24 @@
 import { ApiResponse } from '@intake24-dietician/common/types/api'
 import { JwtPayload } from 'jsonwebtoken'
 
+export interface UserAttributes {
+  id: number
+  email: string
+  password: string
+  role: string
+}
+
 export interface UserWithToken {
   id: number
   email: string
   token: Token
-  jti: string
 }
 
 export interface AuthRequest {
   email: string
   password: string
 }
-export type AuthResponse = ApiResponse<{ email: string; jti: string }>
+export type AuthResponse = ApiResponse<{ email: string }>
 
 export interface Token {
   accessToken: string
@@ -38,7 +44,7 @@ export interface IAuthService {
   forgotPassword: (email: string) => Promise<string>
   resetPassword: (token: string, password: string) => Promise<void>
   refreshAccessToken: (refreshToken: string) => Promise<UserWithToken>
-  session: (jti: string) => Promise<UserWithToken | null>
+  session: (jti: string) => Promise<UserAttributes | null>
   validateJwt: (token: string) => Promise<boolean>
   logout: (accessToken: string) => Promise<void>
 }

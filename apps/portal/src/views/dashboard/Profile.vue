@@ -18,7 +18,7 @@
       </div>
       <v-divider class="my-10"></v-divider>
       <PersonalDetails />
-      <ContactDetails class="mt-10" />
+      <ContactDetails v-if="user" :email="user.email" class="mt-10" />
       <Bio class="mt-16" />
       <div class="mt-16">
         <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
@@ -36,8 +36,14 @@ import ContactDetails from '@/components/profile/ContactDetails.vue'
 import Bio from '@/components/profile/Bio.vue'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
+import { useAuthStore } from '@/stores/auth'
+import { storeToRefs } from 'pinia'
 
 const { t } = useI18n<i18nOptions>()
+
+const authStore = useAuthStore()
+authStore.getSession()
+const { user } = storeToRefs(authStore)
 </script>
 
 <style scoped lang="scss">
