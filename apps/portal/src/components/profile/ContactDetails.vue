@@ -29,7 +29,7 @@
               name="mobileNumber"
               autocomplete="tel"
               :value="formValues.mobileNumber"
-              :rules="[requiredValidator('Mobile number')]"
+              :rules="[mobileNumberValidator]"
               @update="newVal => handleFieldUpdate('mobileNumber', newVal)"
             >
               <span class="input-label">
@@ -84,8 +84,12 @@ import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
-import { requiredValidator, emailValidator } from '@/validators/auth'
-import { DieticianProfileValues, UserAttributesWithDieticianProfile } from '@intake24-dietician/common/types/auth'
+import { emailValidator } from '@/validators/auth'
+import { mobileNumberValidator } from '@/validators/auth/profile'
+import {
+  DieticianProfileValues,
+  UserAttributesWithDieticianProfile,
+} from '@intake24-dietician/common/types/auth'
 
 export interface ContactDetailsFormValues {
   emailAddress: string

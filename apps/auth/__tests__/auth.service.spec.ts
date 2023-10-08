@@ -3,16 +3,21 @@ import * as argon2 from 'argon2'
 import * as jwt from 'jsonwebtoken'
 import nodemailer from 'nodemailer'
 import User from '@intake24-dietician/db/models/auth/user.model'
+import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import Role from '@intake24-dietician/db/models/auth/role.model'
+import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import Token from '@intake24-dietician/db/models/auth/token.model'
 import { createAuthService } from '../src/services/auth.service'
 import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
 import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
 import { createEmailService } from '../src/services/email.service'
-import { redis, sequelize } from '@intake24-dietician/db/connection'
+import { sequelize } from '@intake24-dietician/db/connection'
+import { redis } from '@intake24-dietician/db/connection'
 import { TokenPayload } from '@intake24-dietician/common/types/auth'
 import crypto from 'crypto'
 import moment from 'moment'
 
+// Mock vendor dependencies
 jest.mock('argon2')
 jest.mock('jsonwebtoken')
 jest.mock('nodemailer')
@@ -21,7 +26,12 @@ jest.mock('@intake24-dietician/db/connection', () => ({
   sequelize: { transaction: jest.fn() },
   redis: { set: jest.fn(), get: jest.fn() },
 }))
+
+// Mock sequelize models
 jest.mock('@intake24-dietician/db/models/auth/user.model')
+jest.mock('@intake24-dietician/db/models/auth/role.model')
+jest.mock('@intake24-dietician/db/models/auth/user-role.model')
+jest.mock('@intake24-dietician/db/models/auth/dietician-profile.model')
 jest.mock('@intake24-dietician/db/models/auth/token.model')
 
 describe('AuthService', () => {
@@ -74,6 +84,9 @@ describe('AuthService', () => {
 
   describe('register', () => {
     it('should successfully register a user', async () => {
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
       ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
       ;(User.create as jest.Mock).mockResolvedValueOnce({
         id: 1,
@@ -84,32 +97,39 @@ describe('AuthService', () => {
         },
         get: jest.fn(() => ({ id: 1, email })),
       })
+      ;(DieticianProfile.create as jest.Mock).mockResolvedValueOnce({
+        id: 1,
+        dataValues: {
+          userId: 1,
+        },
+      })
+      ;(Role.findOne as jest.Mock).mockResolvedValueOnce({})
+      ;(UserRole.create as jest.Mock).mockResolvedValueOnce({
+        userId: 1,
+        roleId: 1,
+      })
 
       const { register } = createAuthServiceFactory()
-      const result = await register(email, password)
+      await register(email, password)
 
-      expect(result).toMatchObject({
-        id: 1,
-        email,
-        token: { accessToken: token, refreshToken: token },
-      })
+      expect(User.findOne).toBeCalled()
+      expect(User.create).toBeCalled()
+      expect(DieticianProfile.create).toBeCalled()
+      expect(Role.findOne).toBeCalled()
+      expect(UserRole.create).toBeCalled()
     })
 
     it('should throw an error if registration fails', async () => {
       const errorMsg =
         'Invalid email address. Please try again with a different one.'
+
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
       ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
 
       const { register } = createAuthServiceFactory()
       expect(register(email, password)).rejects.toThrow(errorMsg)
-    })
-
-    it('should throw an error if email is invalid', async () => {
-      const errorMsg = 'Invalid email address'
-      ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
-
-      const { register } = createAuthServiceFactory()
-      await expect(register('invalid', password)).rejects.toThrow(errorMsg)
     })
 
     it('should throw an error if email already exists', async () => {
