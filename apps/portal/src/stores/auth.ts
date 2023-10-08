@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia'
 import { useProfile } from '@/mutations/useAuth'
 import { ref } from 'vue'
-import { UserAttributes } from '@intake24-dietician/common/types/auth'
+import { UserAttributesWithDieticianProfile } from '@intake24-dietician/common/types/auth'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<UserAttributes | null>(null)
+  const user = ref<UserAttributesWithDieticianProfile | null>(null)
 
   function getSession() {
     const sessionMutation = useProfile()
@@ -12,7 +12,6 @@ export const useAuthStore = defineStore('auth', () => {
       {},
       {
         onSuccess: res => {
-          console.log({ res })
           user.value = res.data.data.user
           console.log({ user: res.data.data.user })
         },

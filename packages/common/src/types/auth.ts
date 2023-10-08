@@ -5,7 +5,10 @@ export interface UserAttributes {
   id: number
   email: string
   password: string
-  role: string
+}
+
+export interface UserAttributesWithDieticianProfile extends UserAttributes {
+  dieticianProfile: DieticianProfileValues
 }
 
 export interface UserWithToken {
@@ -47,6 +50,10 @@ export interface IAuthService {
   session: (jti: string) => Promise<UserAttributes | null>
   validateJwt: (token: string) => Promise<boolean>
   logout: (accessToken: string) => Promise<void>
+  updateProfile: (
+    details: DieticianProfileValues,
+    accessToken: string,
+  ) => Promise<void>
 }
 
 export interface ITokenService {
@@ -60,4 +67,15 @@ export interface ITokenService {
 
 export interface IEmailService {
   sendPasswordResetEmail: (email: string, resetUrl: string) => void
+}
+
+export interface DieticianProfileValues {
+  firstName: string
+  middleName: string
+  lastName: string
+  emailAddress: string
+  mobileNumber: string
+  businessNumber: string
+  businessAddress: string
+  shortBio: string
 }

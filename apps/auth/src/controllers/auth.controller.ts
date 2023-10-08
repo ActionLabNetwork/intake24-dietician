@@ -4,6 +4,7 @@ import {
   Get,
   Header,
   Post,
+  Put,
   Query,
   Request,
   Route,
@@ -15,6 +16,7 @@ import express from 'express'
 import {
   AuthRequest,
   AuthResponse,
+  DieticianProfileValues,
   IAuthService,
   Token,
 } from '@intake24-dietician/common/types/auth'
@@ -213,7 +215,7 @@ export class AuthController extends Controller {
 
   @Get('profile')
   @Security('jwt')
-  public async profile(@Request() request: express.Request) {
+  public async getProfile(@Request() request: express.Request) {
     const { accessToken } = request.cookies
 
     if (!accessToken) {
@@ -261,6 +263,37 @@ export class AuthController extends Controller {
       `refreshToken='';HttpOnly;SameSite=none;Secure;Max-Age=0`,
     ])
     await this.authService.logout(request.cookies['accessToken'])
+  }
+
+  @Put('profile')
+  @Security('jwt')
+  public async updateProfile(
+    @Request() request: express.Request,
+    @Body() details: { dieticianProfile: DieticianProfileValues },
+  ) {
+    console.log({ details: details.dieticianProfile })
+    const { accessToken } = request.cookies
+
+    if (!accessToken) {
+      this.setStatus(401)
+      return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
+    }
+
+    try {
+      await this.authService.updateProfile(
+        details.dieticianProfile,
+        accessToken,
+      )
+    } catch (error) {
+      this.setStatus(500)
+      return generateErrorResponse(
+        '500',
+        'Internal server error',
+        'An unknown error occurred. Please try again.',
+      )
+    }
+
+    return { data: { message: 'Profile updated successfully' } }
   }
 
   private setAuthHeaders(token: Token): void {

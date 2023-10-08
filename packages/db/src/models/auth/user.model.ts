@@ -9,31 +9,29 @@ import {
   AllowNull,
   HasMany,
   BelongsToMany,
-  DataType,
+  HasOne,
 } from 'sequelize-typescript'
-import Token from './token.model'
-import DieticianPatient from './dietician-patient.model'
 
-export enum UserRole {
-  ADMIN = 'Admin',
-  DIETICIAN = 'Dietician',
-  PATIENT = 'Patient',
-}
+import Token from './token.model'
+import Role from './role.model'
+import UserRole from './user-role.model'
+import DieticianPatient from './dietician-patient.model'
+import DieticianProfile from './dietician-profile.model'
+import PatientProfile from './patient-profile.model'
 
 export interface UserAttributes {
   id: number
   email: string
   password: string
-  role: UserRole
   passwordResetToken: Token[]
-  dieticians?: User[]
-  patients?: User[]
+  roles?: (Role & { UserRole: UserRole })[]
+  dieticians?: (User & { DieticianPatient: DieticianPatient })[]
+  patients?: (User & { DieticianPatient: DieticianPatient })[]
 }
 
 interface UserCreationAttributes {
   email: string
   password: string
-  role: UserRole
 }
 
 @Table
@@ -53,17 +51,23 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   @Column
   public declare password: string
 
-  @Column(DataType.ENUM('Admin', 'Dietician', 'Patient'))
-  public declare role: UserRole
-
   @HasMany(() => Token)
   public declare passwordResetToken: Token[]
 
-  @BelongsToMany(() => User, () => DieticianPatient)
-  public declare dieticians?: User[]
+  @BelongsToMany(() => Role, { through: () => UserRole })
+  public declare roles: (Role & { UserRole: UserRole })[]
 
-  @BelongsToMany(() => User, () => DieticianPatient)
-  public declare patients?: User[]
+  @BelongsToMany(() => User, { through: () => DieticianPatient })
+  public declare dieticians: (User & { DieticianPatient: DieticianPatient })[]
+
+  @BelongsToMany(() => User, { through: () => DieticianPatient })
+  public declare patients: (User & { DieticianPatient: DieticianPatient })[]
+
+  @HasOne(() => DieticianProfile)
+  public declare dieticianProfile: DieticianProfile
+
+  @HasOne(() => PatientProfile)
+  public declare patientProfile: PatientProfile
 }
 
 export default User

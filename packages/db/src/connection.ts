@@ -5,7 +5,6 @@ import Redis from 'ioredis'
 
 const sequelize = new Sequelize(getDBUrl('intake24-dietician-db'), {
   logging: false,
-
 })
 sequelize.addModels([__dirname + '/**/*.model.ts'])
 

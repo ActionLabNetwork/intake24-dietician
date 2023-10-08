@@ -12,7 +12,7 @@
       density="comfortable"
       :append-inner-icon="suffixIcon"
       :name="name"
-      :v-model="value"
+      :model-value="value"
       :rules="rules"
       :readonly="readonly"
       @input="updateValue"
@@ -33,7 +33,7 @@ defineProps<{
   readonly?: boolean
   handleIconClick?: () => void
 }>()
-const emit = defineEmits<(e: 'update', value: string) => void>()
+const emit = defineEmits<{ update: [value: string] }>()
 const updateValue = (e: InputEvent) => {
   emit('update', (e.target as HTMLInputElement).value)
 }

@@ -4,7 +4,9 @@ import { env } from '../config/env'
 import {
   AuthRequest,
   AuthResponse,
+  DieticianProfileValues,
   UserAttributes,
+  UserAttributesWithDieticianProfile,
 } from '@intake24-dietician/common/types/auth'
 import {
   ApiResponseWithData,
@@ -115,7 +117,11 @@ export const useProfile = () => {
   const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_PROFILE_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
+    AxiosResponse<
+      ApiResponseWithData<{
+        user: UserAttributesWithDieticianProfile
+      }>
+    >,
     AxiosError<ApiResponseWithError>,
     {}
   >({
@@ -143,6 +149,30 @@ export const useLogout = () => {
     {}
   >({
     mutationFn: () => axios.post(logoutUri),
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useUpdateProfile = () => {
+  const profileUri = `${env.AUTH_API_HOST}${env.AUTH_API_PROFILE_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
+    AxiosError<ApiResponseWithError>,
+    { dieticianProfile: DieticianProfileValues }
+  >({
+    mutationFn: profileBody => {
+      console.log({ profileBody })
+      return axios.put(profileUri, profileBody)
+    },
   })
 
   return {

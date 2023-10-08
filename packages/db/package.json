@@ -9,7 +9,9 @@
   "engines": {
     "node": ">=16"
   },
-  "scripts": {},
+  "scripts": {
+    "seed": "cd ./src && pnpx sequelize-cli db:seed:all"
+  },
   "dependencies": {
     "dotenv": "^16.3.1",
     "ioredis": "^5.3.2",

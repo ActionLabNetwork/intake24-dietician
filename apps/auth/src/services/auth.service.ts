@@ -1,4 +1,4 @@
-import User, { UserRole } from '@intake24-dietician/db/models/auth/user.model'
+import User from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
 import type {
@@ -9,6 +9,7 @@ import type {
   TokenPayload,
   IEmailService,
   UserAttributes,
+  DieticianProfileValues,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
@@ -17,6 +18,9 @@ import moment from 'moment'
 import crypto from 'crypto'
 import { sequelize, redis } from '@intake24-dietician/db/connection'
 import { createLogger } from '../middleware/logger'
+import Role from '@intake24-dietician/db/models/auth/role.model'
+import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
+import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 const logger = createLogger('AuthService')
 const TOKEN_TYPE = 'access-token'
@@ -50,14 +54,42 @@ export const createAuthService = (
     const hashedPassword = await hashingService.hash(password)
 
     try {
-      const user = await User.create({
-        email,
-        password: hashedPassword,
-        role: UserRole.DIETICIAN,
-      })
-      const { jti, token } = await generateToken(user, 'both')
+      return sequelize.transaction(async t => {
+        const user = await User.create(
+          {
+            email,
+            password: hashedPassword,
+          },
+          { transaction: t },
+        )
 
-      return { ...user.get({ plain: true }), token: token as TokenType, jti }
+        await DieticianProfile.create(
+          {
+            userId: user.id,
+          },
+          { transaction: t },
+        )
+
+        const dieticianRole = await Role.findOne({
+          where: { name: 'dietician' },
+          lock: true,
+          transaction: t,
+        })
+
+        if (dieticianRole) {
+          await UserRole.create(
+            {
+              userId: user.id,
+              roleId: dieticianRole.id,
+            },
+            { transaction: t },
+          )
+        }
+
+        const { jti, token } = await generateToken(user, 'both')
+
+        return { ...user.get({ plain: true }), token: token as TokenType, jti }
+      })
     } catch (error) {
       throw new Error(getErrorMessage(error))
     }
@@ -180,7 +212,10 @@ export const createAuthService = (
   ): Promise<UserAttributes | null> => {
     const decodedToken = verifyAccessToken(accessToken)
     await checkTokenInRedis(decodedToken['jti'] ?? '')
-    const user = await User.findOne({ where: { id: decodedToken['userId'] } })
+    const user = await User.findOne({
+      where: { id: decodedToken['userId'] },
+      include: [DieticianProfile],
+    })
     if (!user) {
       throw new Error('User not found')
     }
@@ -212,6 +247,32 @@ export const createAuthService = (
 
     await redis.del(`access:${jti}`)
     await redis.del(`refresh:${jti}`)
+  }
+
+  const updateProfile = (
+    details: DieticianProfileValues,
+    accessToken: string,
+  ) => {
+    try {
+      return sequelize.transaction(async t => {
+        const decoded = tokenService.verify(
+          accessToken,
+          env.JWT_SECRET,
+        ) as JwtPayload
+
+        const dieticianProfile = await DieticianProfile.findOne({
+          where: { userId: decoded['userId'] },
+        })
+
+        if (!dieticianProfile) {
+          throw new Error('Dietician profile for user not found')
+        }
+
+        await dieticianProfile.update(details, { transaction: t })
+      })
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
   }
 
   const createToken = (
@@ -332,5 +393,6 @@ export const createAuthService = (
     session,
     validateJwt,
     logout,
+    updateProfile,
   }
 }

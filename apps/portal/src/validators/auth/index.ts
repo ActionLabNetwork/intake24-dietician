@@ -1,5 +1,12 @@
 import { z } from 'zod'
 
+export const requiredValidator = (fieldName: string) => {
+  return (v: string): boolean | string => {
+    if (!v) return `${fieldName} is required`
+    return true
+  }
+}
+
 export const emailValidator = (v: string): boolean | string => {
   const isValidEmail = z.string().email().safeParse(v)
 

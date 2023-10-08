@@ -18,48 +18,47 @@
           </v-col>
           <v-divider vertical class="mx-5"></v-divider>
           <v-col>
-            <v-form v-model="form" @submit.prevent="handleSubmit">
-              <!-- First name -->
-              <BaseInput
-                type="text"
-                name="firstName"
-                autocomplete="given-name"
-                :value="firstName"
-                class="base-input"
-                @update="(newVal: string) => (firstName = newVal)"
-              >
-                <span class="input-label">
-                  {{ t('profile.form.personalDetails.firstName.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <!-- Middle name -->
-              <BaseInput
-                type="text"
-                name="middleName"
-                autocomplete="additional-name"
-                :value="middleName"
-                @update="(newVal: string) => (middleName = newVal)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.middleName.label') }}
-                </p>
-              </BaseInput>
-              <!-- Last name -->
-              <BaseInput
-                type="text"
-                name="lastName"
-                autocomplete="family-name"
-                :value="lastName"
-                @update="(newVal: string) => (lastName = newVal)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.lastName.label') }}
-                </p>
-              </BaseInput>
-            </v-form>
+            <!-- First name -->
+            <BaseInput
+              type="text"
+              name="firstName"
+              autocomplete="given-name"
+              :value="formValues.firstName"
+              :rules="[requiredValidator('First name')]"
+              class="base-input"
+              @update="val => handleFieldUpdate('firstName', val)"
+            >
+              <span class="input-label">
+                {{ t('profile.form.personalDetails.firstName.label') }}
+              </span>
+              <span class="input-label suffix">
+                {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
+              </span>
+            </BaseInput>
+            <!-- Middle name -->
+            <BaseInput
+              type="text"
+              name="middleName"
+              autocomplete="additional-name"
+              :value="formValues.middleName"
+              @update="val => handleFieldUpdate('middleName', val)"
+            >
+              <p class="input-label">
+                {{ t('profile.form.personalDetails.middleName.label') }}
+              </p>
+            </BaseInput>
+            <!-- Last name -->
+            <BaseInput
+              type="text"
+              name="lastName"
+              autocomplete="family-name"
+              :value="formValues.lastName"
+              @update="val => handleFieldUpdate('lastName', val)"
+            >
+              <p class="input-label">
+                {{ t('profile.form.personalDetails.lastName.label') }}
+              </p>
+            </BaseInput>
           </v-col>
         </v-row>
       </v-container>
@@ -67,24 +66,53 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
 import BaseInput from '@/components/form/BaseInput.vue'
+import { useDebounceFn } from '@vueuse/core'
 
 import { useDisplay } from 'vuetify'
 
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
+import { INPUT_DEBOUNCE_TIME } from '@/constants'
+import { requiredValidator } from '@/validators/auth'
+import {
+  DieticianProfileValues,
+  UserAttributesWithDieticianProfile,
+} from '@intake24-dietician/common/types/auth'
+import { ref } from 'vue'
+
+export interface PersonalDetailsFormValues {
+  firstName: string
+  middleName: string
+  lastName: string
+}
+
+const props = defineProps<{
+  user: UserAttributesWithDieticianProfile
+  profileFormValues: DieticianProfileValues
+}>()
+const emit = defineEmits<{
+  update: [value: PersonalDetailsFormValues]
+}>()
 
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-const form = ref(null)
-const firstName = ref('')
-const middleName = ref('')
-const lastName = ref('')
+// eslint-disable-next-line vue/no-setup-props-destructure
+const formValues = ref<PersonalDetailsFormValues>({
+  firstName: props.user.dieticianProfile.firstName,
+  middleName: props.user.dieticianProfile.middleName ?? '',
+  lastName: props.user.dieticianProfile.lastName ?? '',
+})
 
-const handleSubmit = () => {}
+const handleFieldUpdate = useDebounceFn(
+  (fieldName: keyof PersonalDetailsFormValues, newVal: string) => {
+    formValues.value[fieldName] = newVal
+    emit('update', { ...formValues.value })
+  },
+  INPUT_DEBOUNCE_TIME,
+)
 </script>
 <style scoped lang="scss">
 .avatar {
