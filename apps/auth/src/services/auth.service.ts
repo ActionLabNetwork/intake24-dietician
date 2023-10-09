@@ -23,7 +23,6 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 const logger = createLogger('AuthService')
-const TOKEN_TYPE = 'access-token'
 const ACCESS_PREFIX = 'access:'
 
 export const createAuthService = (
@@ -182,18 +181,7 @@ export const createAuthService = (
       throw new Error('Token is either invalid or expired.')
     }
 
-    const decoded = tokenService.verify(
-      refreshToken,
-      env.JWT_SECRET,
-    ) as JwtPayload
-
-    if (decoded === null) {
-      throw new Error('Invalid token')
-    }
-
-    if (decoded['tokenType'] !== 'refresh-token') {
-      throw new Error('Invalid token type. Please provide a refresh token.')
-    }
+    const decoded = verifyJwtToken(tokenInRedis, 'refresh-token')
 
     const user = await User.findOne({ where: { id: decoded['userId'] } })
     if (!user) {
@@ -207,15 +195,16 @@ export const createAuthService = (
     }
   }
 
-  const session = async (
+  const getUser = async (
     accessToken: string,
   ): Promise<UserAttributes | null> => {
-    const decodedToken = verifyAccessToken(accessToken)
+    const decodedToken = verifyJwtToken(accessToken)
     await checkTokenInRedis(decodedToken['jti'] ?? '')
     const user = await User.findOne({
       where: { id: decodedToken['userId'] },
       include: [DieticianProfile],
     })
+
     if (!user) {
       throw new Error('User not found')
     }
@@ -226,7 +215,7 @@ export const createAuthService = (
   }
 
   const validateJwt = async (token: string): Promise<boolean> => {
-    const decoded = tokenService.verify(token, env.JWT_SECRET) as JwtPayload
+    const decoded = verifyJwtToken(token)
     const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
 
     if (!tokenInRedis) {
@@ -237,12 +226,7 @@ export const createAuthService = (
   }
 
   const logout = async (accessToken: string) => {
-    const decoded = tokenService.verify(accessToken, env.JWT_SECRET)
-
-    if (decoded === null) {
-      throw new Error('Invalid token')
-    }
-
+    const decoded = verifyJwtToken(accessToken)
     const jti = (decoded as JwtPayload)['jti']
 
     await redis.del(`access:${jti}`)
@@ -253,15 +237,13 @@ export const createAuthService = (
     details: DieticianProfileValues,
     accessToken: string,
   ) => {
+    const decoded = verifyJwtToken(accessToken)
     try {
       return sequelize.transaction(async t => {
-        const decoded = tokenService.verify(
-          accessToken,
-          env.JWT_SECRET,
-        ) as JwtPayload
-
         const dieticianProfile = await DieticianProfile.findOne({
           where: { userId: decoded['userId'] },
+          transaction: t,
+          lock: true,
         })
 
         if (!dieticianProfile) {
@@ -365,11 +347,22 @@ export const createAuthService = (
     }
   }
 
-  const verifyAccessToken = (token: string): JwtPayload => {
+  const verifyJwtToken = (
+    token: string,
+    tokenType: 'access-token' | 'refresh-token' = 'access-token',
+  ): JwtPayload => {
     const decoded = tokenService.verify(token, env.JWT_SECRET) as JwtPayload
 
-    if (decoded['tokenType'] !== TOKEN_TYPE) {
-      throw new Error('Invalid token type. Please provide an access token.')
+    if (decoded === null) {
+      throw new Error('Invalid token')
+    }
+
+    if (decoded['tokenType'] !== tokenType) {
+      throw new Error(
+        `Invalid token type. Please provide ${
+          tokenType === 'access-token' ? 'an' : 'a'
+        } ${tokenType}.`,
+      )
     }
 
     return decoded
@@ -390,7 +383,7 @@ export const createAuthService = (
     forgotPassword,
     resetPassword,
     refreshAccessToken,
-    session,
+    getUser,
     validateJwt,
     logout,
     updateProfile,

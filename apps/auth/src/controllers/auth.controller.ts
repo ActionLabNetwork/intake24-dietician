@@ -223,7 +223,7 @@ export class AuthController extends Controller {
       return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
     }
 
-    const user = await this.authService.session(accessToken)
+    const user = await this.authService.getUser(accessToken)
 
     if (!user) {
       this.setStatus(500)

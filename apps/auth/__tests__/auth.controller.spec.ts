@@ -31,9 +31,10 @@ describe('AuthController', () => {
     refreshAccessToken: jest.fn(),
     forgotPassword: jest.fn(),
     resetPassword: jest.fn(),
-    session: jest.fn(),
+    getUser: jest.fn(),
     validateJwt: jest.fn(),
     logout: jest.fn(),
+    updateProfile: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),

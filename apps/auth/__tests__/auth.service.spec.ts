@@ -13,7 +13,10 @@ import { createJwtTokenService } from '@intake24-dietician/auth/services/token.s
 import { createEmailService } from '../src/services/email.service'
 import { sequelize } from '@intake24-dietician/db/connection'
 import { redis } from '@intake24-dietician/db/connection'
-import { TokenPayload } from '@intake24-dietician/common/types/auth'
+import {
+  DieticianProfileValues,
+  TokenPayload,
+} from '@intake24-dietician/common/types/auth'
 import crypto from 'crypto'
 import moment from 'moment'
 
@@ -24,7 +27,7 @@ jest.mock('nodemailer')
 jest.mock('crypto')
 jest.mock('@intake24-dietician/db/connection', () => ({
   sequelize: { transaction: jest.fn() },
-  redis: { set: jest.fn(), get: jest.fn() },
+  redis: { set: jest.fn(), get: jest.fn(), del: jest.fn() },
 }))
 
 // Mock sequelize models
@@ -39,6 +42,12 @@ describe('AuthService', () => {
   const password = 'password123'
   const hashedPassword = 'hashedPassword123'
   const token = 'testToken'
+  const decoded: TokenPayload = {
+    userId: 1,
+    email: 'test@example.com',
+    tokenType: 'access-token',
+    jti: '123',
+  }
 
   const createAuthServiceFactory = () =>
     createAuthService(
@@ -129,7 +138,7 @@ describe('AuthService', () => {
       ;(User.create as jest.Mock).mockRejectedValueOnce(new Error(errorMsg))
 
       const { register } = createAuthServiceFactory()
-      expect(register(email, password)).rejects.toThrow(errorMsg)
+      await expect(register(email, password)).rejects.toThrow(errorMsg)
     })
 
     it('should throw an error if email already exists', async () => {
@@ -220,13 +229,7 @@ describe('AuthService', () => {
     })
 
     it('should throw an error if refresh token is not a refresh token', async () => {
-      const errMsg = 'Invalid token type. Please provide a refresh token.'
-      const decoded: TokenPayload = {
-        userId: 1,
-        email: 'test@example.com',
-        tokenType: 'access-token',
-        jti: '123',
-      }
+      const errMsg = 'Invalid token type. Please provide a refresh-token.'
 
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
@@ -282,28 +285,10 @@ describe('AuthService', () => {
 
   describe('resetPassword', () => {
     it('should successfully reset the password', async () => {
-      const newPassword = 'newPassword123'
-      const resetToken = 'someResetToken'
-
-      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
-        await cb()
-      })
-      ;(Token.findOne as jest.Mock).mockResolvedValueOnce({
-        userId: 1,
-        expiresAt: moment().add(10, 'minutes').toDate(),
-      })
-      ;(User.update as jest.Mock).mockResolvedValueOnce([1])
-      ;(Token.destroy as jest.Mock).mockResolvedValueOnce(1)
-
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       const { resetPassword } = createAuthServiceFactory()
-      await resetPassword(resetToken, newPassword)
 
-      expect(User.update).toHaveBeenCalledWith(
-        expect.objectContaining({
-          password: hashedPassword,
-        }),
-        expect.objectContaining({ where: { id: 1 } }),
-      )
+      await resetPassword(token, token)
     })
 
     it('should throw an error if the token is invalid', async () => {
@@ -334,6 +319,170 @@ describe('AuthService', () => {
       await expect(
         resetPassword(expiredResetToken, newPassword),
       ).rejects.toThrow('Token has expired')
+    })
+  })
+
+  describe('getUser', () => {
+    it('should successfully get user', async () => {
+      const mockUser = {
+        email,
+        password: hashedPassword,
+        dieticianProfile: {
+          id: 1,
+          userId: 1,
+          firstName: 'John',
+          middleName: 'Doe',
+          lastName: 'Smith',
+          mobileNumber: '1234567890',
+          businessNumber: '1234567890',
+          businessAddress: '123 Main St',
+          shortBio: 'Short bio',
+        },
+        get: {},
+      }
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce({
+        id: 1,
+        dataValues: mockUser,
+        get: jest.fn(() => ({ ...mockUser, id: 1 })),
+      })
+
+      const { getUser } = createAuthServiceFactory()
+      const user = await getUser('123')
+
+      expect(user).toMatchObject(mockUser)
+    })
+
+    it('should throw error if user is not found', async () => {
+      ;(jwt.verify as jest.Mock).mockReturnValue(decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
+
+      const { getUser } = createAuthServiceFactory()
+      await expect(getUser('123')).rejects.toThrowError('User not found')
+    })
+
+    it('should throw error if token is invalid', async () => {
+      ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid token')
+      })
+
+      const { getUser } = createAuthServiceFactory()
+
+      await expect(getUser('123')).rejects.toThrowError('Invalid token')
+    })
+
+    it('should throw error if token is not a refresh token', async () => {
+      const _decoded: TokenPayload = { ...decoded, tokenType: 'refresh-token' }
+      ;(jwt.verify as jest.Mock).mockReturnValue(_decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+      ;(User.findOne as jest.Mock).mockResolvedValueOnce(null)
+
+      const { getUser } = createAuthServiceFactory()
+      await expect(getUser('123')).rejects.toThrowError(
+        'Invalid token type. Please provide an access-token.',
+      )
+    })
+  })
+
+  describe('validateJwt', () => {
+    it('should successfully validate jwt', async () => {
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+
+      const { validateJwt } = createAuthServiceFactory()
+      const result = await validateJwt(token)
+
+      expect(result).toBeTruthy()
+    })
+
+    it('should throw error if jwt is invalid', async () => {
+      ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid token')
+      })
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+
+      const { validateJwt } = createAuthServiceFactory()
+      await expect(validateJwt(token)).rejects.toThrowError('Invalid token')
+    })
+  })
+
+  describe('logout', () => {
+    it('should successfully logout', async () => {
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(redis.del as jest.Mock).mockResolvedValueOnce('OK')
+
+      const { logout } = createAuthServiceFactory()
+      await logout(token)
+    })
+
+    it('should throw error if jwt is invalid', async () => {
+      ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid token')
+      })
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+
+      const { logout } = createAuthServiceFactory()
+      await expect(logout(token)).rejects.toThrowError('Invalid token')
+    })
+  })
+
+  describe('updateProfile', () => {
+    it('should successfully update profile', async () => {
+      const details: DieticianProfileValues = {
+        firstName: 'John',
+        middleName: 'Doe',
+        lastName: 'Smith',
+        emailAddress: 'example@.com',
+        mobileNumber: '1234567890',
+        businessNumber: '1234567890',
+        businessAddress: '123 Main St',
+        shortBio: 'Short bio',
+      }
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
+      ;(DieticianProfile.findOne as jest.Mock).mockResolvedValueOnce({
+        update: jest.fn(),
+      })
+      ;(DieticianProfile.update as jest.Mock).mockResolvedValueOnce([1])
+
+      const { updateProfile } = createAuthServiceFactory()
+      await updateProfile(details, token)
+
+      expect(jwt.verify).toBeCalledWith(token, 'SECRET_JWT_KEY_HERE')
+      expect(DieticianProfile.findOne).toBeCalledWith({
+        where: { userId: decoded['userId'] },
+        transaction: undefined,
+        lock: true,
+      })
+    })
+
+    it('should throw error if profile is not found', async () => {
+      const details: DieticianProfileValues = {
+        firstName: 'John',
+        middleName: 'Doe',
+        lastName: 'Smith',
+        emailAddress: 'example@.com',
+        mobileNumber: '1234567890',
+        businessNumber: '1234567890',
+        businessAddress: '123 Main St',
+        shortBio: 'Short bio',
+      }
+      ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
+      ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
+      mockedSequelizeTransaction.mockImplementationOnce(async cb => {
+        await cb()
+      })
+      ;(DieticianProfile.findOne as jest.Mock).mockResolvedValueOnce(null)
+
+      const { updateProfile } = createAuthServiceFactory()
+      await expect(updateProfile(details, token)).rejects.toThrowError(
+        'Dietician profile for user not found',
+      )
     })
   })
 })

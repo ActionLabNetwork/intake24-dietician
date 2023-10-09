@@ -47,7 +47,7 @@ export interface IAuthService {
   forgotPassword: (email: string) => Promise<string>
   resetPassword: (token: string, password: string) => Promise<void>
   refreshAccessToken: (refreshToken: string) => Promise<UserWithToken>
-  session: (jti: string) => Promise<UserAttributes | null>
+  getUser: (jti: string) => Promise<UserAttributes | null>
   validateJwt: (token: string) => Promise<boolean>
   logout: (accessToken: string) => Promise<void>
   updateProfile: (
