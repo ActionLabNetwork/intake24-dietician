@@ -112,21 +112,24 @@ const handleProfileDetailsUpdate = (
   console.log({ profileFormValues: profileFormValues.value })
 }
 
-const handleSubmit = () => {
-  if (!form.value) return
-  console.log({ profileFormValues: profileFormValues.value })
-  updateProfileMutation.mutate(
-    { dieticianProfile: profileFormValues.value },
-    {
-      onSuccess: () => {
-        console.log('success')
-        $toast.success('Profile updated successfully')
+const handleSubmit = (): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    if (!form.value) return
+    console.log({ profileFormValues: profileFormValues.value })
+
+    updateProfileMutation.mutate(
+      { dieticianProfile: profileFormValues.value },
+      {
+        onSuccess: () => {
+          $toast.success('Profile updated successfully')
+          resolve()
+        },
+        onError: () => {
+          reject(new Error('Profile update failed'))
+        },
       },
-      onError: () => {
-        console.log('error')
-      },
-    },
-  )
+    )
+  })
 }
 
 const profileDetailsHasChanged = computed(() => {

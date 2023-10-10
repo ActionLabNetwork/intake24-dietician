@@ -10,6 +10,7 @@ import type {
   IEmailService,
   UserAttributes,
   DieticianProfileValues,
+  TokenActionType,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
@@ -112,7 +113,7 @@ export const createAuthService = (
   }
 
   const forgotPassword = async (email: string) => {
-    const token = await generateUserToken(email)
+    const token = await generateUserToken(email, 'reset-password')
     const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
     logger.debug({ resetUrl })
 
@@ -239,7 +240,10 @@ export const createAuthService = (
     }
   }
 
-  const generateUserToken = async (email: string): Promise<string> => {
+  const generateUserToken = async (
+    email: string,
+    actionType: TokenActionType,
+  ): Promise<string> => {
     let token = ''
 
     try {
@@ -255,6 +259,7 @@ export const createAuthService = (
       await Token.create({
         userId: user.id,
         token,
+        actionType,
         expiresAt: moment().add(1, 'hours').toDate(),
       })
     } catch (error) {
@@ -264,7 +269,10 @@ export const createAuthService = (
     return token
   }
 
-  const verifyUserToken = async (token: string): Promise<void> => {
+  const verifyUserToken = async (
+    token: string,
+    actionType: TokenActionType,
+  ): Promise<void> => {
     const tokenEntity = await Token.findOne({
       where: { token },
     })
@@ -275,6 +283,10 @@ export const createAuthService = (
 
     if (moment().isAfter(moment(tokenEntity.expiresAt))) {
       throw new Error('Token has expired')
+    }
+
+    if (tokenEntity.actionType !== actionType) {
+      throw new Error('Token has the wrong action type')
     }
 
     return sequelize.transaction(async t => {

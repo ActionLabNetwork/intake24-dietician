@@ -13,8 +13,25 @@ import {
 } from 'sequelize-typescript'
 import User from './user.model'
 
+export interface TokenAttributes {
+  id: number
+  userId: number
+  author: User
+  token: string
+  actionType: string
+  expiresAt?: Date
+  isActive?: boolean
+}
+
+interface TokenCreationAttributes {
+  userId: number
+  token: string
+  actionType: string
+  expiresAt: Date
+}
+
 @Table
-class Token extends Model {
+class Token extends Model<TokenAttributes, TokenCreationAttributes> {
   @PrimaryKey
   @AutoIncrement
   @Column
@@ -31,6 +48,9 @@ class Token extends Model {
   @AllowNull(false)
   @Column
   public declare token: string
+
+  @Column
+  public declare actionType: string
 
   @AllowNull(false)
   @Column(DataType.DATE(6))

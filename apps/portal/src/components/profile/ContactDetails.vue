@@ -196,7 +196,7 @@ export interface ContactDetailsFormValues {
 const props = defineProps<{
   user: UserAttributesWithDieticianProfile
   profileFormValues: DieticianProfileValues
-  handleSubmit: () => void
+  handleSubmit: () => Promise<void>
 }>()
 const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
@@ -260,11 +260,15 @@ const handleVerifyToken = () => {
   verifyTokenMutation.mutate(
     { token: verificationToken.value },
     {
-      onSuccess() {
-        changeEmailDialog.value = false
-        errorMsg.value = ''
-
-        props.handleSubmit()
+      onSuccess: async () => {
+        try {
+          await props.handleSubmit()
+          changeEmailDialog.value = false
+          errorMsg.value = ''
+          currentEmailAddress.value = formValues.value.emailAddress
+        } catch (error) {
+          errorMsg.value = 'Error updating email address'
+        }
       },
       onError() {
         errorMsg.value = 'Invalid verification token'

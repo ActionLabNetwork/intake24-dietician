@@ -36,6 +36,7 @@ describe('AuthController', () => {
     logout: jest.fn(),
     updateProfile: jest.fn(),
     generateUserToken: jest.fn(),
+    verifyUserToken: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),

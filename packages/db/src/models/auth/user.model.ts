@@ -23,7 +23,7 @@ export interface UserAttributes {
   id: number
   email: string
   password: string
-  passwordResetToken: Token[]
+  resetToken: Token[]
   roles?: (Role & { UserRole: UserRole })[]
   dieticians?: (User & { DieticianPatient: DieticianPatient })[]
   patients?: (User & { DieticianPatient: DieticianPatient })[]
@@ -52,7 +52,7 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   public declare password: string
 
   @HasMany(() => Token)
-  public declare passwordResetToken: Token[]
+  public declare resetToken: Token[]
 
   @BelongsToMany(() => Role, { through: () => UserRole })
   public declare roles: (Role & { UserRole: UserRole })[]

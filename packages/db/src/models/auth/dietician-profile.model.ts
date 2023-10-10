@@ -4,6 +4,7 @@ import {
   Column,
   Model,
   BelongsTo,
+  Default,
 } from 'sequelize-typescript'
 import User from './user.model'
 
@@ -32,24 +33,31 @@ class DieticianProfile extends Model<
   @Column
   public declare userId: number
 
+  @Default('')
   @Column
   public declare firstName: string
 
+  @Default('')
   @Column
   public declare middleName: string
 
+  @Default('')
   @Column
   public declare lastName: string
 
+  @Default('')
   @Column
   public declare mobileNumber: string
 
+  @Default('')
   @Column
   public declare businessNumber: string
 
+  @Default('')
   @Column
   public declare businessAddress: string
 
+  @Default('')
   @Column
   public declare shortBio: string
 

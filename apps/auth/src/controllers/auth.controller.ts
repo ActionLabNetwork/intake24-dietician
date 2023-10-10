@@ -301,7 +301,10 @@ export class AuthController extends Controller {
     let token = ''
 
     try {
-      token = await this.authService.generateUserToken(data.email)
+      token = await this.authService.generateUserToken(
+        data.email,
+        'change-email',
+      )
     } catch (error) {
       this.setStatus(500)
       return generateErrorResponse(
@@ -318,7 +321,7 @@ export class AuthController extends Controller {
   @Security('jwt')
   public async verifyToken(@Body() data: { token: string }) {
     try {
-      await this.authService.verifyUserToken(data.token)
+      await this.authService.verifyUserToken(data.token, 'change-email')
       return { tokenVerified: true, error: undefined }
     } catch (error) {
       this.setStatus(500)
