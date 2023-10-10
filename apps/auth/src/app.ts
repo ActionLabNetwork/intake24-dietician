@@ -9,6 +9,7 @@ import swaggerUi from 'swagger-ui-express'
 import cors from 'cors'
 import { ValidateError } from 'tsoa'
 import cookieParser from 'cookie-parser'
+import multer from 'multer'
 // import pino from 'pino-http'
 // import { createLogger } from './middleware/logger'
 
@@ -22,12 +23,11 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 app.use(
   cors({
     origin: 'http://localhost:3001',
-    allowedHeaders:
-      'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
-    exposedHeaders: 'x-access-token,x-refresh-token,set-cookie',
+    exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',
     credentials: true,
   }),
 )
+app.use(multer().single('file'))
 // app.use(pino({ logger: createLogger() }))
 
 RegisterRoutes(app)

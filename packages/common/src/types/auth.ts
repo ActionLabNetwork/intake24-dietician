@@ -59,6 +59,7 @@ export interface IAuthService {
     actionType: TokenActionType,
   ) => Promise<string>
   verifyUserToken: (token: string, actionType: TokenActionType) => Promise<void>
+  uploadAvatar: (accessToken: string, buffer: string) => Promise<void>
 }
 
 export interface ITokenService {
@@ -83,6 +84,7 @@ export interface DieticianProfileValues {
   businessNumber: string
   businessAddress: string
   shortBio: string
+  avatar: string
 }
 
 export type TokenActionType = 'reset-password' | 'change-email'

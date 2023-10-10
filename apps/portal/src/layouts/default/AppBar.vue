@@ -30,7 +30,6 @@
 
 <script lang="ts" setup>
 import BaseAvatar from '@/components/common/BaseAvatar.vue'
-
 </script>
 <style scoped lang="scss">
 .nav-items {

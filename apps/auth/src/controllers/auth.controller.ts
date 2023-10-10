@@ -336,6 +336,22 @@ export class AuthController extends Controller {
     }
   }
 
+  @Put('upload-avatar')
+  @Security('jwt')
+  public async uploadAvatar(@Request() request: express.Request) {
+    const file = request.body['fileBase64']
+    console.log({ file: request })
+
+    if (!file) {
+      this.setStatus(400)
+      return generateErrorResponse('400', 'Bad request', 'No file uploaded')
+    }
+
+    this.authService.uploadAvatar(request.cookies['accessToken'], file)
+
+    return { data: { message: 'Avatar uploaded successfully' } }
+  }
+
   private setAuthHeaders(token: Token): void {
     this.setHeader('Set-Cookie', [
       `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure`,

@@ -6,7 +6,6 @@ import {
   AuthResponse,
   DieticianProfileValues,
   UserAttributes,
-  UserAttributesWithDieticianProfile,
 } from '@intake24-dietician/common/types/auth'
 import {
   ApiResponseWithData,
@@ -113,33 +112,6 @@ export const useResetPassword = () => {
   }
 }
 
-export const useProfile = () => {
-  const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_PROFILE_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<
-      ApiResponseWithData<{
-        user: UserAttributesWithDieticianProfile
-      }>
-    >,
-    AxiosError<ApiResponseWithError>,
-    {}
-  >({
-    mutationFn: () => {
-      return axios.get(sessionUri)
-    },
-  })
-
-  return {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
-
 export const useLogout = () => {
   const logoutUri = `${env.AUTH_API_HOST}${env.AUTH_API_LOGOUT_URI}`
 
@@ -215,6 +187,33 @@ export const useVerifyToken = () => {
     { token: string }
   >(verifyTokenBody => {
     return axios.post(verifyTokenUri, verifyTokenBody)
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useUploadAvatar = () => {
+  const uploadAvatarUri = `${env.AUTH_API_HOST}${env.AUTH_API_UPLOAD_AVATAR}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<ApiResponseWithData<{ avatarBlob: string }>>,
+    AxiosError<ApiResponseWithError>,
+    { avatarBase64: string }
+  >(uploadAvatarBody => {
+    const formData = new FormData()
+    formData.append('fileBase64', uploadAvatarBody.avatarBase64)
+    return axios.put(uploadAvatarUri, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
   })
 
   return {

@@ -7,14 +7,30 @@
       <v-container>
         <v-row dense justify="center" align="center">
           <v-col class="v-col-2" align="center">
-            <v-avatar
-              image="@/assets/dashboard/avatar.svg"
-              size="x-large"
-              class="avatar mx-auto"
-            />
-            <p class="mt-5 text-center font-weight-medium">
-              {{ t('profile.form.personalDetails.uploadImage') }}
-            </p>
+            <div class="d-flex flex-column">
+              <v-avatar size="x-large" class="avatar mx-auto">
+                <v-img :src="avatarImage" alt="Avatar" />
+              </v-avatar>
+              <v-btn
+                class="mt-5 text-center font-weight-medium text-capitalize"
+                flat
+                @click="
+                  () => {
+                    console.log({ imageUpload })
+                    imageUpload.click()
+                  }
+                "
+              >
+                {{ t('profile.form.personalDetails.uploadImage') }}
+              </v-btn>
+              <input
+                ref="imageUpload"
+                type="file"
+                accept="image/*"
+                hidden
+                @change="handleImageUpload"
+              />
+            </div>
           </v-col>
           <v-divider vertical class="mx-5"></v-divider>
           <v-col>
@@ -100,7 +116,8 @@ import {
   DieticianProfileValues,
   UserAttributesWithDieticianProfile,
 } from '@intake24-dietician/common/types/auth'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useUploadAvatar } from '@/mutations/useAuth'
 
 export interface PersonalDetailsFormValues {
   firstName: string
@@ -116,15 +133,24 @@ const emit = defineEmits<{
   update: [value: PersonalDetailsFormValues]
 }>()
 
+const uploadAvatarMutation = useUploadAvatar()
+
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
+const imageUpload = ref()
+const avatarImage = ref('../src/assets/dashboard/avatar.svg')
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<PersonalDetailsFormValues>({
   firstName: props.user.dieticianProfile.firstName,
   middleName: props.user.dieticianProfile.middleName ?? '',
   lastName: props.user.dieticianProfile.lastName ?? '',
+})
+
+onMounted(() => {
+  const imageSrc = props.user.dieticianProfile.avatar
+  avatarImage.value = imageSrc ?? avatarImage.value
 })
 
 const handleFieldUpdate = useDebounceFn(
@@ -134,6 +160,26 @@ const handleFieldUpdate = useDebounceFn(
   },
   INPUT_DEBOUNCE_TIME,
 )
+
+const handleImageUpload = () => {
+  const file = imageUpload.value.files[0]
+
+  if (!file) return
+
+  const objectURL = URL.createObjectURL(file)
+  avatarImage.value = objectURL
+
+  const reader = new FileReader()
+  reader.readAsDataURL(file)
+  reader.onloadend = () => {
+    const base64data = reader.result
+
+    uploadAvatarMutation.mutate({
+      avatarBase64: base64data as string,
+    })
+    URL.revokeObjectURL(objectURL)
+  }
+}
 </script>
 <style scoped lang="scss">
 .avatar {

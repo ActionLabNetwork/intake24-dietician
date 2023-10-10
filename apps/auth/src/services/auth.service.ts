@@ -227,7 +227,6 @@ export const createAuthService = (
           transaction: t,
         })
 
-        console.log({ user })
         if (!user) {
           throw new Error('User not found')
         }
@@ -309,6 +308,32 @@ export const createAuthService = (
         transaction: t,
       })
     })
+  }
+
+  const uploadAvatar = (accessToken: string, buffer: string) => {
+    const decoded = verifyJwtToken(accessToken)
+    try {
+      return sequelize.transaction(async t => {
+        const user = await User.findOne({
+          where: { id: decoded['userId'] },
+          include: [DieticianProfile],
+          transaction: t,
+        })
+
+        if (!user) {
+          throw new Error('User not found')
+        }
+
+        console.log({ buffer })
+
+        await user.dieticianProfile.update(
+          { avatar: buffer },
+          { transaction: t },
+        )
+      })
+    } catch (error) {
+      throw new Error(getErrorMessage(error))
+    }
   }
 
   // Private helper functions
@@ -444,5 +469,6 @@ export const createAuthService = (
     updateProfile,
     generateUserToken,
     verifyUserToken,
+    uploadAvatar,
   }
 }

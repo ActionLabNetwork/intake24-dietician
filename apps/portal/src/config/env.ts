@@ -23,6 +23,8 @@ const schema = z.object({
     '/auth/generate-token',
   ),
   AUTH_API_VERIFY_TOKEN_URI: withDevDefault(z.string(), '/auth/verify-token'),
+  AUTH_API_UPLOAD_AVATAR: withDevDefault(z.string(), '/auth/upload-avatar'),
+  AUTH_API_GET_AVATAR: withDevDefault(z.string(), '/auth/avatar'),
 })
 
 const parsed = schema.safeParse(process.env)

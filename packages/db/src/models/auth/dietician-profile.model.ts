@@ -5,6 +5,7 @@ import {
   Model,
   BelongsTo,
   Default,
+  DataType,
 } from 'sequelize-typescript'
 import User from './user.model'
 
@@ -17,6 +18,7 @@ export interface DieticianProfileAttributes {
   businessNumber: string
   businessAddress: string
   shortBio: string
+  avatar: string
   user: User
 }
 
@@ -60,6 +62,9 @@ class DieticianProfile extends Model<
   @Default('')
   @Column
   public declare shortBio: string
+
+  @Column(DataType.TEXT)
+  public declare avatar: string
 
   @BelongsTo(() => User)
   public declare user: User

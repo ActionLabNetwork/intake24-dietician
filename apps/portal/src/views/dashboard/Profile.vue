@@ -1,5 +1,10 @@
 <template>
-  <v-main class="wrapper">
+  <v-main v-if="isProfileLoading" align="center">
+    <v-container>
+      <v-progress-circular indeterminate></v-progress-circular>
+    </v-container>
+  </v-main>
+  <v-main v-else class="wrapper">
     <v-container>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -83,8 +88,7 @@ import { pick, keys, isEqual } from 'radash'
 const { t } = useI18n<i18nOptions>()
 
 const authStore = useAuthStore()
-authStore.getSession()
-const { user } = storeToRefs(authStore)
+const { user, isProfileLoading } = storeToRefs(authStore)
 
 const updateProfileMutation = useUpdateProfile()
 
@@ -100,6 +104,7 @@ const profileFormValues = ref<DieticianProfileValues>({
   businessNumber: '',
   businessAddress: '',
   shortBio: '',
+  avatar: '',
 })
 
 const handleProfileDetailsUpdate = (
@@ -153,6 +158,7 @@ watch(user, newUser => {
     businessNumber: newUser?.dieticianProfile.businessNumber ?? '',
     businessAddress: newUser?.dieticianProfile.businessAddress ?? '',
     shortBio: newUser?.dieticianProfile.shortBio ?? '',
+    avatar: newUser?.dieticianProfile.avatar ?? '',
   }
 })
 </script>
