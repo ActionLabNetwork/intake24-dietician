@@ -184,3 +184,45 @@ export const useUpdateProfile = () => {
     mutate,
   }
 }
+
+export const useGenerateToken = () => {
+  const generateTokenUri = `${env.AUTH_API_HOST}${env.AUTH_API_GENERATE_TOKEN_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<ApiResponseWithData<{ token: string }>>,
+    AxiosError<ApiResponseWithError>,
+    { email: string }
+  >(generateTokenBody => {
+    return axios.post(generateTokenUri, generateTokenBody)
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useVerifyToken = () => {
+  const verifyTokenUri = `${env.AUTH_API_HOST}${env.AUTH_API_VERIFY_TOKEN_URI}`
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    AxiosResponse<ApiResponseWithData<{ tokenVerified: boolean }>>,
+    AxiosError<ApiResponseWithError>,
+    { token: string }
+  >(verifyTokenBody => {
+    return axios.post(verifyTokenUri, verifyTokenBody)
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}

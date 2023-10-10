@@ -11,13 +11,16 @@
       variant="solo-filled"
       density="comfortable"
       :append-inner-icon="suffixIcon"
+      :append-icon="suffixIconOuter"
       :name="name"
       :model-value="value"
       :rules="rules"
       :readonly="readonly"
       @input="updateValue"
       @click:append-inner="handleIconClick"
-    />
+      @click:append="handleOuterIconClick"
+    >
+    </v-text-field>
   </div>
 </template>
 
@@ -27,11 +30,13 @@ defineProps<{
   placeholder?: string
   autocomplete?: HTMLInputElement['autocomplete']
   suffixIcon?: string
+  suffixIconOuter?: string
   name?: string
   value?: HTMLInputElement['value']
   rules?: ((value: string) => boolean | string)[]
   readonly?: boolean
   handleIconClick?: () => void
+  handleOuterIconClick?: () => void
 }>()
 const emit = defineEmits<{ update: [value: string] }>()
 const updateValue = (e: InputEvent) => {

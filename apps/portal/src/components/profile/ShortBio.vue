@@ -9,7 +9,14 @@
           <v-textarea
             v-model="formValues.shortBio"
             :label="t('profile.form.shortBio.placeholder')"
+            append-inner-icon="mdi-restore"
             variant="solo-filled"
+            @click:append-inner="
+              () => {
+                formValues.shortBio = user.dieticianProfile.shortBio
+                emit('update', { ...formValues })
+              }
+            "
             @update:model-value="
               (val: string) => handleFieldUpdate('shortBio', val)
             "

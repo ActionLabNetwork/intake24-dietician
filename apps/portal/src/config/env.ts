@@ -18,6 +18,11 @@ const schema = z.object({
   AUTH_API_PROFILE_URI: withDevDefault(z.string(), '/auth/profile'),
   AUTH_API_VALIDATE_JWT_URI: withDevDefault(z.string(), '/auth/validate-jwt'),
   AUTH_API_LOGOUT_URI: withDevDefault(z.string(), '/auth/logout'),
+  AUTH_API_GENERATE_TOKEN_URI: withDevDefault(
+    z.string(),
+    '/auth/generate-token',
+  ),
+  AUTH_API_VERIFY_TOKEN_URI: withDevDefault(z.string(), '/auth/verify-token'),
 })
 
 const parsed = schema.safeParse(process.env)

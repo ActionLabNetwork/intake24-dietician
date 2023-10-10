@@ -54,6 +54,8 @@ export interface IAuthService {
     details: DieticianProfileValues,
     accessToken: string,
   ) => Promise<void>
+  generateUserToken: (email: string) => Promise<string>
+  verifyUserToken: (token: string) => Promise<void>
 }
 
 export interface ITokenService {

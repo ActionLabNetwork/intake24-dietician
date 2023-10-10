@@ -15,6 +15,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3 mt-sm-0"
+            :disabled="!profileDetailsHasChanged"
             :loading="updateProfileMutation.isLoading.value"
             @click="handleSubmit"
           >
@@ -33,6 +34,7 @@
           :user="user"
           :profileFormValues="profileFormValues"
           class="mt-10"
+          :handleSubmit="handleSubmit"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ShortBio
@@ -47,6 +49,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3"
+            :disabled="!profileDetailsHasChanged"
             :loading="updateProfileMutation.isLoading.value"
           >
             {{ t('profile.cta') }}
@@ -58,7 +61,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import PersonalDetails, {
   PersonalDetailsFormValues,
 } from '@/components/profile/PersonalDetails.vue'
@@ -75,6 +78,7 @@ import { useUpdateProfile } from '@/mutations/useAuth'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
+import { pick, keys, isEqual } from 'radash'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -124,6 +128,17 @@ const handleSubmit = () => {
     },
   )
 }
+
+const profileDetailsHasChanged = computed(() => {
+  if (!user.value) return false
+  return !isEqual(profileFormValues.value, {
+    ...pick(
+      user.value?.dieticianProfile,
+      keys(profileFormValues.value) as (keyof DieticianProfileValues)[],
+    ),
+    emailAddress: user.value?.email,
+  })
+})
 
 watch(user, newUser => {
   profileFormValues.value = {

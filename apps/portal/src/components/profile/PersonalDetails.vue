@@ -25,7 +25,14 @@
               autocomplete="given-name"
               :value="formValues.firstName"
               :rules="[requiredValidator('First name')]"
+              suffix-icon="mdi-restore"
               class="base-input"
+              :handle-icon-click="
+                () => {
+                  formValues.firstName = user.dieticianProfile.firstName
+                  emit('update', { ...formValues })
+                }
+              "
               @update="val => handleFieldUpdate('firstName', val)"
             >
               <span class="input-label">
@@ -40,6 +47,13 @@
               type="text"
               name="middleName"
               autocomplete="additional-name"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.middleName = user.dieticianProfile.middleName
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.middleName"
               @update="val => handleFieldUpdate('middleName', val)"
             >
@@ -52,6 +66,13 @@
               type="text"
               name="lastName"
               autocomplete="family-name"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.lastName = user.dieticianProfile.lastName
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.lastName"
               @update="val => handleFieldUpdate('lastName', val)"
             >

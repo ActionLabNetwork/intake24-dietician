@@ -9,8 +9,15 @@
               type="email"
               name="emailAddress"
               autocomplete="email"
-              :value="formValues.emailAddress"
+              readonly
+              :value="currentEmailAddress"
               :rules="[emailValidator]"
+              suffix-icon="mdi-mail"
+              :handle-icon-click="
+                () => {
+                  changeEmailDialog = true
+                }
+              "
               class="base-input"
               @update="newVal => handleFieldUpdate('emailAddress', newVal)"
             >
@@ -21,6 +28,70 @@
                 {{ t('profile.form.contactDetails.email.labelSuffix') }}
               </span>
             </BaseInput>
+            <v-dialog v-model="changeEmailDialog" width="25vw">
+              <v-card>
+                <v-card-title>Change Email</v-card-title>
+                <v-card-text>
+                  <BaseInput type="email" :value="currentEmailAddress" readonly>
+                    <span class="input-label">
+                      {{ t('profile.form.contactDetails.email.label') }}
+                    </span>
+                  </BaseInput>
+                  <BaseInput
+                    type="email"
+                    :value="formValues.emailAddress"
+                    @update="
+                      newVal => handleFieldUpdate('emailAddress', newVal)
+                    "
+                  >
+                    <span class="input-label">
+                      New {{ t('profile.form.contactDetails.email.label') }}
+                    </span>
+                  </BaseInput>
+                  <v-btn
+                    size="small"
+                    type="submit"
+                    color="secondary text-capitalize"
+                    class="mb-10"
+                    :disabled="showVerificationTokenField"
+                    :loading="generateTokenMutation.isLoading.value"
+                    @click="handleSendVerificationToken"
+                  >
+                    {{
+                      showVerificationTokenField
+                        ? 'Verification token sent'
+                        : 'Send verification token'
+                    }}
+                  </v-btn>
+                  <v-text-field
+                    v-if="showVerificationTokenField"
+                    v-model="verificationToken"
+                    label="Enter Verification Token"
+                    required
+                  ></v-text-field>
+                  <v-alert
+                    v-if="errorMsg"
+                    type="error"
+                    dense
+                    border="top"
+                    variant="outlined"
+                  >
+                    {{ errorMsg }}
+                  </v-alert>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn color="primary" @click="handleVerifyToken">
+                    Verify Token
+                  </v-btn>
+                  <v-btn
+                    color="grey"
+                    @click="() => (changeEmailDialog = false)"
+                  >
+                    Close
+                  </v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </v-col>
           <v-col>
             <!-- Mobile number -->
@@ -28,6 +99,13 @@
               type="tel"
               name="mobileNumber"
               autocomplete="tel"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.mobileNumber = user.dieticianProfile.mobileNumber
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.mobileNumber"
               :rules="[mobileNumberValidator]"
               @update="newVal => handleFieldUpdate('mobileNumber', newVal)"
@@ -46,6 +124,14 @@
               type="text"
               name="businessNumber"
               autocomplete="tel"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.businessNumber =
+                    user.dieticianProfile.businessNumber ?? ''
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.businessNumber"
               @update="newVal => handleFieldUpdate('businessNumber', newVal)"
             >
@@ -63,6 +149,14 @@
               type="text"
               name="businessAddress"
               autocomplete="address-level3"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.businessAddress =
+                    user.dieticianProfile.businessAddress ?? ''
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.businessAddress"
               @update="newVal => handleFieldUpdate('businessAddress', newVal)"
             >
@@ -77,7 +171,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import BaseInput from '@/components/form/BaseInput.vue'
 import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
@@ -90,6 +184,7 @@ import {
   DieticianProfileValues,
   UserAttributesWithDieticianProfile,
 } from '@intake24-dietician/common/types/auth'
+import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
 
 export interface ContactDetailsFormValues {
   emailAddress: string
@@ -101,22 +196,41 @@ export interface ContactDetailsFormValues {
 const props = defineProps<{
   user: UserAttributesWithDieticianProfile
   profileFormValues: DieticianProfileValues
+  handleSubmit: () => void
 }>()
 const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
 }>()
 
+const generateTokenMutation = useGenerateToken()
+const verifyTokenMutation = useVerifyToken()
+
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-// eslint-disable-next-line vue/no-setup-props-destructure
+const currentEmailAddress = ref('')
 const formValues = ref<ContactDetailsFormValues>({
-  emailAddress: props.user.email,
-  mobileNumber: props.user.dieticianProfile.mobileNumber,
-  businessNumber: props.user.dieticianProfile.businessNumber ?? '',
-  businessAddress: props.user.dieticianProfile.businessAddress ?? '',
+  emailAddress: '',
+  mobileNumber: '',
+  businessNumber: '',
+  businessAddress: '',
 })
+
+onMounted(() => {
+  currentEmailAddress.value = props.user.email
+  formValues.value = {
+    emailAddress: props.user.email,
+    mobileNumber: props.user.dieticianProfile.mobileNumber,
+    businessNumber: props.user.dieticianProfile.businessNumber,
+    businessAddress: props.user.dieticianProfile.businessAddress,
+  }
+})
+
+const changeEmailDialog = ref(false)
+const verificationToken = ref('')
+const showVerificationTokenField = ref(false)
+const errorMsg = ref('')
 
 const handleFieldUpdate = useDebounceFn(
   (fieldName: keyof ContactDetailsFormValues, newVal: string) => {
@@ -125,6 +239,39 @@ const handleFieldUpdate = useDebounceFn(
   },
   INPUT_DEBOUNCE_TIME,
 )
+
+const handleSendVerificationToken = () => {
+  // TODO: Call API to send verification code
+  generateTokenMutation.mutate(
+    { email: currentEmailAddress.value },
+    {
+      onSuccess() {
+        showVerificationTokenField.value = true
+        errorMsg.value = ''
+      },
+      onError() {
+        errorMsg.value = 'Error sending verification token'
+      },
+    },
+  )
+}
+
+const handleVerifyToken = () => {
+  verifyTokenMutation.mutate(
+    { token: verificationToken.value },
+    {
+      onSuccess() {
+        changeEmailDialog.value = false
+        errorMsg.value = ''
+
+        props.handleSubmit()
+      },
+      onError() {
+        errorMsg.value = 'Invalid verification token'
+      },
+    },
+  )
+}
 </script>
 <style scoped lang="scss">
 .input-label {

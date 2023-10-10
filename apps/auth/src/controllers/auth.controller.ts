@@ -159,7 +159,7 @@ export class AuthController extends Controller {
       this.setStatus(500)
       this.logger.error(
         { email: hash(email), action: 'forgot password', statusCode: 500 },
-        'Password reset email failed',
+        'Password reset for email failed',
       )
       return {
         emailSent: false,
@@ -271,7 +271,6 @@ export class AuthController extends Controller {
     @Request() request: express.Request,
     @Body() details: { dieticianProfile: DieticianProfileValues },
   ) {
-    console.log({ details: details.dieticianProfile })
     const { accessToken } = request.cookies
 
     if (!accessToken) {
@@ -294,6 +293,44 @@ export class AuthController extends Controller {
     }
 
     return { data: { message: 'Profile updated successfully' } }
+  }
+
+  @Post('generate-token')
+  @Security('jwt')
+  public async generateToken(@Body() data: { email: string }) {
+    let token = ''
+
+    try {
+      token = await this.authService.generateUserToken(data.email)
+    } catch (error) {
+      this.setStatus(500)
+      return generateErrorResponse(
+        '500',
+        'Internal server error',
+        'An unknown error occurred. Please try again.',
+      )
+    }
+
+    return { data: { token } }
+  }
+
+  @Post('verify-token')
+  @Security('jwt')
+  public async verifyToken(@Body() data: { token: string }) {
+    try {
+      await this.authService.verifyUserToken(data.token)
+      return { tokenVerified: true, error: undefined }
+    } catch (error) {
+      this.setStatus(500)
+      return {
+        tokenVerified: true,
+        error: generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      }
+    }
   }
 
   private setAuthHeaders(token: Token): void {

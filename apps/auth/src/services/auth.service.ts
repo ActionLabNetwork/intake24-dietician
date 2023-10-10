@@ -112,29 +112,9 @@ export const createAuthService = (
   }
 
   const forgotPassword = async (email: string) => {
-    const user = await User.findOne({
-      where: { email },
-    })
-
-    if (!user) {
-      throw new Error('User not found')
-    }
-
-    let resetUrl = ''
-
-    try {
-      const token = crypto.randomBytes(32).toString('hex')
-      await Token.create({
-        userId: user.id,
-        token,
-        expiresAt: moment().add(1, 'hours').toDate(),
-      })
-
-      resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
-      logger.debug({ resetUrl })
-    } catch (error) {
-      throw new Error('Token creation failed')
-    }
+    const token = await generateUserToken(email)
+    const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
+    logger.debug({ resetUrl })
 
     // INFO: Uncomment this to test out mail sending
     // _emailService.sendPasswordResetEmail(email, resetUrl)
@@ -240,23 +220,86 @@ export const createAuthService = (
     const decoded = verifyJwtToken(accessToken)
     try {
       return sequelize.transaction(async t => {
-        const dieticianProfile = await DieticianProfile.findOne({
-          where: { userId: decoded['userId'] },
+        const user = await User.findOne({
+          where: { id: decoded['userId'] },
+          include: [DieticianProfile],
           transaction: t,
-          lock: true,
         })
 
-        if (!dieticianProfile) {
-          throw new Error('Dietician profile for user not found')
+        console.log({ user })
+        if (!user) {
+          throw new Error('User not found')
         }
 
-        await dieticianProfile.update(details, { transaction: t })
+        await user.update({ email: details.emailAddress }, { transaction: t })
+        await user.dieticianProfile.update(details, { transaction: t })
       })
     } catch (error) {
       throw new Error(getErrorMessage(error))
     }
   }
 
+  const generateUserToken = async (email: string): Promise<string> => {
+    let token = ''
+
+    try {
+      const user = await User.findOne({
+        where: { email },
+      })
+
+      if (!user) {
+        throw new Error('User not found')
+      }
+
+      token = crypto.randomBytes(32).toString('hex')
+      await Token.create({
+        userId: user.id,
+        token,
+        expiresAt: moment().add(1, 'hours').toDate(),
+      })
+    } catch (error) {
+      throw new Error('Token creation failed')
+    }
+
+    return token
+  }
+
+  const verifyUserToken = async (token: string): Promise<void> => {
+    const tokenEntity = await Token.findOne({
+      where: { token },
+    })
+
+    if (!tokenEntity) {
+      throw new Error('Invalid token')
+    }
+
+    if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+      throw new Error('Token has expired')
+    }
+
+    return sequelize.transaction(async t => {
+      const tokenEntity = await Token.findOne({
+        where: { token },
+        lock: true,
+        transaction: t,
+      })
+
+      if (!tokenEntity) {
+        throw new Error('Invalid token')
+      }
+
+      if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+        throw new Error('Token has expired')
+      }
+
+      await Token.destroy({
+        where: { userId: tokenEntity.userId },
+        transaction: t,
+      })
+    })
+  }
+
+  // Private helper functions
   const createToken = (
     payload: TokenPayload,
     secret: string,
@@ -387,5 +430,7 @@ export const createAuthService = (
     validateJwt,
     logout,
     updateProfile,
+    generateUserToken,
+    verifyUserToken,
   }
 }

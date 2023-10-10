@@ -35,6 +35,7 @@ describe('AuthController', () => {
     validateJwt: jest.fn(),
     logout: jest.fn(),
     updateProfile: jest.fn(),
+    generateUserToken: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),
@@ -46,6 +47,7 @@ describe('AuthController', () => {
   let mockRegister: jest.Mock
   let mockRefreshAccessToken: jest.Mock
   let mockForgotPassword: jest.Mock
+  let mockResetPassword: jest.Mock
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -73,11 +75,13 @@ describe('AuthController', () => {
     mockRegister = jest.fn()
     mockRefreshAccessToken = jest.fn()
     mockForgotPassword = jest.fn()
+    mockResetPassword = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
       refreshAccessToken: mockRefreshAccessToken,
       forgotPassword: mockForgotPassword,
+      resetPassword: mockResetPassword,
     })
 
     authController = new AuthController()
@@ -247,6 +251,69 @@ describe('AuthController', () => {
           ],
         },
       })
+    })
+  })
+
+  describe('resetPassword', () => {
+    it('should return { passwordChanged: true, error: undefined } when called with a valid token and password', async () => {
+      mockResetPassword.mockResolvedValueOnce(undefined)
+      const result = await authController.resetPassword('valid token', {
+        password: 'valid password',
+      })
+
+      expect(mockResetPassword).toHaveBeenCalledWith(
+        'valid token',
+        'valid password',
+      )
+      expect(result).toEqual({ passwordChanged: true, error: undefined })
+    })
+  })
+
+  it('should handle invalid token', async () => {
+    mockResetPassword.mockRejectedValueOnce(new Error('Invalid token'))
+    const result = await authController.resetPassword('invalid token', {
+      password: 'valid password',
+    })
+
+    expect(mockResetPassword).toHaveBeenCalledWith(
+      'invalid token',
+      'valid password',
+    )
+    expect(result).toEqual({
+      passwordChanged: false,
+      error: {
+        errors: [
+          {
+            status: '500',
+            title: 'Internal server error',
+            detail: 'An unknown error occurred. Please try again.',
+          },
+        ],
+      },
+    })
+  })
+
+  it('should handle invalid password', async () => {
+    mockResetPassword.mockRejectedValueOnce(new Error('Invalid password'))
+    const result = await authController.resetPassword('valid token', {
+      password: 'invalid password',
+    })
+
+    expect(mockResetPassword).toHaveBeenCalledWith(
+      'valid token',
+      'invalid password',
+    )
+    expect(result).toEqual({
+      passwordChanged: false,
+      error: {
+        errors: [
+          {
+            status: '500',
+            title: 'Internal server error',
+            detail: 'An unknown error occurred. Please try again.',
+          },
+        ],
+      },
     })
   })
 })
