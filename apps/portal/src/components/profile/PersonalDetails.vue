@@ -5,18 +5,122 @@
     </p>
     <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
       <v-container>
-        <v-row dense justify="center" align="center">
-          <v-col class="v-col-2" align="center">
+        <div v-if="mdAndUp">
+          <v-row dense justify="center" align="center">
+            <v-col class="v-col-2" align="center">
+              <div class="d-flex flex-column">
+                <v-avatar size="100%" class="avatar mx-auto">
+                  <v-img
+                    :src="avatarImage"
+                    alt="Avatar"
+                    height="100%"
+                    width="100%"
+                  />
+                </v-avatar>
+                <v-btn
+                  class="mt-5 text-center font-weight-medium text-capitalize"
+                  flat
+                  @click="
+                    () => {
+                      imageUpload.click()
+                    }
+                  "
+                >
+                  {{ t('profile.form.personalDetails.uploadImage') }}
+                </v-btn>
+                <input
+                  ref="imageUpload"
+                  type="file"
+                  accept="image/*"
+                  hidden
+                  @change="handleImageUpload"
+                />
+              </div>
+            </v-col>
+            <v-divider vertical class="mx-5"></v-divider>
+            <v-col>
+              <!-- First name -->
+              <BaseInput
+                type="text"
+                name="firstName"
+                autocomplete="given-name"
+                :value="formValues.firstName"
+                :rules="[requiredValidator('First name')]"
+                suffix-icon="mdi-restore"
+                class="base-input"
+                :handle-icon-click="
+                  () => {
+                    formValues.firstName = user.dieticianProfile.firstName
+                    emit('update', { ...formValues })
+                  }
+                "
+                @update="val => handleFieldUpdate('firstName', val)"
+              >
+                <span class="input-label">
+                  {{ t('profile.form.personalDetails.firstName.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
+                </span>
+              </BaseInput>
+              <!-- Middle name -->
+              <BaseInput
+                type="text"
+                name="middleName"
+                autocomplete="additional-name"
+                suffix-icon="mdi-restore"
+                :handle-icon-click="
+                  () => {
+                    formValues.middleName = user.dieticianProfile.middleName
+                    emit('update', { ...formValues })
+                  }
+                "
+                :value="formValues.middleName"
+                @update="val => handleFieldUpdate('middleName', val)"
+              >
+                <p class="input-label">
+                  {{ t('profile.form.personalDetails.middleName.label') }}
+                </p>
+              </BaseInput>
+              <!-- Last name -->
+              <BaseInput
+                type="text"
+                name="lastName"
+                autocomplete="family-name"
+                suffix-icon="mdi-restore"
+                :handle-icon-click="
+                  () => {
+                    formValues.lastName = user.dieticianProfile.lastName
+                    emit('update', { ...formValues })
+                  }
+                "
+                :value="formValues.lastName"
+                @update="val => handleFieldUpdate('lastName', val)"
+              >
+                <p class="input-label">
+                  {{ t('profile.form.personalDetails.lastName.label') }}
+                </p>
+              </BaseInput>
+            </v-col>
+          </v-row>
+        </div>
+
+        <div v-else>
+          <v-row dense justify="center" align="center">
             <div class="d-flex flex-column">
-              <v-avatar size="x-large" class="avatar mx-auto">
-                <v-img :src="avatarImage" alt="Avatar" />
+              <v-avatar size="100%" class="avatar mx-auto">
+                <v-img
+                  :src="avatarImage"
+                  alt="Avatar"
+                  height="100%"
+                  width="100%"
+                />
               </v-avatar>
               <v-btn
                 class="mt-5 text-center font-weight-medium text-capitalize"
                 flat
                 @click="
                   () => {
-                    console.log({ imageUpload })
                     imageUpload.click()
                   }
                 "
@@ -31,73 +135,75 @@
                 @change="handleImageUpload"
               />
             </div>
-          </v-col>
-          <v-divider vertical class="mx-5"></v-divider>
-          <v-col>
-            <!-- First name -->
-            <BaseInput
-              type="text"
-              name="firstName"
-              autocomplete="given-name"
-              :value="formValues.firstName"
-              :rules="[requiredValidator('First name')]"
-              suffix-icon="mdi-restore"
-              class="base-input"
-              :handle-icon-click="
-                () => {
-                  formValues.firstName = user.dieticianProfile.firstName
-                  emit('update', { ...formValues })
-                }
-              "
-              @update="val => handleFieldUpdate('firstName', val)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.personalDetails.firstName.label') }}
-              </span>
-              <span class="input-label suffix">
-                {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-              </span>
-            </BaseInput>
-            <!-- Middle name -->
-            <BaseInput
-              type="text"
-              name="middleName"
-              autocomplete="additional-name"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.middleName = user.dieticianProfile.middleName
-                  emit('update', { ...formValues })
-                }
-              "
-              :value="formValues.middleName"
-              @update="val => handleFieldUpdate('middleName', val)"
-            >
-              <p class="input-label">
-                {{ t('profile.form.personalDetails.middleName.label') }}
-              </p>
-            </BaseInput>
-            <!-- Last name -->
-            <BaseInput
-              type="text"
-              name="lastName"
-              autocomplete="family-name"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.lastName = user.dieticianProfile.lastName
-                  emit('update', { ...formValues })
-                }
-              "
-              :value="formValues.lastName"
-              @update="val => handleFieldUpdate('lastName', val)"
-            >
-              <p class="input-label">
-                {{ t('profile.form.personalDetails.lastName.label') }}
-              </p>
-            </BaseInput>
-          </v-col>
-        </v-row>
+          </v-row>
+          <v-divider class="my-5" />
+          <v-row dense justify="center" align="center">
+            <v-col>
+              <!-- First name -->
+              <BaseInput
+                type="text"
+                name="firstName"
+                autocomplete="given-name"
+                :value="formValues.firstName"
+                :rules="[requiredValidator('First name')]"
+                suffix-icon="mdi-restore"
+                class="base-input"
+                :handle-icon-click="
+                  () => {
+                    formValues.firstName = user.dieticianProfile.firstName
+                    emit('update', { ...formValues })
+                  }
+                "
+                @update="val => handleFieldUpdate('firstName', val)"
+              >
+                <span class="input-label">
+                  {{ t('profile.form.personalDetails.firstName.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
+                </span>
+              </BaseInput>
+              <!-- Middle name -->
+              <BaseInput
+                type="text"
+                name="middleName"
+                autocomplete="additional-name"
+                suffix-icon="mdi-restore"
+                :handle-icon-click="
+                  () => {
+                    formValues.middleName = user.dieticianProfile.middleName
+                    emit('update', { ...formValues })
+                  }
+                "
+                :value="formValues.middleName"
+                @update="val => handleFieldUpdate('middleName', val)"
+              >
+                <p class="input-label">
+                  {{ t('profile.form.personalDetails.middleName.label') }}
+                </p>
+              </BaseInput>
+              <!-- Last name -->
+              <BaseInput
+                type="text"
+                name="lastName"
+                autocomplete="family-name"
+                suffix-icon="mdi-restore"
+                :handle-icon-click="
+                  () => {
+                    formValues.lastName = user.dieticianProfile.lastName
+                    emit('update', { ...formValues })
+                  }
+                "
+                :value="formValues.lastName"
+                @update="val => handleFieldUpdate('lastName', val)"
+              >
+                <p class="input-label">
+                  {{ t('profile.form.personalDetails.lastName.label') }}
+                </p>
+              </BaseInput>
+            </v-col>
+          </v-row>
+        </div>
       </v-container>
     </v-card>
   </div>

@@ -1,5 +1,4 @@
 <template>
-  <v-btn rounded variant="text"> Change language </v-btn>
   <v-select
     label="Language"
     :items="_languages"

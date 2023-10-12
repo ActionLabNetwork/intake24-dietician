@@ -15,58 +15,36 @@
             <v-icon icon="mdi-chevron-down" size="large" />
           </v-btn>
         </template>
-        <v-card>
-          <v-card-text>
-            <div class="mx-auto text-center">
-              <v-avatar color="brown">
-                <span class="text-h5">{{ _user.initials }}</span>
-              </v-avatar>
-              <h3>{{ _user.fullName }}</h3>
-              <p class="text-caption mt-1">
-                {{ _user.email }}
-              </p>
-              <v-divider class="my-3"></v-divider>
-              <LanguageSelect />
-              <v-divider class="my-3"></v-divider>
-              <v-btn rounded variant="text" @click="handleLogout">
-                Log Out
-              </v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
+        <BasePreferences
+          :user="_user"
+          show-avatar
+          :handle-logout="handleLogout"
+        />
       </v-menu>
     </v-row>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import LanguageSelect from '@/components/app-bar/LanguageSelect.vue'
+import BasePreferences from './BasePreferences.vue'
 import { useLogout } from '@/mutations/useAuth'
 import { useProfile } from '@/queries/useAuth'
 import router from '@/router'
 import { useQueryClient } from '@tanstack/vue-query'
-// import { useAuthStore } from '@/stores/auth'
-// import { storeToRefs } from 'pinia'
 import { ref, watch } from 'vue'
+import { getInitials, getFullName } from '@/utils/profile'
 
-// const authStore = useAuthStore()
-// const { user, isProfileLoading } = storeToRefs(authStore)
 const queryClient = useQueryClient()
 queryClient.invalidateQueries({ queryKey: ['auth'] })
 
 const { data, isLoading: isProfileLoading } = useProfile()
 
 const user = ref(data.value?.data.data.user)
-
-const getInitials = (firstName = '', lastName = '') => {
-  return `${firstName.charAt(0).toUpperCase()}${lastName
-    .charAt(0)
-    .toUpperCase()}`
-}
-
-const getFullName = (firstName = '', lastName = '') => {
-  return `${firstName} ${lastName}`.trim()
-}
+const _user = ref({
+  initials: '',
+  fullName: '',
+  email: '',
+})
 
 watch(data, newData => {
   if (newData) {
@@ -85,12 +63,6 @@ watch(data, newData => {
 })
 
 const logoutMutation = useLogout()
-
-const _user = ref({
-  initials: 'JD',
-  fullName: ``,
-  email: '',
-})
 
 const handleLogout = () => {
   logoutMutation.mutate(

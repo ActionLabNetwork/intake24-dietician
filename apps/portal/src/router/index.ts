@@ -1,11 +1,11 @@
 // Composables
 import { env } from '@/config/env'
 import axios from 'axios'
-import { createRouter, createWebHistory } from 'vue-router'
+import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
-    path: '/',
+    path: '/' satisfies Path,
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
@@ -18,11 +18,11 @@ const routes = [
         meta: {
           requiresAuth: true,
         },
-      },
+      } as const,
     ],
-  },
+  } as const,
   {
-    path: '/auth',
+    path: '/auth' satisfies Path,
     children: [
       {
         path: 'login',
@@ -31,7 +31,7 @@ const routes = [
         meta: {
           hideIfAuthenticated: true,
         },
-      },
+      } as const,
       {
         path: 'register',
         name: 'Register',
@@ -39,7 +39,7 @@ const routes = [
         meta: {
           hideIfAuthenticated: true,
         },
-      },
+      } as const,
       {
         path: 'forgot-password',
         name: 'Forgot Password',
@@ -47,7 +47,7 @@ const routes = [
         meta: {
           hideIfAuthenticated: true,
         },
-      },
+      } as const,
       {
         path: 'reset-password',
         name: 'Reset Password',
@@ -55,9 +55,9 @@ const routes = [
         meta: {
           hideIfAuthenticated: true,
         },
-      },
+      } as const,
     ],
-  },
+  } as const,
   {
     path: '/dashboard',
     component: () => import('@/layouts/default/Default.vue'),
@@ -68,7 +68,7 @@ const routes = [
         component: () => import('@/views/dashboard/Patients.vue'),
         meta: {
           requiresAuth: true,
-        },
+        } as const,
       },
       {
         path: 'master-settings',
@@ -76,7 +76,7 @@ const routes = [
         component: () => import('@/views/dashboard/MasterSettings.vue'),
         meta: {
           requiresAuth: true,
-        },
+        } as const,
       },
       {
         path: 'my-profile',
@@ -84,15 +84,15 @@ const routes = [
         component: () => import('@/views/dashboard/Profile.vue'),
         meta: {
           requiresAuth: true,
-        },
+        } as const,
       },
     ],
-  },
+  } as const,
 ]
 
 const router = createRouter({
   history: createWebHistory(process.env['BASE_URL']),
-  routes,
+  routes: routes as RouteRecordRaw[],
 })
 
 router.beforeEach(async (to, from, next) => {

@@ -3,7 +3,7 @@
     <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
-          <v-col>
+          <v-col cols="12" md="4">
             <!-- Email address -->
             <BaseInput
               type="email"
@@ -93,7 +93,7 @@
               </v-card>
             </v-dialog>
           </v-col>
-          <v-col>
+          <v-col cols="12" sm="6" md="4">
             <!-- Mobile number -->
             <BaseInput
               type="tel"
@@ -118,7 +118,7 @@
               </span>
             </BaseInput>
           </v-col>
-          <v-col>
+          <v-col cols="12" sm="6" md="4">
             <!-- Business number -->
             <BaseInput
               type="text"
@@ -143,7 +143,7 @@
         </v-row>
         <v-divider class="my-3"></v-divider>
         <v-row>
-          <v-col>
+          <v-col cols="12">
             <!-- Business address -->
             <BaseInput
               type="text"
