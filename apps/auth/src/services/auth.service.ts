@@ -22,6 +22,8 @@ import { createLogger } from '../middleware/logger'
 import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import { match, P } from 'ts-pattern'
+import { Result } from '@intake24-dietician/common/types/utils'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -35,99 +37,164 @@ export const createAuthService = (
   const register = async (
     email: string,
     password: string,
-  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
-    const isValidEmail = z.string().email().safeParse(email)
-    const emailExists = await User.findOne({ where: { email } })
-
-    if (!isValidEmail.success) {
-      throw new Error(
-        'Invalid email address. Please try again with a different one.',
-      )
-    }
-
-    if (emailExists) {
-      throw new Error(
-        'An account with this email address already exists. Please try again with a different one.',
-      )
-    }
-
-    const hashedPassword = await hashingService.hash(password)
-
+  ): Promise<
+    Result<(UserAttributes & { token: TokenType; jti: string }) | null>
+  > => {
     try {
-      return sequelize.transaction(async t => {
-        const user = await User.create(
-          {
-            email,
-            password: hashedPassword,
-          },
-          { transaction: t },
-        )
+      const isValidEmail = z.string().email().safeParse(email).success
+      const emailExists = Boolean(await User.findOne({ where: { email } }))
 
-        await DieticianProfile.create(
-          {
-            userId: user.id,
-          },
-          { transaction: t },
+      return match<[boolean, boolean]>([isValidEmail, emailExists])
+        .with(
+          [false, P.any],
+          () =>
+            ({
+              ok: false,
+              error: new Error(
+                'Invalid email address. Please try again with a different one.',
+              ),
+            }) as const,
         )
+        .with(
+          [P.any, true],
+          () =>
+            ({
+              ok: false,
+              error: new Error(
+                'An account with this email address already exists. Please try again with a different one.',
+              ),
+            }) as const,
+        )
+        .with([true, false], async () => {
+          const hashedPassword = await hashingService.hash(password)
 
-        const dieticianRole = await Role.findOne({
-          where: { name: 'dietician' },
-          lock: true,
-          transaction: t,
+          try {
+            return sequelize.transaction(async t => {
+              const user = await User.create(
+                {
+                  email,
+                  password: hashedPassword,
+                },
+                { transaction: t },
+              )
+
+              await DieticianProfile.create(
+                {
+                  userId: user.id,
+                },
+                { transaction: t },
+              )
+
+              const dieticianRole = await Role.findOne({
+                where: { name: 'dietician' },
+                lock: true,
+                transaction: t,
+              })
+
+              if (dieticianRole) {
+                await UserRole.create(
+                  {
+                    userId: user.id,
+                    roleId: dieticianRole.id,
+                  },
+                  { transaction: t },
+                )
+              }
+
+              const { jti, token } = await generateToken(user, 'both')
+
+              return {
+                ok: true,
+                value: {
+                  ...user.get({ plain: true }),
+                  token: token as TokenType,
+                  jti,
+                },
+              } as const
+            })
+          } catch (error) {
+            return {
+              ok: false as const,
+              error: new Error(getErrorMessage(error)),
+            } as const
+          }
         })
-
-        if (dieticianRole) {
-          await UserRole.create(
-            {
-              userId: user.id,
-              roleId: dieticianRole.id,
-            },
-            { transaction: t },
-          )
-        }
-
-        const { jti, token } = await generateToken(user, 'both')
-
-        return { ...user.get({ plain: true }), token: token as TokenType, jti }
-      })
+        .exhaustive()
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      return {
+        ok: false,
+        error: new Error('register function failed'),
+      } as const
     }
   }
 
   const login = async (
     email: string,
     password: string,
-  ): Promise<(UserAttributes & { token: TokenType; jti: string }) | null> => {
-    const user = await User.findOne({ where: { email } })
+  ): Promise<
+    Result<(UserAttributes & { token: TokenType; jti: string }) | null>
+  > => {
+    try {
+      const getUser = async (): Promise<User | null> =>
+        await User.findOne({ where: { email } })
 
-    if (
-      user &&
-      (await hashingService.verify(user.dataValues.password, password))
-    ) {
-      const { jti, token } = await generateToken(user, 'both')
-      return { ...user.get({ plain: true }), token: token as TokenType, jti }
+      const verifyPassword = async (user: User): Promise<Result<boolean>> =>
+        await hashingService.verify(user.dataValues.password, password)
+
+      const generateTokenAndReturnValues = async (user: User) => {
+        const { jti, token } = await generateToken(user, 'both')
+        return {
+          ...user.get({ plain: true }),
+          token: token as TokenType,
+          jti,
+        }
+      }
+
+      const userWithToken = await match(await getUser())
+        .with(null, () => null)
+        .otherwise(async user => {
+          return match(await verifyPassword(user))
+            .with({ ok: true }, () => generateTokenAndReturnValues(user))
+            .otherwise(() => null)
+        })
+
+      return { ok: true, value: userWithToken } as const
+    } catch (error) {
+      return { ok: false, error: new Error('login function failed') } as const
     }
-
-    return null
   }
 
-  const forgotPassword = async (email: string) => {
-    const token = await generateUserToken(email, 'reset-password')
-    const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
-    logger.debug({ resetUrl })
+  const forgotPassword = async (email: string): Promise<Result<string>> => {
+    try {
+      const token = await generateUserToken(email, 'reset-password')
 
-    // INFO: Uncomment this to test out mail sending
-    // _emailService.sendPasswordResetEmail(email, resetUrl)
+      if (!token.ok) {
+        return {
+          ok: false,
+          error: new Error('Token creation failed'),
+        } as const
+      }
 
-    return resetUrl
+      const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token.value}`
+      logger.debug({ resetUrl })
+
+      // INFO: Uncomment this to test out mail sending
+      // _emailService.sendPasswordResetEmail(email, resetUrl)
+
+      return { ok: true, value: resetUrl } as const
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('forgotPassword function failed'),
+      } as const
+    }
   }
 
   const resetPassword = async (
     token: string,
     password: string,
-  ): Promise<void> => {
-    return sequelize.transaction(async t => {
+  ): Promise<Result<string>> => {
+    const result = await sequelize.transaction(async t => {
       const tokenEntity = await Token.findOne({
         where: { token },
         lock: true,
@@ -135,11 +202,11 @@ export const createAuthService = (
       })
 
       if (!tokenEntity) {
-        throw new Error('Invalid token')
+        return { ok: false, error: new Error('Invalid token') } as const
       }
 
       if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-        throw new Error('Token has expired')
+        return { ok: false, error: new Error('Token has expired') } as const
       }
 
       await User.update(
@@ -151,76 +218,111 @@ export const createAuthService = (
         where: { userId: tokenEntity.userId },
         transaction: t,
       })
+
+      return { ok: true, value: 'Password reset successful' } as const
     })
+
+    return result
   }
 
   const refreshAccessToken = async (
     refreshToken: string,
-  ): Promise<UserAttributes & { token: TokenType; jti: string }> => {
-    const tokenInRedis = await redis.get(`token:${refreshToken}`)
-    if (!tokenInRedis) {
-      throw new Error('Token is either invalid or expired.')
-    }
+  ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
+    try {
+      const tokenInRedis = await redis.get(`token:${refreshToken}`)
+      if (!tokenInRedis) {
+        return {
+          ok: false,
+          error: new Error('Token is either invalid or expired.'),
+        } as const
+      }
 
-    const decoded = verifyJwtToken(tokenInRedis, 'refresh-token')
-
-    const user = await User.findOne({ where: { id: decoded['userId'] } })
-    if (!user) {
-      throw new Error('User not found')
-    }
-    const { jti, token } = await generateToken(user, 'access')
-    return {
-      ...user.get({ plain: true }),
-      token,
-      jti,
+      const decoded = verifyJwtToken(tokenInRedis, 'refresh-token')
+      const user = await User.findOne({ where: { id: decoded['userId'] } })
+      if (!user) {
+        return { ok: false, error: new Error('User not found') }
+      }
+      const { jti, token } = await generateToken(user, 'access')
+      return {
+        ok: true,
+        value: {
+          ...user.get({ plain: true }),
+          token,
+          jti,
+        },
+      } as const
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('refreshAccessToken function failed'),
+      } as const
     }
   }
 
   const getUser = async (
     accessToken: string,
-  ): Promise<UserAttributes | null> => {
-    const decodedToken = verifyJwtToken(accessToken)
-    await checkTokenInRedis(decodedToken['jti'] ?? '')
-    const user = await User.findOne({
-      where: { id: decodedToken['userId'] },
-      include: [DieticianProfile],
-    })
+  ): Promise<Result<UserAttributes | null>> => {
+    try {
+      const decodedToken = verifyJwtToken(accessToken)
+      await checkTokenInRedis(decodedToken['jti'] ?? '')
+      const user = await User.findOne({
+        where: { id: decodedToken['userId'] },
+        include: [DieticianProfile],
+      })
 
-    if (!user) {
-      throw new Error('User not found')
-    }
+      if (!user) {
+        return { ok: false, error: new Error('User not found') } as const
+      }
 
-    return {
-      ...user.get({ plain: true }),
+      return { ok: true, value: user.get({ plain: true }) } as const
+    } catch (_) {
+      return { ok: false, error: new Error('getUser function failed') } as const
     }
   }
 
-  const validateJwt = async (token: string): Promise<boolean> => {
-    const decoded = verifyJwtToken(token)
-    const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
+  const validateJwt = async (token: string): Promise<Result<boolean>> => {
+    try {
+      const decoded = verifyJwtToken(token)
+      const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
 
-    if (!tokenInRedis) {
-      throw new Error('Token is either invalid or expired.')
+      if (!tokenInRedis) {
+        return {
+          ok: false,
+          error: new Error('Token is either invalid or expired.'),
+        } as const
+      }
+
+      return { ok: true, value: Boolean(decoded) } as const
+    } catch (_) {
+      return {
+        ok: false,
+        error: new Error('validateJwt function failed'),
+      } as const
     }
-
-    return !!decoded
   }
 
-  const logout = async (accessToken: string) => {
-    const decoded = verifyJwtToken(accessToken)
-    const jti = (decoded as JwtPayload)['jti']
+  const logout = async (accessToken: string): Promise<Result<string>> => {
+    try {
+      const decoded = verifyJwtToken(accessToken)
+      const jti = (decoded as JwtPayload)['jti']
 
-    await redis.del(`access:${jti}`)
-    await redis.del(`refresh:${jti}`)
+      await redis.del(`access:${jti}`)
+      await redis.del(`refresh:${jti}`)
+
+      return { ok: true, value: 'Logout successful' } as const
+    } catch (_) {
+      return { ok: false, error: new Error('Logout failed') } as const
+    }
   }
 
-  const updateProfile = (
+  const updateProfile = async (
     details: DieticianProfileValues,
     accessToken: string,
-  ) => {
-    const decoded = verifyJwtToken(accessToken)
+  ): Promise<Result<string>> => {
     try {
-      return sequelize.transaction(async t => {
+      const decoded = verifyJwtToken(accessToken)
+
+      await sequelize.transaction(async t => {
         const user = await User.findOne({
           where: { id: decoded['userId'] },
           include: [DieticianProfile],
@@ -234,15 +336,17 @@ export const createAuthService = (
         await user.update({ email: details.emailAddress }, { transaction: t })
         await user.dieticianProfile.update(details, { transaction: t })
       })
+
+      return { ok: true, value: 'Profile updated successfully' } as const
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   }
 
   const generateUserToken = async (
     email: string,
     actionType: TokenActionType,
-  ): Promise<string> => {
+  ): Promise<Result<string>> => {
     let token = ''
 
     try {
@@ -251,7 +355,7 @@ export const createAuthService = (
       })
 
       if (!user) {
-        throw new Error('User not found')
+        return { ok: false, error: new Error('User not found') } as const
       }
 
       token = crypto.randomBytes(32).toString('hex')
@@ -262,33 +366,39 @@ export const createAuthService = (
         expiresAt: moment().add(1, 'hours').toDate(),
       })
     } catch (error) {
-      throw new Error('Token creation failed')
+      return {
+        ok: false,
+        error: new Error(getErrorMessage('Token creation failed')),
+      } as const
     }
 
-    return token
+    return { ok: true, value: token }
   }
 
   const verifyUserToken = async (
     token: string,
     actionType: TokenActionType,
-  ): Promise<void> => {
+  ): Promise<Result<string>> => {
     const tokenEntity = await Token.findOne({
       where: { token },
     })
 
     if (!tokenEntity) {
-      throw new Error('Invalid token')
+      return { ok: false, error: new Error('Invalid token') } as const
     }
 
     if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-      throw new Error('Token has expired')
+      return { ok: false, error: new Error('Token has expired') } as const
     }
 
     if (tokenEntity.actionType !== actionType) {
-      throw new Error('Token has the wrong action type')
+      return {
+        ok: false,
+        error: new Error('Token has the wrong action type'),
+      } as const
     }
 
-    return sequelize.transaction(async t => {
+    await sequelize.transaction(async t => {
       const tokenEntity = await Token.findOne({
         where: { token },
         lock: true,
@@ -308,12 +418,17 @@ export const createAuthService = (
         transaction: t,
       })
     })
+
+    return { ok: true, value: 'User token has been verified' } as const
   }
 
-  const uploadAvatar = (accessToken: string, buffer: string) => {
+  const uploadAvatar = async (
+    accessToken: string,
+    buffer: string,
+  ): Promise<Result<string>> => {
     const decoded = verifyJwtToken(accessToken)
     try {
-      return sequelize.transaction(async t => {
+      await sequelize.transaction(async t => {
         const user = await User.findOne({
           where: { id: decoded['userId'] },
           include: [DieticianProfile],
@@ -324,15 +439,15 @@ export const createAuthService = (
           throw new Error('User not found')
         }
 
-        console.log({ buffer })
-
         await user.dieticianProfile.update(
           { avatar: buffer },
           { transaction: t },
         )
       })
+
+      return { ok: true, value: 'Avatar uploaded successfully' } as const
     } catch (error) {
-      throw new Error(getErrorMessage(error))
+      return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   }
 

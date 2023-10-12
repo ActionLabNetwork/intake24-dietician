@@ -18,6 +18,12 @@ const config: Config.InitialOptions = {
   testEnvironment: 'node',
   testMatch: ['**/__tests__/**/*.spec.ts'],
   testTimeout: 10000,
+  collectCoverage: true,
+  coverageThreshold: {
+    global: {
+      lines: 90,
+    },
+  },
 }
 
 export default config

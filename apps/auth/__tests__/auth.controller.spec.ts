@@ -37,6 +37,7 @@ describe('AuthController', () => {
     updateProfile: jest.fn(),
     generateUserToken: jest.fn(),
     verifyUserToken: jest.fn(),
+    uploadAvatar: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),
@@ -113,7 +114,7 @@ describe('AuthController', () => {
           refreshToken: 'testRefreshToken',
         },
       }
-      mockLogin.mockResolvedValueOnce(mockUser)
+      mockLogin.mockResolvedValueOnce({ ok: true, value: mockUser })
 
       const result = await authController.login(request)
 
@@ -121,7 +122,7 @@ describe('AuthController', () => {
     })
 
     it('should return unauthorized error on invalid credentials', async () => {
-      mockLogin.mockResolvedValueOnce(null)
+      mockLogin.mockResolvedValueOnce({ ok: true, value: null })
       const result = await authController.login(request)
 
       expect(result).toEqual({
@@ -157,7 +158,7 @@ describe('AuthController', () => {
           refreshToken: 'testRefreshToken',
         },
       }
-      mockRegister.mockResolvedValueOnce(mockUser)
+      mockRegister.mockResolvedValueOnce({ ok: true, value: mockUser })
 
       const result = await authController.register(request)
 
@@ -165,7 +166,7 @@ describe('AuthController', () => {
     })
 
     it('should return unauthorized error if user is null', async () => {
-      mockRegister.mockResolvedValueOnce(null)
+      mockRegister.mockResolvedValueOnce({ ok: true, value: null })
 
       const result = await authController.register(request)
 
@@ -175,12 +176,19 @@ describe('AuthController', () => {
     })
 
     it('should handle errors during registration', async () => {
-      mockRegister.mockRejectedValueOnce(new Error('Some registration error'))
+      mockRegister.mockResolvedValueOnce({
+        ok: false,
+        error: new Error('Some error'),
+      })
 
       const result = await authController.register(request)
 
       expect(result).toEqual(
-        generateErrorResponse('400', 'Bad Request', 'Some registration error'),
+        generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
       )
     })
   })
@@ -202,7 +210,10 @@ describe('AuthController', () => {
         },
       }
 
-      mockRefreshAccessToken.mockResolvedValueOnce(mockUser)
+      mockRefreshAccessToken.mockResolvedValueOnce({
+        ok: true,
+        value: mockUser,
+      })
 
       const result = await authController.refreshAccessToken('some token')
 
@@ -210,14 +221,19 @@ describe('AuthController', () => {
     })
 
     it('should return unauthorized error if user is null', async () => {
-      mockRefreshAccessToken.mockRejectedValueOnce(
-        new Error('Some refresh error'),
-      )
+      mockRefreshAccessToken.mockResolvedValueOnce({
+        ok: false,
+        error: new Error('Some refresh error'),
+      })
 
       const result = await authController.refreshAccessToken('invalid token')
 
       expect(result).toEqual(
-        generateErrorResponse('400', 'Bad request', 'Invalid refresh token'),
+        generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
       )
     })
   })
@@ -226,7 +242,7 @@ describe('AuthController', () => {
     it('should return { emailSent: true, error: undefined } when called with a valid email', async () => {
       const email = 'valid@example.com'
       const requestBody = { email }
-      mockForgotPassword.mockResolvedValueOnce(email)
+      mockForgotPassword.mockResolvedValueOnce({ ok: true, value: email })
 
       const result = await authController.forgotPassword(requestBody)
 
@@ -236,7 +252,10 @@ describe('AuthController', () => {
     it('should handle unregistered email', async () => {
       const email = 'unregistered@example.com'
       const requestBody = { email }
-      mockForgotPassword.mockRejectedValueOnce(new Error('User not found'))
+      mockForgotPassword.mockResolvedValueOnce({
+        ok: false,
+        error: new Error('User not found'),
+      })
 
       const result = await authController.forgotPassword(requestBody)
 
@@ -257,7 +276,7 @@ describe('AuthController', () => {
 
   describe('resetPassword', () => {
     it('should return { passwordChanged: true, error: undefined } when called with a valid token and password', async () => {
-      mockResetPassword.mockResolvedValueOnce(undefined)
+      mockResetPassword.mockResolvedValueOnce({ ok: true, value: undefined })
       const result = await authController.resetPassword('valid token', {
         password: 'valid password',
       })
@@ -271,7 +290,10 @@ describe('AuthController', () => {
   })
 
   it('should handle invalid token', async () => {
-    mockResetPassword.mockRejectedValueOnce(new Error('Invalid token'))
+    mockResetPassword.mockResolvedValueOnce({
+      ok: false,
+      error: new Error('Invalid token'),
+    })
     const result = await authController.resetPassword('invalid token', {
       password: 'valid password',
     })
@@ -295,7 +317,10 @@ describe('AuthController', () => {
   })
 
   it('should handle invalid password', async () => {
-    mockResetPassword.mockRejectedValueOnce(new Error('Invalid password'))
+    mockResetPassword.mockResolvedValueOnce({
+      ok: false,
+      error: new Error('Invalid password'),
+    })
     const result = await authController.resetPassword('valid token', {
       password: 'invalid password',
     })

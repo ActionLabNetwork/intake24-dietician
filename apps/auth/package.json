@@ -16,7 +16,7 @@
     "test:build": "pnpm build:clean && webpack --env NODE_ENV=test",
     "test:unit": "DOTENV_CONFIG_PATH=.env.test NODE_ENV=test jest --logHeapUsage",
     "test:unit:coverage": "pnpm test:unit --coverage",
-    "test:unit:watch": "pnpm test:unit --watch",
+    "test:unit:watch": "pnpm test:unit:coverage --watch",
     "test:integration": "jest ./__tests__/integration/index.test.ts --runInBand --testMatch **/__tests__/integration/**/*.test.ts",
     "test:integration:coverage": "pnpm test:integration --coverage",
     "test:integration:watch": "pnpm test:integration --watch"
@@ -48,6 +48,7 @@
     "redis": "^4.6.10",
     "sequelize-mock": "^0.10.2",
     "swagger-ui-express": "^5.0.0",
+    "ts-pattern": "^5.0.5",
     "tsoa": "^5.1.1",
     "zod": "^3.22.2"
   },

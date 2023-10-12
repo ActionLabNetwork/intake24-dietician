@@ -1,1 +1,4 @@
-export type ValueOf<T> = T[keyof T];
+export type ValueOf<T> = T[keyof T]
+export type Result<T, E = Error> =
+  | { ok: true; value: T }
+  | { ok: false; error: E }

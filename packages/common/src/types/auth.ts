@@ -1,5 +1,6 @@
 import { ApiResponse } from '@intake24-dietician/common/types/api'
 import { JwtPayload } from 'jsonwebtoken'
+import { Result } from './utils'
 
 export interface UserAttributes {
   id: number
@@ -38,28 +39,37 @@ export interface TokenPayload {
 export interface IHashingService {
   randomHash: () => Promise<string>
   hash: (password: string) => Promise<string>
-  verify: (hashedPassword: string, password: string) => Promise<boolean>
+  verify: (hashedPassword: string, password: string) => Promise<Result<boolean>>
 }
 
 export interface IAuthService {
-  login: (email: string, password: string) => Promise<UserWithToken | null>
-  register: (email: string, password: string) => Promise<UserWithToken | null>
-  forgotPassword: (email: string) => Promise<string>
-  resetPassword: (token: string, password: string) => Promise<void>
-  refreshAccessToken: (refreshToken: string) => Promise<UserWithToken>
-  getUser: (jti: string) => Promise<UserAttributes | null>
-  validateJwt: (token: string) => Promise<boolean>
-  logout: (accessToken: string) => Promise<void>
+  login: (
+    email: string,
+    password: string,
+  ) => Promise<Result<UserWithToken | null>>
+  register: (
+    email: string,
+    password: string,
+  ) => Promise<Result<(UserWithToken & { jti: string }) | null>>
+  forgotPassword: (email: string) => Promise<Result<string>>
+  resetPassword: (token: string, password: string) => Promise<Result<string>>
+  refreshAccessToken: (refreshToken: string) => Promise<Result<UserWithToken>>
+  getUser: (jti: string) => Promise<Result<UserAttributes | null>>
+  validateJwt: (token: string) => Promise<Result<boolean>>
+  logout: (accessToken: string) => Promise<Result<string>>
   updateProfile: (
     details: DieticianProfileValues,
     accessToken: string,
-  ) => Promise<void>
+  ) => Promise<Result<string>>
   generateUserToken: (
     email: string,
     actionType: TokenActionType,
-  ) => Promise<string>
-  verifyUserToken: (token: string, actionType: TokenActionType) => Promise<void>
-  uploadAvatar: (accessToken: string, buffer: string) => Promise<void>
+  ) => Promise<Result<string>>
+  verifyUserToken: (
+    token: string,
+    actionType: TokenActionType,
+  ) => Promise<Result<string>>
+  uploadAvatar: (accessToken: string, buffer: string) => Promise<Result<string>>
 }
 
 export interface ITokenService {
