@@ -426,8 +426,8 @@ export const createAuthService = (
     accessToken: string,
     buffer: string,
   ): Promise<Result<string>> => {
-    const decoded = verifyJwtToken(accessToken)
     try {
+      const decoded = verifyJwtToken(accessToken)
       await sequelize.transaction(async t => {
         const user = await User.findOne({
           where: { id: decoded['userId'] },

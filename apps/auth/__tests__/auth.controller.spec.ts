@@ -25,6 +25,7 @@ jest.mock('../src/middleware/logger', () => {
 
 describe('AuthController', () => {
   let authController: AuthController
+  let setHeaderSpy: jest.SpyInstance
   const mockAuthService: jest.Mocked<IAuthService> = {
     login: jest.fn(),
     register: jest.fn(),
@@ -50,6 +51,13 @@ describe('AuthController', () => {
   let mockRefreshAccessToken: jest.Mock
   let mockForgotPassword: jest.Mock
   let mockResetPassword: jest.Mock
+  let mockGetUser: jest.Mock
+  let mockValidateJwt: jest.Mock
+  let mockLogout: jest.Mock
+  let mockUpdateProfile: jest.Mock
+  let mockGenerateUserToken: jest.Mock
+  let mockVerifyUserToken: jest.Mock
+  let mockUploadAvatar: jest.Mock
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -72,24 +80,40 @@ describe('AuthController', () => {
     })
 
     authController = new AuthController()
+    setHeaderSpy = jest.spyOn(authController, 'setHeader')
 
     mockLogin = jest.fn()
     mockRegister = jest.fn()
     mockRefreshAccessToken = jest.fn()
     mockForgotPassword = jest.fn()
     mockResetPassword = jest.fn()
+    mockGetUser = jest.fn()
+    mockValidateJwt = jest.fn()
+    mockLogout = jest.fn()
+    mockUpdateProfile = jest.fn()
+    mockGenerateUserToken = jest.fn()
+    mockVerifyUserToken = jest.fn()
+    mockUploadAvatar = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
       refreshAccessToken: mockRefreshAccessToken,
       forgotPassword: mockForgotPassword,
       resetPassword: mockResetPassword,
+      getUser: mockGetUser,
+      validateJwt: mockValidateJwt,
+      logout: mockLogout,
+      updateProfile: mockUpdateProfile,
+      generateUserToken: mockGenerateUserToken,
+      verifyUserToken: mockVerifyUserToken,
+      uploadAvatar: mockUploadAvatar,
     })
 
     authController = new AuthController()
   })
 
   afterEach(() => {
+    setHeaderSpy.mockRestore()
     jest.clearAllMocks()
   })
 
@@ -340,6 +364,315 @@ describe('AuthController', () => {
           },
         ],
       },
+    })
+  })
+
+  describe('getProfile', () => {
+    it('should return 401 if accessToken is not in the cookies', async () => {
+      const requestMock = {
+        cookies: {},
+      } as any
+
+      const result = await authController.getProfile(requestMock)
+
+      expect(result).toEqual(
+        generateErrorResponse('401', 'Unauthorized', 'Invalid credentials'),
+      )
+    })
+
+    it('should return 401 if user is not found', async () => {
+      const requestMock = {
+        cookies: {
+          accessToken: 'some-token',
+        },
+      } as any
+
+      mockGetUser.mockResolvedValueOnce({ ok: true, value: null })
+
+      const result = await authController.getProfile(requestMock)
+
+      expect(result).toEqual(
+        generateErrorResponse('401', 'Unauthorized', 'Invalid credentials'),
+      )
+    })
+
+    it('should return user profile if user is found', async () => {
+      const requestMock = {
+        cookies: {
+          accessToken: 'some-token',
+        },
+      } as any
+
+      const mockUser = { id: '123', name: 'John' }
+
+      mockGetUser.mockResolvedValueOnce({ ok: true, value: mockUser })
+
+      const result = await authController.getProfile(requestMock)
+
+      expect(result).toEqual({ data: { user: mockUser } })
+    })
+
+    it('should return 500 if there was an error getting the user', async () => {
+      const requestMock = {
+        cookies: {
+          accessToken: 'some-token',
+        },
+      } as any
+
+      mockGetUser.mockResolvedValueOnce({
+        ok: false,
+        error: new Error('Unexpected error'),
+      })
+
+      const result = await authController.getProfile(requestMock)
+
+      expect(result).toEqual(
+        generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      )
+    })
+  })
+
+  describe('validateJwt', () => {
+    it('should return isAuthenticated false if accessToken is not in the cookies', async () => {
+      const requestMock = {
+        cookies: {},
+      } as any
+
+      const result = await authController.validateJwt(requestMock)
+
+      expect(result).toEqual({ isAuthenticated: false })
+    })
+
+    it('should return isAuthenticated true if JWT is valid', async () => {
+      const requestMock = {
+        cookies: {
+          accessToken: 'valid-token',
+        },
+      } as any
+
+      mockValidateJwt.mockResolvedValueOnce({ ok: true })
+
+      const result = await authController.validateJwt(requestMock)
+
+      expect(result).toEqual({ isAuthenticated: true })
+    })
+
+    it('should return isAuthenticated false if JWT is not valid', async () => {
+      const requestMock = {
+        cookies: {
+          accessToken: 'invalid-token',
+        },
+      } as any
+
+      mockValidateJwt.mockResolvedValueOnce({ ok: false })
+
+      const result = await authController.validateJwt(requestMock)
+
+      expect(result).toEqual({ isAuthenticated: false })
+    })
+  })
+
+  describe('updateProfile', () => {
+    const dieticianProfile = {
+      dieticianProfile: {
+        firstName: '',
+        middleName: '',
+        lastName: '',
+        emailAddress: '',
+        mobileNumber: '',
+        businessNumber: '',
+        businessAddress: '',
+        shortBio: '',
+        avatar: '',
+      },
+    }
+    it('should return 401 if accessToken is not in the cookies', async () => {
+      const requestMock = {
+        cookies: {},
+      } as any
+
+      const result = await authController.updateProfile(
+        requestMock,
+        dieticianProfile,
+      )
+
+      expect(result).toEqual(
+        generateErrorResponse('401', 'Unauthorized', 'Invalid credentials'),
+      )
+    })
+
+    it('should return success message if profile update succeeds', async () => {
+      const accessToken = 'valid-token'
+      const requestMock = {
+        cookies: {
+          accessToken,
+        },
+      } as any
+
+      mockUpdateProfile.mockResolvedValueOnce({ ok: true })
+
+      const result = await authController.updateProfile(
+        requestMock,
+        dieticianProfile,
+      )
+
+      expect(result).toEqual({
+        data: { message: 'Profile updated successfully' },
+      })
+    })
+
+    it('should return 500 if profile update fails', async () => {
+      const accessToken = 'invalid-token'
+      const requestMock = {
+        cookies: {
+          accessToken,
+        },
+      } as any
+
+      const errorMock = new Error('Update failed')
+
+      mockUpdateProfile.mockResolvedValueOnce({
+        ok: false,
+        error: errorMock,
+      })
+
+      const result = await authController.updateProfile(
+        requestMock,
+        dieticianProfile,
+      )
+
+      expect(result).toEqual(
+        generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      )
+    })
+  })
+
+  describe('generateToken', () => {
+    it('should return generated token if token generation succeeds', async () => {
+      const emailMock = 'test@email.com'
+      const tokenMock = 'generated-token'
+
+      mockGenerateUserToken.mockResolvedValueOnce({
+        ok: true,
+        value: tokenMock,
+      })
+
+      const result = await authController.generateToken({ email: emailMock })
+      expect(result).toEqual({ data: { token: tokenMock } })
+    })
+
+    it('should return 500 if token generation fails', async () => {
+      const emailMock = 'test@email.com'
+      const errorMock = new Error('Token generation failed')
+
+      mockGenerateUserToken.mockResolvedValueOnce({
+        ok: false,
+        error: errorMock,
+      })
+
+      const result = await authController.generateToken({ email: emailMock })
+
+      expect(result).toEqual(
+        generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      )
+    })
+  })
+
+  describe('verifyToken', () => {
+    it('should return tokenVerified true if token verification succeeds', async () => {
+      const tokenMock = 'valid-token'
+      mockVerifyUserToken.mockResolvedValueOnce(undefined) // No error
+
+      const result = await authController.verifyToken({ token: tokenMock })
+
+      expect(result).toEqual({ tokenVerified: true, error: undefined })
+    })
+
+    it('should return tokenVerified false and set status to 500 if token verification fails', async () => {
+      const tokenMock = 'invalid-token'
+      const errorMock = new Error('Token verification failed')
+
+      mockVerifyUserToken.mockRejectedValueOnce(errorMock)
+
+      const result = await authController.verifyToken({ token: tokenMock })
+
+      expect(result).toEqual({
+        tokenVerified: false,
+        error: generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        ),
+      })
+    })
+
+    describe('uploadAvatar', () => {
+      it('should return 400 if no file is uploaded', async () => {
+        const requestMock = {
+          body: {},
+          cookies: { accessToken: 'valid-token' },
+        } as any
+
+        const result = await authController.uploadAvatar(requestMock)
+
+        expect(result).toEqual(
+          generateErrorResponse('400', 'Bad request', 'No file uploaded'),
+        )
+      })
+
+      it('should return success message if avatar upload succeeds', async () => {
+        const fileMock = 'base64imageString'
+        const requestMock = {
+          body: { fileBase64: fileMock },
+          cookies: { accessToken: 'valid-token' },
+        } as any
+
+        mockUploadAvatar.mockResolvedValueOnce({ ok: true })
+
+        const result = await authController.uploadAvatar(requestMock)
+
+        expect(result).toEqual({
+          data: { message: 'Avatar uploaded successfully' },
+        })
+      })
+
+      it('should return 500 if avatar upload fails', async () => {
+        const fileMock = 'base64imageString'
+        const requestMock = {
+          body: { fileBase64: fileMock },
+          cookies: { accessToken: 'valid-token' },
+        } as any
+        const errorMock = new Error('Upload failed')
+
+        mockUploadAvatar.mockResolvedValueOnce({
+          ok: false,
+          error: errorMock,
+        })
+
+        const result = await authController.uploadAvatar(requestMock)
+
+        expect(result).toEqual(
+          expect.objectContaining({
+            error: generateErrorResponse(
+              '500',
+              'Internal server error',
+              'An unknown error occurred. Please try again.',
+            ),
+          }),
+        )
+      })
     })
   })
 })

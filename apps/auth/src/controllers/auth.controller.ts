@@ -483,6 +483,7 @@ export class AuthController extends Controller {
           ),
         }
       })
+      .exhaustive()
   }
 
   private setAuthHeaders(token: Token): void {

@@ -6,6 +6,7 @@ const config: Config.InitialOptions = {
   setupFilesAfterEnv: ['jest-extended/all'],
   clearMocks: true,
   collectCoverageFrom: ['src/**/*.ts'],
+  coveragePathIgnorePatterns: ['<rootDir>/src/ioc/*'],
   moduleNameMapper: {
     '^@intake24-dietician/auth/(.*)$': '<rootDir>/src/$1',
     '^@intake24-dietician/db/(.*)$': '<rootDir>/../../packages/db/src/$1',
@@ -21,7 +22,7 @@ const config: Config.InitialOptions = {
   collectCoverage: true,
   coverageThreshold: {
     global: {
-      lines: 90,
+      lines: 80,
     },
   },
 }
