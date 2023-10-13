@@ -5,7 +5,7 @@ import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
-    path: '/' satisfies Path,
+    path: '/',
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
@@ -22,7 +22,7 @@ const routes = [
     ],
   } as const,
   {
-    path: '/auth' satisfies Path,
+    path: '/auth',
     children: [
       {
         path: 'login',

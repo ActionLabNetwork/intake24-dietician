@@ -114,14 +114,11 @@ const handleProfileDetailsUpdate = (
     | ShortBioFormValues,
 ) => {
   profileFormValues.value = { ...profileFormValues.value, ...details }
-  console.log({ profileFormValues: profileFormValues.value })
 }
 
 const handleSubmit = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (!form.value) return
-    console.log({ profileFormValues: profileFormValues.value })
-
     updateProfileMutation.mutate(
       { dieticianProfile: profileFormValues.value },
       {

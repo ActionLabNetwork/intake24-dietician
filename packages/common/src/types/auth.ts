@@ -55,7 +55,10 @@ export interface IAuthService {
   resetPassword: (token: string, password: string) => Promise<Result<string>>
   refreshAccessToken: (refreshToken: string) => Promise<Result<UserWithToken>>
   getUser: (jti: string) => Promise<Result<UserAttributes | null>>
-  validateJwt: (token: string) => Promise<Result<boolean>>
+  validateJwt: (
+    accessToken: string,
+    refreshToken: string,
+  ) => Promise<Result<string>>
   logout: (accessToken: string) => Promise<Result<string>>
   updateProfile: (
     details: DieticianProfileValues,
@@ -78,7 +81,10 @@ export interface ITokenService {
     secret: string,
     options: { expiresIn: number },
   ) => string
-  verify: (token: string, secret: string) => string | JwtPayload | null
+  verify: (
+    token: string,
+    secret: string,
+  ) => Result<{ tokenExpired: boolean; decoded: JwtPayload | string | null }>
 }
 
 export interface IEmailService {

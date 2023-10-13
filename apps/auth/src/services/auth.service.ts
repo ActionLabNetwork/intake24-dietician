@@ -229,28 +229,50 @@ export const createAuthService = (
     refreshToken: string,
   ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
     try {
-      const tokenInRedis = await redis.get(`token:${refreshToken}`)
-      if (!tokenInRedis) {
-        return {
-          ok: false,
-          error: new Error('Token is either invalid or expired.'),
-        } as const
-      }
+      const decoded = verifyJwtToken(refreshToken, 'refresh-token')
+      return match(decoded)
+        .with(
+          {
+            ok: true,
+          },
+          async result => {
+            const decoded = result.value.decoded
 
-      const decoded = verifyJwtToken(tokenInRedis, 'refresh-token')
-      const user = await User.findOne({ where: { id: decoded['userId'] } })
-      if (!user) {
-        return { ok: false, error: new Error('User not found') }
-      }
-      const { jti, token } = await generateToken(user, 'access')
-      return {
-        ok: true,
-        value: {
-          ...user.get({ plain: true }),
-          token,
-          jti,
-        },
-      } as const
+            if (decoded === null) {
+              return {
+                ok: false,
+                error: new Error(
+                  'Refresh token has expired, please log in again',
+                ),
+              } as const
+            }
+
+            const user = await User.findOne({
+              where: { id: decoded['userId'] },
+            })
+
+            if (!user) {
+              return { ok: false, error: new Error('User not found') } as const
+            }
+
+            const { jti, token } = await generateToken(user, 'access')
+            return {
+              ok: true,
+              value: {
+                ...user.get({ plain: true }),
+                token,
+                jti,
+              },
+            } as const
+          },
+        )
+        .with({ ok: false }, () => {
+          return {
+            ok: false,
+            error: new Error('refreshAccessToken function failed'),
+          } as const
+        })
+        .exhaustive()
     } catch (error) {
       return {
         ok: false,
@@ -264,35 +286,98 @@ export const createAuthService = (
   ): Promise<Result<UserAttributes | null>> => {
     try {
       const decodedToken = verifyJwtToken(accessToken)
-      await checkTokenInRedis(decodedToken['jti'] ?? '')
-      const user = await User.findOne({
-        where: { id: decodedToken['userId'] },
-        include: [DieticianProfile],
-      })
 
-      if (!user) {
-        return { ok: false, error: new Error('User not found') } as const
-      }
+      return match(decodedToken)
+        .with({ ok: true }, async result => {
+          const decodedToken = result.value.decoded
 
-      return { ok: true, value: user.get({ plain: true }) } as const
+          if (decodedToken === null) {
+            return { ok: false, error: new Error('Invalid token') } as const
+          }
+
+          await checkTokenInRedis(decodedToken['jti'] ?? '')
+          const user = await User.findOne({
+            where: { id: decodedToken['userId'] },
+            include: [DieticianProfile],
+          })
+
+          if (!user) {
+            return { ok: false, error: new Error('User not found') } as const
+          }
+
+          return { ok: true, value: user.get({ plain: true }) } as const
+        })
+        .with({ ok: false }, () => {
+          return {
+            ok: false,
+            error: new Error('getUser function failed'),
+          } as const
+        })
+        .exhaustive()
     } catch (_) {
       return { ok: false, error: new Error('getUser function failed') } as const
     }
   }
 
-  const validateJwt = async (token: string): Promise<Result<boolean>> => {
+  const validateJwt = async (
+    accessToken: string,
+    refreshToken: string,
+  ): Promise<Result<string>> => {
     try {
-      const decoded = verifyJwtToken(token)
-      const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
+      const decoded = verifyJwtToken(accessToken)
 
-      if (!tokenInRedis) {
-        return {
-          ok: false,
-          error: new Error('Token is either invalid or expired.'),
-        } as const
-      }
+      return (
+        match(decoded)
+          // Valid token case
+          .with(
+            {
+              ok: true,
+              value: { tokenExpired: false, decoded: P.not(P.nullish) },
+            },
+            async result => {
+              const decoded = result.value.decoded
+              const tokenInRedis = await redis.get(`access:${decoded['jti']}`)
 
-      return { ok: true, value: Boolean(decoded) } as const
+              if (!tokenInRedis) {
+                return {
+                  ok: false,
+                  error: new Error('Token is either invalid or expired.'),
+                } as const
+              }
+
+              return { ok: true, value: accessToken } as const
+            },
+          )
+          .with(
+            {
+              ok: true,
+              value: { tokenExpired: true, decoded: P.nullish },
+            },
+            // Expired token case
+            async () => {
+              // Try refreshing the token
+              const refreshTokenResult = await refreshAccessToken(refreshToken)
+
+              return match(refreshTokenResult)
+                .with({ ok: true }, async result => {
+                  return {
+                    ok: true,
+                    value: result.value.token.accessToken,
+                  } as const
+                })
+                .with({ ok: false }, result => {
+                  return result
+                })
+                .exhaustive()
+            },
+          )
+          .otherwise(() => {
+            return {
+              ok: false,
+              error: new Error('validateJwt function failed'),
+            } as const
+          })
+      )
     } catch (_) {
       return {
         ok: false,
@@ -322,22 +407,41 @@ export const createAuthService = (
     try {
       const decoded = verifyJwtToken(accessToken)
 
-      await sequelize.transaction(async t => {
-        const user = await User.findOne({
-          where: { id: decoded['userId'] },
-          include: [DieticianProfile],
-          transaction: t,
+      return match(decoded)
+        .with({ ok: true }, async result => {
+          const decoded = result.value.decoded
+
+          if (decoded === null) {
+            return { ok: false, error: new Error('Invalid token') } as const
+          }
+
+          await sequelize.transaction(async t => {
+            const user = await User.findOne({
+              where: { id: decoded['userId'] },
+              include: [DieticianProfile],
+              transaction: t,
+            })
+
+            if (!user) {
+              throw new Error('User not found')
+            }
+
+            await user.update(
+              { email: details.emailAddress },
+              { transaction: t },
+            )
+            await user.dieticianProfile.update(details, { transaction: t })
+          })
+
+          return { ok: true, value: 'Profile updated successfully' } as const
         })
-
-        if (!user) {
-          throw new Error('User not found')
-        }
-
-        await user.update({ email: details.emailAddress }, { transaction: t })
-        await user.dieticianProfile.update(details, { transaction: t })
-      })
-
-      return { ok: true, value: 'Profile updated successfully' } as const
+        .with({ ok: false }, () => {
+          return {
+            ok: false,
+            error: new Error('updateProfile function failed'),
+          } as const
+        })
+        .exhaustive()
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
@@ -428,24 +532,41 @@ export const createAuthService = (
   ): Promise<Result<string>> => {
     try {
       const decoded = verifyJwtToken(accessToken)
-      await sequelize.transaction(async t => {
-        const user = await User.findOne({
-          where: { id: decoded['userId'] },
-          include: [DieticianProfile],
-          transaction: t,
+
+      return match(decoded)
+        .with({ ok: true }, async result => {
+          const decoded = result.value.decoded
+
+          if (decoded === null) {
+            return { ok: false, error: new Error('Invalid token') } as const
+          }
+
+          await sequelize.transaction(async t => {
+            const user = await User.findOne({
+              where: { id: decoded['userId'] },
+              include: [DieticianProfile],
+              transaction: t,
+            })
+
+            if (!user) {
+              throw new Error('User not found')
+            }
+
+            await user.dieticianProfile.update(
+              { avatar: buffer },
+              { transaction: t },
+            )
+          })
+
+          return { ok: true, value: 'Avatar uploaded successfully' } as const
         })
-
-        if (!user) {
-          throw new Error('User not found')
-        }
-
-        await user.dieticianProfile.update(
-          { avatar: buffer },
-          { transaction: t },
-        )
-      })
-
-      return { ok: true, value: 'Avatar uploaded successfully' } as const
+        .with({ ok: false }, () => {
+          return {
+            ok: false,
+            error: new Error('uploadAvatar function failed'),
+          } as const
+        })
+        .exhaustive()
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
@@ -545,22 +666,50 @@ export const createAuthService = (
   const verifyJwtToken = (
     token: string,
     tokenType: 'access-token' | 'refresh-token' = 'access-token',
-  ): JwtPayload => {
-    const decoded = tokenService.verify(token, env.JWT_SECRET) as JwtPayload
+  ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
+    const decoded = tokenService.verify(token, env.JWT_SECRET)
 
-    if (decoded === null) {
-      throw new Error('Invalid token')
-    }
+    return match(decoded)
+      .with({ ok: true }, result => {
+        const { tokenExpired, decoded } = result.value
 
-    if (decoded['tokenType'] !== tokenType) {
-      throw new Error(
-        `Invalid token type. Please provide ${
-          tokenType === 'access-token' ? 'an' : 'a'
-        } ${tokenType}.`,
-      )
-    }
+        if (tokenExpired) {
+          return { ...result, value: { tokenExpired: true, decoded: null } }
+        }
 
-    return decoded
+        if (typeof decoded === 'string') {
+          return {
+            ok: false,
+            error: new Error(
+              'Malformed token. Decoded token is a string instead of a payload',
+            ),
+          } as const
+        }
+
+        if (decoded?.['tokenType'] !== tokenType) {
+          return {
+            ok: false,
+            error: new Error(
+              `Invalid token type. Please provide ${
+                tokenType === 'access-token' ? 'an' : 'a'
+              } ${tokenType}.`,
+            ),
+          } as const
+        }
+
+        // Return the valid decoded result
+        return { ...result, value: { tokenExpired: false, decoded } }
+      })
+      .with({ ok: false }, result => {
+        if (result.error.name === 'TokenExpiredError') {
+          return {
+            ok: false,
+            error: new Error('Token has expired'),
+          } as const
+        }
+        return { ok: false, error: new Error('Invalid token') } as const
+      })
+      .exhaustive()
   }
 
   const checkTokenInRedis = async (jti: string): Promise<string> => {

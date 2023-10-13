@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken'
 import { ITokenService } from '@intake24-dietician/common/types/auth'
+import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 
 export const createJwtTokenService = (): ITokenService => ({
   sign(payload, secret, options) {
@@ -7,9 +8,20 @@ export const createJwtTokenService = (): ITokenService => ({
   },
   verify(token, secret) {
     try {
-      return jwt.verify(token, secret)
+      const decoded = jwt.verify(token, secret)
+      return { ok: true, value: { tokenExpired: false, decoded } } as const
     } catch (error) {
-      return null
+      if (
+        error instanceof jwt.JsonWebTokenError &&
+        error.name === 'JsonWebTokenError'
+      ) {
+        return {
+          ok: true,
+          value: { tokenExpired: true, decoded: null },
+        } as const
+      }
+
+      return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   },
 })

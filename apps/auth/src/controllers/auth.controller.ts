@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Header,
   Post,
   Put,
   Query,
@@ -145,64 +144,6 @@ export class AuthController extends Controller {
       .exhaustive()
   }
 
-  @Post('refresh')
-  public async refreshAccessToken(
-    @Header('X-Refresh-Token') _token: string,
-  ): Promise<AuthResponse> {
-    const refreshToken = _token ? _token.replace('Bearer ', '') : null
-
-    if (!refreshToken) {
-      this.setStatus(401)
-      this.logger.error(
-        { action: 'refresh', statusCode: 401 },
-        'No refresh token provided.',
-      )
-      return generateErrorResponse(
-        '401',
-        'Access Denied',
-        'No refresh token provided.',
-      )
-    }
-
-    const user = await this.authService.refreshAccessToken(refreshToken)
-
-    return match(user)
-      .with({ ok: true }, result => {
-        if (result.value === null) {
-          this.setStatus(401)
-          this.logger.error(
-            { action: 'refresh', statusCode: 401 },
-            'Invalid refresh token',
-          )
-          return generateErrorResponse(
-            '401',
-            'Unauthorized',
-            'Invalid refresh token',
-          )
-        }
-
-        this.setAuthHeaders(result.value.token)
-        this.logger.info(
-          { action: 'refresh', statusCode: 200 },
-          'Token refreshed',
-        )
-        return { data: { email: result.value.email } }
-      })
-      .with({ ok: false }, result => {
-        this.setStatus(500)
-        this.logger.error(
-          { action: 'refresh', statusCode: 500 },
-          result.error.message,
-        )
-        return generateErrorResponse(
-          '500',
-          'Internal server error',
-          'An unknown error occurred. Please try again.',
-        )
-      })
-      .exhaustive()
-  }
-
   @Post('forgot-password')
   public async forgotPassword(@Body() requestBody: { email: string }) {
     const { email } = requestBody
@@ -332,15 +273,22 @@ export class AuthController extends Controller {
 
   @Get('validate-jwt')
   public async validateJwt(@Request() request: express.Request) {
-    const { accessToken } = request.cookies
+    const { accessToken, refreshToken } = request.cookies
 
     if (!accessToken) {
       return { isAuthenticated: false }
     }
 
-    const isJwtValid = await this.authService.validateJwt(accessToken)
+    const isJwtValid = await this.authService.validateJwt(
+      accessToken,
+      refreshToken,
+    )
+
     return match(isJwtValid)
-      .with({ ok: true }, () => {
+      .with({ ok: true }, result => {
+        this.setHeader('Set-Cookie', [
+          `accessToken=${result.value};HttpOnly;SameSite=none;Secure`,
+        ])
         return { isAuthenticated: true }
       })
       .with({ ok: false }, () => {
