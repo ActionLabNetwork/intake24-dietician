@@ -79,7 +79,7 @@ import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { ShortBioFormValues } from '@/components/profile/ShortBio.vue'
-import { useUpdateProfile } from '@/mutations/useAuth'
+import { useUpdateProfile, useUploadAvatar } from '@/mutations/useAuth'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
@@ -91,6 +91,7 @@ const authStore = useAuthStore()
 const { user, isProfileLoading } = storeToRefs(authStore)
 
 const updateProfileMutation = useUpdateProfile()
+const uploadAvatarMutation = useUploadAvatar()
 
 const $toast = useToast()
 
@@ -120,7 +121,12 @@ const handleSubmit = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (!form.value) return
     updateProfileMutation.mutate(
-      { dieticianProfile: profileFormValues.value },
+      {
+        dieticianProfile: {
+          ...profileFormValues.value,
+          avatar: '',
+        },
+      },
       {
         onSuccess: () => {
           $toast.success('Profile updated successfully')
@@ -131,6 +137,11 @@ const handleSubmit = (): Promise<void> => {
         },
       },
     )
+
+    uploadAvatarMutation.mutate({
+      avatarBase64:
+        profileFormValues.value.avatar ?? user.value?.dieticianProfile.avatar,
+    })
   })
 }
 

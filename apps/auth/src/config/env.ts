@@ -25,6 +25,8 @@ export const env = createEnv({
     MAILTRAP_PASS: z.string(),
     MAILTRAP_API_KEY: z.string(),
     LOGGER_DISABLED: z.string().transform(s => s !== 'false' && s !== '0'),
+    REDIS_CONNECTION_HOST: withDevDefault(z.string(), 'localhost'),
+    REDIS_CONNECTION_PORT: withDevDefault(z.number(), 6379),
   },
   client: {},
   runtimeEnv: process.env,

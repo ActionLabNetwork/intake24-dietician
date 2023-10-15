@@ -64,6 +64,7 @@ export interface IAuthService {
     details: DieticianProfileValues,
     accessToken: string,
   ) => Promise<Result<string>>
+  generateUserTokenForChangeEmail: (currentEmail: string, newEmail: string) => Promise<Result<string>>
   generateUserToken: (
     email: string,
     actionType: TokenActionType,

@@ -29,6 +29,7 @@
     "@tsoa/runtime": "^5.0.0",
     "argon2": "^0.31.1",
     "awilix": "^8.0.1",
+    "bullmq": "^4.12.4",
     "chai-http": "^4.4.0",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

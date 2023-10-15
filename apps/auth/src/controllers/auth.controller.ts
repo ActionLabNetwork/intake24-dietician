@@ -312,48 +312,66 @@ export class AuthController extends Controller {
     @Request() request: express.Request,
     @Body() details: { dieticianProfile: DieticianProfileValues },
   ) {
-    const { accessToken } = request.cookies
+    try {
+      const { accessToken } = request.cookies
 
-    if (!accessToken) {
-      this.setStatus(401)
-      return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
-    }
-
-    const result = await this.authService.updateProfile(
-      details.dieticianProfile,
-      accessToken,
-    )
-
-    return match(result)
-      .with({ ok: true }, () => {
-        this.logger.info(
-          { action: 'update profile', statusCode: 200 },
-          'Profile updated',
-        )
-        return { data: { message: 'Profile updated successfully' } }
-      })
-      .with({ ok: false }, result => {
-        this.setStatus(500)
-        this.logger.error(
-          { action: 'update profile', statusCode: 500 },
-          result.error.message,
-        )
+      if (!accessToken) {
+        this.setStatus(401)
         return generateErrorResponse(
-          '500',
-          'Internal server error',
-          'An unknown error occurred. Please try again.',
+          '401',
+          'Unauthorized',
+          'Invalid credentials',
         )
-      })
-      .exhaustive()
+      }
+
+      const result = await this.authService.updateProfile(
+        details.dieticianProfile,
+        accessToken,
+      )
+
+      return match(result)
+        .with({ ok: true }, () => {
+          this.logger.info(
+            { action: 'update profile', statusCode: 200 },
+            'Profile updated',
+          )
+          return { data: { message: 'Profile updated successfully' } }
+        })
+        .with({ ok: false }, result => {
+          this.setStatus(500)
+          this.logger.error(
+            { action: 'update profile', statusCode: 500 },
+            result.error.message,
+          )
+          return generateErrorResponse(
+            '500',
+            'Internal server error',
+            'An unknown error occurred. Please try again.',
+          )
+        })
+        .exhaustive()
+    } catch (error) {
+      console.log({ error })
+      return generateErrorResponse(
+        '500',
+        'Internal server error',
+        'An unknown error occurred. Please try again.',
+      )
+    }
   }
 
   @Post('generate-token')
   @Security('jwt')
-  public async generateToken(@Body() data: { email: string }) {
-    const token = await this.authService.generateUserToken(
-      data.email,
-      'change-email',
+  public async generateToken(
+    @Body() data: { currentEmail: string; newEmail: string },
+  ) {
+    console.log({ currentEmail: data.currentEmail, newEmail: data.newEmail })
+    const token = await this.authService.generateUserTokenForChangeEmail(
+      data.currentEmail,
+      data.newEmail,
     )
+
+    console.log({ token })
 
     return match(token)
       .with({ ok: true }, result => {

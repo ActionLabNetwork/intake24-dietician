@@ -23,6 +23,8 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 app.use(
   cors({
     origin: 'http://localhost:3001',
+    allowedHeaders:
+      'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
     exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',
     credentials: true,
   }),

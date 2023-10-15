@@ -41,31 +41,10 @@ export const createAuthService = (
     Result<(UserAttributes & { token: TokenType; jti: string }) | null>
   > => {
     try {
-      const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await User.findOne({ where: { email } }))
+      const isEmailValid = await validateNewEmailAvailability(email)
 
-      return match<[boolean, boolean]>([isValidEmail, emailExists])
-        .with(
-          [false, P.any],
-          () =>
-            ({
-              ok: false,
-              error: new Error(
-                'Invalid email address. Please try again with a different one.',
-              ),
-            }) as const,
-        )
-        .with(
-          [P.any, true],
-          () =>
-            ({
-              ok: false,
-              error: new Error(
-                'An account with this email address already exists. Please try again with a different one.',
-              ),
-            }) as const,
-        )
-        .with([true, false], async () => {
+      return match(isEmailValid)
+        .with({ ok: true }, async () => {
           const hashedPassword = await hashingService.hash(password)
 
           try {
@@ -119,6 +98,9 @@ export const createAuthService = (
             } as const
           }
         })
+        .with({ ok: false }, result => {
+          return { ok: false, error: result.error } as const
+        })
         .exhaustive()
     } catch (error) {
       return {
@@ -145,7 +127,7 @@ export const createAuthService = (
         const { jti, token } = await generateToken(user, 'both')
         return {
           ...user.get({ plain: true }),
-          token: token as TokenType,
+          token,
           jti,
         }
       }
@@ -166,6 +148,10 @@ export const createAuthService = (
 
   const forgotPassword = async (email: string): Promise<Result<string>> => {
     try {
+      if (!confirmEmailExists(email)) {
+        return { ok: false, error: new Error('Email not found') }
+      }
+
       const token = await generateUserToken(email, 'reset-password')
 
       if (!token.ok) {
@@ -223,62 +209,6 @@ export const createAuthService = (
     })
 
     return result
-  }
-
-  const refreshAccessToken = async (
-    refreshToken: string,
-  ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
-    try {
-      const decoded = verifyJwtToken(refreshToken, 'refresh-token')
-      return match(decoded)
-        .with(
-          {
-            ok: true,
-          },
-          async result => {
-            const decoded = result.value.decoded
-
-            if (decoded === null) {
-              return {
-                ok: false,
-                error: new Error(
-                  'Refresh token has expired, please log in again',
-                ),
-              } as const
-            }
-
-            const user = await User.findOne({
-              where: { id: decoded['userId'] },
-            })
-
-            if (!user) {
-              return { ok: false, error: new Error('User not found') } as const
-            }
-
-            const { jti, token } = await generateToken(user, 'access')
-            return {
-              ok: true,
-              value: {
-                ...user.get({ plain: true }),
-                token,
-                jti,
-              },
-            } as const
-          },
-        )
-        .with({ ok: false }, () => {
-          return {
-            ok: false,
-            error: new Error('refreshAccessToken function failed'),
-          } as const
-        })
-        .exhaustive()
-    } catch (error) {
-      return {
-        ok: false,
-        error: new Error('refreshAccessToken function failed'),
-      } as const
-    }
   }
 
   const getUser = async (
@@ -423,6 +353,7 @@ export const createAuthService = (
             })
 
             if (!user) {
+              console.error('User not found')
               throw new Error('User not found')
             }
 
@@ -431,6 +362,7 @@ export const createAuthService = (
               { transaction: t },
             )
             await user.dieticianProfile.update(details, { transaction: t })
+            return 'transaction success'
           })
 
           return { ok: true, value: 'Profile updated successfully' } as const
@@ -573,6 +505,161 @@ export const createAuthService = (
   }
 
   // Private helper functions
+  const confirmEmailExists = async (
+    email: string,
+  ): Promise<Result<boolean>> => {
+    try {
+      const isValidEmail = z.string().email().safeParse(email).success
+      const emailExists = Boolean(await User.findOne({ where: { email } }))
+
+      if (!isValidEmail) {
+        return {
+          ok: false,
+          error: new Error('Invalid email address. Please try again.'),
+        }
+      }
+
+      if (!emailExists) {
+        return {
+          ok: false,
+          error: new Error(
+            'No account found with this email address. Please try again.',
+          ),
+        }
+      }
+
+      return { ok: true, value: true }
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('Failed to validate email.'),
+      }
+    }
+  }
+
+  const validateNewEmailAvailability = async (
+    email: string,
+  ): Promise<Result<boolean>> => {
+    try {
+      const isValidEmail = z.string().email().safeParse(email).success
+      const emailExists = Boolean(await User.findOne({ where: { email } }))
+
+      console.log({ isValidEmail, emailExists })
+
+      if (!isValidEmail) {
+        return {
+          ok: false,
+          error: new Error(
+            'Invalid email address. Please try again with a different one.',
+          ),
+        }
+      }
+
+      if (emailExists) {
+        return {
+          ok: false,
+          error: new Error(
+            'An account with this email address already exists. Please try again with a different one.',
+          ),
+        }
+      }
+
+      return { ok: true, value: true }
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('Failed to validate email.'),
+      }
+    }
+  }
+
+  const generateUserTokenForChangeEmail = async (
+    currentEmail: string,
+    newEmail: string,
+  ): Promise<Result<string>> => {
+    const currentEmailIsRegistered = await confirmEmailExists(currentEmail)
+    const newEmailIsAvailable = await validateNewEmailAvailability(newEmail)
+
+    return match([currentEmailIsRegistered, newEmailIsAvailable])
+      .with([{ ok: true }, { ok: true }], async () => {
+        return await generateUserToken(currentEmail, 'change-email')
+      })
+      .with([{ ok: false }, { ok: true }], () => {
+        return {
+          ok: false,
+          error: new Error('Invalid current email'),
+        } as const
+      })
+      .with([{ ok: true }, { ok: false }], () => {
+        return {
+          ok: false,
+          error: new Error('Invalid new email'),
+        } as const
+      })
+      .otherwise(() => {
+        return {
+          ok: false,
+          error: new Error('generateUserTokenForChangeEmail function failed'),
+        } as const
+      })
+  }
+
+  const refreshAccessToken = async (
+    refreshToken: string,
+  ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
+    try {
+      const decoded = verifyJwtToken(refreshToken, 'refresh-token')
+      return match(decoded)
+        .with(
+          {
+            ok: true,
+          },
+          async result => {
+            const decoded = result.value.decoded
+
+            if (decoded === null) {
+              return {
+                ok: false,
+                error: new Error(
+                  'Refresh token has expired, please log in again',
+                ),
+              } as const
+            }
+
+            const user = await User.findOne({
+              where: { id: decoded['userId'] },
+            })
+
+            if (!user) {
+              return { ok: false, error: new Error('User not found') } as const
+            }
+
+            const { jti, token } = await generateToken(user, 'access')
+            return {
+              ok: true,
+              value: {
+                ...user.get({ plain: true }),
+                token,
+                jti,
+              },
+            } as const
+          },
+        )
+        .with({ ok: false }, () => {
+          return {
+            ok: false,
+            error: new Error('refreshAccessToken function failed'),
+          } as const
+        })
+        .exhaustive()
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('refreshAccessToken function failed'),
+      } as const
+    }
+  }
+
   const createToken = (
     payload: TokenPayload,
     secret: string,
@@ -607,22 +694,22 @@ export const createAuthService = (
 
     const token: TokenType = { accessToken: '', refreshToken: '' }
 
-    switch (type) {
-      case 'access':
+    match(type)
+      .with('access', () => {
         token.accessToken = createToken(
           accessTokenPayload,
           env.JWT_SECRET,
           env.JWT_ACCESS_TOKEN_TTL,
         )
-        break
-      case 'refresh':
+      })
+      .with('refresh', () => {
         token.refreshToken = createToken(
           refreshTokenPayload,
           env.JWT_SECRET,
           env.JWT_REFRESH_TOKEN_TTL,
         )
-        break
-      case 'both':
+      })
+      .with('both', () => {
         token.accessToken = createToken(
           accessTokenPayload,
           env.JWT_SECRET,
@@ -633,30 +720,27 @@ export const createAuthService = (
           env.JWT_SECRET,
           env.JWT_REFRESH_TOKEN_TTL,
         )
-        break
-    }
+      })
+      .exhaustive()
 
     await saveTokenIntoRedis(token, jti)
     return { jti, token }
   }
 
-  const saveTokenIntoRedis = async (
-    tokens: Partial<TokenType>,
-    jti: string,
-  ) => {
-    if (tokens.accessToken) {
+  const saveTokenIntoRedis = async (token: Partial<TokenType>, jti: string) => {
+    if (token.accessToken) {
       await redis.set(
         `access:${jti}`,
-        tokens.accessToken,
+        token.accessToken,
         'EX',
         env.JWT_ACCESS_TOKEN_TTL,
       )
     }
 
-    if (tokens.refreshToken) {
+    if (token.refreshToken) {
       await redis.set(
         `refresh:${jti}`,
-        tokens.refreshToken,
+        token.refreshToken,
         'EX',
         env.JWT_REFRESH_TOKEN_TTL,
       )
@@ -731,6 +815,7 @@ export const createAuthService = (
     validateJwt,
     logout,
     updateProfile,
+    generateUserTokenForChangeEmail,
     generateUserToken,
     verifyUserToken,
     uploadAvatar,

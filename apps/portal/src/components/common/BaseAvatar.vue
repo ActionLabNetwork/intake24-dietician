@@ -9,7 +9,8 @@
           <v-btn class="mr-16 mr-3" v-bind="props">
             <v-avatar
               :image="
-                user?.dieticianProfile.avatar ?? '@/assets/dashboard/avatar.svg'
+                user?.dieticianProfile.avatar ||
+                getDefaultAvatar(user?.email ?? '')
               "
             ></v-avatar>
             <v-icon icon="mdi-chevron-down" size="large" />
@@ -17,7 +18,7 @@
         </template>
         <BasePreferences
           :user="_user"
-          show-avatar
+          :show-avatar="!!_user.initials"
           :handle-logout="handleLogout"
         />
       </v-menu>
@@ -32,7 +33,7 @@ import { useProfile } from '@/queries/useAuth'
 import router from '@/router'
 import { useQueryClient } from '@tanstack/vue-query'
 import { ref, watch } from 'vue'
-import { getInitials, getFullName } from '@/utils/profile'
+import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
 const queryClient = useQueryClient()
 queryClient.invalidateQueries({ queryKey: ['auth'] })
@@ -55,6 +56,8 @@ watch(data, newData => {
     } = newData.data.data.user.dieticianProfile
 
     user.value = newData.data.data.user
+
+    console.log({ newData: newData.data.data.user })
 
     _user.value.initials = getInitials(firstName, lastName)
     _user.value.fullName = getFullName(firstName, lastName)

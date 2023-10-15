@@ -142,6 +142,7 @@ export const useUpdateProfile = () => {
     { dieticianProfile: DieticianProfileValues }
   >({
     mutationFn: profileBody => {
+      console.log({ profileUri, profileBody })
       return axios.put(profileUri, profileBody)
     },
   })
@@ -162,7 +163,7 @@ export const useGenerateToken = () => {
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ token: string }>>,
     AxiosError<ApiResponseWithError>,
-    { email: string }
+    { currentEmail: string; newEmail: string }
   >(generateTokenBody => {
     return axios.post(generateTokenUri, generateTokenBody)
   })

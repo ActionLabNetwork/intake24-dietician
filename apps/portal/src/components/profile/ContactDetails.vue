@@ -28,7 +28,7 @@
                 {{ t('profile.form.contactDetails.email.labelSuffix') }}
               </span>
             </BaseInput>
-            <v-dialog v-model="changeEmailDialog" width="25vw">
+            <v-dialog v-model="changeEmailDialog" max-width="90vw">
               <v-card>
                 <v-card-title>Change Email</v-card-title>
                 <v-card-text>
@@ -80,7 +80,11 @@
                   </v-alert>
                 </v-card-text>
                 <v-card-actions>
-                  <v-btn color="primary" @click="handleVerifyToken">
+                  <v-btn
+                    :disabled="!verificationToken"
+                    color="primary"
+                    @click="handleVerifyToken"
+                  >
                     Verify Token
                   </v-btn>
                   <v-btn
@@ -242,15 +246,23 @@ const handleFieldUpdate = useDebounceFn(
 
 const handleSendVerificationToken = () => {
   // TODO: Call API to send verification code
+  console.log({
+    currentEmail: currentEmailAddress.value,
+    newEmail: formValues.value.emailAddress,
+  })
   generateTokenMutation.mutate(
-    { email: currentEmailAddress.value },
+    {
+      currentEmail: currentEmailAddress.value,
+      newEmail: formValues.value.emailAddress,
+    },
     {
       onSuccess() {
         showVerificationTokenField.value = true
         errorMsg.value = ''
       },
       onError() {
-        errorMsg.value = 'Error sending verification token'
+        errorMsg.value =
+          'Error sending verification token. Please try another email address.'
       },
     },
   )

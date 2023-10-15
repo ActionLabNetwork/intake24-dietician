@@ -223,12 +223,13 @@ import {
   UserAttributesWithDieticianProfile,
 } from '@intake24-dietician/common/types/auth'
 import { onMounted, ref } from 'vue'
-import { useUploadAvatar } from '@/mutations/useAuth'
+import { getDefaultAvatar } from '@/utils/profile'
 
 export interface PersonalDetailsFormValues {
   firstName: string
   middleName: string
   lastName: string
+  avatar: string
 }
 
 const props = defineProps<{
@@ -239,24 +240,24 @@ const emit = defineEmits<{
   update: [value: PersonalDetailsFormValues]
 }>()
 
-const uploadAvatarMutation = useUploadAvatar()
-
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
 const imageUpload = ref()
-const avatarImage = ref('../src/assets/dashboard/avatar.svg')
+const avatarImage = ref('')
+
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<PersonalDetailsFormValues>({
   firstName: props.user.dieticianProfile.firstName,
   middleName: props.user.dieticianProfile.middleName ?? '',
   lastName: props.user.dieticianProfile.lastName ?? '',
+  avatar: props.user.dieticianProfile.avatar ?? '',
 })
 
 onMounted(() => {
   const imageSrc = props.user.dieticianProfile.avatar
-  avatarImage.value = imageSrc ?? avatarImage.value
+  avatarImage.value = imageSrc || getDefaultAvatar(props.user.email)
 })
 
 const handleFieldUpdate = useDebounceFn(
@@ -279,10 +280,9 @@ const handleImageUpload = () => {
   reader.readAsDataURL(file)
   reader.onloadend = () => {
     const base64data = reader.result
+    formValues.value.avatar = base64data?.toString() ?? ''
+    emit('update', { ...formValues.value })
 
-    uploadAvatarMutation.mutate({
-      avatarBase64: base64data as string,
-    })
     URL.revokeObjectURL(objectURL)
   }
 }

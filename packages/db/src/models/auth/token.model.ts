@@ -19,8 +19,8 @@ export interface TokenAttributes {
   author: User
   token: string
   actionType: string
-  expiresAt?: Date
-  isActive?: boolean
+  expiresAt: Date
+  isActive: boolean
 }
 
 interface TokenCreationAttributes {
