@@ -64,7 +64,13 @@ export interface IAuthService {
     details: DieticianProfileValues,
     accessToken: string,
   ) => Promise<Result<string>>
-  generateUserTokenForChangeEmail: (currentEmail: string, newEmail: string) => Promise<Result<string>>
+  generateUserTokenForPasswordlessAuth: (
+    email: string,
+  ) => Promise<Result<string>>
+  generateUserTokenForChangeEmail: (
+    currentEmail: string,
+    newEmail: string,
+  ) => Promise<Result<string>>
   generateUserToken: (
     email: string,
     actionType: TokenActionType,
@@ -73,6 +79,10 @@ export interface IAuthService {
     token: string,
     actionType: TokenActionType,
   ) => Promise<Result<string>>
+  verifyUserTokenForPasswordlessAuth: (
+    email: string,
+    token: string,
+  ) => Promise<Result<UserWithToken>>
   uploadAvatar: (accessToken: string, buffer: string) => Promise<Result<string>>
 }
 
@@ -101,7 +111,12 @@ export interface DieticianProfileValues {
   businessNumber: string
   businessAddress: string
   shortBio: string
-  avatar: string
+  avatar: string | null
+  updatedAt: Date
+  createdAt: Date
 }
 
-export type TokenActionType = 'reset-password' | 'change-email'
+export type TokenActionType =
+  | 'passwordless-auth'
+  | 'reset-password'
+  | 'change-email'

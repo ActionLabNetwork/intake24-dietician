@@ -20,7 +20,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3 mt-sm-0"
-            :disabled="!profileDetailsHasChanged"
+            :disabled="disableSubmitButton"
             :loading="updateProfileMutation.isLoading.value"
             @click="handleSubmit"
           >
@@ -29,7 +29,7 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form v-if="user" v-model="form" @submit.prevent="handleSubmit">
+      <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
         <PersonalDetails
           :user="user"
           :profileFormValues="profileFormValues"
@@ -54,7 +54,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3"
-            :disabled="!profileDetailsHasChanged"
+            :disabled="disableSubmitButton"
             :loading="updateProfileMutation.isLoading.value"
           >
             {{ t('profile.cta') }}
@@ -84,6 +84,7 @@ import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
 import { pick, keys, isEqual } from 'radash'
+import { VForm } from 'vuetify/lib/components/index.mjs'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -95,7 +96,7 @@ const uploadAvatarMutation = useUploadAvatar()
 
 const $toast = useToast()
 
-const form = ref(null)
+const form = ref()
 const profileFormValues = ref<DieticianProfileValues>({
   firstName: '',
   middleName: '',
@@ -105,7 +106,9 @@ const profileFormValues = ref<DieticianProfileValues>({
   businessNumber: '',
   businessAddress: '',
   shortBio: '',
-  avatar: '',
+  avatar: null,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 })
 
 const handleProfileDetailsUpdate = (
@@ -117,9 +120,16 @@ const handleProfileDetailsUpdate = (
   profileFormValues.value = { ...profileFormValues.value, ...details }
 }
 
-const handleSubmit = (): Promise<void> => {
+const handleSubmit = async (): Promise<void> => {
+  await form.value.validate()
+  const errors = form.value.errors
+
   return new Promise((resolve, reject) => {
-    if (!form.value) return
+    if (errors.length > 0) {
+      reject(new Error('Form validation failed'))
+      return
+    }
+
     updateProfileMutation.mutate(
       {
         dieticianProfile: {
@@ -138,22 +148,36 @@ const handleSubmit = (): Promise<void> => {
       },
     )
 
-    uploadAvatarMutation.mutate({
-      avatarBase64:
-        profileFormValues.value.avatar ?? user.value?.dieticianProfile.avatar,
-    })
+    if (profileFormValues.value.avatar) {
+      uploadAvatarMutation.mutate({
+        avatarBase64:
+          profileFormValues.value.avatar ??
+          user.value?.dieticianProfile.avatar ??
+          '',
+      })
+    }
   })
 }
 
-const profileDetailsHasChanged = computed(() => {
-  if (!user.value) return false
-  return !isEqual(profileFormValues.value, {
+const disableSubmitButton = computed(() => {
+  const errors: any[] = form.value?.['errors']
+
+  if (errors?.length > 0) return true
+  if (!user.value) return true
+
+  const hasBeenUpdatedSinceCreation =
+    user.value.dieticianProfile.createdAt !==
+    user.value.dieticianProfile.updatedAt
+
+  const hasBeenUpdated = !isEqual(profileFormValues.value, {
     ...pick(
       user.value?.dieticianProfile,
       keys(profileFormValues.value) as (keyof DieticianProfileValues)[],
     ),
     emailAddress: user.value?.email,
   })
+
+  return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
 })
 
 watch(user, newUser => {
@@ -166,7 +190,9 @@ watch(user, newUser => {
     businessNumber: newUser?.dieticianProfile.businessNumber ?? '',
     businessAddress: newUser?.dieticianProfile.businessAddress ?? '',
     shortBio: newUser?.dieticianProfile.shortBio ?? '',
-    avatar: newUser?.dieticianProfile.avatar ?? '',
+    avatar: newUser?.dieticianProfile.avatar ?? null,
+    createdAt: newUser?.dieticianProfile.createdAt ?? new Date(),
+    updatedAt: newUser?.dieticianProfile.updatedAt ?? new Date(),
   }
 })
 </script>

@@ -10,6 +10,7 @@ import {
   HasMany,
   BelongsToMany,
   HasOne,
+  Default,
 } from 'sequelize-typescript'
 
 import Token from './token.model'
@@ -23,6 +24,7 @@ export interface UserAttributes {
   id: number
   email: string
   password: string
+  isVerified: boolean
   resetToken: Token[]
   roles?: (Role & { UserRole: UserRole })[]
   dieticians?: (User & { DieticianPatient: DieticianPatient })[]
@@ -50,6 +52,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   @AllowNull(false)
   @Column
   public declare password: string
+
+  @Default(false)
+  @Column
+  public declare isVerified: boolean
 
   @HasMany(() => Token)
   public declare resetToken: Token[]

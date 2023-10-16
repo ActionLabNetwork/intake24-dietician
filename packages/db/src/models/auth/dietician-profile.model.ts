@@ -18,7 +18,7 @@ export interface DieticianProfileAttributes {
   businessNumber: string
   businessAddress: string
   shortBio: string
-  avatar: string
+  avatar: string | null
   user: User
 }
 
@@ -64,7 +64,7 @@ class DieticianProfile extends Model<
   public declare shortBio: string
 
   @Column(DataType.TEXT)
-  public declare avatar: string
+  public declare avatar: string | null
 
   @BelongsTo(() => User)
   public declare user: User

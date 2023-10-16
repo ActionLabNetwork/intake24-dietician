@@ -144,6 +144,82 @@ export class AuthController extends Controller {
       .exhaustive()
   }
 
+  @Post('passwordless-auth/request')
+  public async requestPasswordlessAuth(
+    @Body() requestBody: { identifier: string },
+  ) {
+    const token = await this.authService.generateUserTokenForPasswordlessAuth(
+      requestBody.identifier,
+    )
+
+    return match(token)
+      .with({ ok: true }, () => {
+        this.logger.info(
+          {
+            email: hash(requestBody.identifier),
+            action: 'passwordless-auth/request',
+            statusCode: 200,
+          },
+          'Token generated',
+        )
+        return {
+          data: { message: 'Token for passwordless auth was generated' },
+        }
+      })
+      .with({ ok: false }, result => {
+        this.setStatus(500)
+        this.logger.error(
+          {
+            email: hash(requestBody.identifier),
+            action: 'passwordless auth request',
+            statusCode: 500,
+          },
+          result.error.message,
+        )
+        return generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        )
+      })
+      .exhaustive()
+  }
+
+  @Post('passwordless-auth/verify')
+  public async verifyPasswordlessAuth(
+    @Body() requestBody: { identifier: string; token: string },
+  ) {
+    const { identifier, token } = requestBody
+    const userWithTokens =
+      await this.authService.verifyUserTokenForPasswordlessAuth(
+        identifier,
+        token,
+      )
+
+    return match(userWithTokens)
+      .with({ ok: true }, result => {
+        this.logger.info(
+          { email: hash(identifier), action: 'login' },
+          'User logged in',
+        )
+        this.setAuthHeaders(result.value.token)
+        return { data: { email: result.value.email } }
+      })
+      .with({ ok: false }, result => {
+        this.setStatus(500)
+        this.logger.error(
+          { email: hash(identifier), action: 'register', statusCode: 500 },
+          result.error.message,
+        )
+        return generateErrorResponse(
+          '500',
+          'Internal server error',
+          'An unknown error occurred. Please try again.',
+        )
+      })
+      .exhaustive()
+  }
+
   @Post('forgot-password')
   public async forgotPassword(@Body() requestBody: { email: string }) {
     const { email } = requestBody

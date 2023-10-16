@@ -117,20 +117,18 @@ export const createAuthService = (
     Result<(UserAttributes & { token: TokenType; jti: string }) | null>
   > => {
     try {
-      const getUser = async (): Promise<User | null> =>
-        await User.findOne({ where: { email } })
+      const getUser = async (): Promise<User | null> => {
+        const user = await User.findOne({ where: { email } })
+
+        if (!user?.isVerified) {
+          user?.update({ isVerified: true })
+        }
+
+        return user
+      }
 
       const verifyPassword = async (user: User): Promise<Result<boolean>> =>
         await hashingService.verify(user.dataValues.password, password)
-
-      const generateTokenAndReturnValues = async (user: User) => {
-        const { jti, token } = await generateToken(user, 'both')
-        return {
-          ...user.get({ plain: true }),
-          token,
-          jti,
-        }
-      }
 
       const userWithToken = await match(await getUser())
         .with(null, () => null)
@@ -414,9 +412,11 @@ export const createAuthService = (
   const verifyUserToken = async (
     token: string,
     actionType: TokenActionType,
+    destroyToken = true,
   ): Promise<Result<string>> => {
     const tokenEntity = await Token.findOne({
       where: { token },
+      lock: true,
     })
 
     if (!tokenEntity) {
@@ -434,28 +434,55 @@ export const createAuthService = (
       } as const
     }
 
-    await sequelize.transaction(async t => {
-      const tokenEntity = await Token.findOne({
-        where: { token },
-        lock: true,
-        transaction: t,
-      })
-
-      if (!tokenEntity) {
-        throw new Error('Invalid token')
-      }
-
-      if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-        throw new Error('Token has expired')
-      }
-
-      await Token.destroy({
-        where: { userId: tokenEntity.userId },
-        transaction: t,
-      })
-    })
+    if (destroyToken) {
+      tokenEntity.destroy()
+    }
 
     return { ok: true, value: 'User token has been verified' } as const
+  }
+
+  const verifyUserTokenForPasswordlessAuth = async (
+    email: string,
+    token: string,
+  ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
+    const isVerified = await verifyUserToken(token, 'passwordless-auth', false)
+
+    return match(isVerified)
+      .with({ ok: true }, async () => {
+        // We know for sure the token has been verified
+        const tokenEntity = (await Token.findOne({
+          where: { token },
+        })) as Token
+
+        const user = await User.findOne({
+          where: { id: tokenEntity.userId, email },
+        })
+
+        if (user === null) {
+          return {
+            ok: false,
+            error: new Error('Token does not match the email provided'),
+          } as const
+        }
+
+        if (!user.isVerified) {
+          user.update({ isVerified: true })
+        }
+
+        tokenEntity.destroy()
+
+        return {
+          ok: true,
+          value: await generateTokenAndReturnValues(user),
+        } as const
+      })
+      .with({ ok: false }, () => {
+        return {
+          ok: false,
+          error: new Error('Failed to verify user token for passwordless auth'),
+        } as const
+      })
+      .exhaustive()
   }
 
   const uploadAvatar = async (
@@ -570,6 +597,41 @@ export const createAuthService = (
         ok: false,
         error: new Error('Failed to validate email.'),
       }
+    }
+  }
+
+  const generateUserTokenForPasswordlessAuth = async (
+    email: string,
+  ): Promise<Result<string>> => {
+    try {
+      const isEmailRegistered = await confirmEmailExists(email)
+
+      return (
+        match(isEmailRegistered)
+          // Login case (existing user)
+          .with({ ok: true }, async () => {
+            return await generateUserToken(email, 'passwordless-auth')
+          })
+          // Register case (new user)
+          .with({ ok: false }, async () => {
+            // Create a new user temporarily
+            const passwordLength = 12
+            const password = crypto
+              .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
+              .toString('hex')
+              .slice(0, passwordLength)
+            const hashedPassword = await hashingService.hash(password)
+
+            await register(email, hashedPassword)
+            return await generateUserToken(email, 'passwordless-auth')
+          })
+          .exhaustive()
+      )
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('failed to generate user token for passwordless auth'),
+      } as const
     }
   }
 
@@ -805,6 +867,15 @@ export const createAuthService = (
     return tokenInRedis
   }
 
+  const generateTokenAndReturnValues = async (user: User) => {
+    const { jti, token } = await generateToken(user, 'both')
+    return {
+      ...user.get({ plain: true }),
+      token,
+      jti,
+    }
+  }
+
   return {
     login,
     register,
@@ -815,9 +886,11 @@ export const createAuthService = (
     validateJwt,
     logout,
     updateProfile,
+    generateUserTokenForPasswordlessAuth,
     generateUserTokenForChangeEmail,
     generateUserToken,
     verifyUserToken,
+    verifyUserTokenForPasswordlessAuth,
     uploadAvatar,
   }
 }

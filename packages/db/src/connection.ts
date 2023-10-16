@@ -1,4 +1,5 @@
 import { Sequelize } from 'sequelize-typescript'
+import { Op } from 'sequelize'
 import { getDBUrl } from './config/env'
 
 import Redis from 'ioredis'
@@ -29,4 +30,4 @@ const connectRedis = async () => {
   }
 }
 
-export { sequelize, connectPostgres, redis, connectRedis }
+export { sequelize, Op, connectPostgres, redis, connectRedis }
