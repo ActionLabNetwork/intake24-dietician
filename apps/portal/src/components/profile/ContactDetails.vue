@@ -245,11 +245,6 @@ const handleFieldUpdate = useDebounceFn(
 )
 
 const handleSendVerificationToken = () => {
-  // TODO: Call API to send verification code
-  console.log({
-    currentEmail: currentEmailAddress.value,
-    newEmail: formValues.value.emailAddress,
-  })
   generateTokenMutation.mutate(
     {
       currentEmail: currentEmailAddress.value,

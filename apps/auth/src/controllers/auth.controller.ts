@@ -427,7 +427,6 @@ export class AuthController extends Controller {
         })
         .exhaustive()
     } catch (error) {
-      console.log({ error })
       return generateErrorResponse(
         '500',
         'Internal server error',
@@ -441,13 +440,10 @@ export class AuthController extends Controller {
   public async generateToken(
     @Body() data: { currentEmail: string; newEmail: string },
   ) {
-    console.log({ currentEmail: data.currentEmail, newEmail: data.newEmail })
     const token = await this.authService.generateUserTokenForChangeEmail(
       data.currentEmail,
       data.newEmail,
     )
-
-    console.log({ token })
 
     return match(token)
       .with({ ok: true }, result => {

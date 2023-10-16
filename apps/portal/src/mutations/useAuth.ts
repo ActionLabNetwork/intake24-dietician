@@ -142,7 +142,6 @@ export const useUpdateProfile = () => {
     { dieticianProfile: DieticianProfileValues }
   >({
     mutationFn: profileBody => {
-      console.log({ profileUri, profileBody })
       return axios.put(profileUri, profileBody)
     },
   })

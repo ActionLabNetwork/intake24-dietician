@@ -119,11 +119,6 @@ export const createAuthService = (
     try {
       const getUser = async (): Promise<User | null> => {
         const user = await User.findOne({ where: { email } })
-
-        if (!user?.isVerified) {
-          user?.update({ isVerified: true })
-        }
-
         return user
       }
 
@@ -134,7 +129,12 @@ export const createAuthService = (
         .with(null, () => null)
         .otherwise(async user => {
           return match(await verifyPassword(user))
-            .with({ ok: true }, () => generateTokenAndReturnValues(user))
+            .with({ ok: true }, () => {
+              if (!user?.isVerified) {
+                user?.update({ isVerified: true })
+              }
+              return generateTokenAndReturnValues(user)
+            })
             .otherwise(() => null)
         })
 
@@ -317,6 +317,8 @@ export const createAuthService = (
   const logout = async (accessToken: string): Promise<Result<string>> => {
     try {
       const decoded = verifyJwtToken(accessToken)
+
+      if (!decoded.ok) throw decoded.error
       const jti = (decoded as JwtPayload)['jti']
 
       await redis.del(`access:${jti}`)
@@ -343,7 +345,7 @@ export const createAuthService = (
             return { ok: false, error: new Error('Invalid token') } as const
           }
 
-          await sequelize.transaction(async t => {
+          return await sequelize.transaction(async t => {
             const user = await User.findOne({
               where: { id: decoded['userId'] },
               include: [DieticianProfile],
@@ -351,8 +353,7 @@ export const createAuthService = (
             })
 
             if (!user) {
-              console.error('User not found')
-              throw new Error('User not found')
+              return { ok: false, error: new Error('User not found') } as const
             }
 
             await user.update(
@@ -360,10 +361,8 @@ export const createAuthService = (
               { transaction: t },
             )
             await user.dieticianProfile.update(details, { transaction: t })
-            return 'transaction success'
+            return { ok: true, value: 'Profile updated successfully' } as const
           })
-
-          return { ok: true, value: 'Profile updated successfully' } as const
         })
         .with({ ok: false }, () => {
           return {
@@ -570,8 +569,6 @@ export const createAuthService = (
     try {
       const isValidEmail = z.string().email().safeParse(email).success
       const emailExists = Boolean(await User.findOne({ where: { email } }))
-
-      console.log({ isValidEmail, emailExists })
 
       if (!isValidEmail) {
         return {

@@ -161,6 +161,7 @@ describe('AuthService', () => {
         id: 1,
         dataValues: { email },
         get: jest.fn(() => ({ id: 1, email })),
+        update: jest.fn(),
       })
 
       const { login } = createAuthServiceFactory()
@@ -268,7 +269,7 @@ describe('AuthService', () => {
       crypto.randomBytes = jest.fn().mockReturnValueOnce({
         toString: jest.fn().mockReturnValueOnce(resetToken),
       })
-      ;(User.findOne as jest.Mock).mockResolvedValueOnce({ id: 1 })
+      ;(User.findOne as jest.Mock).mockResolvedValue({ id: 1 })
       ;(Token.create as jest.Mock).mockResolvedValueOnce({})
 
       const { forgotPassword } = createAuthServiceFactory()
@@ -464,9 +465,11 @@ describe('AuthService', () => {
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
 
       const { validateJwt } = createAuthServiceFactory()
-      const result = await validateJwt(token)
+      const result = await validateJwt(token, token)
 
-      expect(result).toEqual(expect.objectContaining({ ok: true, value: true }))
+      expect(result).toEqual(
+        expect.objectContaining({ ok: true, value: token }),
+      )
     })
 
     it('should throw error if jwt is invalid', async () => {
@@ -476,7 +479,7 @@ describe('AuthService', () => {
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
 
       const { validateJwt } = createAuthServiceFactory()
-      const result = await validateJwt(token)
+      const result = await validateJwt(token, token)
 
       expect(result).toEqual(
         expect.objectContaining({
@@ -501,7 +504,7 @@ describe('AuthService', () => {
     })
 
     it('should throw error if jwt is invalid', async () => {
-      ;(jwt.verify as jest.Mock).mockImplementationOnce(() => {
+      ;(jwt.verify as jest.Mock).mockImplementation(() => {
         throw new Error('Invalid token')
       })
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
@@ -530,11 +533,13 @@ describe('AuthService', () => {
         businessAddress: '123 Main St',
         shortBio: 'Short bio',
         avatar: '',
+        updatedAt: new Date(),
+        createdAt: new Date(),
       }
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       mockedSequelizeTransaction.mockImplementationOnce(async cb => {
-        await cb()
+        return await cb()
       })
       ;(User.findOne as jest.Mock).mockResolvedValueOnce({
         id: 1,
@@ -566,11 +571,13 @@ describe('AuthService', () => {
         businessAddress: '123 Main St',
         shortBio: 'Short bio',
         avatar: '',
+        updatedAt: new Date(),
+        createdAt: new Date(),
       }
       ;(jwt.verify as jest.Mock).mockReturnValueOnce(decoded)
       ;(redis.get as jest.Mock).mockResolvedValueOnce('jti')
       mockedSequelizeTransaction.mockImplementationOnce(async cb => {
-        await cb()
+        return await cb()
       })
       ;(DieticianProfile.findOne as jest.Mock).mockResolvedValueOnce(null)
 

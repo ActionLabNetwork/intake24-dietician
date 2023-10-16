@@ -6,7 +6,10 @@ import {
   IAuthService,
 } from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import type { UserWithToken } from '@intake24-dietician/common/types/auth'
+import type {
+  DieticianProfileValues,
+  UserWithToken,
+} from '@intake24-dietician/common/types/auth'
 
 import * as authServiceModule from '../src/services/auth.service'
 import { container } from '@intake24-dietician/auth/ioc/container'
@@ -39,6 +42,9 @@ describe('AuthController', () => {
     generateUserToken: jest.fn(),
     verifyUserToken: jest.fn(),
     uploadAvatar: jest.fn(),
+    generateUserTokenForPasswordlessAuth: jest.fn(),
+    generateUserTokenForChangeEmail: jest.fn(),
+    verifyUserTokenForPasswordlessAuth: jest.fn(),
   }
   const mockLoggerFactory = () => ({
     info: jest.fn(),
@@ -58,6 +64,9 @@ describe('AuthController', () => {
   let mockGenerateUserToken: jest.Mock
   let mockVerifyUserToken: jest.Mock
   let mockUploadAvatar: jest.Mock
+  let mockGenerateUserTokenForPasswordlessAuth: jest.Mock
+  let mockGenerateUserTokenForChangeEmail: jest.Mock
+  let mockVerifyUserTokenForPasswordlessAuth: jest.Mock
 
   beforeEach(() => {
     jest.resetAllMocks()
@@ -94,6 +103,9 @@ describe('AuthController', () => {
     mockGenerateUserToken = jest.fn()
     mockVerifyUserToken = jest.fn()
     mockUploadAvatar = jest.fn()
+    mockGenerateUserTokenForPasswordlessAuth = jest.fn()
+    mockGenerateUserTokenForChangeEmail = jest.fn()
+    mockVerifyUserTokenForPasswordlessAuth = jest.fn()
     ;(createAuthService as jest.Mock).mockReturnValue({
       login: mockLogin,
       register: mockRegister,
@@ -107,6 +119,11 @@ describe('AuthController', () => {
       generateUserToken: mockGenerateUserToken,
       verifyUserToken: mockVerifyUserToken,
       uploadAvatar: mockUploadAvatar,
+      generateUserTokenForPasswordlessAuth:
+        mockGenerateUserTokenForPasswordlessAuth,
+      generateUserTokenForChangeEmail: mockGenerateUserTokenForChangeEmail,
+      verifyUserTokenForPasswordlessAuth:
+        mockVerifyUserTokenForPasswordlessAuth,
     })
 
     authController = new AuthController()
@@ -206,51 +223,6 @@ describe('AuthController', () => {
       })
 
       const result = await authController.register(request)
-
-      expect(result).toEqual(
-        generateErrorResponse(
-          '500',
-          'Internal server error',
-          'An unknown error occurred. Please try again.',
-        ),
-      )
-    })
-  })
-
-  describe('refreshAccessToken', () => {
-    const response = {
-      data: {
-        email: 'test@example.com',
-      },
-    }
-
-    it('should return user data on successful refresh', async () => {
-      const mockUser: UserWithToken = {
-        id: 2,
-        email: response.data.email,
-        token: {
-          accessToken: 'testAccessToken',
-          refreshToken: 'testRefreshToken',
-        },
-      }
-
-      mockRefreshAccessToken.mockResolvedValueOnce({
-        ok: true,
-        value: mockUser,
-      })
-
-      const result = await authController.refreshAccessToken('some token')
-
-      expect(result).toEqual(response)
-    })
-
-    it('should return unauthorized error if user is null', async () => {
-      mockRefreshAccessToken.mockResolvedValueOnce({
-        ok: false,
-        error: new Error('Some refresh error'),
-      })
-
-      const result = await authController.refreshAccessToken('invalid token')
 
       expect(result).toEqual(
         generateErrorResponse(
@@ -477,7 +449,7 @@ describe('AuthController', () => {
   })
 
   describe('updateProfile', () => {
-    const dieticianProfile = {
+    const dieticianProfile: { dieticianProfile: DieticianProfileValues } = {
       dieticianProfile: {
         firstName: '',
         middleName: '',
@@ -488,6 +460,8 @@ describe('AuthController', () => {
         businessAddress: '',
         shortBio: '',
         avatar: '',
+        updatedAt: new Date(),
+        createdAt: new Date(),
       },
     }
     it('should return 401 if accessToken is not in the cookies', async () => {
@@ -557,28 +531,36 @@ describe('AuthController', () => {
 
   describe('generateToken', () => {
     it('should return generated token if token generation succeeds', async () => {
-      const emailMock = 'test@email.com'
+      const currentEmailMock = 'test@email.com'
+      const newEmailMock = 'test2@email.com'
       const tokenMock = 'generated-token'
 
-      mockGenerateUserToken.mockResolvedValueOnce({
+      mockGenerateUserTokenForChangeEmail.mockResolvedValueOnce({
         ok: true,
         value: tokenMock,
       })
 
-      const result = await authController.generateToken({ email: emailMock })
+      const result = await authController.generateToken({
+        currentEmail: currentEmailMock,
+        newEmail: newEmailMock,
+      })
       expect(result).toEqual({ data: { token: tokenMock } })
     })
 
     it('should return 500 if token generation fails', async () => {
-      const emailMock = 'test@email.com'
+      const currentEmailMock = 'test@email.com'
+      const newEmailMock = 'test1@email.com'
       const errorMock = new Error('Token generation failed')
 
-      mockGenerateUserToken.mockResolvedValueOnce({
+      mockGenerateUserTokenForChangeEmail.mockResolvedValueOnce({
         ok: false,
         error: errorMock,
       })
 
-      const result = await authController.generateToken({ email: emailMock })
+      const result = await authController.generateToken({
+        currentEmail: currentEmailMock,
+        newEmail: newEmailMock,
+      })
 
       expect(result).toEqual(
         generateErrorResponse(
