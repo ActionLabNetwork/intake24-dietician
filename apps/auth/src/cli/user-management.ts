@@ -128,7 +128,9 @@ program
 
           console.log(columnify(await getFormattedUser(user.value)))
         })
-        .with({ ok: false }, () => {})
+        .with({ ok: false }, result => {
+          console.log('Failed to get user', result.error)
+        })
         .exhaustive()
     }
 
@@ -145,7 +147,9 @@ program
 
           console.log(columnify(await getFormattedUser(user.value)))
         })
-        .with({ ok: false }, () => {})
+        .with({ ok: false }, result => {
+          console.log('Failed to get user', result.error)
+        })
         .exhaustive()
 
       return
@@ -191,6 +195,148 @@ program
         )
       })
       .exhaustive()
+  })
+
+program
+  .command('delete-user')
+  .option('--id <id>', 'User ID in database')
+  .option('-e, --email <email>', 'Email address in database')
+  .description('Soft-delete user from database according to ID or Email')
+  .action(async options => {
+    const { id, email } = options
+
+    if (id && email) {
+      console.log(chalk.red('Please specify either ID or Email'))
+      process.exit()
+    }
+
+    if (id) {
+      const user = await userService.deleteUserByIdOrEmail(id)
+
+      match(user)
+        .with({ ok: true }, async result => {
+          console.log(`${result.value} rows was soft-deleted`)
+        })
+        .with({ ok: false }, result => {
+          console.log('Failed to delete user', result.error)
+        })
+        .exhaustive()
+    }
+
+    if (email) {
+      const user = await userService.deleteUserByIdOrEmail(email)
+
+      match(user)
+        .with({ ok: true }, async result => {
+          console.log(`${result.value} rows was soft-deleted`)
+        })
+        .with({ ok: false }, result => {
+          console.log('Failed to delete user', result.error)
+        })
+        .exhaustive()
+
+      return
+    }
+    process.exit()
+  })
+
+program
+  .command('restore-user')
+  .option('--id <id>', 'User ID in database')
+  .option('-e, --email <email>', 'Email address in database')
+  .description(
+    'Restore soft-deleted user from database according to ID or Email',
+  )
+  .action(async options => {
+    const { id, email } = options
+
+    if (id && email) {
+      console.log(chalk.red('Please specify either ID or Email'))
+      process.exit()
+    }
+
+    if (id) {
+      const user = await userService.restoreDeletedUserByIdOrEmail(id)
+
+      match(user)
+        .with({ ok: true }, async () => {
+          console.log('User has been restored if it was deleted')
+        })
+        .with({ ok: false }, result => {
+          console.log('Failed to restore user', result.error)
+        })
+        .exhaustive()
+    }
+
+    if (email) {
+      const user = await userService.restoreDeletedUserByIdOrEmail(email)
+
+      match(user)
+        .with({ ok: true }, async () => {
+          console.log('User has been restored if it was deleted')
+        })
+        .with({ ok: false }, result => {
+          console.log('Failed to restore user', result.error)
+        })
+        .exhaustive()
+
+      return
+    }
+    process.exit()
+  })
+
+program
+  .command('create-role <name>')
+  .description('Create a new role')
+  .action(async name => {
+    const user = await userService.createRole(name)
+
+    match(user)
+      .with({ ok: true }, () => {
+        console.log('Role created successfully:', name)
+      })
+      .with({ ok: false }, result => {
+        console.log('User creation failed', result.error)
+      })
+      .exhaustive()
+
+    process.exit()
+  })
+
+program
+  .command('delete-role <name>')
+  .description('Delete a role')
+  .action(async name => {
+    const user = await userService.deleteRole(name)
+
+    match(user)
+      .with({ ok: true }, result => {
+        console.log(`${result.value} row(s) was deleted`)
+      })
+      .with({ ok: false }, result => {
+        console.log('User deletion failed', result.error)
+      })
+      .exhaustive()
+
+    process.exit()
+  })
+
+program
+  .command('assign-role <userId> <roleName>')
+  .description('Assign a role to a user')
+  .action(async (userId: number, roleName: string) => {
+    const user = await userService.assignRoleToUserById(userId, roleName)
+
+    match(user)
+      .with({ ok: true }, () => {
+        console.log(`Role ${roleName} was assigned to user ${userId}`)
+      })
+      .with({ ok: false }, result => {
+        console.log('Failed to assign role to user', result.error)
+      })
+      .exhaustive()
+
+    process.exit()
   })
 
 connectPostgres().then(() => {

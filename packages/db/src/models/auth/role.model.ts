@@ -22,8 +22,6 @@ export interface RoleAttributes {
 
 interface RoleCreationAttributes {
   name: string
-  description: string
-  role: Role
 }
 
 @Table

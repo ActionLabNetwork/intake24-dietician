@@ -11,6 +11,7 @@ import {
   BelongsToMany,
   HasOne,
   Default,
+  DeletedAt,
 } from 'sequelize-typescript'
 
 import Token from './token.model'
@@ -26,6 +27,7 @@ export interface UserAttributes {
   password: string
   isVerified: boolean
   resetToken: Token[]
+  deletionDate?: Date
   roles?: (Role & { UserRole: UserRole })[]
   dieticians?: (User & { DieticianPatient: DieticianPatient })[]
   patients?: (User & { DieticianPatient: DieticianPatient })[]
@@ -58,6 +60,9 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   @Default(false)
   @Column
   public declare isVerified: boolean
+
+  @DeletedAt
+  public declare deletionDate: Date
 
   @HasMany(() => Token)
   public declare resetToken: Token[]
