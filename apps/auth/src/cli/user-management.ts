@@ -1,10 +1,19 @@
 import { connectPostgres } from '@intake24-dietician/db/connection'
-import { createUser, listUsers } from '../services/user.service'
+import { listUsers } from '../services/user.service'
+import { createAuthService } from '../services/auth.service'
 import { Command } from 'commander'
 import { match } from 'ts-pattern'
 import chalk from 'chalk'
 import columnify from 'columnify'
+import { createArgonHashingService } from '../services/hashing.service'
+import { createJwtTokenService } from '../services/token.service'
+import { createEmailService } from '../services/email.service'
 
+const authService = createAuthService(
+  createArgonHashingService(),
+  createJwtTokenService(),
+  createEmailService(),
+)
 const program = new Command()
 
 program.version('1.0.0')
@@ -13,16 +22,18 @@ program
   .command('create-user <email> <password>')
   .description('Create a new user')
   .action(async (email: string, password: string) => {
-    const user = await createUser(email, password)
+    const user = await authService.register(email, password)
 
     match(user)
       .with({ ok: true }, user => {
-        console.log('User created successfully:', user.value.email)
+        console.log('User created successfully:', user.value?.email)
       })
       .with({ ok: false }, result => {
         console.log('User creation failed', result.error)
       })
       .exhaustive()
+
+    process.exit()
   })
 
 program
