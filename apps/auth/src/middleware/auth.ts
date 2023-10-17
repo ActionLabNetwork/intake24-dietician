@@ -1,6 +1,7 @@
 import * as express from 'express'
 import * as jwt from 'jsonwebtoken'
 import { env } from '../config/env'
+import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 
 export function expressAuthentication(
   request: express.Request,
@@ -15,7 +16,7 @@ export function expressAuthentication(
 
   return new Promise((resolve, reject) => {
     if (!token) {
-      reject(new Error('No token provided'))
+      reject(generateErrorResponse('401', 'Unauthorized', 'No token provided'))
     }
 
     jwt.verify(token, env.JWT_SECRET, (err: any, decoded: any) => {

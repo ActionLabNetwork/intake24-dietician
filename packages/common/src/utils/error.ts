@@ -20,6 +20,6 @@ export const generateErrorResponse = (
   }
 
   return {
-    errors: [{ status, title, detail }],
+    error: { status, title, detail },
   }
 }

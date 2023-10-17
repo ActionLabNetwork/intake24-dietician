@@ -3,7 +3,7 @@ export interface ApiResponseWithData<T> {
 }
 
 export interface ApiResponseWithError {
-  errors: { status: string; title: string; detail: string }[]
+  error: { status: string; title: string; detail: string }
 }
 
 export interface ApiRequest<T> {

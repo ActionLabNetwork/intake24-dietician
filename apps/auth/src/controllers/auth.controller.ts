@@ -144,7 +144,7 @@ export class AuthController extends Controller {
       .exhaustive()
   }
 
-  @Post('passwordless-auth/request')
+  @Post('passwordless/request')
   public async requestPasswordlessAuth(
     @Body() requestBody: { identifier: string },
   ) {
@@ -185,7 +185,7 @@ export class AuthController extends Controller {
       .exhaustive()
   }
 
-  @Post('passwordless-auth/verify')
+  @Post('passwordless/verify')
   public async verifyPasswordlessAuth(
     @Body() requestBody: { identifier: string; token: string },
   ) {

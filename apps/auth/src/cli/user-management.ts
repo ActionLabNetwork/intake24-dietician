@@ -1,5 +1,5 @@
 import { connectPostgres } from '@intake24-dietician/db/connection'
-import { listUsers } from '../services/user.service'
+import { createUserService } from '../services/user.service'
 import { createAuthService } from '../services/auth.service'
 import { Command } from 'commander'
 import { match } from 'ts-pattern'
@@ -8,12 +8,16 @@ import columnify from 'columnify'
 import { createArgonHashingService } from '../services/hashing.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createEmailService } from '../services/email.service'
+import { pick, crush, mapKeys } from 'radash'
+import User from '@intake24-dietician/db/models/auth/user.model'
 
 const authService = createAuthService(
   createArgonHashingService(),
   createJwtTokenService(),
   createEmailService(),
 )
+const userService = createUserService()
+
 const program = new Command()
 
 program.version('1.0.0')
@@ -41,12 +45,12 @@ program
   .option('-l, --limit <limit>', 'Number of users to display per page', '10')
   .option('-o, --offset <offset>', 'Offset for pagination', '0')
   .description('List users with pagination')
-  .action(async (_, options) => {
+  .action(async options => {
     const defaultLimit = 10
     const defaultOffset = 0
 
     const { limit, offset } = options
-    const users = await listUsers(
+    const users = await userService.listUsers(
       parseInt(limit ?? defaultLimit, 10),
       parseInt(offset ?? defaultOffset, 10),
     )
@@ -75,7 +79,101 @@ program
         console.log(chalk.red(result.error))
       })
       .exhaustive()
+    process.exit()
   })
+
+program
+  .command('get-user')
+  .option('--id <id>', 'User ID in database')
+  .option('-e, --email <email>', 'Email address in database')
+  .description('Get user from database according to ID or Email')
+  .action(async options => {
+    const { id, email } = options
+
+    if (id && email) {
+      console.log(chalk.red('Please specify either ID or Email'))
+      process.exit()
+    }
+
+    const getFormattedUser = async (user: User) => {
+      const formatted = mapKeys(
+        crush({
+          ...pick(user.dataValues, ['id', 'email', 'isVerified']),
+          dieticianProfile: pick(user.dataValues.dieticianProfile.dataValues, [
+            'firstName',
+            'middleName',
+            'lastName',
+            'mobileNumber',
+            'businessNumber',
+            'businessAddress',
+          ]),
+        }) as Record<string, unknown>,
+        (key: string) => key.replace('dieticianProfile.', ''),
+      )
+
+      return formatted
+    }
+
+    if (id) {
+      const user = await userService.getUserById(id)
+
+      match(user)
+        .with({ ok: true }, async user => {
+          if (!user.value) {
+            console.log(chalk.bold.red('Error getting user'))
+            console.log(chalk.red('User not found'))
+            return
+          }
+
+          console.log(columnify(await getFormattedUser(user.value)))
+        })
+        .with({ ok: false }, () => {})
+        .exhaustive()
+    }
+
+    if (email) {
+      const user = await userService.getUserByEmail(email)
+
+      match(user)
+        .with({ ok: true }, async user => {
+          if (!user.value) {
+            console.log(chalk.bold.red('Error getting user'))
+            console.log(chalk.red('User not found'))
+            return
+          }
+
+          console.log(columnify(await getFormattedUser(user.value)))
+        })
+        .with({ ok: false }, () => {})
+        .exhaustive()
+
+      return
+    }
+    process.exit()
+  })
+
+// program
+//   .command('update-dietician-profile')
+//   .requiredOption('--id <id>', 'User ID in database')
+//   .option('--email <email>', 'User email in database')
+//   .option('--firstName <firstName>', 'User first name in database')
+//   .option('--middleName <middleName>', 'User middle name in database')
+//   .option('--lastName <lastName>', 'User last name in database')
+//   .option('--mobileNumber <mobileNumber>', 'User mobile number in database')
+//   .option(
+//     '--businessNumber <businessNumber>',
+//     'User business number in database',
+//   )
+//   .option(
+//     '--businessAddress <businessAddress>',
+//     'User business address in database',
+//   )
+//   .option('--shortBio <shortBio>', 'User short bio in database')
+//   .option('--avatar <avatar>', 'User avatar in database')
+//   .action(async options => {
+//     const dieticianProfile = options
+//     await authService.updateProfile()
+//   })
 
 connectPostgres().then(() => {
   program.parse(process.argv)

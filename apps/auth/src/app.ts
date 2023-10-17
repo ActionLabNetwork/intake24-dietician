@@ -10,8 +10,7 @@ import cors from 'cors'
 import { ValidateError } from 'tsoa'
 import cookieParser from 'cookie-parser'
 import multer from 'multer'
-// import pino from 'pino-http'
-// import { createLogger } from './middleware/logger'
+import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const app = express()
 
@@ -50,6 +49,7 @@ app.use(
     next: NextFunction,
     // eslint-disable-next-line max-params
   ): ExResponse | undefined => {
+    console.log({ err, type: typeof err })
     if (err instanceof ValidateError) {
       console.warn(`Caught Validation Error for ${req.path}:`, err.fields)
       return res.status(422).json({
@@ -59,8 +59,13 @@ app.use(
     }
     if (err instanceof Error) {
       return res.status(500).json({
-        message: 'Internal Server Error',
+        message: 'Internal Server Errorzz',
       })
+    }
+
+    if (err instanceof Object) {
+      const internalError = err as ApiResponseWithError
+      return res.status(Number(internalError.error.status)).json(internalError)
     }
 
     next()

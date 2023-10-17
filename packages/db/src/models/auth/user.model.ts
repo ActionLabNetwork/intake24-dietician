@@ -29,6 +29,8 @@ export interface UserAttributes {
   roles?: (Role & { UserRole: UserRole })[]
   dieticians?: (User & { DieticianPatient: DieticianPatient })[]
   patients?: (User & { DieticianPatient: DieticianPatient })[]
+  dieticianProfile: DieticianProfile
+  patientProfile: PatientProfile
 }
 
 interface UserCreationAttributes {

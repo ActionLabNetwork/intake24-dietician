@@ -16,7 +16,11 @@ async function addJobs() {
   await mainQueue.add(
     'job1',
     { title: 'Delete Expired Tokens' },
-    { repeat: { every: 10000 }, removeOnComplete: true, removeOnFail: true },
+    {
+      repeat: { every: 60 * 60 * 1000 },
+      removeOnComplete: true,
+      removeOnFail: true,
+    },
   )
 }
 
