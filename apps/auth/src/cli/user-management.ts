@@ -8,8 +8,9 @@ import columnify from 'columnify'
 import { createArgonHashingService } from '../services/hashing.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createEmailService } from '../services/email.service'
-import { pick, crush, mapKeys } from 'radash'
+import { pick, crush, mapKeys, omit } from 'radash'
 import User from '@intake24-dietician/db/models/auth/user.model'
+import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 const authService = createAuthService(
   createArgonHashingService(),
@@ -152,28 +153,45 @@ program
     process.exit()
   })
 
-// program
-//   .command('update-dietician-profile')
-//   .requiredOption('--id <id>', 'User ID in database')
-//   .option('--email <email>', 'User email in database')
-//   .option('--firstName <firstName>', 'User first name in database')
-//   .option('--middleName <middleName>', 'User middle name in database')
-//   .option('--lastName <lastName>', 'User last name in database')
-//   .option('--mobileNumber <mobileNumber>', 'User mobile number in database')
-//   .option(
-//     '--businessNumber <businessNumber>',
-//     'User business number in database',
-//   )
-//   .option(
-//     '--businessAddress <businessAddress>',
-//     'User business address in database',
-//   )
-//   .option('--shortBio <shortBio>', 'User short bio in database')
-//   .option('--avatar <avatar>', 'User avatar in database')
-//   .action(async options => {
-//     const dieticianProfile = options
-//     await authService.updateProfile()
-//   })
+program
+  .command('update-dietician-profile')
+  .requiredOption('--id <id>', 'User ID in database')
+  .option('--email <email>', 'User email in database')
+  .option('--firstName <firstName>', 'User first name in database')
+  .option('--middleName <middleName>', 'User middle name in database')
+  .option('--lastName <lastName>', 'User last name in database')
+  .option('--mobileNumber <mobileNumber>', 'User mobile number in database')
+  .option(
+    '--businessNumber <businessNumber>',
+    'User business number in database',
+  )
+  .option(
+    '--businessAddress <businessAddress>',
+    'User business address in database',
+  )
+  .option('--shortBio <shortBio>', 'User short bio in database')
+  .option('--avatar <avatar>', 'User avatar in database')
+  .action(async options => {
+    const dieticianProfile = options
+    const updatedProfile = await userService.updateProfile(
+      dieticianProfile.id,
+      omit(dieticianProfile, [
+        'id',
+        'email',
+      ]) satisfies Partial<DieticianProfile>,
+    )
+
+    match(updatedProfile)
+      .with({ ok: true }, () => {
+        console.log(chalk.bold.green('Dietician profile updated successfully'))
+      })
+      .with({ ok: false }, result => {
+        console.log(
+          chalk.bold.red('Error updating dietician profile', result.error),
+        )
+      })
+      .exhaustive()
+  })
 
 connectPostgres().then(() => {
   program.parse(process.argv)

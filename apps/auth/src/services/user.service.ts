@@ -4,6 +4,7 @@ import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profi
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { z } from 'zod'
 
+/* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = () => {
   const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
     console.log({ limit, offset })
@@ -46,5 +47,23 @@ export const createUserService = () => {
     }
   }
 
-  return { listUsers, getUserById, getUserByEmail }
+  const updateProfile = async (
+    id: number,
+    details: Partial<DieticianProfile>,
+  ) => {
+    try {
+      const profile = await DieticianProfile.findOne({ where: { userId: id } })
+
+      if (!profile) {
+        return { ok: false, error: new Error('Profile not found') } as const
+      }
+
+      const updatedProfile = await profile.update(details)
+      return { ok: true, value: updatedProfile } as const
+    } catch (error) {
+      return { ok: false, error: getErrorMessage(error) } as const
+    }
+  }
+
+  return { listUsers, getUserById, getUserByEmail, updateProfile }
 }

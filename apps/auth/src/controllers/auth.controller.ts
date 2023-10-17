@@ -303,11 +303,6 @@ export class AuthController extends Controller {
   public async getProfile(@Request() request: express.Request) {
     const { accessToken } = request.cookies
 
-    if (!accessToken) {
-      this.setStatus(401)
-      return generateErrorResponse('401', 'Unauthorized', 'Invalid credentials')
-    }
-
     const user = await this.authService.getUser(accessToken)
 
     return match(user)
