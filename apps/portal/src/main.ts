@@ -9,7 +9,7 @@
 // Composables
 import { createApp } from 'vue'
 import App from './App.vue'
-import { i18n } from '@intake24-dietician/i18n'
+import { i18n } from '@intake24-dietician/i18n/index'
 
 // Plugins
 import { registerPlugins } from './plugins'

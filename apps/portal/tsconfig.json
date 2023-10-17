@@ -6,11 +6,11 @@
     "types": ["node", "vuetify"],
     "module": "esnext",
     "paths": {
-      "@/*": ["src/*"],
       "@intake24-dietician/portal/*": ["src/*"],
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
-      "@intake24-dietician/*": ["../../packages/*/src"]
+      "@intake24-dietician/*": ["../../packages/*/src"],
+      "@/*": ["src/*"]
     }
   },
   "include": [
