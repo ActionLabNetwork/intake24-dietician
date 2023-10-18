@@ -1,9 +1,26 @@
 <template>
-  <p class="font-weight-medium mt-16">Patient list</p>
+  <v-row class="mt-10 align-center">
+    <v-col>
+      <p class="font-weight-medium">Patient list</p>
+    </v-col>
+    <v-col class="d-flex">
+      <v-spacer />
+      <v-text-field
+        v-model="search"
+        prepend-inner-icon="mdi-magnify"
+        label="Search patient..."
+        variant="outlined"
+        hide-details
+        single-line
+      ></v-text-field>
+    </v-col>
+  </v-row>
+
   <div class="mt-4">
     <v-data-table
       v-model:items-per-page="itemsPerPage"
       :headers="headers as unknown as ReadonlyDataTableHeader[]"
+      :search="search"
       :items="patients"
       item-value="name"
       class="elevation-1"
@@ -11,27 +28,28 @@
       <template v-slot:headers="{ columns, isSorted, toggleSort, sortBy }">
         <tr>
           <template v-for="column in columns" :key="column.key">
-            <td class="text-center">
+            <td>
               <div
-                class="pa-4 table-header"
-                @click.stop="() => toggleSort(column)"
+                class="pa-4 table-header d-flex align-center justify-center"
+                @click="() => toggleSort(column)"
               >
                 <span class="mr-2 cursor-pointer">
                   {{ column.title }}
                 </span>
-
-                <v-icon
-                  v-if="!isSorted(column)"
-                  icon="mdi-unfold-more-horizontal"
-                />
-                <v-icon
-                  v-else
-                  :icon="
-                    sortBy[0]?.order === 'asc'
-                      ? 'mdi-chevron-up'
-                      : 'mdi-chevron-down'
-                  "
-                />
+                <div v-if="column.sortable">
+                  <v-icon
+                    v-if="!isSorted(column)"
+                    icon="mdi-unfold-more-horizontal"
+                  />
+                  <v-icon
+                    v-else
+                    :icon="
+                      sortBy[0]?.order === 'asc'
+                        ? 'mdi-chevron-up'
+                        : 'mdi-chevron-down'
+                    "
+                  />
+                </div>
               </div>
             </td>
           </template>
@@ -42,7 +60,7 @@
           <td class="text-left">
             <div class="d-flex align-center">
               <v-avatar :image="getDefaultAvatar(item.raw.name)" />
-              <span class="ml-5">{{ item.raw.name }}</span>
+              <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>
           <td>
@@ -73,15 +91,17 @@
               :color="
                 item.raw.patientStatus === 'Active' ? 'success' : 'neutral'
               "
-              class="ml-4"
               :text="item.raw.patientStatus"
             >
             </v-chip>
+            <span v-show="false">{{ item.raw.patientStatus }}</span>
           </td>
           <td>
-            <div class="d-flex flex-column">
+            <div
+              class="d-flex flex-column flex-xl-row align-baseline justify-center"
+            >
               {{ item.raw.lastReminderSent }}
-              <span class="mt-2">
+              <span class="mt-2 ml-0 ml-xl-4">
                 <v-btn class="text-capitalize" color="accent"> Remind </v-btn>
               </span>
             </div>
@@ -118,6 +138,7 @@ interface PatientTableHeaders {
   title: (typeof headerTitles)[number]
   align: string
   key: string
+  sortable: boolean
 }
 
 type PatientTableColumns = {
@@ -148,60 +169,90 @@ const headers = ref<PatientTableHeaders[]>([
     title: 'Name',
     align: 'start',
     key: 'name',
+    sortable: true,
   },
-  { title: 'Patient records', align: 'center', key: 'calories' },
-  { title: 'Last recall', align: 'center', key: 'fat' },
-  { title: 'Last feedback sent', align: 'center', key: 'carbs' },
-  { title: 'Patient status', align: 'center', key: 'protein' },
-  { title: 'Last reminder sent', align: 'center', key: 'iron' },
+  {
+    title: 'Patient records',
+    align: 'start',
+    key: 'patientRecords',
+    sortable: false,
+  },
+  { title: 'Last recall', align: 'center', key: 'lastRecall', sortable: true },
+  {
+    title: 'Last feedback sent',
+    align: 'center',
+    key: 'lastFeedbackSent',
+    sortable: true,
+  },
+  {
+    title: 'Patient status',
+    align: 'center',
+    key: 'patientStatus',
+    sortable: true,
+  },
+  {
+    title: 'Last reminder sent',
+    align: 'center',
+    key: 'lastReminderSent',
+    sortable: true,
+  },
 ])
 
-const dateToday = new Date().toLocaleString('en-US', {
-  month: 'short',
-  day: 'numeric',
-  year: 'numeric',
-})
+const search = ref('')
+
+function randomDate(start: Date, end: Date) {
+  return new Date(
+    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
+  )
+}
+
+const getRandomDate = () =>
+  randomDate(new Date(2012, 0, 1), new Date()).toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
 const patients = ref<SpecificPatientTableColumns[]>([
   {
     name: 'Giana Levin',
     patientRecords: undefined,
-    lastRecall: dateToday,
-    lastFeedbackSent: { date: dateToday, type: 'Tailored' },
+    lastRecall: getRandomDate(),
+    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
     patientStatus: 'Active',
-    lastReminderSent: dateToday,
+    lastReminderSent: getRandomDate(),
   },
   {
     name: 'Marley George',
     patientRecords: undefined,
-    lastRecall: dateToday,
-    lastFeedbackSent: { date: dateToday, type: 'Auto' },
+    lastRecall: getRandomDate(),
+    lastFeedbackSent: { date: getRandomDate(), type: 'Auto' },
     patientStatus: 'Active',
-    lastReminderSent: dateToday,
+    lastReminderSent: getRandomDate(),
   },
   {
     name: 'Mira Workman',
     patientRecords: undefined,
-    lastRecall: dateToday,
-    lastFeedbackSent: { date: dateToday, type: 'Auto' },
+    lastRecall: getRandomDate(),
+    lastFeedbackSent: { date: getRandomDate(), type: 'Auto' },
     patientStatus: 'Active',
-    lastReminderSent: dateToday,
+    lastReminderSent: getRandomDate(),
   },
   {
     name: 'Cheyenne Stanton',
     patientRecords: undefined,
-    lastRecall: dateToday,
-    lastFeedbackSent: { date: dateToday, type: 'Tailored' },
+    lastRecall: getRandomDate(),
+    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
     patientStatus: 'Active',
-    lastReminderSent: dateToday,
+    lastReminderSent: getRandomDate(),
   },
   {
     name: 'Terry Franci',
     patientRecords: undefined,
-    lastRecall: dateToday,
-    lastFeedbackSent: { date: dateToday, type: 'Tailored' },
+    lastRecall: getRandomDate(),
+    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
     patientStatus: 'Archived',
-    lastReminderSent: dateToday,
+    lastReminderSent: getRandomDate(),
   },
 ])
 </script>
