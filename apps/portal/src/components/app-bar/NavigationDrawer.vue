@@ -13,7 +13,7 @@
       :title="`${user?.dieticianProfile.firstName} ${user?.dieticianProfile.lastName}`"
     ></v-list-item>
     <v-divider></v-divider>
-    <v-list nav active-color="primary">
+    <v-list nav color="primary">
       <v-list-item
         v-for="item in navItems"
         :key="item.value"
