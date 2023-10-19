@@ -1,6 +1,7 @@
 import { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op } from '@intake24-dietician/db/connection'
+import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
@@ -137,6 +138,102 @@ export const createUserService = () => {
     }
   }
 
+  const assignPatientToDieticianById = async (
+    dieticianId: number,
+    patientId: number,
+  ) => {
+    try {
+      console.log({ patientId })
+
+      if (dieticianId === patientId) {
+        return {
+          ok: false,
+          error: new Error('Dietician and patient cannot be the same'),
+        } as const
+      }
+
+      const dietician = await User.findOne({
+        where: { id: dieticianId },
+        include: [Role, { model: User, as: 'patients' }],
+      })
+
+      const user = await User.findAll({
+        include: [
+          {
+            model: User,
+            as: 'dieticians',
+            where: { id: dieticianId },
+            through: { where: { patientId } },
+          },
+          {
+            model: User,
+            as: 'patients',
+            where: { id: patientId },
+            through: { where: { dieticianId } },
+          },
+        ],
+      })
+
+      console.log({ user })
+
+      const patient = await User.findOne({
+        where: { id: patientId },
+        include: [Role],
+      })
+
+      console.log({
+        dietician: dietician?.dataValues.patients?.map(
+          p => p.DieticianPatient.dataValues,
+        ),
+      })
+
+      if (!dietician) {
+        return {
+          ok: false,
+          error: new Error('Dietician account not found'),
+        } as const
+      }
+
+      if (!patient) {
+        return {
+          ok: false,
+          error: new Error('Patient account not found'),
+        } as const
+      }
+
+      const dieticianHasDieticianRole = dietician?.roles?.some(
+        role => role.dataValues.name === 'dietician',
+      )
+
+      const patientHasPatientRole = patient?.roles?.some(
+        role => role.dataValues.name === 'patient',
+      )
+
+      if (!dieticianHasDieticianRole) {
+        return {
+          ok: false,
+          error: new Error('Dietician does not have the dietician role'),
+        } as const
+      }
+
+      if (!patientHasPatientRole) {
+        return {
+          ok: false,
+          error: new Error('Patient does not have the patient role'),
+        } as const
+      }
+
+      const dieticianPatient = await DieticianPatient.create({
+        dieticianId: dietician.id,
+        patientId: patient.id,
+      })
+
+      return { ok: true, value: dieticianPatient } as const
+    } catch (error) {
+      return { ok: false, error: new Error(getErrorMessage(error)) } as const
+    }
+  }
+
   return {
     listUsers,
     getUserById,
@@ -147,5 +244,6 @@ export const createUserService = () => {
     createRole,
     deleteRole,
     assignRoleToUserById,
+    assignPatientToDieticianById,
   }
 }

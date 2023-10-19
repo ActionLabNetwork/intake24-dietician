@@ -339,6 +339,25 @@ program
     process.exit()
   })
 
+program
+  .command('assign-patient <dieticianUserId> <patientUserId>')
+  .description('Assign a patient to a dietician')
+  .action(async (dieticianUserId: number, patientUserId: number) => {
+    const user = await userService.assignPatientToDieticianById(
+      dieticianUserId,
+      patientUserId,
+    )
+
+    match(user)
+      .with({ ok: true }, () => {})
+      .with({ ok: false }, result => {
+        console.log('Failed to assign patient to dietician', result.error)
+      })
+      .exhaustive()
+
+    process.exit()
+  })
+
 connectPostgres().then(() => {
   program.parse(process.argv)
 })
