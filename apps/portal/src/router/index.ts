@@ -65,7 +65,17 @@ const routes = [
       {
         path: 'my-patients',
         name: 'My Patients',
-        component: () => import('@/views/dashboard/Patients.vue'),
+        component: () => import('@/views/dashboard/patients/Patients.vue'),
+        meta: {
+          requiresAuth: true,
+        } as const,
+      },
+      // TODO: Replace this with dynamic route once backend is done
+      {
+        path: 'patient-records',
+        name: 'Patient records',
+        component: () =>
+          import('@/views/dashboard/patients/PatientRecords.vue'),
         meta: {
           requiresAuth: true,
         } as const,
