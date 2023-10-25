@@ -14,7 +14,7 @@ import type {
   TokenActionType,
   PatientProfileValues,
 } from '@intake24-dietician/common/types/auth'
-import { JwtPayload } from 'jsonwebtoken'
+import type { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
 import Token from '@intake24-dietician/db/models/auth/token.model'
 import moment from 'moment'
@@ -25,7 +25,7 @@ import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import { match, P } from 'ts-pattern'
-import { Result } from '@intake24-dietician/common/types/utils'
+import type { Result } from '@intake24-dietician/common/types/utils'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import { IUserService } from '@intake24-dietician/common/types/api'
 
