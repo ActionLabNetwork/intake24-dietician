@@ -24,15 +24,17 @@
         </v-btn>
       </v-row>
       <v-row>
-        <v-col-2><DetailsAndNavCard /></v-col-2>
+        <v-col-2 class="ml-4"><DetailsAndNavCard /></v-col-2>
         <v-col class="px-16">
-          <FeedbackRecords />
+          <!-- <FeedbackRecords />
+          <PatientDetails /> -->
+          <router-view />
         </v-col>
-        <v-col-2>
+        <!-- <v-col-2>
           <v-btn append-icon="mdi-plus" color="primary" class="text-none"
             >Compose new feedback
           </v-btn>
-        </v-col-2>
+        </v-col-2> -->
       </v-row>
     </v-container>
   </v-main>
@@ -47,7 +49,6 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
 import DetailsAndNavCard from '@/components/patients/DetailsAndNavCard.vue'
-import FeedbackRecords from '@/components/patients/feedback-records/FeedbackRecords.vue'
 
 // const { t } = useI18n<i18nOptions>()
 

@@ -8,8 +8,15 @@
       <v-card-subtitle class="text-center">ID: 23459801</v-card-subtitle>
       <v-divider class="border-opacity-100 my-2"></v-divider>
       <v-card-actions class="d-flex flex-column">
-        <v-btn class="text-capitalize w-100">Feedback records</v-btn>
-        <v-btn class="text-capitalize w-100">Patient details</v-btn>
+        <v-list nav>
+          <v-list-item
+            v-for="item in navItems"
+            :key="item.value"
+            :title="item.title"
+            :to="item.to"
+            align="center"
+          />
+        </v-list>
       </v-card-actions>
     </v-card-item>
   </v-card>
@@ -17,6 +24,19 @@
 
 <script setup lang="ts">
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+
+const navItems = [
+  {
+    title: 'Feedback records',
+    value: 'feedbackRecords',
+    to: '/dashboard/my-patients/patient-records/feedback-records',
+  },
+  {
+    title: 'Patient details',
+    value: 'patientDetails',
+    to: '/dashboard/my-patients/patient-records/patient-details',
+  },
+]
 </script>
 
 <style scoped lang="scss">

@@ -16,6 +16,7 @@
       :model-value="value"
       :rules="rules"
       :readonly="readonly"
+      :suffix="suffix"
       @input="updateValue"
       @click:append-inner="handleIconClick"
       @click:append="handleOuterIconClick"
@@ -29,6 +30,7 @@ defineProps<{
   type: HTMLInputElement['type']
   placeholder?: string
   autocomplete?: HTMLInputElement['autocomplete']
+  suffix?: string
   suffixIcon?: string
   suffixIconOuter?: string
   name?: string

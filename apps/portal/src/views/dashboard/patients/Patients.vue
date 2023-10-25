@@ -45,6 +45,7 @@
       </div>
     </v-container>
   </v-main>
+  <router-view />
 </template>
 
 <script lang="ts" setup>

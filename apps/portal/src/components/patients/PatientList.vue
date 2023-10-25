@@ -65,7 +65,9 @@
           </td>
           <td>
             <v-btn color="primary" class="text-capitalize" min-width="50%">
-              View
+              <router-link to="/dashboard/my-patients/patient-records">
+                View
+              </router-link>
             </v-btn>
           </td>
           <td>{{ item.raw.lastRecall }}</td>

@@ -12,7 +12,9 @@
     </div>
     <div>
       <v-btn color="primary" class="text-capitalize" append-icon="mdi-plus">
-        Add new patient
+        <router-link to="/dashboard/my-patients/add-patient">
+          Add new patient
+        </router-link>
       </v-btn>
     </div>
   </div>
