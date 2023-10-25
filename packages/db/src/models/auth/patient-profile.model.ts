@@ -9,8 +9,28 @@ import {
 } from 'sequelize-typescript'
 import User from './user.model'
 
+export interface PatientProfileAttributes {
+  userId: number
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  businessNumber: string
+  businessAddress: string
+  shortBio: string
+  avatar: string | null
+  user: User
+}
+
+interface PatientProfileCreationAttributes {
+  userId: number
+}
+
 @Table
-class PatientProfile extends Model {
+class PatientProfile extends Model<
+  PatientProfileAttributes,
+  PatientProfileCreationAttributes
+> {
   @PrimaryKey
   @ForeignKey(() => User)
   @Column

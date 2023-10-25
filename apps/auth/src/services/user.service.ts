@@ -1,16 +1,19 @@
+import { IUserService } from '@intake24-dietician/common/types/api'
+import { UserAttributes } from '@intake24-dietician/common/types/auth'
 import { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op } from '@intake24-dietician/db/connection'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import User from '@intake24-dietician/db/models/auth/user.model'
-import { toInt } from 'radash'
 import { z } from 'zod'
+import { toInt } from 'radash'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
-export const createUserService = () => {
+export const createUserService = (): IUserService => {
   const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
     console.log({ limit, offset })
     try {
@@ -234,6 +237,29 @@ export const createUserService = () => {
     }
   }
 
+  const getPatientsOfDietician = async (
+    dieticianId: number,
+  ): Promise<Result<UserAttributes[]>> => {
+    const user = await User.findByPk(dieticianId, {
+      include: [
+        {
+          model: User,
+          as: 'patients',
+          through: { attributes: [] },
+        },
+        PatientProfile,
+      ],
+    })
+
+    if (user?.patients.length === 0) {
+      return { ok: false, error: new Error('No patients found') } as const
+    }
+
+    const patientIds = user?.patients.map(f => f.dataValues) ?? []
+
+    return { ok: true, value: patientIds }
+  }
+
   return {
     listUsers,
     getUserById,
@@ -245,5 +271,6 @@ export const createUserService = () => {
     deleteRole,
     assignRoleToUserById,
     assignPatientToDieticianById,
+    getPatientsOfDietician,
   }
 }

@@ -358,6 +358,22 @@ program
     process.exit()
   })
 
+program
+  .command('get-patients <dieticianUserId>')
+  .description('Get patients of a dietician')
+  .action(async (dieticianUserId: number) => {
+    await userService.getPatientsOfDietician(dieticianUserId)
+
+    // match(user)
+    //   .with({ ok: true }, () => {})
+    //   .with({ ok: false }, result => {
+    //     console.log('Failed to assign patient to dietician', result.error)
+    //   })
+    //   .exhaustive()
+
+    process.exit()
+  })
+
 connectPostgres().then(() => {
   program.parse(process.argv)
 })

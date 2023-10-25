@@ -358,7 +358,7 @@ export class AuthController extends Controller {
     return match(isJwtValid)
       .with({ ok: true }, result => {
         this.setHeader('Set-Cookie', [
-          `accessToken=${result.value};HttpOnly;SameSite=none;Secure`,
+          `accessToken=${result.value};HttpOnly;SameSite=none;Secure;Path=/`,
         ])
         return { isAuthenticated: true }
       })
@@ -524,7 +524,5 @@ export class AuthController extends Controller {
       `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure`,
       `refreshToken=${token.refreshToken};HttpOnly;SameSite=none;Secure`,
     ])
-
-    this.setHeader('X-Access-Token', `Bearer ${token.accessToken}`)
   }
 }

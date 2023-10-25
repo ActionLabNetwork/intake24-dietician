@@ -6,10 +6,15 @@ export interface UserAttributes {
   id: number
   email: string
   password: string
+  isVerified: boolean
 }
 
 export interface UserAttributesWithDieticianProfile extends UserAttributes {
   dieticianProfile: DieticianProfileValues
+}
+
+export interface UserAttributesWithPatientProfile extends UserAttributes {
+  patientProfile: PatientProfileValues
 }
 
 export interface UserWithToken {
@@ -84,6 +89,13 @@ export interface IAuthService {
     token: string,
   ) => Promise<Result<UserWithToken>>
   uploadAvatar: (accessToken: string, buffer: string) => Promise<Result<string>>
+  verifyJwtToken: (
+    token: string,
+  ) => Result<{ tokenExpired: boolean; decoded: JwtPayload | null }>
+  createPatient: (
+    email: string,
+    password: string,
+  ) => Promise<Result<(UserAttributes) | null>>
 }
 
 export interface ITokenService {
@@ -111,6 +123,18 @@ export interface DieticianProfileValues {
   businessNumber: string
   businessAddress: string
   shortBio: string
+  avatar: string | null
+  updatedAt?: Date
+  createdAt?: Date
+}
+
+export interface PatientProfileValues {
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  emailAddress: string
+  address: string
   avatar: string | null
   updatedAt: Date
   createdAt: Date

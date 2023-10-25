@@ -24,6 +24,7 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import { match, P } from 'ts-pattern'
 import { Result } from '@intake24-dietician/common/types/utils'
+import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -49,6 +50,7 @@ export const createAuthService = (
 
           try {
             return sequelize.transaction(async t => {
+              // Create user
               const user = await User.create(
                 {
                   email,
@@ -57,6 +59,7 @@ export const createAuthService = (
                 { transaction: t },
               )
 
+              // Create dietician profile
               await DieticianProfile.create(
                 {
                   userId: user.id,
@@ -64,6 +67,7 @@ export const createAuthService = (
                 { transaction: t },
               )
 
+              // Assign dietician role
               const dieticianRole = await Role.findOne({
                 where: { name: 'dietician' },
                 lock: true,
@@ -80,6 +84,7 @@ export const createAuthService = (
                 )
               }
 
+              // Generate token and session
               const { jti, token } = await generateToken(user, 'both')
 
               return {
@@ -530,6 +535,126 @@ export const createAuthService = (
     }
   }
 
+  const verifyJwtToken = (
+    token: string,
+    tokenType: 'access-token' | 'refresh-token' = 'access-token',
+  ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
+    const decoded = tokenService.verify(token, env.JWT_SECRET)
+
+    return match(decoded)
+      .with({ ok: true }, result => {
+        const { tokenExpired, decoded } = result.value
+
+        if (tokenExpired) {
+          return { ...result, value: { tokenExpired: true, decoded: null } }
+        }
+
+        if (typeof decoded === 'string') {
+          return {
+            ok: false,
+            error: new Error(
+              'Malformed token. Decoded token is a string instead of a payload',
+            ),
+          } as const
+        }
+
+        if (decoded?.['tokenType'] !== tokenType) {
+          return {
+            ok: false,
+            error: new Error(
+              `Invalid token type. Please provide ${
+                tokenType === 'access-token' ? 'an' : 'a'
+              } ${tokenType}.`,
+            ),
+          } as const
+        }
+
+        // Return the valid decoded result
+        return { ...result, value: { tokenExpired: false, decoded } }
+      })
+      .with({ ok: false }, result => {
+        if (result.error.name === 'TokenExpiredError') {
+          return {
+            ok: false,
+            error: new Error('Token has expired'),
+          } as const
+        }
+        return { ok: false, error: new Error('Invalid token') } as const
+      })
+      .exhaustive()
+  }
+
+  const createPatient = async (
+    email: string,
+    password: string,
+  ): Promise<Result<UserAttributes>> => {
+    try {
+      const isEmailValid = await validateNewEmailAvailability(email)
+
+      return match(isEmailValid)
+        .with({ ok: true }, async () => {
+          const hashedPassword = await hashingService.hash(password)
+
+          try {
+            return sequelize.transaction(async t => {
+              // Create user
+              const user = await User.create(
+                {
+                  email,
+                  password: hashedPassword,
+                },
+                { transaction: t },
+              )
+
+              // Create patient profile
+              await PatientProfile.create(
+                {
+                  userId: user.id,
+                },
+                { transaction: t },
+              )
+
+              // Assign patient role
+              const patientRole = await Role.findOne({
+                where: { name: 'patient' },
+                lock: true,
+                transaction: t,
+              })
+
+              if (patientRole) {
+                await UserRole.create(
+                  {
+                    userId: user.id,
+                    roleId: patientRole.id,
+                  },
+                  { transaction: t },
+                )
+              }
+
+              return {
+                ok: true,
+                value: user.get({ plain: true }),
+              } as const
+            })
+          } catch (error) {
+            return {
+              ok: false as const,
+              error: new Error(getErrorMessage(error)),
+            } as const
+          }
+        })
+        .with({ ok: false }, result => {
+          return { ok: false, error: result.error } as const
+        })
+        .exhaustive()
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('register function failed'),
+      } as const
+    }
+  }
+
   // Private helper functions
   const confirmEmailExists = async (
     email: string,
@@ -806,55 +931,6 @@ export const createAuthService = (
     }
   }
 
-  const verifyJwtToken = (
-    token: string,
-    tokenType: 'access-token' | 'refresh-token' = 'access-token',
-  ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
-    const decoded = tokenService.verify(token, env.JWT_SECRET)
-
-    return match(decoded)
-      .with({ ok: true }, result => {
-        const { tokenExpired, decoded } = result.value
-
-        if (tokenExpired) {
-          return { ...result, value: { tokenExpired: true, decoded: null } }
-        }
-
-        if (typeof decoded === 'string') {
-          return {
-            ok: false,
-            error: new Error(
-              'Malformed token. Decoded token is a string instead of a payload',
-            ),
-          } as const
-        }
-
-        if (decoded?.['tokenType'] !== tokenType) {
-          return {
-            ok: false,
-            error: new Error(
-              `Invalid token type. Please provide ${
-                tokenType === 'access-token' ? 'an' : 'a'
-              } ${tokenType}.`,
-            ),
-          } as const
-        }
-
-        // Return the valid decoded result
-        return { ...result, value: { tokenExpired: false, decoded } }
-      })
-      .with({ ok: false }, result => {
-        if (result.error.name === 'TokenExpiredError') {
-          return {
-            ok: false,
-            error: new Error('Token has expired'),
-          } as const
-        }
-        return { ok: false, error: new Error('Invalid token') } as const
-      })
-      .exhaustive()
-  }
-
   const checkTokenInRedis = async (jti: string): Promise<string> => {
     const tokenInRedis = await redis.get(`${ACCESS_PREFIX}${jti}`)
     if (!tokenInRedis) {
@@ -889,5 +965,7 @@ export const createAuthService = (
     verifyUserToken,
     verifyUserTokenForPasswordlessAuth,
     uploadAvatar,
+    verifyJwtToken,
+    createPatient,
   }
 }
