@@ -13,6 +13,10 @@ dev-dist
 dist
 dist-ssr
 docker/db
+docker/node_modules
+docker/redis
+docker/redis-data
+docker/mongo_db
 build
 coverage
 tmp
