@@ -16,6 +16,7 @@ docker/db
 docker/node_modules
 docker/redis
 docker/redis-data
+docker/data-db
 docker/mongo_db
 build
 coverage
