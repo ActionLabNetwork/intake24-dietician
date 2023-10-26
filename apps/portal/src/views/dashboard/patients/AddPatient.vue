@@ -1,21 +1,23 @@
 <template>
-  <v-main class="wrapper">
+  <div class="wrapper">
     <v-container>
-      <v-breadcrumbs :items="breadcrumbItems">
-        <template v-slot:divider>
-          <v-icon icon="mdi-chevron-right"></v-icon>
-        </template>
-      </v-breadcrumbs>
-      <v-btn
-        prepend-icon="mdi-chevron-left"
-        flat
-        class="text-none"
-        variant="text"
-      >
-        Back to patient list
-      </v-btn>
+      <div>
+        <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
+          <template v-slot:divider>
+            <v-icon icon="mdi-chevron-right"></v-icon>
+          </template>
+        </v-breadcrumbs>
+        <v-btn
+          prepend-icon="mdi-chevron-left"
+          flat
+          class="text-none px-0 mt-10"
+          variant="text"
+        >
+          Back to patient list
+        </v-btn>
+      </div>
       <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12 px-4"
+        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
       >
         <div>
           <h1 class="text heading">New patient information</h1>
@@ -43,9 +45,20 @@
           class="mt-16"
           @update="handlePersonalDetailsUpdate"
         />
+        <VisualThemeSelector class="mt-10" />
+        <SendAutomatedFeedbackToggle class="mt-10" />
+        <UpdateRecallFrequency class="mt-10" />
+      </div>
+      <div>
+        <p class="font-weight-medium">
+          Review and add new patient to the records
+        </p>
+        <v-btn color="primary" class="text-none mt-4">
+          Add patient to records
+        </v-btn>
       </div>
     </v-container>
-  </v-main>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -58,7 +71,9 @@ import ContactDetails, {
 } from '@intake24-dietician/portal/components/patients/patient-details/ContactDetails.vue'
 import PersonalDetails from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
 import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
-
+import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
+import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
+import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
 // const { t } = useI18n<i18nOptions>()
 
 const breadcrumbItems = ref([
