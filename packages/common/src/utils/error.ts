@@ -1,4 +1,4 @@
-import { ApiResponseWithError } from '../types/api'
+import type { ApiResponseWithError } from '../types/api'
 
 export const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) {

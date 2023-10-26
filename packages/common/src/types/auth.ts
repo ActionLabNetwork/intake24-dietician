@@ -1,8 +1,8 @@
-import { ApiResponse } from '@intake24-dietician/common/types/api'
-import { JwtPayload } from 'jsonwebtoken'
-import { Result } from './utils'
-import { Theme } from './theme'
-import { ReminderConditions } from './reminder'
+import type { ApiResponse } from '@intake24-dietician/common/types/api'
+import type { JwtPayload } from 'jsonwebtoken'
+import type { Result } from './utils'
+import type { Theme } from './theme'
+import type { ReminderConditions } from './reminder'
 
 export interface UserAttributes {
   id: number

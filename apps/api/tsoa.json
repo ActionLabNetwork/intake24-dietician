@@ -1,32 +1,71 @@
 {
-    "entryFile": "src/app.ts",
-    "noImplicitAdditionalProperties": "throw-on-extras",
-    "controllerPathGlobs": ["src/**/*.controller.ts"],
-    "spec": {
-      "outputDirectory": "build",
-      "specVersion": 3,
-      "securityDefinitions": {
-        "jwt": {
-          "type": "jwt",
-          "name": "JSON Web Token"
-        }
+  "entryFile": "src/app.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": [
+    "src/**/*.controller.ts"
+  ],
+  "spec": {
+    "outputDirectory": "build",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "jwt",
+        "name": "JSON Web Token"
       }
-    },
-    "routes": {
-      "routesDir": "build"
-    },
-    "compilerOptions": {
-      "baseUrl": ".",
-      "paths": {
-        "@intake24-dietician/api/*": ["src/*"],
-        "@intake24-dietician/api-tests/*": ["__tests__/*"],
-        "@intake24-dietician/common/*": ["../../packages/common/src/*"],
-        "@intake24-dietician/db/*": ["../../packages/db/src/*"],
-        "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
-        "@intake24/*": ["../../packages/*/src"],
-        "tsoa": ["node_modules/tsoa/dist"]
-      },
-      "types": ["node", "jest", "jest-extended"]
     }
+  },
+  "routes": {
+    "routesDir": "build"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@intake24-dietician/api/*": [
+        "src/*"
+      ],
+      "@intake24-dietician/api-tests/*": [
+        "__tests__/*"
+      ],
+      "@intake24-dietician/common/*": [
+        "../../packages/common/src/*"
+      ],
+      "@intake24-dietician/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@intake24-dietician/i18n/*": [
+        "../../packages/i18n/src/*"
+      ],
+      "@intake24/*": [
+        "../../packages/*/src"
+      ],
+      "tsoa": [
+        "node_modules/tsoa/dist"
+      ]
+    },
+    "types": [
+      "node",
+      "jest",
+      "jest-extended"
+    ],
+    "incremental": true,
+    "target": "es6",
+    "module": "commonjs",
+    "outDir": "build",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true
   }
-  
+}
