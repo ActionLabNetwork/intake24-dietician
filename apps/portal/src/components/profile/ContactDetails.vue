@@ -106,7 +106,7 @@
               suffix-icon="mdi-restore"
               :handle-icon-click="
                 () => {
-                  formValues.mobileNumber = user.dieticianProfile.mobileNumber
+                  formValues.mobileNumber = props.defaultState.mobileNumber
                   emit('update', { ...formValues })
                 }
               "
@@ -132,7 +132,7 @@
               :handle-icon-click="
                 () => {
                   formValues.businessNumber =
-                    user.dieticianProfile.businessNumber ?? ''
+                    props.defaultState.businessNumber ?? ''
                   emit('update', { ...formValues })
                 }
               "
@@ -157,7 +157,7 @@
               :handle-icon-click="
                 () => {
                   formValues.businessAddress =
-                    user.dieticianProfile.businessAddress ?? ''
+                    props.defaultState.businessAddress ?? ''
                   emit('update', { ...formValues })
                 }
               "
@@ -184,10 +184,6 @@ import { useDebounceFn } from '@vueuse/core'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { emailValidator } from '@/validators/auth'
 import { mobileNumberValidator } from '@/validators/auth/profile'
-import {
-  DieticianProfileValues,
-  UserAttributesWithDieticianProfile,
-} from '@intake24-dietician/common/types/auth'
 import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
 
 export interface ContactDetailsFormValues {
@@ -198,8 +194,8 @@ export interface ContactDetailsFormValues {
 }
 
 const props = defineProps<{
-  user: UserAttributesWithDieticianProfile
-  profileFormValues: DieticianProfileValues
+  defaultState: ContactDetailsFormValues
+  email: string
   handleSubmit: () => Promise<void>
 }>()
 const emit = defineEmits<{
@@ -214,21 +210,12 @@ const { mdAndUp } = useDisplay()
 const { t } = useI18n<i18nOptions>()
 
 const currentEmailAddress = ref('')
-const formValues = ref<ContactDetailsFormValues>({
-  emailAddress: '',
-  mobileNumber: '',
-  businessNumber: '',
-  businessAddress: '',
-})
+// eslint-disable-next-line vue/no-setup-props-destructure
+const formValues = ref<ContactDetailsFormValues>(props.defaultState)
 
 onMounted(() => {
-  currentEmailAddress.value = props.user.email
-  formValues.value = {
-    emailAddress: props.user.email,
-    mobileNumber: props.user.dieticianProfile.mobileNumber,
-    businessNumber: props.user.dieticianProfile.businessNumber,
-    businessAddress: props.user.dieticianProfile.businessAddress,
-  }
+  currentEmailAddress.value = props.email
+  formValues.value = props.defaultState
 })
 
 const changeEmailDialog = ref(false)

@@ -13,7 +13,7 @@
             variant="solo-filled"
             @click:append-inner="
               () => {
-                formValues.shortBio = user.dieticianProfile.shortBio
+                formValues.shortBio = defaultState.shortBio
                 emit('update', { ...formValues })
               }
             "
@@ -34,18 +34,13 @@ import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
-import {
-  DieticianProfileValues,
-  UserAttributesWithDieticianProfile,
-} from '@intake24-dietician/common/types/auth'
 
 export interface ShortBioFormValues {
   shortBio: string
 }
 
 const props = defineProps<{
-  user: UserAttributesWithDieticianProfile
-  profileFormValues: DieticianProfileValues
+  defaultState: ShortBioFormValues
 }>()
 const emit = defineEmits<{
   update: [value: ShortBioFormValues]
@@ -57,7 +52,7 @@ const { t } = useI18n<i18nOptions>()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<ShortBioFormValues>({
-  shortBio: props.user.dieticianProfile.shortBio ?? '',
+  shortBio: props.defaultState.shortBio ?? '',
 })
 
 const handleFieldUpdate = useDebounceFn(
