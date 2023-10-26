@@ -1,5 +1,6 @@
-import { DBName } from '@intake24-dietician/common/types/database'
-import { z, TypeOf } from 'zod'
+import type { DBName } from '@intake24-dietician/common/types/database'
+import type { TypeOf } from 'zod'
+import { z } from 'zod'
 
 const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
   process.env['NODE_ENV'] !== 'production' ? schema.default(val) : schema
@@ -12,6 +13,9 @@ const schema = z.object({
   DB_NAME: withDevDefault(z.string(), 'intake24-dietician-db'),
   REDIS_CONNECTION_PORT: withDevDefault(z.string(), '6380'),
   REDIS_CONNECTION_HOST: withDevDefault(z.string(), 'localhost'),
+  MONGO_RECALL_DB_PORT: withDevDefault(z.string(), '27018'),
+  MONGO_RECAL_DB_ROOT_USERNAME: withDevDefault(z.string(), 'recall_root'),
+  MONGO_RECAL_DB_ROOT_PASSWORD: withDevDefault(z.string(), 'recall_password'),
 })
 
 const parsed = schema.safeParse(process.env)
@@ -29,4 +33,13 @@ const getDBUrl = (dbName: DBName) => {
   return `postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${dbName}?sslmode=disable`
 }
 
-export { env, getDBUrl }
+const getMongoDBUrl = () => {
+  const {
+    MONGO_RECALL_DB_PORT,
+    MONGO_RECAL_DB_ROOT_USERNAME,
+    MONGO_RECAL_DB_ROOT_PASSWORD,
+  } = env
+  return `mongodb://${MONGO_RECAL_DB_ROOT_USERNAME}:${MONGO_RECAL_DB_ROOT_PASSWORD}@localhost:${MONGO_RECALL_DB_PORT}/?authSource=admin`
+}
+
+export { env, getDBUrl, getMongoDBUrl }
