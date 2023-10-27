@@ -49,7 +49,6 @@ app.use(
     next: NextFunction,
     // eslint-disable-next-line max-params
   ): ExResponse | undefined => {
-    console.log({ err, type: typeof err })
     if (err instanceof ValidateError) {
       console.warn(`Caught Validation Error for ${req.path}:`, err.fields)
       return res.status(422).json({
@@ -59,7 +58,7 @@ app.use(
     }
     if (err instanceof Error) {
       return res.status(500).json({
-        message: 'Internal Server Errorzz',
+        message: 'Internal Server Error',
       })
     }
 

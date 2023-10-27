@@ -12,8 +12,8 @@ export const createJwtTokenService = (): ITokenService => ({
       return { ok: true, value: { tokenExpired: false, decoded } } as const
     } catch (error) {
       if (
-        error instanceof jwt.JsonWebTokenError &&
-        error.name === 'JsonWebTokenError'
+        error instanceof jwt.TokenExpiredError &&
+        error.name === 'TokenExpiredError'
       ) {
         return {
           ok: true,

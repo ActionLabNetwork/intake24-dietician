@@ -354,6 +354,7 @@ export class AuthController extends Controller {
       accessToken,
       refreshToken,
     )
+    console.log({ isJwtValid })
 
     return match(isJwtValid)
       .with({ ok: true }, result => {
@@ -371,8 +372,8 @@ export class AuthController extends Controller {
   @Post('logout')
   public async logout(@Request() request: express.Request) {
     this.setHeader('Set-Cookie', [
-      `accessToken='';HttpOnly;SameSite=none;Secure;Max-Age=0`,
-      `refreshToken='';HttpOnly;SameSite=none;Secure;Max-Age=0`,
+      `accessToken='';HttpOnly;SameSite=none;Secure;Max-Age=0;Path=/`,
+      `refreshToken='';HttpOnly;SameSite=none;Secure;Max-Age=0;Path=/`,
     ])
     await this.authService.logout(request.cookies['accessToken'])
   }
@@ -521,8 +522,8 @@ export class AuthController extends Controller {
 
   private setAuthHeaders(token: Token): void {
     this.setHeader('Set-Cookie', [
-      `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure`,
-      `refreshToken=${token.refreshToken};HttpOnly;SameSite=none;Secure`,
+      `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure;Path=/`,
+      `refreshToken=${token.refreshToken};HttpOnly;SameSite=none;Secure;Path=/`,
     ])
   }
 }

@@ -15,7 +15,6 @@ import { toInt } from 'radash'
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
   const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
-    console.log({ limit, offset })
     try {
       const users = await User.findAll({ limit, offset })
       return { ok: true, value: users } as const
@@ -146,8 +145,6 @@ export const createUserService = (): IUserService => {
     patientId: number,
   ) => {
     try {
-      console.log({ patientId })
-
       if (dieticianId === patientId) {
         return {
           ok: false,
@@ -182,12 +179,6 @@ export const createUserService = (): IUserService => {
       const patient = await User.findOne({
         where: { id: patientId },
         include: [Role],
-      })
-
-      console.log({
-        dietician: dietician?.dataValues.patients?.map(
-          p => p.DieticianPatient.dataValues,
-        ),
       })
 
       if (!dietician) {

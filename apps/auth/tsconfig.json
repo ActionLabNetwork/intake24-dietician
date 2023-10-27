@@ -1,6 +1,5 @@
 {
   "extends": "../../tsconfig.json",
-  "type": "module",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
@@ -13,7 +12,10 @@
       "@intake24/*": ["../../packages/*/src"],
       "tsoa": ["node_modules/tsoa/dist"]
     },
-    "types": ["node", "jest", "jest-extended"]
+    "types": ["node", "jest", "jest-extended"],
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts", "src/server.ts"],
   "exclude": ["node_modules"]
