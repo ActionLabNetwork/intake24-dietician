@@ -31,6 +31,9 @@
               variant="solo-filled"
               flat
               :model-value="formValues.gender"
+              @update:model-value="
+                newVal => handleFieldUpdate('gender', newVal)
+              "
             ></v-select>
           </v-col>
         </v-row>

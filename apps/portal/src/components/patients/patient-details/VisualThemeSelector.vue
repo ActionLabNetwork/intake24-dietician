@@ -30,12 +30,20 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Theme } from '@/types/theme.types'
+
+interface ThemeRef {
+  title: `${Theme} theme`
+  description: string
+  img: string
+  active: boolean
+}
 
 const emit = defineEmits<{
-  update: [value: boolean, theme: string]
+  update: [theme: string]
 }>()
 
-const themes = ref([
+const themes = ref<ThemeRef[]>([
   {
     title: 'Classic theme',
     description: 'Suitable for adults',
@@ -60,7 +68,8 @@ const handleSwitchUpdate = (value: boolean, theme: string) => {
   themes.value.forEach(theme => {
     if (theme.title !== themes.value[index]!.title) theme.active = !value
   })
-  emit('update', value, theme)
+
+  emit('update', themes.value.find(t => t.active)?.title ?? '')
 }
 </script>
 

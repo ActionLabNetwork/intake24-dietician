@@ -238,6 +238,13 @@
               type="email"
               name="emailAddress"
               autocomplete="email"
+              suffix-icon="mdi-restore"
+              :handle-icon-click="
+                () => {
+                  formValues.emailAddress = props.defaultState.emailAddress
+                  emit('update', { ...formValues })
+                }
+              "
               :value="formValues.emailAddress"
               :rules="[emailValidator]"
               class="base-input"
@@ -251,7 +258,7 @@
               </span>
             </BaseInput>
           </v-col>
-          <v-col cols="12" md='4'>
+          <v-col cols="12" md="4">
             <!-- Address -->
             <BaseInput
               type="text"
@@ -267,9 +274,7 @@
               :value="formValues.address"
               @update="newVal => handleFieldUpdate('address', newVal)"
             >
-              <span class="input-label">
-                Address
-              </span>
+              <span class="input-label"> Address </span>
             </BaseInput>
           </v-col>
         </v-row>
@@ -315,12 +320,7 @@ const imageUpload = ref()
 const avatarImage = ref('')
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<ContactDetailsFormValues>(props.defaultState)
-
-// onMounted(() => {
-//   const imageSrc = props.user.dieticianProfile.avatar
-//   avatarImage.value = imageSrc || getDefaultAvatar(props.user.email)
-// })
+const formValues = ref<ContactDetailsFormValues>({ ...props.defaultState })
 
 const handleFieldUpdate = useDebounceFn(
   (fieldName: keyof ContactDetailsFormValues, newVal: string) => {

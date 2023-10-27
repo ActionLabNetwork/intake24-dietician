@@ -45,8 +45,8 @@
           class="mt-16"
           @update="handlePersonalDetailsUpdate"
         />
-        <VisualThemeSelector class="mt-10" />
-        <SendAutomatedFeedbackToggle class="mt-10" />
+        <VisualThemeSelector class="mt-10" @update="handleVisualThemeUpdate" />
+        <SendAutomatedFeedbackToggle class="mt-10" @update="console.log" />
         <UpdateRecallFrequency class="mt-10" />
       </div>
       <div>
@@ -109,13 +109,15 @@ const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
 })
 
 const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
-  contactDetailsFormValues.value = values
   console.log({ values })
 }
 
 const handlePersonalDetailsUpdate = (values: PersonalDetailsFormValues) => {
-  personalDetailsFormValues.value = values
   console.log({ values })
+}
+
+const handleVisualThemeUpdate = (theme: string) => {
+  console.log({ theme })
 }
 </script>
 
