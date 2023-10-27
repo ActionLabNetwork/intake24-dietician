@@ -4,17 +4,20 @@
   >
     <div>
       <p class="font-weight-medium">Summary</p>
-      <v-card class="d-flex mt-2 py-2 px-4 elevation-1">
+      <v-card class="d-flex flex-wrap mt-2 py-2 px-4 elevation-1">
         <div>Total patients: <span class="font-weight-bold">5</span></div>
         <div>Active: <span class="font-weight-bold">3</span></div>
         <div>Archived: <span class="font-weight-bold">2</span></div>
       </v-card>
     </div>
     <div>
-      <v-btn color="primary" class="text-capitalize" append-icon="mdi-plus">
-        <router-link to="/dashboard/my-patients/add-patient">
-          Add new patient
-        </router-link>
+      <v-btn
+        color="primary"
+        class="text-capitalize"
+        append-icon="mdi-plus"
+        to="/dashboard/my-patients/add-patient"
+      >
+        Add new patient
       </v-btn>
     </div>
   </div>

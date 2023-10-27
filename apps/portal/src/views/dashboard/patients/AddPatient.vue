@@ -30,7 +30,7 @@
         </div>
         <div>
           <v-btn type="submit" color="primary text-none" class="mt-3 mt-sm-0">
-            Add patients to records
+            Add patient to records
           </v-btn>
         </div>
       </div>

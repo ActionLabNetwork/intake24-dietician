@@ -207,7 +207,7 @@
     <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
-          <v-col cols="12" sm="6" md="4">
+          <v-col cols="12" md="4">
             <!-- Mobile number -->
             <BaseInput
               type="tel"

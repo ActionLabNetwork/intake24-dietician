@@ -49,13 +49,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
 import HomeSummary from '@/components/patients/HomeSummary.vue'
 import PatientList from '@/components/patients/PatientList.vue'
 
@@ -65,35 +64,6 @@ const authStore = useAuthStore()
 const { user, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
-const profileFormValues = ref<DieticianProfileValues>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  emailAddress: '',
-  mobileNumber: '',
-  businessNumber: '',
-  businessAddress: '',
-  shortBio: '',
-  avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-})
-
-watch(user, newUser => {
-  profileFormValues.value = {
-    firstName: newUser?.dieticianProfile.firstName ?? '',
-    middleName: newUser?.dieticianProfile.middleName ?? '',
-    lastName: newUser?.dieticianProfile.lastName ?? '',
-    emailAddress: newUser?.email ?? '',
-    mobileNumber: newUser?.dieticianProfile.mobileNumber ?? '',
-    businessNumber: newUser?.dieticianProfile.businessNumber ?? '',
-    businessAddress: newUser?.dieticianProfile.businessAddress ?? '',
-    shortBio: newUser?.dieticianProfile.shortBio ?? '',
-    avatar: newUser?.dieticianProfile.avatar ?? null,
-    createdAt: newUser?.dieticianProfile.createdAt ?? new Date(),
-    updatedAt: newUser?.dieticianProfile.updatedAt ?? new Date(),
-  }
-})
 </script>
 
 <style scoped lang="scss">

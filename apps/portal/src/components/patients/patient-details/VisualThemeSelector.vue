@@ -5,8 +5,10 @@
       <v-card v-for="theme in themes" :key="theme.title" class="flex-item pb-4">
         <v-img :src="getImage(theme.img)" cover></v-img>
         <v-card-title>
-          <div class="d-flex align-center justify-space-between">
-            <div>{{ theme.title }}</div>
+          <div
+            class="d-flex flex-sm-row flex-column align-center justify-space-between"
+          >
+            <div class="title">{{ theme.title }}</div>
             <div>
               <v-switch
                 v-model="theme.active"
@@ -65,11 +67,23 @@ const handleSwitchUpdate = (value: boolean, theme: string) => {
 <style scoped lang="scss">
 .flex-container {
   display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: min(40rem, 100vw);
+
+  @media only screen and (min-width: 768px) {
+    flex-direction: row;
+    gap: 0;
+  }
 }
 
 .flex-item {
   flex: 1;
-  max-width: 25%;
   margin-right: 1rem;
+}
+
+.title {
+  font-size: clamp(1rem, 0.462vw + 0.88rem, 1.25rem);
+  line-height: clamp(1.5rem, 0.231vw + 1.44rem, 1.625rem);
 }
 </style>
