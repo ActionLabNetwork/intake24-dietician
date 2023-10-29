@@ -10,12 +10,6 @@
               type="number"
               name="age"
               :value="formValues.age"
-              :handle-icon-click="
-                () => {
-                  formValues.age = props.defaultState.age
-                  emit('update', { ...formValues })
-                }
-              "
               class="base-input"
               suffix="yrs"
               @update="newVal => handleFieldUpdate('age', newVal)"
@@ -45,12 +39,6 @@
               type="number"
               name="height"
               :value="formValues.height"
-              :handle-icon-click="
-                () => {
-                  formValues.height = props.defaultState.height
-                  emit('update', { ...formValues })
-                }
-              "
               class="base-input"
               suffix="kg"
               @update="newVal => handleFieldUpdate('height', newVal)"
@@ -64,12 +52,6 @@
               type="number"
               name="weight"
               :value="formValues.weight"
-              :handle-icon-click="
-                () => {
-                  formValues.weight = props.defaultState.weight
-                  emit('update', { ...formValues })
-                }
-              "
               class="base-input"
               suffix="cm"
               @update="newVal => handleFieldUpdate('weight', newVal)"
@@ -85,14 +67,7 @@
             v-model="formValues.additionalNotes"
             flat
             label="Write here..."
-            append-inner-icon="mdi-restore"
             variant="solo-filled"
-            @click:append-inner="
-              () => {
-                formValues.additionalNotes = defaultState.additionalNotes
-                emit('update', { ...formValues })
-              }
-            "
             @update:model-value="
               (val: string) => handleFieldUpdate('additionalNotes', val)
             "
@@ -109,14 +84,7 @@
             v-model="formValues.patientGoal"
             flat
             label="My goal is..."
-            append-inner-icon="mdi-restore"
             variant="solo-filled"
-            @click:append-inner="
-              () => {
-                formValues.patientGoal = defaultState.patientGoal
-                emit('update', { ...formValues })
-              }
-            "
             @update:model-value="
               (val: string) => handleFieldUpdate('patientGoal', val)
             "

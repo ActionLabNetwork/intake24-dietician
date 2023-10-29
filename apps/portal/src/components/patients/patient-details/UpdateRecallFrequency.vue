@@ -8,10 +8,9 @@
             type="number"
             name="recallFrequency"
             :value="recallFrequency.value"
-            label-class=""
             @update="newVal => (recallFrequency.value = newVal)"
           >
-            Remind every (required)
+            Remind every <span class="text-primary">(required)</span>
           </BaseInput>
         </div>
         <div class="v-col pt-10">

@@ -78,7 +78,7 @@ const handleSwitchUpdate = (value: boolean, theme: string) => {
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  max-width: min(40rem, 100vw);
+  max-width: min(40rem, 50vw);
 
   @media only screen and (min-width: 768px) {
     flex-direction: row;

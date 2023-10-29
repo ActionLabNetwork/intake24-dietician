@@ -44,14 +44,7 @@
                 autocomplete="given-name"
                 :value="formValues.firstName"
                 :rules="[requiredValidator('First name')]"
-                suffix-icon="mdi-restore"
                 class="base-input"
-                :handle-icon-click="
-                  () => {
-                    formValues.firstName = props.defaultState.firstName
-                    emit('update', { ...formValues })
-                  }
-                "
                 @update="val => handleFieldUpdate('firstName', val)"
               >
                 <span class="input-label">
@@ -66,13 +59,6 @@
                 type="text"
                 name="middleName"
                 autocomplete="additional-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.middleName = props.defaultState.middleName
-                    emit('update', { ...formValues })
-                  }
-                "
                 :value="formValues.middleName"
                 @update="val => handleFieldUpdate('middleName', val)"
               >
@@ -85,13 +71,6 @@
                 type="text"
                 name="lastName"
                 autocomplete="family-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.lastName = props.defaultState.lastName
-                    emit('update', { ...formValues })
-                  }
-                "
                 :value="formValues.lastName"
                 @update="val => handleFieldUpdate('lastName', val)"
               >
@@ -144,14 +123,7 @@
                 autocomplete="given-name"
                 :value="formValues.firstName"
                 :rules="[requiredValidator('First name')]"
-                suffix-icon="mdi-restore"
                 class="base-input"
-                :handle-icon-click="
-                  () => {
-                    formValues.firstName = props.defaultState.firstName
-                    emit('update', { ...formValues })
-                  }
-                "
                 @update="val => handleFieldUpdate('firstName', val)"
               >
                 <span class="input-label">
@@ -166,13 +138,6 @@
                 type="text"
                 name="middleName"
                 autocomplete="additional-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.middleName = props.defaultState.middleName
-                    emit('update', { ...formValues })
-                  }
-                "
                 :value="formValues.middleName"
                 @update="val => handleFieldUpdate('middleName', val)"
               >
@@ -185,13 +150,6 @@
                 type="text"
                 name="lastName"
                 autocomplete="family-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.lastName = props.defaultState.lastName
-                    emit('update', { ...formValues })
-                  }
-                "
                 :value="formValues.lastName"
                 @update="val => handleFieldUpdate('lastName', val)"
               >
@@ -213,13 +171,6 @@
               type="tel"
               name="mobileNumber"
               autocomplete="tel"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.mobileNumber = props.defaultState.mobileNumber
-                  emit('update', { ...formValues })
-                }
-              "
               :value="formValues.mobileNumber"
               :rules="[mobileNumberValidator]"
               @update="newVal => handleFieldUpdate('mobileNumber', newVal)"
@@ -238,13 +189,6 @@
               type="email"
               name="emailAddress"
               autocomplete="email"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.emailAddress = props.defaultState.emailAddress
-                  emit('update', { ...formValues })
-                }
-              "
               :value="formValues.emailAddress"
               :rules="[emailValidator]"
               class="base-input"
@@ -264,13 +208,6 @@
               type="text"
               name="address"
               autocomplete="address-level3"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.address = props.defaultState.address ?? ''
-                  emit('update', { ...formValues })
-                }
-              "
               :value="formValues.address"
               @update="newVal => handleFieldUpdate('address', newVal)"
             >
