@@ -1,6 +1,6 @@
 import { IUserService } from '@intake24-dietician/common/types/api'
 import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
-import { Result } from '@intake24-dietician/common/types/utils'
+import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op, Transaction } from '@intake24-dietician/db/connection'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'

@@ -24,4 +24,4 @@ const int24recallSchema = new Schema({
   customFields: { type: Array, required: false, default: null },
 })
 
-export const recall = mongoose.model('int24-recall', int24recallSchema);
+export const Recall = mongoose.model('Recall', int24recallSchema);

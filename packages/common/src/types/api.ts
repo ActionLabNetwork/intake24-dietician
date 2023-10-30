@@ -6,7 +6,7 @@ import {
   PatientProfileValues,
   UserAttributes,
 } from './auth'
-import { Result } from './utils'
+import type { Result } from './utils'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { Transaction } from '@intake24-dietician/db/connection'
 
@@ -51,4 +51,7 @@ export interface IUserService {
     dieticianId: number,
   ) => Promise<Result<PatientProfileValues[]>>
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
+}
+export interface IApiService {
+  getRecallById: (id: string) => Promise<Result<any | null>>
 }

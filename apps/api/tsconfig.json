@@ -8,10 +8,17 @@
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],
       "@intake24-dietician/db/*": ["../../packages/db/src/*"],
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
-      "@intake24/*": ["../../packages/*/src"]
+      "@intake24/*": ["../../packages/*/src"],
+      "tsoa": ["node_modules/tsoa/dist"],
+      "tsoa/": ["node_modules/tsoa/dist/"]
     },
     "types": ["node", "jest", "jest-extended"]
   },
-  "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts", "src/server.ts"],
+  "include": [
+    "src/**/*.ts",
+    "__tests__/**/*.ts",
+    "jest.config.ts",
+    "src/server.ts"
+  ],
   "exclude": ["node_modules"]
 }
