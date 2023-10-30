@@ -27,6 +27,7 @@ const connectMongo = async() =>{
     })
     console.log('✅ Connected to Mongo database')
   } catch (error) {
+    console.log(getMongoDBUrl());
     console.error('❌ Unable to connect to Mongo database:', error)
   }
 }
