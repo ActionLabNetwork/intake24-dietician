@@ -11,6 +11,7 @@
   "dependencies": {
     "@mdi/font": "7.0.96",
     "@tanstack/vue-query": "^4.35.2",
+    "@vuepic/vue-datepicker": "^7.2.0",
     "@vueuse/core": "^10.4.1",
     "axios": "^1.5.0",
     "core-js": "^3.32.2",

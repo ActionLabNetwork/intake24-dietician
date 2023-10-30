@@ -46,8 +46,14 @@
           @update="handlePersonalDetailsUpdate"
         />
         <VisualThemeSelector class="mt-10" @update="handleVisualThemeUpdate" />
-        <SendAutomatedFeedbackToggle class="mt-10" @update="console.log" />
-        <UpdateRecallFrequency class="mt-10" />
+        <SendAutomatedFeedbackToggle
+          class="mt-10"
+          @update="handleSendAutomatedFeedback"
+        />
+        <UpdateRecallFrequency
+          class="mt-10"
+          @update="handleRecallFrequencyUpdate"
+        />
       </div>
       <div>
         <p class="font-weight-medium">
@@ -62,7 +68,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -74,6 +80,8 @@ import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
+import { Theme } from '@intake24-dietician/portal/types/theme.types'
+import { ReminderConditions } from '@intake24-dietician/portal/types/reminder.types'
 // const { t } = useI18n<i18nOptions>()
 
 const breadcrumbItems = ref([
@@ -108,16 +116,37 @@ const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
   patientGoal: '',
 })
 
+const theme = ref<Theme>('Classic')
+const sendAutomatedFeedback = ref<boolean>(false)
+const recallFrequency = ref<ReminderConditions>()
+
+const aggregatedData = computed(() => ({
+  ...contactDetailsFormValues.value,
+  ...personalDetailsFormValues.value,
+  theme: theme.value,
+  sendAutomatedFeedback: sendAutomatedFeedback.value,
+  recallFrequency: recallFrequency.value,
+}))
+
 const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
-  console.log({ values })
+  contactDetailsFormValues.value = values
 }
 
 const handlePersonalDetailsUpdate = (values: PersonalDetailsFormValues) => {
-  console.log({ values })
+  personalDetailsFormValues.value = values
 }
 
-const handleVisualThemeUpdate = (theme: string) => {
-  console.log({ theme })
+const handleVisualThemeUpdate = (_theme: Theme) => {
+  theme.value = _theme
+}
+
+const handleSendAutomatedFeedback = (value: boolean) => {
+  sendAutomatedFeedback.value = value
+  console.log({ aggregatedData: aggregatedData.value })
+}
+
+const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
+  recallFrequency.value = value
 }
 </script>
 

@@ -16,7 +16,7 @@
                 inset
                 color="success"
                 @update:model-value="
-                  e => handleSwitchUpdate(e ?? false, theme.title)
+                  e => handleSwitchUpdate(e ?? false, theme.type)
                 "
               ></v-switch>
             </div>
@@ -37,10 +37,11 @@ interface ThemeRef {
   description: string
   img: string
   active: boolean
+  type: Theme
 }
 
 const emit = defineEmits<{
-  update: [theme: string]
+  update: [theme: Theme]
 }>()
 
 const themes = ref<ThemeRef[]>([
@@ -49,12 +50,14 @@ const themes = ref<ThemeRef[]>([
     description: 'Suitable for adults',
     img: 'theme_classic.png',
     active: true,
+    type: 'Classic',
   },
   {
     title: 'Fun theme',
     description: 'Suitable for children and young adults',
     img: 'theme_fun.png',
     active: false,
+    type: 'Fun',
   },
 ])
 
@@ -64,12 +67,12 @@ const getImage = (imgName: string) => {
 }
 
 const handleSwitchUpdate = (value: boolean, theme: string) => {
-  const index = themes.value.findIndex(t => t.title === theme)
+  const index = themes.value.findIndex(t => t.type === theme)
   themes.value.forEach(theme => {
     if (theme.title !== themes.value[index]!.title) theme.active = !value
   })
 
-  emit('update', themes.value.find(t => t.active)?.title ?? '')
+  emit('update', themes.value.find(t => t.active)?.type ?? 'Classic')
 }
 </script>
 

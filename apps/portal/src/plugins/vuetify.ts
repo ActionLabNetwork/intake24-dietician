@@ -14,7 +14,6 @@ import {
   VDataTable,
   VDataTableServer,
   VDataTableVirtual,
-  VDatePicker
 } from 'vuetify/lib/labs/components.mjs'
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
@@ -36,6 +35,5 @@ export default createVuetify({
     VDataTable,
     VDataTableServer,
     VDataTableVirtual,
-    VDatePicker
   },
 })

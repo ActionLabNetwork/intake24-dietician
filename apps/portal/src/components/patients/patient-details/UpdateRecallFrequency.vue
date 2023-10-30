@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div>
     <p class="font-weight-medium">Update recall frequency</p>
@@ -7,8 +8,11 @@
           <BaseInput
             type="number"
             name="recallFrequency"
-            :value="recallFrequency.value"
-            @update="newVal => (recallFrequency.value = newVal)"
+            :value="reminderConditions.reminderEvery.quantity.toString()"
+            @update="
+              newVal =>
+                (reminderConditions.reminderEvery.quantity = Number(newVal))
+            "
           >
             Remind every <span class="text-primary">(required)</span>
           </BaseInput>
@@ -18,17 +22,22 @@
             :items="units"
             variant="solo-filled"
             flat
-            :model-value="recallFrequency.unit"
+            :model-value="reminderConditions.reminderEvery.unit"
             density="comfortable"
           ></v-select>
         </div>
       </div>
     </v-card>
     <v-card class="mt-4" width="75%" flat>
-      <div class="form-label pb-2">Ends (required)</div>
-      <div class="v-row align-center">
+      <div class="form-label pb-2">
+        Ends <span class="text-primary">(required)</span>
+      </div>
+      <div class="v-row">
         <div class="v-col">
-          <v-radio-group v-model="frequencyRadio">
+          <v-radio-group
+            v-model="frequencyRadio"
+            @update:model-value="handleRadioButtonUpdate"
+          >
             <v-radio
               v-for="option in frequencyEndOptions"
               :key="option.label"
@@ -38,13 +47,20 @@
           </v-radio-group>
         </div>
         <div class="v-col">
-          <v-date-picker v-show="frequencyRadio === 'on'" class="my-2" />
+          <VueDatePicker
+            v-if="frequencyRadio === 'on'"
+            v-model="date"
+            :teleport="true"
+            text-input
+            @update:model-value="handleDatePickerUpdate"
+          ></VueDatePicker>
           <div v-show="frequencyRadio === 'after'">
             <BaseInput
               type="number"
               name="age"
-              :value="occurencesCount"
+              :value="occurencesCount.toString()"
               class="base-input"
+              @update="handleOccurrencesCountUpdate"
             >
               <span class="input-label"> Occurences: </span>
             </BaseInput>
@@ -56,33 +72,80 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import BaseInput from '../../form/BaseInput.vue'
+import {
+  type ReminderConditions,
+  units,
+  reminderEndsTypes,
+} from '@/types/reminder.types'
+import { capitalize } from 'radash'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 
-const units = ['days', 'weeks', 'months'] as const
+const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
 
-interface RecallFrequency {
-  value: string
-  unit: (typeof units)[number]
-}
-
-const recallFrequency = ref<RecallFrequency>({
-  value: '',
-  unit: 'days',
+const reminderConditions = ref<ReminderConditions>({
+  reminderEvery: {
+    quantity: 5,
+    unit: 'days',
+  },
+  reminderEnds: {
+    type: 'never',
+  },
 })
 
-const frequencyEndOptions = [
-  { label: 'Never', value: 'never' },
-  { label: 'On', value: 'on' },
-  { label: 'After', value: 'after' },
-] as const
+onMounted(() => {
+  emit('update', reminderConditions.value)
+})
+
+const frequencyEndOptions = reminderEndsTypes.map(type => ({
+  label: capitalize(type),
+  value: type,
+}))
+
 const frequencyRadio = ref<(typeof frequencyEndOptions)[number]['value']>(
-  frequencyEndOptions[0]?.value,
+  frequencyEndOptions[0]!.value,
 )
 
-const occurencesCount = ref('')
+const date = ref()
+const occurencesCount = ref(0)
 
-watch(frequencyRadio, newVal => console.log({ newVal }))
+const handleRadioButtonUpdate = (
+  value: (typeof frequencyEndOptions)[number]['value'],
+) => {
+  if (value === 'never') {
+    reminderConditions.value = {
+      ...reminderConditions.value,
+      reminderEnds: {
+        type: 'never',
+      },
+    }
+  }
+}
+
+const handleDatePickerUpdate = (date: Date) => {
+  reminderConditions.value = {
+    ...reminderConditions.value,
+    reminderEnds: {
+      type: 'on',
+      date: date.toISOString(),
+    },
+  }
+}
+
+const handleOccurrencesCountUpdate = (newVal: string) => {
+  occurencesCount.value = Number(newVal)
+  reminderConditions.value = {
+    ...reminderConditions.value,
+    reminderEnds: {
+      type: 'after',
+      occurrences: Number(newVal),
+    },
+  }
+}
+
+watch(reminderConditions, newVal => emit('update', newVal))
 </script>
 
 <style scoped lang="scss">
