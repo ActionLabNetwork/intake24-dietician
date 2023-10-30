@@ -11,8 +11,8 @@ import {
   SuccessResponse,
   Tags,
 } from 'tsoa'
-import express from 'express'
-import {
+import type express from 'express'
+import type {
   AuthRequest,
   AuthResponse,
   DieticianProfileValues,

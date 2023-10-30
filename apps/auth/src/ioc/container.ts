@@ -7,7 +7,7 @@ import { createArgonHashingService } from '../services/hashing.service'
 import { createEmailService } from '../services/email.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createLogger } from '../middleware/logger'
-import {
+import type {
   IAuthService,
   IEmailService,
   IHashingService,
