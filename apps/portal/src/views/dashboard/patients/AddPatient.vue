@@ -12,6 +12,7 @@
           flat
           class="text-none px-0 mt-10"
           variant="text"
+          to="/dashboard/my-patients"
         >
           Back to patient list
         </v-btn>
@@ -29,37 +30,52 @@
           </h3>
         </div>
         <div>
-          <v-btn type="submit" color="primary text-none" class="mt-3 mt-sm-0">
+          <v-btn
+            color="primary text-none"
+            class="mt-3 mt-sm-0"
+            :disabled="!isFormValid"
+            @click.prevent="handleSubmit"
+          >
             Add patient to records
           </v-btn>
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
       <div>
-        <ContactDetails
-          :default-state="contactDetailsFormValues"
-          @update="handleContactDetailsUpdate"
-        />
-        <PersonalDetails
-          :default-state="personalDetailsFormValues"
-          class="mt-16"
-          @update="handlePersonalDetailsUpdate"
-        />
-        <VisualThemeSelector class="mt-10" @update="handleVisualThemeUpdate" />
-        <SendAutomatedFeedbackToggle
-          class="mt-10"
-          @update="handleSendAutomatedFeedback"
-        />
-        <UpdateRecallFrequency
-          class="mt-10"
-          @update="handleRecallFrequencyUpdate"
-        />
+        <v-form ref="form">
+          <ContactDetails
+            :default-state="contactDetailsFormValues"
+            @update="handleContactDetailsUpdate"
+          />
+          <PersonalDetails
+            :default-state="personalDetailsFormValues"
+            class="mt-16"
+            @update="handlePersonalDetailsUpdate"
+          />
+          <VisualThemeSelector
+            class="mt-10"
+            @update="handleVisualThemeUpdate"
+          />
+          <SendAutomatedFeedbackToggle
+            class="mt-10"
+            @update="handleSendAutomatedFeedback"
+          />
+          <UpdateRecallFrequency
+            class="mt-10"
+            @update="handleRecallFrequencyUpdate"
+          />
+        </v-form>
       </div>
       <div>
         <p class="font-weight-medium">
           Review and add new patient to the records
         </p>
-        <v-btn color="primary" class="text-none mt-4">
+        <v-btn
+          color="primary"
+          class="text-none mt-4"
+          :disabled="!isFormValid"
+          @click.prevent="handleSubmit"
+        >
           Add patient to records
         </v-btn>
       </div>
@@ -68,7 +84,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -80,9 +96,16 @@ import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
-import { Theme } from '@intake24-dietician/portal/types/theme.types'
-import { ReminderConditions } from '@intake24-dietician/portal/types/reminder.types'
+import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
+import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import { Theme } from '@intake24-dietician/common/types/theme'
+import { PatientSchema } from '@/schema/patient'
+import { useToast } from 'vue-toast-notification'
+import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 // const { t } = useI18n<i18nOptions>()
+
+const $toast = useToast()
+const addPatientMutation = useAddPatient()
 
 const breadcrumbItems = ref([
   {
@@ -92,10 +115,12 @@ const breadcrumbItems = ref([
   },
   {
     title: 'Add new patient',
-    disabled: false,
-    href: '/dashboard/add-patient',
+    disabled: true,
+    href: '/dashboard/my-patients/add-patient',
   },
 ])
+
+const form = ref()
 
 const contactDetailsFormValues = ref<ContactDetailsFormValues>({
   firstName: '',
@@ -108,17 +133,25 @@ const contactDetailsFormValues = ref<ContactDetailsFormValues>({
 })
 
 const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
-  age: '20',
-  gender: '',
-  weight: '70',
-  height: '170',
+  age: 20,
+  gender: 'male',
+  weight: 70,
+  height: 170,
   additionalNotes: '',
   patientGoal: '',
 })
 
 const theme = ref<Theme>('Classic')
 const sendAutomatedFeedback = ref<boolean>(false)
-const recallFrequency = ref<ReminderConditions>()
+const recallFrequency = ref<ReminderConditions>({
+  reminderEvery: {
+    quantity: 5,
+    unit: 'days',
+  },
+  reminderEnds: {
+    type: 'never',
+  },
+})
 
 const aggregatedData = computed(() => ({
   ...contactDetailsFormValues.value,
@@ -126,7 +159,13 @@ const aggregatedData = computed(() => ({
   theme: theme.value,
   sendAutomatedFeedback: sendAutomatedFeedback.value,
   recallFrequency: recallFrequency.value,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 }))
+
+const isFormValid = computed(() => {
+  return PatientSchema.safeParse(aggregatedData.value).success
+})
 
 const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
   contactDetailsFormValues.value = values
@@ -142,12 +181,53 @@ const handleVisualThemeUpdate = (_theme: Theme) => {
 
 const handleSendAutomatedFeedback = (value: boolean) => {
   sendAutomatedFeedback.value = value
-  console.log({ aggregatedData: aggregatedData.value })
 }
 
 const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
   recallFrequency.value = value
 }
+
+const handleSubmit = async () => {
+  await form.value.validate()
+
+  return new Promise((resolve, reject) => {
+    // Validate with zod
+    const result = PatientSchema.safeParse(aggregatedData.value)
+
+    if (!result.success) {
+      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    // Validate with Vuetify
+    const errors = form.value.errors
+    if (errors.length > 0) {
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    addPatientMutation.mutate(aggregatedData.value, {
+      onSuccess: () => {
+        $toast.success('Patient added to records')
+        resolve('Patient added to records')
+      },
+      onError: () => {
+        $toast.error('Error adding patient to records')
+      },
+    })
+  })
+}
+
+watch(
+  form,
+  newVal => {
+    const errors = form.value?.errors
+    console.log({ errors: errors.length })
+    console.log({ newVal })
+  },
+  { deep: true },
+)
 </script>
 
 <style scoped lang="scss">

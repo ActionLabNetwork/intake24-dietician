@@ -21,7 +21,7 @@
             <!-- Gender -->
             <div class="form-label pl-2 pb-2">Gender:</div>
             <v-select
-              :items="['Male', 'Female', 'Other']"
+              :items="['male', 'female', 'other']"
               variant="solo-filled"
               flat
               :model-value="formValues.gender"
@@ -106,10 +106,10 @@ import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { ref } from 'vue'
 
 export interface PersonalDetailsFormValues {
-  age: string
+  age: number
   gender: string
-  height: string
-  weight: string
+  height: number
+  weight: number
   additionalNotes: string
   patientGoal: string
 }
@@ -117,9 +117,16 @@ export interface PersonalDetailsFormValues {
 const props = defineProps<{
   defaultState: PersonalDetailsFormValues
 }>()
+
 const emit = defineEmits<{
   update: [value: PersonalDetailsFormValues]
 }>()
+
+const isNumericField = (
+  field: keyof PersonalDetailsFormValues,
+): field is 'age' | 'height' | 'weight' => {
+  return ['age', 'height', 'weight'].includes(field)
+}
 
 const { mdAndUp } = useDisplay()
 
@@ -130,8 +137,15 @@ const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
 
 const handleFieldUpdate = useDebounceFn(
   (fieldName: keyof PersonalDetailsFormValues, newVal: string) => {
-    formValues.value[fieldName] = newVal
-    emit('update', { ...formValues.value })
+    const numericValue = Number(newVal)
+
+    if (isNumericField(fieldName)) {
+      formValues.value[fieldName] = numericValue
+      emit('update', { ...formValues.value })
+    } else {
+      formValues.value[fieldName] = newVal
+      emit('update', { ...formValues.value })
+    }
   },
   INPUT_DEBOUNCE_TIME,
 )

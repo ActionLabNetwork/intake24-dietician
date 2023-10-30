@@ -34,7 +34,7 @@ defineProps<{
   suffixIcon?: string
   suffixIconOuter?: string
   name?: string
-  value?: HTMLInputElement['value']
+  value?: string | number
   rules?: ((value: string) => boolean | string)[]
   readonly?: boolean
   labelClass?: string

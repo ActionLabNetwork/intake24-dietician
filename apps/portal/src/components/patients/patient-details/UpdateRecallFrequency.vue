@@ -57,7 +57,7 @@
           <div v-show="frequencyRadio === 'after'">
             <BaseInput
               type="number"
-              name="age"
+              name="occurences-count"
               :value="occurencesCount.toString()"
               class="base-input"
               @update="handleOccurrencesCountUpdate"
@@ -74,14 +74,14 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import BaseInput from '../../form/BaseInput.vue'
-import {
-  type ReminderConditions,
-  units,
-  reminderEndsTypes,
-} from '@/types/reminder.types'
 import { capitalize } from 'radash'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import {
+  ReminderConditions,
+  reminderEndsTypes,
+  units,
+} from '@intake24-dietician/common/types/reminder'
 
 const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
 

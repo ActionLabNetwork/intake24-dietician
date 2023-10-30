@@ -44,4 +44,5 @@ export interface IUserService {
   getPatientsOfDietician: (
     dieticianId: number,
   ) => Promise<Result<UserAttributes[]>>
+  validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }

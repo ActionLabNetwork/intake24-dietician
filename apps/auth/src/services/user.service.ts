@@ -251,6 +251,40 @@ export const createUserService = (): IUserService => {
     return { ok: true, value: patientIds }
   }
 
+  const validateNewEmailAvailability = async (
+    email: string,
+  ): Promise<Result<boolean>> => {
+    try {
+      const isValidEmail = z.string().email().safeParse(email).success
+      const emailExists = Boolean(await User.findOne({ where: { email } }))
+
+      if (!isValidEmail) {
+        return {
+          ok: false,
+          error: new Error(
+            'Invalid email address. Please try again with a different one.',
+          ),
+        }
+      }
+
+      if (emailExists) {
+        return {
+          ok: false,
+          error: new Error(
+            'An account with this email address already exists. Please try again with a different one.',
+          ),
+        }
+      }
+
+      return { ok: true, value: true }
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('Failed to validate email.'),
+      }
+    }
+  }
+
   return {
     listUsers,
     getUserById,
@@ -263,5 +297,6 @@ export const createUserService = (): IUserService => {
     assignRoleToUserById,
     assignPatientToDieticianById,
     getPatientsOfDietician,
+    validateNewEmailAvailability,
   }
 }

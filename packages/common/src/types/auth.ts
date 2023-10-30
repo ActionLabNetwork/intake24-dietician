@@ -1,6 +1,8 @@
 import { ApiResponse } from '@intake24-dietician/common/types/api'
 import { JwtPayload } from 'jsonwebtoken'
 import { Result } from './utils'
+import { Theme } from './theme'
+import { ReminderConditions } from './reminder'
 
 export interface UserAttributes {
   id: number
@@ -56,6 +58,11 @@ export interface IAuthService {
     email: string,
     password: string,
   ) => Promise<Result<(UserWithToken & { jti: string }) | null>>
+  createPatient: (
+    email: string,
+    password: string,
+    patientDetails: PatientProfileValues,
+  ) => Promise<Result<UserAttributes | null>>
   forgotPassword: (email: string) => Promise<Result<string>>
   resetPassword: (token: string, password: string) => Promise<Result<string>>
   refreshAccessToken: (refreshToken: string) => Promise<Result<UserWithToken>>
@@ -92,10 +99,6 @@ export interface IAuthService {
   verifyJwtToken: (
     token: string,
   ) => Result<{ tokenExpired: boolean; decoded: JwtPayload | null }>
-  createPatient: (
-    email: string,
-    password: string,
-  ) => Promise<Result<(UserAttributes) | null>>
 }
 
 export interface ITokenService {
@@ -136,8 +139,17 @@ export interface PatientProfileValues {
   emailAddress: string
   address: string
   avatar: string | null
-  updatedAt: Date
-  createdAt: Date
+  age: number,
+  gender: string,
+  height: number,
+  weight: number,
+  additionalNotes: string,
+  patientGoal: string,
+  theme: Theme,
+  sendAutomatedFeedback: boolean,
+  recallFrequency: ReminderConditions,
+  updatedAt?: Date
+  createdAt?: Date
 }
 
 export type TokenActionType =

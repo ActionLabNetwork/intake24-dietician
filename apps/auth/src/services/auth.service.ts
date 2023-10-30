@@ -11,6 +11,7 @@ import type {
   UserAttributes,
   DieticianProfileValues,
   TokenActionType,
+  PatientProfileValues,
 } from '@intake24-dietician/common/types/auth'
 import { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
@@ -587,6 +588,7 @@ export const createAuthService = (
   const createPatient = async (
     email: string,
     password: string,
+    patientDetails: PatientProfileValues,
   ): Promise<Result<UserAttributes>> => {
     try {
       const isEmailValid = await validateNewEmailAvailability(email)
@@ -610,6 +612,7 @@ export const createAuthService = (
               await PatientProfile.create(
                 {
                   userId: user.id,
+                  ...patientDetails,
                 },
                 { transaction: t },
               )

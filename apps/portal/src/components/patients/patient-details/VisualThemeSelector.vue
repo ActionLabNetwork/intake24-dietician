@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
+import { Theme } from '@intake24-dietician/common/types/theme';
 import { ref } from 'vue'
-import { Theme } from '@/types/theme.types'
 
 interface ThemeRef {
   title: `${Theme} theme`
