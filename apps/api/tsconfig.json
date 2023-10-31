@@ -10,7 +10,6 @@
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
       "@intake24/*": ["../../packages/*/src"],
       "tsoa": ["node_modules/tsoa/dist"],
-      "tsoa/": ["node_modules/tsoa/dist/"]
     },
     "types": ["node", "jest", "jest-extended"]
   },

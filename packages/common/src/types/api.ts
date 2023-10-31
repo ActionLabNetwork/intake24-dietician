@@ -10,8 +10,10 @@ export interface ApiResponseWithError {
 export interface ApiRequest<T> {
   data: T
 }
+
 export type ApiResponse<T> = ApiResponseWithData<T> | ApiResponseWithError
 
 export interface IApiService {
   getRecallById: (id: string) => Promise<Result<any | null>>
+  createRecall: () => Promise<Result<any | null>>
 }
