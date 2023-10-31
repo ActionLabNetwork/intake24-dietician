@@ -10,7 +10,7 @@ export const usePatients = () => {
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
-    AxiosResponse<{ data: PatientProfileValues[] }>
+    AxiosResponse<{ data: (PatientProfileValues & { id: string })[] }>
   >({
     queryKey: ['patients'],
     queryFn: () => {

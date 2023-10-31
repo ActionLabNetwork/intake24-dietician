@@ -118,7 +118,7 @@ const handleRadioButtonUpdate = (
     reminderConditions.value = {
       ...reminderConditions.value,
       reminderEnds: {
-        type: 'never',
+        type: value,
       },
     }
   }
@@ -145,7 +145,10 @@ const handleOccurrencesCountUpdate = (newVal: string) => {
   }
 }
 
-watch(reminderConditions, newVal => emit('update', newVal))
+watch(reminderConditions, newVal => {
+  console.log({ newVal })
+  emit('update', newVal)
+})
 </script>
 
 <style scoped lang="scss">

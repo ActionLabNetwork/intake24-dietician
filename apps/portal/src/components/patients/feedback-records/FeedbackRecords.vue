@@ -1,16 +1,16 @@
 <template>
   <v-row>
-    <v-col>
+    <v-col cols="10" class="pt-0">
       <p class="title">Feedback records</p>
       <DraftItemList />
       <v-divider class="my-14" />
       <SharedItemList />
     </v-col>
-    <v-col-2>
-      <v-btn append-icon="mdi-plus" color="primary" class="text-none"
-        >Compose new feedback
+    <v-col cols="2" class="pt-0">
+      <v-btn append-icon="mdi-plus" color="primary" class="text-none">
+        Compose new feedback
       </v-btn>
-    </v-col-2>
+    </v-col>
   </v-row>
   <div class="d-flex justify-space-between"></div>
 </template>

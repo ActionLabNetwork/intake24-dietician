@@ -44,7 +44,7 @@ const ReminderEndsNeverSchema = z.object({
 
 const ReminderEndsOnSchema = z.object({
   type: z.literal('on'),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // Matching the ISO 8601 date format YYYY-MM-DD
+  date: z.string().datetime(),
 })
 
 const ReminderEndsAfterSchema = z.object({

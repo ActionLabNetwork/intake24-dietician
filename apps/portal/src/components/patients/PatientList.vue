@@ -68,7 +68,7 @@
               color="primary"
               class="text-capitalize"
               min-width="50%"
-              to="/dashboard/my-patients/patient-records"
+              :to="`/dashboard/my-patients/patient-records/${item.raw.id}/feedback-records`"
             >
               View
             </v-btn>
@@ -132,6 +132,7 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const headerTitles = [
+  'Id',
   'Name',
   'Patient records',
   'Last recall',
@@ -152,6 +153,7 @@ type PatientTableColumns = {
 }
 
 interface KeyValueTypes {
+  id: string
   name: string
   patientRecords: undefined
   lastRecall: string
@@ -221,49 +223,7 @@ const getRandomDate = () =>
     year: 'numeric',
   })
 
-// const _patients = ref<SpecificPatientTableColumns>(patientsQuery.data.value)
-const patients = ref<SpecificPatientTableColumns[]>([
-  {
-    name: 'Giana Levin',
-    patientRecords: undefined,
-    lastRecall: getRandomDate(),
-    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
-    patientStatus: 'Active',
-    lastReminderSent: getRandomDate(),
-  },
-  {
-    name: 'Marley George',
-    patientRecords: undefined,
-    lastRecall: getRandomDate(),
-    lastFeedbackSent: { date: getRandomDate(), type: 'Auto' },
-    patientStatus: 'Active',
-    lastReminderSent: getRandomDate(),
-  },
-  {
-    name: 'Mira Workman',
-    patientRecords: undefined,
-    lastRecall: getRandomDate(),
-    lastFeedbackSent: { date: getRandomDate(), type: 'Auto' },
-    patientStatus: 'Active',
-    lastReminderSent: getRandomDate(),
-  },
-  {
-    name: 'Cheyenne Stanton',
-    patientRecords: undefined,
-    lastRecall: getRandomDate(),
-    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
-    patientStatus: 'Active',
-    lastReminderSent: getRandomDate(),
-  },
-  {
-    name: 'Terry Franci',
-    patientRecords: undefined,
-    lastRecall: getRandomDate(),
-    lastFeedbackSent: { date: getRandomDate(), type: 'Tailored' },
-    patientStatus: 'Archived',
-    lastReminderSent: getRandomDate(),
-  },
-])
+const patients = ref<SpecificPatientTableColumns[]>([])
 
 watch(
   () => patientsQuery.data.value,
@@ -272,6 +232,7 @@ watch(
     patients.value =
       newPatients?.data.data.map(patient => {
         return {
+          id: patient.id,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
           lastRecall: getRandomDate(),

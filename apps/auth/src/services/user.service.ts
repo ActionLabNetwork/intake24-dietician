@@ -1,7 +1,5 @@
 import { IUserService } from '@intake24-dietician/common/types/api'
-import {
-  PatientProfileValues,
-} from '@intake24-dietician/common/types/auth'
+import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op, Transaction } from '@intake24-dietician/db/connection'
@@ -15,6 +13,7 @@ import { z } from 'zod'
 import { toInt } from 'radash'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { Unit } from '@intake24-dietician/common/types/reminder'
+import crypto from 'crypto'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
@@ -247,20 +246,17 @@ export const createUserService = (): IUserService => {
       ],
     })
 
-    console.log({ user: user?.patients.map(v => v.dataValues) })
-    console.log({
-      userProfile: user?.patients.map(
-        v => v.dataValues.patientProfile.dataValues,
-      ),
-    })
-
     if (user?.patients.length === 0) {
       return { ok: false, error: new Error('No patients found') } as const
     }
 
     const patientProfileValues =
       user?.patients.map(f => {
-        const profileValues: PatientProfileValues = {
+        const profileValues: PatientProfileValues & { id: string } = {
+          id: crypto
+            .createHash('sha256')
+            .update(f.dataValues.id.toString())
+            .digest('hex'),
           firstName: f.dataValues.patientProfile.dataValues.firstName,
           middleName: f.dataValues.patientProfile.dataValues.middleName,
           lastName: f.dataValues.patientProfile.dataValues.lastName,

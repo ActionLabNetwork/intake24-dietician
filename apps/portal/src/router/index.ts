@@ -80,11 +80,22 @@ const routes = [
       },
       // TODO: Replace this with dynamic route once backend is done
       {
-        path: 'my-patients/patient-records',
+        path: 'my-patients/patient-records/:id',
         name: 'Patient records',
         component: () =>
           import('@/views/dashboard/patients/PatientRecords.vue'),
         children: [
+          // {
+          //   path: 'feedback-records',
+          //   name: 'Feedback Records',
+          //   component: () =>
+          //     import(
+          //       '@/components/patients/feedback-records/FeedbackRecords.vue'
+          //     ),
+          //   meta: {
+          //     requiresAuth: true,
+          //   } as const,
+          // },
           {
             path: 'feedback-records',
             name: 'Feedback Records',
