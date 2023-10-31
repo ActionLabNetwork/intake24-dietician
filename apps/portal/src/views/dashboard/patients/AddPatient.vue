@@ -34,6 +34,7 @@
             color="primary text-none"
             class="mt-3 mt-sm-0"
             :disabled="!isFormValid"
+            type="submit"
             @click.prevent="handleSubmit"
           >
             Add patient to records
@@ -41,8 +42,8 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <div>
-        <v-form ref="form">
+      <v-form ref="form">
+        <div>
           <ContactDetails
             :default-state="contactDetailsFormValues"
             @update="handleContactDetailsUpdate"
@@ -64,27 +65,28 @@
             class="mt-10"
             @update="handleRecallFrequencyUpdate"
           />
-        </v-form>
-      </div>
-      <div>
-        <p class="font-weight-medium">
-          Review and add new patient to the records
-        </p>
-        <v-btn
-          color="primary"
-          class="text-none mt-4"
-          :disabled="!isFormValid"
-          @click.prevent="handleSubmit"
-        >
-          Add patient to records
-        </v-btn>
-      </div>
+        </div>
+        <div>
+          <p class="font-weight-medium">
+            Review and add new patient to the records
+          </p>
+          <v-btn
+            color="primary"
+            class="text-none mt-4"
+            type="submit"
+            :disabled="!isFormValid"
+            @click.prevent="handleSubmit"
+          >
+            Add patient to records
+          </v-btn>
+        </div>
+      </v-form>
     </v-container>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -134,7 +136,7 @@ const contactDetailsFormValues = ref<ContactDetailsFormValues>({
 
 const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
   age: 20,
-  gender: 'male',
+  gender: 'Male',
   weight: 70,
   height: 170,
   additionalNotes: '',
@@ -212,22 +214,12 @@ const handleSubmit = async () => {
         $toast.success('Patient added to records')
         resolve('Patient added to records')
       },
-      onError: () => {
-        $toast.error('Error adding patient to records')
+      onError: err => {
+        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
       },
     })
   })
 }
-
-watch(
-  form,
-  newVal => {
-    const errors = form.value?.errors
-    console.log({ errors: errors.length })
-    console.log({ newVal })
-  },
-  { deep: true },
-)
 </script>
 
 <style scoped lang="scss">

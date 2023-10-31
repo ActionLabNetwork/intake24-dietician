@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
-const genders = ['male', 'female', 'other'] as const
-const reminderUnits = ['days', 'weeks', 'months'] as const
+export const genders = ['Male', 'Female', 'Other'] as const
+export const reminderUnits = ['days', 'weeks', 'months'] as const
 
 // Mobile number schemas
 const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/)

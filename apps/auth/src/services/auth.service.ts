@@ -598,7 +598,7 @@ export const createAuthService = (
           const hashedPassword = await hashingService.hash(password)
 
           try {
-            return sequelize.transaction(async t => {
+            return await sequelize.transaction(async t => {
               // Create user
               const user = await User.create(
                 {
@@ -612,7 +612,26 @@ export const createAuthService = (
               await PatientProfile.create(
                 {
                   userId: user.id,
-                  ...patientDetails,
+                  firstName: patientDetails.firstName,
+                  middleName: patientDetails.middleName,
+                  lastName: patientDetails.lastName,
+                  mobileNumber: patientDetails.mobileNumber,
+                  address: patientDetails.address,
+                  age: patientDetails.age,
+                  gender: patientDetails.gender,
+                  height: patientDetails.height,
+                  weight: patientDetails.weight,
+                  additionalNotes: patientDetails.additionalNotes,
+                  patientGoal: patientDetails.patientGoal,
+                  theme: patientDetails.theme,
+                  sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
+                  recallFrequencyQuantity:
+                    patientDetails.recallFrequency.reminderEvery.quantity,
+                  recallFrequencyUnit:
+                    patientDetails.recallFrequency.reminderEvery.unit,
+                  recallFrequencyEnd:
+                    patientDetails.recallFrequency.reminderEnds,
+                  avatar: patientDetails.avatar,
                 },
                 { transaction: t },
               )

@@ -15,15 +15,43 @@ export interface PatientProfileAttributes {
   middleName: string
   lastName: string
   mobileNumber: string
-  businessNumber: string
-  businessAddress: string
-  shortBio: string
+  address: string
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalDetails?: unknown
+  additionalNotes: string
+  patientGoal: string
+  theme: string
+  sendAutomatedFeedback: boolean
+  recallFrequencyQuantity: number
+  recallFrequencyUnit: string
+  recallFrequencyEnd: unknown
   avatar: string | null
   user: User
 }
 
 interface PatientProfileCreationAttributes {
   userId: number
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  address: string
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalDetails?: unknown
+  additionalNotes: string
+  patientGoal: string
+  theme: string
+  sendAutomatedFeedback: boolean
+  recallFrequencyQuantity: number
+  recallFrequencyUnit: string
+  recallFrequencyEnd: unknown
+  avatar: string | null
 }
 
 @Table
@@ -70,7 +98,25 @@ class PatientProfile extends Model<
   public declare additionalNotes: string
 
   @Column
-  public declare goals: string
+  public declare patientGoal: string
+
+  @Column
+  public declare theme: string
+
+  @Column
+  public declare sendAutomatedFeedback: boolean
+
+  @Column
+  public declare recallFrequencyQuantity: number
+
+  @Column
+  public declare recallFrequencyUnit: string
+
+  @Column(DataType.JSONB)
+  public declare recallFrequencyEnd: unknown
+
+  @Column(DataType.TEXT)
+  public declare avatar: string | null
 
   @BelongsTo(() => User)
   public declare user: User

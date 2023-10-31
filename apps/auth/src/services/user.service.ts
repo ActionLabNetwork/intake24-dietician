@@ -157,7 +157,7 @@ export const createUserService = (): IUserService => {
         include: [Role, { model: User, as: 'patients' }],
       })
 
-      const user = await User.findAll({
+      await User.findAll({
         include: [
           {
             model: User,
@@ -173,8 +173,6 @@ export const createUserService = (): IUserService => {
           },
         ],
       })
-
-      console.log({ user })
 
       const patient = await User.findOne({
         where: { id: patientId },

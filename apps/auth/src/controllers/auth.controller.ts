@@ -354,7 +354,6 @@ export class AuthController extends Controller {
       accessToken,
       refreshToken,
     )
-    console.log({ isJwtValid })
 
     return match(isJwtValid)
       .with({ ok: true }, result => {

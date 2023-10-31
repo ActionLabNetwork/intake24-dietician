@@ -123,7 +123,6 @@ const handleProfileDetailsUpdate = (
     | ContactDetailsFormValues
     | ShortBioFormValues,
 ) => {
-  console.log({ details })
   profileFormValues.value = { ...profileFormValues.value, ...details }
 }
 

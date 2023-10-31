@@ -106,6 +106,22 @@ watch(
   },
 )
 
+watch(
+  () => profileQuery.isError.value,
+  isError => {
+    if (isError) {
+      logoutMutation.mutate(
+        {},
+        {
+          onSuccess: () => {
+            router.push({ path: '/auth/login' })
+          },
+        },
+      )
+    }
+  },
+)
+
 const handleLogout = () => {
   logoutMutation.mutate(
     {},

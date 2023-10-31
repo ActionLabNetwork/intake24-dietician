@@ -21,7 +21,7 @@
             <!-- Gender -->
             <div class="form-label pl-2 pb-2">Gender:</div>
             <v-select
-              :items="['male', 'female', 'other']"
+              :items="genders"
               variant="solo-filled"
               flat
               :model-value="formValues.gender"
@@ -104,10 +104,11 @@ import { useDisplay } from 'vuetify'
 // import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { ref } from 'vue'
+import { genders } from '@/schema/patient'
 
 export interface PersonalDetailsFormValues {
   age: number
-  gender: string
+  gender: (typeof genders)[number]
   height: number
   weight: number
   additionalNotes: string
@@ -143,7 +144,7 @@ const handleFieldUpdate = useDebounceFn(
       formValues.value[fieldName] = numericValue
       emit('update', { ...formValues.value })
     } else {
-      formValues.value[fieldName] = newVal
+      formValues.value[fieldName] = newVal as (typeof genders)[number]
       emit('update', { ...formValues.value })
     }
   },

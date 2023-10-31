@@ -19,6 +19,7 @@ import { container } from '../ioc/container'
 import { match } from 'ts-pattern'
 import { IUserService } from '@intake24-dietician/common/types/api'
 import express from 'express'
+import crypto from 'crypto'
 
 @Route('patients')
 @Tags('Patients')
@@ -99,17 +100,25 @@ export class PatientController extends Controller {
           return this.generateExpiredTokenResponse()
         }
 
-        const patients = 1
-        console.log({ data })
-        // const patients = await this.authService.createPatient(
-        //   result.value.decoded['userId'],
-        // )
-
-        this.logger.info(
-          'Successfully retrieved patients of dietician',
-          result.value.decoded['userId'],
+        const patient = await this.authService.createPatient(
+          data.emailAddress,
+          crypto.randomBytes(64).toString('hex'),
+          data,
         )
-        return { data: { patients } }
+
+        if (patient.ok) {
+          this.logger.info(
+            'Successfully created patient for dietician',
+            result.value.decoded['userId'],
+          )
+          return { data: { patient } }
+        } else {
+          this.logger.error(
+            'Failed to create patient for dietician',
+            result.value.decoded['userId'],
+          )
+          return this.generateInvalidEmailClientErrorResponse()
+        }
       })
       .with({ ok: false }, () => {
         return this.generateInternalServerErrorResponse()
@@ -128,22 +137,28 @@ export class PatientController extends Controller {
   }
 
   private generateExpiredTokenResponse() {
-    return {
-      error: generateErrorResponse(
-        '401',
-        'Unauthorized',
-        'Access token has expired. Please login again.',
-      ),
-    }
+    return generateErrorResponse(
+      '401',
+      'Unauthorized',
+      'Access token has expired. Please login again.',
+    )
+  }
+
+  private generateInvalidEmailClientErrorResponse() {
+    this.setStatus(400)
+    return generateErrorResponse(
+      '400',
+      'Bad Request',
+      'Invalid email. Please try a different one.',
+    )
   }
 
   private generateInternalServerErrorResponse() {
-    return {
-      error: generateErrorResponse(
-        '500',
-        'Internal server error',
-        'An unknown error occurred. Please try again.',
-      ),
-    }
+    this.setStatus(403)
+    return generateErrorResponse(
+      '403',
+      'Internal server error',
+      'An unknown error occurred. Please try again.',
+    )
   }
 }

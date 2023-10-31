@@ -3,7 +3,10 @@ import {
   ApiResponseWithData,
   ApiResponseWithError,
 } from '@intake24-dietician/common/types/api'
-import { UserAttributesWithDieticianProfile, UserAttributesWithPatientProfile } from '@intake24-dietician/common/types/auth'
+import {
+  UserAttributesWithDieticianProfile,
+  UserAttributesWithPatientProfile,
+} from '@intake24-dietician/common/types/auth'
 import { useQuery } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 
