@@ -59,6 +59,7 @@ export interface IAuthService {
     password: string,
   ) => Promise<Result<(UserWithToken & { jti: string }) | null>>
   createPatient: (
+    dieticianId: number,
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
@@ -139,15 +140,15 @@ export interface PatientProfileValues {
   emailAddress: string
   address: string
   avatar: string | null
-  age: number,
-  gender: string,
-  height: number,
-  weight: number,
-  additionalNotes: string,
-  patientGoal: string,
-  theme: Theme,
-  sendAutomatedFeedback: boolean,
-  recallFrequency: ReminderConditions,
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalNotes: string
+  patientGoal: string
+  theme: Theme
+  sendAutomatedFeedback: boolean
+  recallFrequency: ReminderConditions
   updatedAt?: Date
   createdAt?: Date
 }

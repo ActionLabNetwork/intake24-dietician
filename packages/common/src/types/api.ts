@@ -4,6 +4,7 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import { DieticianProfileValues, UserAttributes } from './auth'
 import { Result } from './utils'
 import User from '@intake24-dietician/db/models/auth/user.model'
+import { Transaction } from '@intake24-dietician/db/connection'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -39,7 +40,8 @@ export interface IUserService {
   ) => Promise<Result<UserRole>>
   assignPatientToDieticianById: (
     dieticianId: number,
-    patientId: number,
+    patient: number | User,
+    transaction?: Transaction,
   ) => Promise<Result<DieticianPatient>>
   getPatientsOfDietician: (
     dieticianId: number,

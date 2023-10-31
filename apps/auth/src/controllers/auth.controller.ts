@@ -37,6 +37,7 @@ export class AuthController extends Controller {
       container.resolve('hashingService'),
       container.resolve('tokenService'),
       container.resolve('emailService'),
+      container.resolve('userService')
     )
 
     this.logger = container.resolve('createLogger')(AuthController.name)

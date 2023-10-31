@@ -34,6 +34,7 @@ export class PatientController extends Controller {
       container.resolve('hashingService'),
       container.resolve('tokenService'),
       container.resolve('emailService'),
+      container.resolve('userService'),
     )
     this.userService = createUserService()
 
@@ -101,6 +102,7 @@ export class PatientController extends Controller {
         }
 
         const patient = await this.authService.createPatient(
+          result.value.decoded['userId'],
           data.emailAddress,
           crypto.randomBytes(64).toString('hex'),
           data,

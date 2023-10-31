@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { env } from '../config/env'
@@ -26,6 +27,7 @@ import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profi
 import { match, P } from 'ts-pattern'
 import { Result } from '@intake24-dietician/common/types/utils'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
+import { IUserService } from '@intake24-dietician/common/types/api'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -35,6 +37,7 @@ export const createAuthService = (
   tokenService: ITokenService,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _emailService: IEmailService,
+  userService: IUserService,
 ): IAuthService => {
   const register = async (
     email: string,
@@ -586,6 +589,7 @@ export const createAuthService = (
   }
 
   const createPatient = async (
+    dieticianId: number,
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
@@ -651,6 +655,26 @@ export const createAuthService = (
                   },
                   { transaction: t },
                 )
+              }
+
+              const userWithRole = await User.findByPk(user.id, {
+                include: [Role],
+                transaction: t,
+              })
+
+              if (!userWithRole) {
+                throw new Error('User not found')
+              }
+
+              // Associate patient with dietician
+              const result = await userService.assignPatientToDieticianById(
+                dieticianId,
+                userWithRole,
+                t,
+              )
+
+              if (!result.ok) {
+                throw result.error
               }
 
               return {

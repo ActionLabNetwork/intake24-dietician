@@ -2,7 +2,7 @@ import { IUserService } from '@intake24-dietician/common/types/api'
 import { UserAttributes } from '@intake24-dietician/common/types/auth'
 import { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import { Op } from '@intake24-dietician/db/connection'
+import { Op, Transaction } from '@intake24-dietician/db/connection'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
@@ -142,10 +142,11 @@ export const createUserService = (): IUserService => {
 
   const assignPatientToDieticianById = async (
     dieticianId: number,
-    patientId: number,
+    patient: number | User,
+    transaction?: Transaction,
   ) => {
     try {
-      if (dieticianId === patientId) {
+      if (typeof patient === 'number' && dieticianId === patient) {
         return {
           ok: false,
           error: new Error('Dietician and patient cannot be the same'),
@@ -155,29 +156,22 @@ export const createUserService = (): IUserService => {
       const dietician = await User.findOne({
         where: { id: dieticianId },
         include: [Role, { model: User, as: 'patients' }],
+        ...(transaction ? { transaction } : {}),
       })
 
-      await User.findAll({
-        include: [
-          {
-            model: User,
-            as: 'dieticians',
-            where: { id: dieticianId },
-            through: { where: { patientId } },
-          },
-          {
-            model: User,
-            as: 'patients',
-            where: { id: patientId },
-            through: { where: { dieticianId } },
-          },
-        ],
-      })
+      console.log({ dietician })
 
-      const patient = await User.findOne({
-        where: { id: patientId },
-        include: [Role],
-      })
+      let _patient: User | null = null
+      if (typeof patient === 'number') {
+        _patient = await User.findOne({
+          where: { id: patient },
+          include: [Role],
+        })
+      } else {
+        _patient = patient
+      }
+
+      console.log({ _patient })
 
       if (!dietician) {
         return {
@@ -186,7 +180,7 @@ export const createUserService = (): IUserService => {
         } as const
       }
 
-      if (!patient) {
+      if (!_patient) {
         return {
           ok: false,
           error: new Error('Patient account not found'),
@@ -197,9 +191,11 @@ export const createUserService = (): IUserService => {
         role => role.dataValues.name === 'dietician',
       )
 
-      const patientHasPatientRole = patient?.roles?.some(
+      const patientHasPatientRole = _patient?.roles?.some(
         role => role.dataValues.name === 'patient',
       )
+
+      console.log({ dieticianHasDieticianRole, patientHasPatientRole })
 
       if (!dieticianHasDieticianRole) {
         return {
@@ -215,13 +211,19 @@ export const createUserService = (): IUserService => {
         } as const
       }
 
-      const dieticianPatient = await DieticianPatient.create({
-        dieticianId: dietician.id,
-        patientId: patient.id,
-      })
+      const dieticianPatient = await DieticianPatient.create(
+        {
+          dieticianId: dietician.id,
+          patientId: _patient.id,
+        },
+        { ...(transaction ? { transaction } : {}) },
+      )
+
+      console.log({ dieticianPatient })
 
       return { ok: true, value: dieticianPatient } as const
     } catch (error) {
+      console.log({ error })
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   }
@@ -239,6 +241,8 @@ export const createUserService = (): IUserService => {
         PatientProfile,
       ],
     })
+
+    console.log({ user })
 
     if (user?.patients.length === 0) {
       return { ok: false, error: new Error('No patients found') } as const

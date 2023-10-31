@@ -122,6 +122,7 @@ import { ref } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -167,6 +168,9 @@ type SpecificPatientTableColumns = {
     ? KeyValueTypes[K]
     : unknown
 }
+
+const patientsQuery = usePatients()
+console.log({ patients: patientsQuery.data.value })
 
 const itemsPerPage = ref(5)
 const headers = ref<PatientTableHeaders[]>([
