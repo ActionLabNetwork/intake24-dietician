@@ -26,7 +26,21 @@ export const createRecallService = () => {
     // }
   }
 
+  const createRecall = async (): Promise<Result<typeof Recall | null>> => {
+    logger.info('createRecall')
+    return { ok: true, value: null } as const
+    // try {
+    //     const recall = await Recall.findOne({
+    //     where: { id },
+    //     })
+    //     return { ok: true, value: recall } as const
+    // } catch (error) {
+    //     return { ok: false, error: new Error(getErrorMessage(error)) } as const
+    // }
+  }
+
   return {
     getRecallById,
+    createRecall
   }
 }
