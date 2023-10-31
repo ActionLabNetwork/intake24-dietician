@@ -1,5 +1,7 @@
 import { IUserService } from '@intake24-dietician/common/types/api'
-import { UserAttributes } from '@intake24-dietician/common/types/auth'
+import {
+  PatientProfileValues,
+} from '@intake24-dietician/common/types/auth'
 import { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op, Transaction } from '@intake24-dietician/db/connection'
@@ -11,6 +13,8 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { z } from 'zod'
 import { toInt } from 'radash'
+import { Theme } from '@intake24-dietician/common/types/theme'
+import { Unit } from '@intake24-dietician/common/types/reminder'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
@@ -230,27 +234,66 @@ export const createUserService = (): IUserService => {
 
   const getPatientsOfDietician = async (
     dieticianId: number,
-  ): Promise<Result<UserAttributes[]>> => {
+  ): Promise<Result<PatientProfileValues[]>> => {
     const user = await User.findByPk(dieticianId, {
       include: [
         {
           model: User,
           as: 'patients',
           through: { attributes: [] },
+          include: [PatientProfile],
         },
         PatientProfile,
       ],
     })
 
-    console.log({ user })
+    console.log({ user: user?.patients.map(v => v.dataValues) })
+    console.log({
+      userProfile: user?.patients.map(
+        v => v.dataValues.patientProfile.dataValues,
+      ),
+    })
 
     if (user?.patients.length === 0) {
       return { ok: false, error: new Error('No patients found') } as const
     }
 
-    const patientIds = user?.patients.map(f => f.dataValues) ?? []
+    const patientProfileValues =
+      user?.patients.map(f => {
+        const profileValues: PatientProfileValues = {
+          firstName: f.dataValues.patientProfile.dataValues.firstName,
+          middleName: f.dataValues.patientProfile.dataValues.middleName,
+          lastName: f.dataValues.patientProfile.dataValues.lastName,
+          mobileNumber: f.dataValues.patientProfile.dataValues.mobileNumber,
+          emailAddress: f.dataValues.email,
+          address: f.dataValues.patientProfile.dataValues.address,
+          avatar: f.dataValues.patientProfile.dataValues.avatar,
+          age: f.dataValues.patientProfile.dataValues.age,
+          gender: f.dataValues.patientProfile.dataValues.gender,
+          height: f.dataValues.patientProfile.dataValues.height,
+          weight: f.dataValues.patientProfile.dataValues.weight,
+          additionalNotes:
+            f.dataValues.patientProfile.dataValues.additionalNotes,
+          patientGoal: f.dataValues.patientProfile.dataValues.patientGoal,
+          theme: f.dataValues.patientProfile.dataValues.theme as Theme,
+          sendAutomatedFeedback:
+            f.dataValues.patientProfile.dataValues.sendAutomatedFeedback,
+          recallFrequency: {
+            reminderEvery: {
+              quantity:
+                f.dataValues.patientProfile.dataValues.recallFrequencyQuantity,
+              unit: f.dataValues.patientProfile.dataValues
+                .recallFrequencyUnit as Unit,
+            },
+            reminderEnds:
+              f.dataValues.patientProfile.dataValues.recallFrequencyEnd,
+          },
+        }
 
-    return { ok: true, value: patientIds }
+        return profileValues
+      }) ?? []
+
+    return { ok: true, value: patientProfileValues }
   }
 
   const validateNewEmailAvailability = async (

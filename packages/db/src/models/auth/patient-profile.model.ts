@@ -8,6 +8,7 @@ import {
   BelongsTo,
 } from 'sequelize-typescript'
 import User from './user.model'
+import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 
 export interface PatientProfileAttributes {
   userId: number
@@ -27,7 +28,7 @@ export interface PatientProfileAttributes {
   sendAutomatedFeedback: boolean
   recallFrequencyQuantity: number
   recallFrequencyUnit: string
-  recallFrequencyEnd: unknown
+  recallFrequencyEnd: ReminderConditions['reminderEnds']
   avatar: string | null
   user: User
 }
@@ -113,7 +114,7 @@ class PatientProfile extends Model<
   public declare recallFrequencyUnit: string
 
   @Column(DataType.JSONB)
-  public declare recallFrequencyEnd: unknown
+  public declare recallFrequencyEnd: ReminderConditions['reminderEnds']
 
   @Column(DataType.TEXT)
   public declare avatar: string | null

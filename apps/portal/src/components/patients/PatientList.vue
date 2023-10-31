@@ -118,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
@@ -170,7 +170,6 @@ type SpecificPatientTableColumns = {
 }
 
 const patientsQuery = usePatients()
-console.log({ patients: patientsQuery.data.value })
 
 const itemsPerPage = ref(5)
 const headers = ref<PatientTableHeaders[]>([
@@ -222,6 +221,7 @@ const getRandomDate = () =>
     year: 'numeric',
   })
 
+// const _patients = ref<SpecificPatientTableColumns>(patientsQuery.data.value)
 const patients = ref<SpecificPatientTableColumns[]>([
   {
     name: 'Giana Levin',
@@ -264,6 +264,27 @@ const patients = ref<SpecificPatientTableColumns[]>([
     lastReminderSent: getRandomDate(),
   },
 ])
+
+watch(
+  () => patientsQuery.data.value,
+  newPatients => {
+    // TODO: Update reminder related fields once implemented
+    patients.value =
+      newPatients?.data.data.map(patient => {
+        return {
+          name: `${patient.firstName} ${patient.lastName}`,
+          patientRecords: undefined,
+          lastRecall: getRandomDate(),
+          lastFeedbackSent: {
+            date: getRandomDate(),
+            type: patient.sendAutomatedFeedback ? 'Auto' : 'Tailored',
+          },
+          patientStatus: 'Active',
+          lastReminderSent: getRandomDate(),
+        }
+      }) ?? []
+  },
+)
 </script>
 <style scoped lang="scss">
 .v-data-table thead tr {

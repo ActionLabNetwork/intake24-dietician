@@ -1,7 +1,11 @@
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
-import { DieticianProfileValues, UserAttributes } from './auth'
+import {
+  DieticianProfileValues,
+  PatientProfileValues,
+  UserAttributes,
+} from './auth'
 import { Result } from './utils'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { Transaction } from '@intake24-dietician/db/connection'
@@ -45,6 +49,6 @@ export interface IUserService {
   ) => Promise<Result<DieticianPatient>>
   getPatientsOfDietician: (
     dieticianId: number,
-  ) => Promise<Result<UserAttributes[]>>
+  ) => Promise<Result<PatientProfileValues[]>>
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }

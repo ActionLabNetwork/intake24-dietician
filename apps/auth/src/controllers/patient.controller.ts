@@ -68,11 +68,22 @@ export class PatientController extends Controller {
           result.value.decoded['userId'],
         )
 
-        this.logger.info(
-          'Successfully retrieved patients of dietician',
-          result.value.decoded['userId'],
-        )
-        return { data: { patients } }
+        return match(patients)
+          .with({ ok: true }, patientsResult => {
+            this.logger.info(
+              'Successfully retrieved patients of dietician',
+              result.value.decoded!['userId'],
+            )
+            return { data: patientsResult.value }
+          })
+          .with({ ok: false }, patientsResult => {
+            this.logger.error(
+              'Failed to retrieve patients of dietician',
+              patientsResult.error,
+            )
+            return this.generateInternalServerErrorResponse()
+          })
+          .exhaustive()
       })
       .with({ ok: false }, () => {
         return this.generateInternalServerErrorResponse()

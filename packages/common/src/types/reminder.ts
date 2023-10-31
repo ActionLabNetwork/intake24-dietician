@@ -1,7 +1,7 @@
 export const units = ['days', 'weeks', 'months'] as const
 export const reminderEndsTypes = ['never', 'on', 'after'] as const
 
-type Unit = 'days' | 'weeks' | 'months'
+export type Unit = 'days' | 'weeks' | 'months'
 type ReminderEndsType = (typeof reminderEndsTypes)[number]
 
 interface ReminderEvery {
