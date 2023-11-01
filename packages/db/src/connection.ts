@@ -1,6 +1,7 @@
+import mongoose from 'mongoose';
 import { Sequelize } from 'sequelize-typescript'
 import { Op } from 'sequelize'
-import { getDBUrl, env } from './config/env'
+import { getDBUrl, getMongoDBUrl, env } from './config/env'
 
 import Redis from 'ioredis'
 
@@ -14,6 +15,22 @@ const redis = new Redis({
   port: Number(env.REDIS_CONNECTION_PORT),
   host: env.REDIS_CONNECTION_HOST,
 })
+
+const connectMongo = async() =>{
+  try {
+    await mongoose.connect(getMongoDBUrl(), {
+      keepAlive: true,
+      auth: {
+        username: env.MONGO_RECAL_DB_ROOT_USERNAME,
+        password: env.MONGO_RECAL_DB_ROOT_PASSWORD,
+      },
+    })
+    console.log('✅ Connected to Mongo database')
+  } catch (error) {
+    console.log(getMongoDBUrl());
+    console.error('❌ Unable to connect to Mongo database:', error)
+  }
+}
 
 const connectPostgres = async () => {
   try {
@@ -34,4 +51,4 @@ const connectRedis = async () => {
   }
 }
 
-export { sequelize, Op, connectPostgres, redis, connectRedis }
+export { sequelize, Op, connectPostgres, redis, connectRedis, connectMongo }

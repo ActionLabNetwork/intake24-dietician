@@ -1,4 +1,4 @@
-import { Result } from '@intake24-dietician/common/types/utils'
+import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { Op } from '@intake24-dietician/db/connection'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'

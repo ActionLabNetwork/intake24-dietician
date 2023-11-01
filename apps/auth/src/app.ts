@@ -1,8 +1,9 @@
-import express, {
+import type {
   Response as ExResponse,
   Request as ExRequest,
   NextFunction,
-} from 'express'
+} from 'express';
+import express from 'express'
 import bodyParser from 'body-parser'
 import { RegisterRoutes } from '../build/routes'
 import swaggerUi from 'swagger-ui-express'
@@ -10,7 +11,7 @@ import cors from 'cors'
 import { ValidateError } from 'tsoa'
 import cookieParser from 'cookie-parser'
 import multer from 'multer'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
+import type { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const app = express()
 

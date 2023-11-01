@@ -1,6 +1,6 @@
-import { ApiResponse } from '@intake24-dietician/common/types/api'
-import { JwtPayload } from 'jsonwebtoken'
-import { Result } from './utils'
+import type { ApiResponse } from '@intake24-dietician/common/types/api'
+import type { JwtPayload } from 'jsonwebtoken'
+import type { Result } from './utils'
 
 export interface UserAttributes {
   id: number
