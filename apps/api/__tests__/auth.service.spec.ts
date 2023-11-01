@@ -13,7 +13,7 @@ import { createJwtTokenService } from '@intake24-dietician/auth/services/token.s
 import { createEmailService } from '../src/services/email.service'
 import { sequelize } from '@intake24-dietician/db/connection'
 import { redis } from '@intake24-dietician/db/connection'
-import {
+import type {
   DieticianProfileValues,
   TokenPayload,
 } from '@intake24-dietician/common/types/auth'

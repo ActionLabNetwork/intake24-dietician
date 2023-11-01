@@ -1,4 +1,4 @@
-import { IEmailService } from '@intake24-dietician/common/types/auth'
+import type { IEmailService } from '@intake24-dietician/common/types/auth'
 import { env } from '../config/env'
 import nodemailer from 'nodemailer'
 

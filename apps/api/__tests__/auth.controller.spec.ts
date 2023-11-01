@@ -1,6 +1,6 @@
 import { AuthController } from '../src/controllers/auth.controller'
 import { createAuthService } from '../src/services/auth.service'
-import {
+import type {
   AuthRequest,
   AuthResponse,
   IAuthService,

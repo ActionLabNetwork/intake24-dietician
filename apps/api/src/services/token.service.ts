@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken'
-import { ITokenService } from '@intake24-dietician/common/types/auth'
+import type { ITokenService } from '@intake24-dietician/common/types/auth'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 
 export const createJwtTokenService = (): ITokenService => ({

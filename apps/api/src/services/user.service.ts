@@ -1,8 +1,9 @@
-import { IUserService } from '@intake24-dietician/common/types/api'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+import type { IUserService } from '@intake24-dietician/common/types/api'
+import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import { Op, Transaction } from '@intake24-dietician/db/connection'
+import type { Transaction } from '@intake24-dietician/db/connection';
+import { Op } from '@intake24-dietician/db/connection'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
@@ -11,8 +12,8 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { z } from 'zod'
 import { toInt } from 'radash'
-import { Theme } from '@intake24-dietician/common/types/theme'
-import { Unit } from '@intake24-dietician/common/types/reminder'
+import type { Theme } from '@intake24-dietician/common/types/theme'
+import type { Unit } from '@intake24-dietician/common/types/reminder'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {

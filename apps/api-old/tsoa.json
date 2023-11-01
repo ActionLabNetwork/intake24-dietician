@@ -1,0 +1,51 @@
+{
+  "entryFile": "src/app.ts",
+  "noImplicitAdditionalProperties": "throw-on-extras",
+  "controllerPathGlobs": [
+    "src/**/*.controller.ts"
+  ],
+  "spec": {
+    "outputDirectory": "build",
+    "specVersion": 3,
+    "securityDefinitions": {
+      "jwt": {
+        "type": "jwt",
+        "name": "JSON Web Token"
+      }
+    }
+  },
+  "routes": {
+    "routesDir": "build"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@intake24-dietician/api/*": [
+        "src/*"
+      ],
+      "@intake24-dietician/api-tests/*": [
+        "__tests__/*"
+      ],
+      "@intake24-dietician/common/*": [
+        "../../packages/common/src/*"
+      ],
+      "@intake24-dietician/db/*": [
+        "../../packages/db/src/*"
+      ],
+      "@intake24-dietician/i18n/*": [
+        "../../packages/i18n/src/*"
+      ],
+      "@intake24/*": [
+        "../../packages/*/src"
+      ],
+      "tsoa": [
+        "node_modules/tsoa/dist"
+      ]
+    },
+    "types": [
+      "node",
+      "jest",
+      "jest-extended"
+    ]
+  }
+}

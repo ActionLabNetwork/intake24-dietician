@@ -35,7 +35,7 @@ module.exports = {
   },
   plugins: [
     new ForkTsCheckerWebpackPlugin(),
-    new WebpackBar({ name: 'Auth Server' }),
+    new WebpackBar({ name: 'Api Server' }),
     new Dotenv({ path: '.env.development' }),
   ],
   target: 'node',

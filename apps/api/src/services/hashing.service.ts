@@ -1,5 +1,5 @@
 import * as argon2 from 'argon2'
-import { IHashingService } from '@intake24-dietician/common/types/auth'
+import type { IHashingService } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 
 export const createArgonHashingService = (): IHashingService => ({

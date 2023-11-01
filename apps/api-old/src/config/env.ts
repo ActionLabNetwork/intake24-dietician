@@ -1,4 +1,5 @@
-import { TypeOf, z } from 'zod'
+import type { TypeOf} from 'zod';
+import { z } from 'zod'
 import { createEnv } from '@t3-oss/env-core'
 
 const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
@@ -9,7 +10,9 @@ export const env = createEnv({
   server: {
     HOST: withDevDefault(z.string(), 'http://localhost'),
     AUTH_API_PORT: withDevDefault(z.number(), 8080),
+    API_PORT: withDevDefault(z.number(), 8081),
     PORTAL_APP_PORT: withDevDefault(z.number(), 3001),
+
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
     JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
     JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),

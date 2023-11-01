@@ -9,8 +9,8 @@ import { createArgonHashingService } from '../services/hashing.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createEmailService } from '../services/email.service'
 import { pick, crush, mapKeys, omit } from 'radash'
-import User from '@intake24-dietician/db/models/auth/user.model'
-import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import type User from '@intake24-dietician/db/models/auth/user.model'
+import type DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 const authService = createAuthService(
   createArgonHashingService(),

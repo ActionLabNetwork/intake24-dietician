@@ -27,7 +27,7 @@ import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profi
 import { match, P } from 'ts-pattern'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
-import { IUserService } from '@intake24-dietician/common/types/api'
+import type { IUserService } from '@intake24-dietician/common/types/api'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'

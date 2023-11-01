@@ -1,9 +1,9 @@
-import * as express from 'express'
+import type * as express from 'express'
 // import * as jwt from 'jsonwebtoken'
 import { env } from '../config/env'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { Result } from '@intake24-dietician/common/types/utils'
-import { JwtPayload } from 'jsonwebtoken'
+import type { Result } from '@intake24-dietician/common/types/utils'
+import type { JwtPayload } from 'jsonwebtoken'
 import { createJwtTokenService } from '../services/token.service'
 import { match } from 'ts-pattern'
 

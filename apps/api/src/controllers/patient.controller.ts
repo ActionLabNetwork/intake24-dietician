@@ -9,7 +9,7 @@ import {
   Body,
   Path,
 } from 'tsoa'
-import {
+import type {
   IAuthService,
   PatientProfileValues,
 } from '@intake24-dietician/common/types/auth'
@@ -18,8 +18,8 @@ import { createAuthService } from '../services/auth.service'
 import { createUserService } from '../services/user.service'
 import { container } from '../ioc/container'
 import { match } from 'ts-pattern'
-import { IUserService } from '@intake24-dietician/common/types/api'
-import express from 'express'
+import type { IUserService } from '@intake24-dietician/common/types/api'
+import type express from 'express'
 import crypto from 'crypto'
 
 @Route('patients')
