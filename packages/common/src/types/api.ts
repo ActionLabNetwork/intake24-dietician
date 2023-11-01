@@ -1,3 +1,4 @@
+import type { IRecallExtended } from './recall';
 import type { Result } from './utils'
 export interface ApiResponseWithData<T> {
   data: T
@@ -14,6 +15,6 @@ export interface ApiRequest<T> {
 export type ApiResponse<T> = ApiResponseWithData<T> | ApiResponseWithError
 
 export interface IApiService {
-  getRecallById: (id: string) => Promise<Result<any | null>>
-  createRecall: () => Promise<Result<any | null>>
+  getRecallById: (id: string) => Promise<Result<IRecallExtended | null>>
+  createRecall: (newRecall: IRecallExtended) => Promise<Result<string | null>>
 }
