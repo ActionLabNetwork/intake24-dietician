@@ -15,7 +15,7 @@ import {
 } from 'tsoa'
 // import type { Request as ExRequest } from 'express'
 import type { IApiService } from '@intake24-dietician/common/types/api'
-import type { IRecall } from '@intake24-dietician/common/types/recall'
+import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { container } from '../ioc/container'
 import { createRecallService } from '../services/recall.service'
 
@@ -38,10 +38,33 @@ export class RecallController extends Controller {
     return this.recallService.getRecallById(id)
   }
 
-  @Post()
-  public async createRecall(@Body() requestBody: IRecall): Promise<unknown> {
+  @Post('{requestSurveyId}')
+  public async createRecall(
+    @Path() requestSurveyId: string,
+    @Body() requestBody: any,
+  ): Promise<unknown> {
     const { id, survey } = requestBody
-    console.log( survey, id)
-    return this.recallService.createRecall()
+    console.log(requestSurveyId)
+    console.log(survey, id)
+    const recallTOBeSaved: IRecallExtended = {
+        // TODO: add validation for the request surveyID
+        dietionSurveyId: requestSurveyId,
+        id: requestBody.id,
+        surveyId: requestBody.surveyId,
+        userId: requestBody.userId,
+        startTime: requestBody.startTime,
+        endTime: requestBody.endTime,
+        submissionTime: requestBody.submissionTime,
+        log: requestBody.log,
+        uxSessionId: requestBody.uxSessionId,
+        userAgent: requestBody.userAgent,
+        createdAt: requestBody.createdAt,
+        updatedAt: requestBody.updatedAt,
+        user: requestBody.user,
+        meals: requestBody.meals,
+        survey: requestBody.survey,
+        customFields: requestBody.customFields,
+    }
+    return this.recallService.createRecall(recallTOBeSaved as IRecallExtended)
   }
 }

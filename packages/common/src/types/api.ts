@@ -6,6 +6,7 @@ import {
   PatientProfileValues,
   UserAttributes,
 } from './auth'
+import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { Transaction } from '@intake24-dietician/db/connection'
@@ -54,6 +55,6 @@ export interface IUserService {
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }
 export interface IApiService {
-  getRecallById: (id: string) => Promise<Result<any | null>>
-  createRecall: () => Promise<Result<any | null>>
+  getRecallById: (id: string) => Promise<Result<IRecallExtended | null>>
+  createRecall: (newRecall: IRecallExtended) => Promise<Result<string | null>>
 }
