@@ -4,16 +4,18 @@ import {
   Get,
   Path,
   Post,
+  Request,
   //   Post,
   //   Put,
   //   Query,
   //   Request,
   Route,
+  SuccessResponse,
   //   Security,
   //   SuccessResponse,
   Tags,
 } from 'tsoa'
-// import type { Request as ExRequest } from 'express'
+import type { Request as ExRequest } from 'express'
 import type { IApiService } from '@intake24-dietician/common/types/api'
 import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { container } from '../ioc/container'
@@ -38,14 +40,18 @@ export class RecallController extends Controller {
     return this.recallService.getRecallById(id)
   }
 
+  @SuccessResponse('201', 'Created')
   @Post('{requestSurveyId}')
   public async createRecall(
+    @Request() request: ExRequest,
     @Path() requestSurveyId: string,
     @Body() requestBody: any,
   ): Promise<unknown> {
     const { id, survey } = requestBody
     console.log(requestSurveyId)
     console.log(survey, id)
+    // TODO: Validate the auth Token
+    console.log("Auth Token: ", request.headers.authorization || '');
     const recallTOBeSaved: IRecallExtended = {
         // TODO: add validation for the request surveyID
         dietionSurveyId: requestSurveyId,
