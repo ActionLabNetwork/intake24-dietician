@@ -83,6 +83,7 @@ import {
   units,
 } from '@intake24-dietician/common/types/reminder'
 
+const props = defineProps<{ defaultState: ReminderConditions }>()
 const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
 
 const reminderConditions = ref<ReminderConditions>({
@@ -149,6 +150,16 @@ watch(reminderConditions, newVal => {
   console.log({ newVal })
   emit('update', newVal)
 })
+
+watch(
+  () => props.defaultState,
+  newVal => {
+    console.log({ newVal })
+    if (!newVal) return
+    reminderConditions.value = newVal
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

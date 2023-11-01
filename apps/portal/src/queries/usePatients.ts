@@ -6,6 +6,7 @@ import {
 } from '@intake24-dietician/common/types/auth'
 import { useQuery } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
+import { getDefaultAvatar } from '../utils/profile'
 
 export const usePatients = () => {
   const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_GET_PATIENTS}`
@@ -41,8 +42,17 @@ export const usePatientById = (userId: string) => {
     AxiosResponse<{ data: Omit<UserAttributesWithPatientProfile, 'password'> }>
   >({
     queryKey: [userId],
-    queryFn: () => {
-      return axios.get(sessionUri)
+    queryFn: async () => {
+      const response: AxiosResponse<{
+        data: Omit<UserAttributesWithPatientProfile, 'password'>
+      }> = await axios.get(sessionUri)
+
+      const avatar =
+        response.data.data.patientProfile.avatar ||
+        getDefaultAvatar(response.data.data.email)
+
+      response.data.data.patientProfile.avatar = avatar
+      return response
     },
   })
 

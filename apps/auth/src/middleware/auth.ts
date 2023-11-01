@@ -63,7 +63,8 @@ export function expressAuthentication(
   _securityName: string,
   scopes?: string[],
 ) {
-  const accessToken = request.cookies['accessToken']
+  const accessToken =
+    request.cookies['accessToken'] || request.headers['authorization']
 
   const decodedAccessToken = verifyJwtToken(accessToken, 'access-token')
 

@@ -28,13 +28,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
+const props = defineProps<{ defaultState: boolean }>()
 const emit = defineEmits<{
   update: [value: boolean]
 }>()
 
 const sendAutomatedFeedback = ref(false)
+
+watch(
+  () => props.defaultState,
+  () => {
+    sendAutomatedFeedback.value = props.defaultState
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

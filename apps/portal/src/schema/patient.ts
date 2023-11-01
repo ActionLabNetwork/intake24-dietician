@@ -3,6 +3,8 @@ import { z } from 'zod'
 export const genders = ['Male', 'Female', 'Other'] as const
 export const reminderUnits = ['days', 'weeks', 'months'] as const
 
+export type Gender = typeof genders[number]
+
 // Mobile number schemas
 const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/)
 const IndonesianMobileSchema = z.string().regex(/^\+?628\d{8,11}$/)

@@ -10,7 +10,7 @@
     </template>
     <v-card-item>
       <v-card-title class="text-center">
-        <v-avatar size="x-large" :image="getDefaultAvatar('test')" />
+        <v-avatar size="x-large" :image="avatar" />
         <p class="title text-md mt-4">{{ fullName }}</p>
       </v-card-title>
       <v-card-subtitle class="text-center">
@@ -33,16 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { usePatientById } from '@/queries/usePatients'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 const route = useRoute()
 const patientQuery = usePatientById(route.params['id'] as string)
-
-console.log({ patientQuery })
 
 const paddedId = computed(() => {
   return ((route.params['id'] as string) ?? '').padStart(
@@ -58,6 +56,13 @@ const fullName = computed(() => {
     patientQuery.data.value?.data.data.patientProfile.lastName ?? ''
 
   return `${firstName} ${lastName}`
+})
+
+const avatar = computed(() => {
+  return (
+    patientQuery.data.value?.data.data.patientProfile.avatar ??
+    getDefaultAvatar('')
+  )
 })
 
 const navItems = [

@@ -46,6 +46,7 @@
         <div>
           <ContactDetails
             :default-state="contactDetailsFormValues"
+            mode="Add"
             @update="handleContactDetailsUpdate"
           />
           <PersonalDetails
@@ -98,10 +99,10 @@ import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
-import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { PatientSchema } from '@/schema/patient'
+import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 // const { t } = useI18n<i18nOptions>()

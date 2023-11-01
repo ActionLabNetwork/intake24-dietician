@@ -24,7 +24,7 @@
                     }
                   "
                 >
-                  Upload image
+                  {{ mode === 'Add' ? 'Upload Image' : 'Update Image' }}
                 </v-btn>
                 <input
                   ref="imageUpload"
@@ -102,7 +102,7 @@
                   }
                 "
               >
-                {{ t('profile.form.personalDetails.uploadImage') }}
+                {{ mode === 'Add' ? 'Upload Image' : 'Update Image' }}
               </v-btn>
               <input
                 ref="imageUpload"
@@ -230,7 +230,8 @@ import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { requiredValidator, emailValidator } from '@/validators/auth'
 import { mobileNumberValidator } from '@intake24-dietician/portal/validators/auth/profile'
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 export interface ContactDetailsFormValues {
   firstName: string
@@ -244,6 +245,7 @@ export interface ContactDetailsFormValues {
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
+  mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
@@ -254,7 +256,7 @@ const { mdAndUp } = useDisplay()
 const { t } = useI18n<i18nOptions>()
 
 const imageUpload = ref()
-const avatarImage = ref('')
+const avatarImage = ref()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<ContactDetailsFormValues>({ ...props.defaultState })
@@ -285,6 +287,21 @@ const handleImageUpload = () => {
     URL.revokeObjectURL(objectURL)
   }
 }
+
+watch(
+  () => props.defaultState,
+  newDefaultState => {
+    console.log({ newDefaultState })
+    formValues.value = {
+      ...formValues.value,
+      firstName: newDefaultState.firstName,
+      lastName: newDefaultState.lastName,
+    }
+    avatarImage.value =
+      newDefaultState.avatar ?? getDefaultAvatar(newDefaultState.emailAddress)
+  },
+  { immediate: true },
+)
 </script>
 <style scoped lang="scss">
 .avatar {

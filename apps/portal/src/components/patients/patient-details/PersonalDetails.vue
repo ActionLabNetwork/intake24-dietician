@@ -104,11 +104,11 @@ import { useDisplay } from 'vuetify'
 // import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { ref } from 'vue'
-import { genders } from '@/schema/patient'
+import { Gender, genders } from '@/schema/patient'
 
 export interface PersonalDetailsFormValues {
   age: number
-  gender: (typeof genders)[number]
+  gender: Gender
   height: number
   weight: number
   additionalNotes: string

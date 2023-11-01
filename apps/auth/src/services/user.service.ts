@@ -32,6 +32,28 @@ export const createUserService = (): IUserService => {
         include: [DieticianProfile, PatientProfile],
         attributes: { exclude: ['password'] },
       })
+
+      // Format patient profile
+      if (user?.patientProfile) {
+        const formattedPatientProfile = {
+          ...user.patientProfile.dataValues,
+          theme: user.patientProfile.theme as Theme,
+          emailAddress: user.email,
+          recallFrequency: {
+            reminderEvery: {
+              quantity: user.patientProfile.recallFrequencyQuantity,
+              unit: user.patientProfile.recallFrequencyUnit as Unit,
+            },
+            reminderEnds: user.patientProfile.recallFrequencyEnd,
+          },
+        }
+
+        user.patientProfile.dataValues = {
+          ...user.patientProfile.dataValues,
+          ...formattedPatientProfile,
+        }
+      }
+
       return { ok: true, value: user } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const

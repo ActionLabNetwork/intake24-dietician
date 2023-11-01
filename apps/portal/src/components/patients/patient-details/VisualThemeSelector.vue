@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { Theme } from '@intake24-dietician/common/types/theme';
-import { ref } from 'vue'
+import { Theme } from '@intake24-dietician/common/types/theme'
+import { ref, watch } from 'vue'
 
 interface ThemeRef {
   title: `${Theme} theme`
@@ -40,6 +40,7 @@ interface ThemeRef {
   type: Theme
 }
 
+const props = defineProps<{ defaultState: Theme }>()
 const emit = defineEmits<{
   update: [theme: Theme]
 }>()
@@ -74,6 +75,16 @@ const handleSwitchUpdate = (value: boolean, theme: string) => {
 
   emit('update', themes.value.find(t => t.active)?.type ?? 'Classic')
 }
+
+watch(
+  () => props.defaultState,
+  () => {
+    themes.value.forEach(theme => {
+      theme.active = theme.type === props.defaultState
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

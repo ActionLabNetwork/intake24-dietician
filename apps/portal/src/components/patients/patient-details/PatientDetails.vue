@@ -1,44 +1,52 @@
 <template>
-  <v-main v-if="isProfileLoading" align="center">
-    <v-container>
-      <v-progress-circular indeterminate></v-progress-circular>
-    </v-container>
-  </v-main>
-  <div v-else class="wrapper">
+  <div class="wrapper">
     <div
       class="d-flex flex-column flex-sm-row justify-space-between align-center"
     >
       <div>
         <h1 class="text heading">Patient details</h1>
-        <h3 class="text subheading">
-          {{ t('profile.subtitle') }}
-        </h3>
-      </div>
-      <div>
-        <v-btn
-          type="submit"
-          color="primary text-capitalize"
-          class="mt-3 mt-sm-0"
-          :loading="updateProfileMutation.isLoading.value"
-          @click="handleSubmit"
-        >
-          {{ t('profile.cta') }}
-        </v-btn>
       </div>
     </div>
-    <v-divider class="my-10"></v-divider>
-    <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
-      <!-- <ContactDetails />
-        <PersonalDetails class="mt-10" /> -->
-      <div class="mt-16">
-        <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
+    <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
+      <div>
+        <ContactDetails
+          :default-state="contactDetailsFormValues"
+          mode="Edit"
+          @update="handleContactDetailsUpdate"
+        />
+        <PersonalDetails
+          :default-state="personalDetailsFormValues"
+          class="mt-16"
+          @update="handlePersonalDetailsUpdate"
+        />
+        <VisualThemeSelector
+          class="mt-10"
+          :default-state="theme"
+          @update="handleVisualThemeUpdate"
+        />
+        <SendAutomatedFeedbackToggle
+          class="mt-10"
+          :default-state="sendAutomatedFeedback"
+          @update="handleSendAutomatedFeedback"
+        />
+        <UpdateRecallFrequency
+          class="mt-10"
+          :default-state="recallFrequency"
+          @update="handleRecallFrequencyUpdate"
+        />
+      </div>
+      <div>
+        <p class="font-weight-medium">
+          Review and add new patient to the records
+        </p>
         <v-btn
+          color="primary"
+          class="text-none mt-4"
           type="submit"
-          color="primary text-capitalize"
-          class="mt-3"
-          :loading="updateProfileMutation.isLoading.value"
+          :disabled="!isFormValid"
+          @click.prevent="handleSubmit"
         >
-          {{ t('profile.cta') }}
+          Add patient to records
         </v-btn>
       </div>
     </v-form>
@@ -46,107 +54,167 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
-import { i18nOptions } from '@intake24-dietician/i18n/index'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { storeToRefs } from 'pinia'
-import { useUpdateProfile } from '@/mutations/useAuth'
+import { computed, ref, watch } from 'vue'
+// import { i18nOptions } from '@intake24-dietician/i18n/index'
+// import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import { usePatientDetails } from '@intake24-dietician/portal/queries/useAuth'
+import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
+import ContactDetails, {
+  ContactDetailsFormValues,
+} from '@intake24-dietician/portal/components/patients/patient-details/ContactDetails.vue'
+import PersonalDetails from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
+import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
+import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
+import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
+import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
+import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import { Theme } from '@intake24-dietician/common/types/theme'
+import { Gender, PatientSchema } from '@/schema/patient'
+import { useToast } from 'vue-toast-notification'
+import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
+import { useRoute } from 'vue-router'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
-const { t } = useI18n<i18nOptions>()
+// const { t } = useI18n<i18nOptions>()
 
-const authStore = useAuthStore()
-const { user, isProfileLoading } = storeToRefs(authStore)
+const route = useRoute()
+const patientQuery = usePatientById(route.params['id'] as string)
 
-const patientDetailsQuery = usePatientDetails()
-const updateProfileMutation = useUpdateProfile()
+console.log({ patientQuery123: patientQuery.data.value?.data.data })
 
-// const $toast = useToast()
+const $toast = useToast()
 
 const form = ref()
 
-// const handleProfileDetailsUpdate = (
-//   details: PersonalDetailsFormValues | ShortBioFormValues,
-// ) => {
-//   profileFormValues.value = { ...profileFormValues.value, ...details }
-// }
+const contactDetailsFormValues = ref<ContactDetailsFormValues>({
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  avatar: '',
+  mobileNumber: '',
+  emailAddress: '',
+  address: '',
+})
 
-const handleSubmit = async (): Promise<void> => {
-  // await form.value.validate()
-  // const errors = form.value.errors
-  // return new Promise((resolve, reject) => {
-  //   if (errors.length > 0) {
-  //     reject(new Error('Form validation failed'))
-  //     return
-  //   }
-  //   updateProfileMutation.mutate(
-  //     {
-  //       dieticianProfile: {
-  //         ...profileFormValues.value,
-  //         avatar: '',
-  //       },
-  //     },
-  //     {
-  //       onSuccess: () => {
-  //         $toast.success('Profile updated successfully')
-  //         resolve()
-  //       },
-  //       onError: () => {
-  //         reject(new Error('Profile update failed'))
-  //       },
-  //     },
-  //   )
-  //   if (profileFormValues.value.avatar) {
-  //     uploadAvatarMutation.mutate({
-  //       avatarBase64:
-  //         profileFormValues.value.avatar ??
-  //         user.value?.dieticianProfile.avatar ??
-  //         '',
-  //     })
-  //   }
-  // })
+const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
+  age: 30,
+  gender: 'Male',
+  weight: 80,
+  height: 180,
+  additionalNotes: '',
+  patientGoal: '',
+})
+
+const theme = ref<Theme>('Classic')
+const sendAutomatedFeedback = ref<boolean>(false)
+const recallFrequency = ref<ReminderConditions>({
+  reminderEvery: {
+    quantity: 5,
+    unit: 'days',
+  },
+  reminderEnds: {
+    type: 'never',
+  },
+})
+
+const aggregatedData = computed(() => ({
+  ...contactDetailsFormValues.value,
+  ...personalDetailsFormValues.value,
+  theme: theme.value,
+  sendAutomatedFeedback: sendAutomatedFeedback.value,
+  recallFrequency: recallFrequency.value,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}))
+
+const isFormValid = computed(() => {
+  return PatientSchema.safeParse(aggregatedData.value).success
+})
+
+const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
+  contactDetailsFormValues.value = values
 }
 
-// const disableSubmitButton = computed(() => {
-//   const errors: any[] = form.value?.['errors']
+const handlePersonalDetailsUpdate = (values: PersonalDetailsFormValues) => {
+  personalDetailsFormValues.value = values
+}
 
-//   if (errors?.length > 0) return true
-//   if (!user.value) return true
+const handleVisualThemeUpdate = (_theme: Theme) => {
+  theme.value = _theme
+}
 
-//   const hasBeenUpdatedSinceCreation =
-//     user.value.dieticianProfile.createdAt !==
-//     user.value.dieticianProfile.updatedAt
+const handleSendAutomatedFeedback = (value: boolean) => {
+  sendAutomatedFeedback.value = value
+}
 
-//   const hasBeenUpdated = !isEqual(profileFormValues.value, {
-//     ...pick(
-//       user.value?.patientProfile,
-//       keys(profileFormValues.value) as (keyof PatientProfileValues)[],
-//     ),
-//     emailAddress: user.value?.email,
-//   })
+const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
+  recallFrequency.value = value
+}
 
-//   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
-// })
+const handleSubmit = async () => {
+  await form.value.validate()
+
+  return new Promise((resolve, reject) => {
+    // Validate with zod
+    const result = PatientSchema.safeParse(aggregatedData.value)
+
+    if (!result.success) {
+      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    // Validate with Vuetify
+    const errors = form.value.errors
+    if (errors.length > 0) {
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    // addPatientMutation.mutate(aggregatedData.value, {
+    //   onSuccess: () => {
+    //     $toast.success('Patient added to records')
+    //     resolve('Patient added to records')
+    //   },
+    //   onError: err => {
+    //     $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+    //   },
+    // })
+    resolve('Updated patient details')
+  })
+}
 
 watch(
-  () => patientDetailsQuery.data,
-  newUser => {
-    const user = newUser.value?.data.data.user
-    profileFormValues.value = {
-      firstName: user?.patientProfile.firstName ?? '',
-      middleName: user?.patientProfile.middleName ?? '',
-      lastName: user?.patientProfile.lastName ?? '',
-      emailAddress: user?.patientProfile.emailAddress ?? '',
-      mobileNumber: user?.patientProfile.mobileNumber ?? '',
-      address: user?.patientProfile.address ?? '',
-      avatar: user?.patientProfile.avatar ?? null,
-      createdAt: user?.patientProfile.createdAt ?? new Date(),
-      updatedAt: user?.patientProfile.updatedAt ?? new Date(),
+  () => patientQuery.data.value?.data.data,
+  newData => {
+    if (!newData) return
+
+    contactDetailsFormValues.value = {
+      firstName: newData.patientProfile.firstName,
+      middleName: newData.patientProfile.middleName,
+      lastName: newData.patientProfile.lastName,
+      avatar: newData.patientProfile.avatar ?? getDefaultAvatar(newData.email),
+      mobileNumber: newData.patientProfile.mobileNumber,
+      emailAddress: newData.email,
+      address: newData.patientProfile.address,
     }
+
+    personalDetailsFormValues.value = {
+      age: newData.patientProfile.age,
+      gender: newData.patientProfile.gender as Gender,
+      weight: newData.patientProfile.weight,
+      height: newData.patientProfile.height,
+      additionalNotes: newData.patientProfile.additionalNotes,
+      patientGoal: newData.patientProfile.patientGoal,
+    }
+
+    theme.value = newData.patientProfile.theme
+    sendAutomatedFeedback.value = newData.patientProfile.sendAutomatedFeedback
+    recallFrequency.value = newData.patientProfile.recallFrequency
+    console.log({ rec: newData.patientProfile.recallFrequency })
   },
+  { immediate: true },
 )
 </script>
 
@@ -171,7 +239,6 @@ watch(
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
 }
 .text {
-  max-width: 75%;
   padding-bottom: 0.5rem;
 
   &.heading {
