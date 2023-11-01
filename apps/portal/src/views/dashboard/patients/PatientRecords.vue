@@ -19,22 +19,16 @@
           flat
           class="text-none"
           variant="text"
+          to="/dashboard/my-patients"
         >
           Back to patient list
         </v-btn>
       </v-row>
-      <v-row>
-        <v-col-2 class="ml-4"><DetailsAndNavCard /></v-col-2>
-        <v-col class="px-16">
-          <!-- <FeedbackRecords />
-          <PatientDetails /> -->
+      <v-row class="mt-6">
+        <v-col cols="2"><DetailsAndNavCard /></v-col>
+        <v-col cols="10" class="px-16">
           <router-view />
         </v-col>
-        <!-- <v-col-2>
-          <v-btn append-icon="mdi-plus" color="primary" class="text-none"
-            >Compose new feedback
-          </v-btn>
-        </v-col-2> -->
       </v-row>
     </v-container>
   </v-main>

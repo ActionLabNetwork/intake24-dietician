@@ -13,7 +13,6 @@ import { z } from 'zod'
 import { toInt } from 'radash'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { Unit } from '@intake24-dietician/common/types/reminder'
-import crypto from 'crypto'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
@@ -30,7 +29,8 @@ export const createUserService = (): IUserService => {
     try {
       const user = await User.findOne({
         where: { id },
-        include: [DieticianProfile],
+        include: [DieticianProfile, PatientProfile],
+        attributes: { exclude: ['password'] },
       })
       return { ok: true, value: user } as const
     } catch (error) {
@@ -252,11 +252,8 @@ export const createUserService = (): IUserService => {
 
     const patientProfileValues =
       user?.patients.map(f => {
-        const profileValues: PatientProfileValues & { id: string } = {
-          id: crypto
-            .createHash('sha256')
-            .update(f.dataValues.id.toString())
-            .digest('hex'),
+        const profileValues: PatientProfileValues & { id: number } = {
+          id: f.dataValues.id,
           firstName: f.dataValues.patientProfile.dataValues.firstName,
           middleName: f.dataValues.patientProfile.dataValues.middleName,
           lastName: f.dataValues.patientProfile.dataValues.lastName,

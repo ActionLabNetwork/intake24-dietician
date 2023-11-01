@@ -1,11 +1,21 @@
 <template>
-  <v-card>
+  <v-card :loading="patientQuery.isLoading.value" max-width="12rem">
+    <template v-slot:loader="{ isActive }">
+      <v-progress-linear
+        :active="isActive"
+        color="orange"
+        height="4"
+        indeterminate
+      ></v-progress-linear>
+    </template>
     <v-card-item>
       <v-card-title class="text-center">
         <v-avatar size="x-large" :image="getDefaultAvatar('test')" />
-        <p class="title text-md mt-4">Mira Workman</p>
+        <p class="title text-md mt-4">{{ fullName }}</p>
       </v-card-title>
-      <v-card-subtitle class="text-center">ID: 23459801</v-card-subtitle>
+      <v-card-subtitle class="text-center">
+        ID: {{ paddedId }}
+      </v-card-subtitle>
       <v-divider class="border-opacity-100 my-2"></v-divider>
       <v-card-actions class="d-flex flex-column">
         <v-list nav>
@@ -24,17 +34,42 @@
 
 <script setup lang="ts">
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
+import { usePatientById } from '@/queries/usePatients'
+
+const route = useRoute()
+const patientQuery = usePatientById(route.params['id'] as string)
+
+console.log({ patientQuery })
+
+const paddedId = computed(() => {
+  return ((route.params['id'] as string) ?? '').padStart(
+    DISPLAY_ID_ZERO_PADDING,
+    '0',
+  )
+})
+
+const fullName = computed(() => {
+  const firstName =
+    patientQuery.data.value?.data.data.patientProfile.firstName ?? ''
+  const lastName =
+    patientQuery.data.value?.data.data.patientProfile.lastName ?? ''
+
+  return `${firstName} ${lastName}`
+})
 
 const navItems = [
   {
     title: 'Feedback records',
     value: 'feedbackRecords',
-    to: '/dashboard/my-patients/patient-records/feedback-records',
+    to: `/dashboard/my-patients/patient-records/${route.params['id']}/feedback-records`,
   },
   {
     title: 'Patient details',
     value: 'patientDetails',
-    to: '/dashboard/my-patients/patient-records/patient-details',
+    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-details`,
   },
 ]
 </script>

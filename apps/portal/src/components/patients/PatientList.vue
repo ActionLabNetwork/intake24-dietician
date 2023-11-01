@@ -153,7 +153,7 @@ type PatientTableColumns = {
 }
 
 interface KeyValueTypes {
-  id: string
+  id: number
   name: string
   patientRecords: undefined
   lastRecall: string

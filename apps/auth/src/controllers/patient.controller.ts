@@ -7,6 +7,7 @@ import {
   Security,
   Post,
   Body,
+  Path,
 } from 'tsoa'
 import {
   IAuthService,
@@ -80,6 +81,48 @@ export class PatientController extends Controller {
             this.logger.error(
               'Failed to retrieve patients of dietician',
               patientsResult.error,
+            )
+            return this.generateInternalServerErrorResponse()
+          })
+          .exhaustive()
+      })
+      .with({ ok: false }, () => {
+        return this.generateInternalServerErrorResponse()
+      })
+      .exhaustive()
+  }
+
+  @Get('{userId}')
+  public async getPatientById(
+    @Path() userId: string,
+    @Request() request: express.Request,
+  ) {
+    const { accessToken } = request.cookies
+    const decoded = this.authService.verifyJwtToken(accessToken)
+
+    return match(decoded)
+      .with({ ok: true }, async result => {
+        if (result.value.decoded === null) {
+          this.logger.error('Invalid access token')
+          return this.generateUnauthorizedResponse()
+        }
+
+        if (result.value.tokenExpired) {
+          this.logger.error('Access token has expired. Please login again.')
+          return this.generateExpiredTokenResponse()
+        }
+
+        const patient = await this.userService.getUserById(userId)
+
+        return match(patient)
+          .with({ ok: true }, patientResult => {
+            this.logger.info('Successfully retrieved patient by id', userId)
+            return { data: patientResult.value }
+          })
+          .with({ ok: false }, patientResult => {
+            this.logger.error(
+              'Failed to retrieve patient by id',
+              patientResult.error,
             )
             return this.generateInternalServerErrorResponse()
           })
