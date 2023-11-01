@@ -16,6 +16,7 @@ const authService = createAuthService(
   createArgonHashingService(),
   createJwtTokenService(),
   createEmailService(),
+  createUserService(),
 )
 const userService = createUserService()
 

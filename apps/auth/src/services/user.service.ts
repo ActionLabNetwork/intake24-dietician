@@ -241,6 +241,7 @@ export const createUserService = (): IUserService => {
           as: 'patients',
           through: { attributes: [] },
           include: [PatientProfile],
+          paranoid: false,
         },
         PatientProfile,
       ],
@@ -252,7 +253,10 @@ export const createUserService = (): IUserService => {
 
     const patientProfileValues =
       user?.patients.map(f => {
-        const profileValues: PatientProfileValues & { id: number } = {
+        const profileValues: PatientProfileValues & {
+          id: number
+          isArchived: boolean
+        } = {
           id: f.dataValues.id,
           firstName: f.dataValues.patientProfile.dataValues.firstName,
           middleName: f.dataValues.patientProfile.dataValues.middleName,
@@ -281,6 +285,7 @@ export const createUserService = (): IUserService => {
             reminderEnds:
               f.dataValues.patientProfile.dataValues.recallFrequencyEnd,
           },
+          isArchived: !!f.dataValues.deletionDate,
         }
 
         return profileValues

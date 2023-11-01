@@ -122,7 +122,8 @@ import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
+import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+// import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -131,6 +132,9 @@ type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
 type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
+const props = defineProps<{
+  patientsData: (PatientProfileValues & { id: number; isArchived: boolean })[]
+}>()
 const headerTitles = [
   'Id',
   'Name',
@@ -170,8 +174,6 @@ type SpecificPatientTableColumns = {
     ? KeyValueTypes[K]
     : unknown
 }
-
-const patientsQuery = usePatients()
 
 const itemsPerPage = ref(5)
 const headers = ref<PatientTableHeaders[]>([
@@ -226,11 +228,11 @@ const getRandomDate = () =>
 const patients = ref<SpecificPatientTableColumns[]>([])
 
 watch(
-  () => patientsQuery.data.value,
+  () => props.patientsData,
   newPatients => {
     // TODO: Update reminder related fields once implemented
     patients.value =
-      newPatients?.data.data.map(patient => {
+      newPatients.map(patient => {
         return {
           id: patient.id,
           name: `${patient.firstName} ${patient.lastName}`,
@@ -240,11 +242,12 @@ watch(
             date: getRandomDate(),
             type: patient.sendAutomatedFeedback ? 'Auto' : 'Tailored',
           },
-          patientStatus: 'Active',
+          patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: getRandomDate(),
         }
       }) ?? []
   },
+  { immediate: true },
 )
 </script>
 <style scoped lang="scss">

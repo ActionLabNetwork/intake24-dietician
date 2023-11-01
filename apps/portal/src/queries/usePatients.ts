@@ -13,7 +13,9 @@ export const usePatients = () => {
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
-    AxiosResponse<{ data: (PatientProfileValues & { id: number })[] }>
+    AxiosResponse<{
+      data: (PatientProfileValues & { id: number; isArchived: boolean })[]
+    }>
   >({
     queryKey: ['patients'],
     queryFn: () => {

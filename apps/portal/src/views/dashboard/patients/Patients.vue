@@ -40,8 +40,10 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary />
-        <PatientList />
+        <HomeSummary :summary="summary" />
+        <PatientList
+          :patients-data="patientsQuery.data.value?.data.data ?? []"
+        />
       </div>
     </v-container>
   </v-main>
@@ -49,7 +51,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -57,13 +59,38 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import HomeSummary from '@/components/patients/HomeSummary.vue'
 import PatientList from '@/components/patients/PatientList.vue'
+import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 // const { t } = useI18n<i18nOptions>()
+export interface Summary {
+  total: number
+  active: number
+  archived: number
+}
 
 const authStore = useAuthStore()
 const { user, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
+
+const patientsQuery = usePatients()
+
+const summary = computed((): Summary => {
+  const patients = patientsQuery.data.value?.data.data ?? []
+
+  return patients.reduce(
+    (counts, patient) => {
+      counts.total++
+      if (patient.isArchived) {
+        counts.archived++
+      } else {
+        counts.active++
+      }
+      return counts
+    },
+    { total: 0, active: 0, archived: 0 },
+  )
+})
 </script>
 
 <style scoped lang="scss">

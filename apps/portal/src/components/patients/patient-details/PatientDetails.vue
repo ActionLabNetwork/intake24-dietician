@@ -4,47 +4,45 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>
   </v-main>
-  <v-main v-else class="wrapper">
-    <v-container>
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">Patient details</h1>
-          <h3 class="text subheading">
-            {{ t('profile.subtitle') }}
-          </h3>
-        </div>
-        <div>
-          <v-btn
-            type="submit"
-            color="primary text-capitalize"
-            class="mt-3 mt-sm-0"
-            :loading="updateProfileMutation.isLoading.value"
-            @click="handleSubmit"
-          >
-            {{ t('profile.cta') }}
-          </v-btn>
-        </div>
+  <div v-else class="wrapper">
+    <div
+      class="d-flex flex-column flex-sm-row justify-space-between align-center"
+    >
+      <div>
+        <h1 class="text heading">Patient details</h1>
+        <h3 class="text subheading">
+          {{ t('profile.subtitle') }}
+        </h3>
       </div>
-      <v-divider class="my-10"></v-divider>
-      <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
-        <!-- <ContactDetails />
+      <div>
+        <v-btn
+          type="submit"
+          color="primary text-capitalize"
+          class="mt-3 mt-sm-0"
+          :loading="updateProfileMutation.isLoading.value"
+          @click="handleSubmit"
+        >
+          {{ t('profile.cta') }}
+        </v-btn>
+      </div>
+    </div>
+    <v-divider class="my-10"></v-divider>
+    <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
+      <!-- <ContactDetails />
         <PersonalDetails class="mt-10" /> -->
-        <div class="mt-16">
-          <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
-          <v-btn
-            type="submit"
-            color="primary text-capitalize"
-            class="mt-3"
-            :loading="updateProfileMutation.isLoading.value"
-          >
-            {{ t('profile.cta') }}
-          </v-btn>
-        </div>
-      </v-form>
-    </v-container>
-  </v-main>
+      <div class="mt-16">
+        <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
+        <v-btn
+          type="submit"
+          color="primary text-capitalize"
+          class="mt-3"
+          :loading="updateProfileMutation.isLoading.value"
+        >
+          {{ t('profile.cta') }}
+        </v-btn>
+      </div>
+    </v-form>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -55,7 +53,6 @@ import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import { useUpdateProfile } from '@/mutations/useAuth'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import { VForm } from 'vuetify/lib/components/index.mjs'
 import { usePatientDetails } from '@intake24-dietician/portal/queries/useAuth'
 
@@ -70,17 +67,6 @@ const updateProfileMutation = useUpdateProfile()
 // const $toast = useToast()
 
 const form = ref()
-const profileFormValues = ref<PatientProfileValues>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  emailAddress: '',
-  mobileNumber: '',
-  address: '',
-  avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-})
 
 // const handleProfileDetailsUpdate = (
 //   details: PersonalDetailsFormValues | ShortBioFormValues,
