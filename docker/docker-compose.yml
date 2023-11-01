@@ -63,7 +63,7 @@ services:
       PGWEB_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@i24-dietician-db:${POSTGRES_PORT}/${DB_NAME}?sslmode=disable
     ports:
       - ${PGWEB_PORT}:8081
-    restart: on-failure:3
+    restart: always
 
   redis:
     image: redis:latest

@@ -156,7 +156,22 @@ watch(
   newVal => {
     console.log({ newVal })
     if (!newVal) return
+
     reminderConditions.value = newVal
+
+    // Update radio button
+    frequencyRadio.value = frequencyEndOptions.find(
+      option => option.value === newVal.reminderEnds.type,
+    )!.value
+
+    // Update conditional values
+    if (newVal.reminderEnds.type === 'on') {
+      date.value = new Date(newVal.reminderEnds.date)
+    }
+
+    if (newVal.reminderEnds.type === 'after') {
+      occurencesCount.value = newVal.reminderEnds.occurrences
+    }
   },
   { immediate: true },
 )

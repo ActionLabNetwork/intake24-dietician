@@ -55,14 +55,17 @@
             @update="handlePersonalDetailsUpdate"
           />
           <VisualThemeSelector
+            :default-state="theme"
             class="mt-10"
             @update="handleVisualThemeUpdate"
           />
           <SendAutomatedFeedbackToggle
+            :default-state="sendAutomatedFeedback"
             class="mt-10"
             @update="handleSendAutomatedFeedback"
           />
           <UpdateRecallFrequency
+            :default-state="recallFrequency"
             class="mt-10"
             @update="handleRecallFrequencyUpdate"
           />
