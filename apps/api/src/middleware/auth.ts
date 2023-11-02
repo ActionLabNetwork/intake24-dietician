@@ -10,6 +10,35 @@ import type { TTokenType } from '@intake24-dietician/common/types/auth'
 
 const tokenService = createJwtTokenService()
 
+const getTheSecret = async (
+  surveyID: string,
+  scope: string | null | undefined,
+) => {
+  if (scope !== undefined && scope === 'api_integration') {
+    const response = await fetch(
+      'http://localhost:8080/survey/' + surveyID + '?scope=api_integration',
+      {
+        method: 'GET',
+      },
+    )
+
+    if (!response.ok) {
+      console.log({
+        ok: false,
+        error: new Error(`Failed to fetch secret: ${response.statusText}`),
+      })
+      return undefined
+    }
+
+    const secret: string = await response.text()
+
+    // TODO: Fix in the future to more elegant solution (better way to remove quotes)
+    return secret.trim().replace(/"/g, '')
+  }
+
+  return env.JWT_SECRET
+}
+
 const verifyJwtToken = (
   token: string,
   tokenType: TTokenType = 'access-token',
@@ -60,17 +89,20 @@ const verifyJwtToken = (
     .exhaustive()
 }
 
-export function expressAuthentication(
+export async function expressAuthentication(
   request: express.Request,
   _securityName: string,
   scopes?: string[],
 ) {
-  console.log('I am in the Security middleware');
-  console.log('request.params ', request.params);
-  console.log('scope: ', scopes);
+  console.log('I am in the Security middleware')
+  console.log('request.params ', request.params)
+  console.log('scope: ', scopes)
+
+  const surveyID = request.params['requestSurveyId'] as string
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
-  let secret = env.JWT_SECRET
+  let secret = await getTheSecret(surveyID, scopes ? scopes[0] : null)
+  if (! secret ) secret = env.JWT_SECRET
   if (
     scopes !== undefined &&
     scopes.length !== 0 &&
@@ -78,11 +110,8 @@ export function expressAuthentication(
   ) {
     tokenType = 'api-autorization-token'
     accessToken = request.headers['authorization']?.split(' ')[1]
-    const surveyID = request.params['requestSurveyId'] as string
-    console.log('surveyID: ', surveyID)
   }
 
-  console.log('verification params: ', accessToken, tokenType, secret);
   const decodedAccessToken = verifyJwtToken(accessToken, tokenType, secret)
 
   return new Promise((resolve, reject) => {

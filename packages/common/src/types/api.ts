@@ -65,7 +65,7 @@ export interface IRecallApiService {
 }
 
 export interface ISurveyApiService {
-  getSurveySecretByAlias: (id: string) => Promise<Result<string | null>>
+  getSurveySecretByAlias: (id: string) => Promise <string | null>
 }
 
 export interface IQueryParams {
