@@ -8,6 +8,7 @@ import {
   Post,
   Body,
   Path,
+  Put,
 } from 'tsoa'
 import type {
   IAuthService,
@@ -182,7 +183,56 @@ export class PatientController extends Controller {
       .exhaustive()
   }
 
+  @Put('/')
+  @Security('jwt')
+  public async updatePatient(
+    @Request() request: express.Request,
+    @Body() data: PatientProfileValues & { patientId: number },
+  ) {
+    const { accessToken } = request.cookies
+    const decoded = this.authService.verifyJwtToken(accessToken)
+
+    return match(decoded)
+      .with({ ok: true }, async result => {
+        if (result.value.decoded === null) {
+          this.logger.error('Invalid access token')
+          return this.generateUnauthorizedResponse()
+        }
+
+        if (result.value.tokenExpired) {
+          this.logger.error('Access token has expired. Please login again.')
+          return this.generateExpiredTokenResponse()
+        }
+
+        const patient = await this.userService.updatePatient(
+          result.value.decoded['userId'],
+          data.patientId,
+          data,
+        )
+
+        if (patient.ok) {
+          this.logger.info(
+            'Successfully created patient for dietician',
+            result.value.decoded['userId'],
+          )
+          return { data: { patient } }
+        } else {
+          this.logger.error(
+            'Failed to create patient for dietician',
+            result.value.decoded['userId'],
+          )
+          return this.generateInvalidEmailClientErrorResponse()
+        }
+      })
+      .with({ ok: false }, () => {
+        return this.generateInternalServerErrorResponse()
+      })
+      .exhaustive()
+  }
+
+  // TODO: Probably move this to a shared location, if it's to be used by other controllers too
   private generateUnauthorizedResponse() {
+    this.setStatus(401)
     return {
       error: generateErrorResponse(
         '401',
@@ -193,6 +243,7 @@ export class PatientController extends Controller {
   }
 
   private generateExpiredTokenResponse() {
+    this.setStatus(401)
     return generateErrorResponse(
       '401',
       'Unauthorized',

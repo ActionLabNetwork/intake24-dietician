@@ -1,15 +1,15 @@
-import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
-import Role from '@intake24-dietician/db/models/auth/role.model'
-import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
-import {
+import type DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
+import type Role from '@intake24-dietician/db/models/auth/role.model'
+import type UserRole from '@intake24-dietician/db/models/auth/user-role.model'
+import type {
   DieticianProfileValues,
   PatientProfileValues,
   UserAttributes,
 } from './auth'
 import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
-import User from '@intake24-dietician/db/models/auth/user.model'
-import { Transaction } from '@intake24-dietician/db/connection'
+import type User from '@intake24-dietician/db/models/auth/user.model'
+import type { Transaction } from '@intake24-dietician/db/connection'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -36,6 +36,11 @@ export interface IUserService {
     id: number,
     details: Partial<UserAttributes>,
   ) => Promise<Result<Omit<DieticianProfileValues, 'emailAddress'>>>
+  updatePatient: (
+    dieticianId: number,
+    patientId: number,
+    details: Partial<PatientProfileValues>,
+  ) => Promise<Result<number>>
   deleteUserByIdOrEmail: (idOrEmail: string) => Promise<Result<number>>
   restoreDeletedUserByIdOrEmail: (idOrEmail: string) => Promise<Result<void>>
   createRole: (name: string) => Promise<Result<Role>>

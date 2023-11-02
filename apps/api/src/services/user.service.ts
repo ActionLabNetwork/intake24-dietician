@@ -2,8 +2,8 @@ import type { IUserService } from '@intake24-dietician/common/types/api'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import type { Transaction } from '@intake24-dietician/db/connection';
-import { Op } from '@intake24-dietician/db/connection'
+import type { Transaction } from '@intake24-dietician/db/connection'
+import { Op, sequelize } from '@intake24-dietician/db/connection'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
@@ -97,6 +97,80 @@ export const createUserService = (): IUserService => {
       return { ok: true, value: updatedProfile } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
+    }
+  }
+
+  const updatePatient = async (
+    dieticianId: number,
+    patientId: number,
+    patientDetails: Partial<PatientProfileValues>,
+  ): Promise<Result<number>> => {
+    try {
+      return await sequelize.transaction(async t => {
+        const dietician = await DieticianProfile.findOne({
+          where: { userId: dieticianId },
+          include: [DieticianPatient],
+          transaction: t,
+        })
+
+        if (!dietician) {
+          return { ok: false, error: new Error('Dietician not found') } as const
+        }
+
+        console.log({ dietician })
+
+        const patient = await PatientProfile.findOne({
+          where: { userId: patientId },
+          transaction: t,
+        })
+
+        if (!patient) {
+          return { ok: false, error: new Error('Patient not found') } as const
+        }
+
+        // Update patient profile
+        const updatedCount = await PatientProfile.update(
+          {
+            firstName: patientDetails.firstName ?? patient.firstName,
+            middleName: patientDetails.middleName ?? patient.middleName,
+            lastName: patientDetails.lastName ?? patient.lastName,
+            mobileNumber: patientDetails.mobileNumber ?? patient.mobileNumber,
+            address: patientDetails.address ?? patient.address,
+            age: patientDetails.age ?? patient.age,
+            gender: patientDetails.gender ?? patient.gender,
+            height: patientDetails.height ?? patient.height,
+            weight: patientDetails.weight ?? patient.weight,
+            additionalNotes:
+              patientDetails.additionalNotes ?? patient.additionalNotes,
+            patientGoal: patientDetails.patientGoal ?? patient.patientGoal,
+            theme: patientDetails.theme ?? patient.theme,
+            sendAutomatedFeedback:
+              patientDetails.sendAutomatedFeedback ??
+              patient.sendAutomatedFeedback,
+            recallFrequencyQuantity:
+              patientDetails.recallFrequency?.reminderEvery.quantity ??
+              patient.recallFrequencyQuantity,
+            recallFrequencyUnit:
+              patientDetails.recallFrequency?.reminderEvery.unit ??
+              patient.recallFrequencyUnit,
+            recallFrequencyEnd:
+              patientDetails.recallFrequency?.reminderEnds ??
+              patient.recallFrequencyEnd,
+            avatar: patientDetails.avatar ?? patient.avatar,
+          },
+          { where: { userId: patientId }, transaction: t },
+        )
+
+        return {
+          ok: true,
+          value: updatedCount[0],
+        } as const
+      })
+    } catch (error) {
+      return {
+        ok: false,
+        error: new Error('Patient profile update function failed'),
+      } as const
     }
   }
 
@@ -356,6 +430,7 @@ export const createUserService = (): IUserService => {
     getUserById,
     getUserByEmail,
     updateProfile,
+    updatePatient,
     deleteUserByIdOrEmail,
     restoreDeletedUserByIdOrEmail,
     createRole,

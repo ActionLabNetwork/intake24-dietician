@@ -73,6 +73,7 @@ import { Theme } from '@intake24-dietician/common/types/theme'
 import { Gender, PatientSchema } from '@/schema/patient'
 import { useToast } from 'vue-toast-notification'
 import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
+import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
@@ -80,6 +81,7 @@ import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 const route = useRoute()
 const patientQuery = usePatientById(route.params['id'] as string)
+const updatePatientMutation = useUpdatePatient()
 
 console.log({ patientQuery123: patientQuery.data.value?.data.data })
 
@@ -156,6 +158,7 @@ const handleSubmit = async () => {
   await form.value.validate()
 
   return new Promise((resolve, reject) => {
+    console.log({ aggregatedData: aggregatedData.value })
     // Validate with zod
     const result = PatientSchema.safeParse(aggregatedData.value)
 
@@ -171,6 +174,22 @@ const handleSubmit = async () => {
       reject(new Error('Form validation failed'))
       return
     }
+
+    updatePatientMutation.mutate(
+      {
+        ...aggregatedData.value,
+        patientId: Number(route.params['id']),
+      },
+      {
+        onSuccess: () => {
+          $toast.success('Patient details updated')
+          resolve('Patient details updated')
+        },
+        onError: err => {
+          $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+        },
+      },
+    )
 
     // addPatientMutation.mutate(aggregatedData.value, {
     //   onSuccess: () => {
@@ -212,7 +231,6 @@ watch(
     theme.value = newData.patientProfile.theme
     sendAutomatedFeedback.value = newData.patientProfile.sendAutomatedFeedback
     recallFrequency.value = newData.patientProfile.recallFrequency
-    console.log({ rec: newData.patientProfile.recallFrequency })
   },
   { immediate: true },
 )
