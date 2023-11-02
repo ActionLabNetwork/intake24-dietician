@@ -108,6 +108,7 @@ import { PatientSchema } from '@/schema/patient'
 import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
+import router from '@intake24-dietician/portal/router'
 // const { t } = useI18n<i18nOptions>()
 
 const $toast = useToast()
@@ -217,6 +218,7 @@ const handleSubmit = async () => {
       onSuccess: () => {
         $toast.success('Patient added to records')
         resolve('Patient added to records')
+        router.push('/dashboard/my-patients')
       },
       onError: err => {
         $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)

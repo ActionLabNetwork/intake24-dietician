@@ -186,42 +186,46 @@ const disableSubmitButton = computed(() => {
   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
 })
 
-// eslint-disable-next-line complexity
-watch(user, newUser => {
-  if (newUser) {
-    profileFormValues.value = {
-      firstName: newUser.dieticianProfile.firstName ?? '',
-      middleName: newUser.dieticianProfile.middleName ?? '',
-      lastName: newUser.dieticianProfile.lastName ?? '',
-      emailAddress: newUser.email ?? '',
-      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
-      shortBio: newUser.dieticianProfile.shortBio ?? '',
-      avatar: newUser.dieticianProfile.avatar ?? null,
-      createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
-      updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
-    }
+watch(
+  user,
+  // eslint-disable-next-line complexity
+  newUser => {
+    if (newUser) {
+      profileFormValues.value = {
+        firstName: newUser.dieticianProfile.firstName ?? '',
+        middleName: newUser.dieticianProfile.middleName ?? '',
+        lastName: newUser.dieticianProfile.lastName ?? '',
+        emailAddress: newUser.email ?? '',
+        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+        shortBio: newUser.dieticianProfile.shortBio ?? '',
+        avatar: newUser.dieticianProfile.avatar ?? null,
+        createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
+        updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
+      }
 
-    personalDetailsFormValues.value = {
-      firstName: newUser.dieticianProfile.firstName ?? '',
-      middleName: newUser.dieticianProfile.middleName ?? '',
-      lastName: newUser.dieticianProfile.lastName ?? '',
-      avatar: newUser.dieticianProfile.avatar ?? '',
-    }
+      personalDetailsFormValues.value = {
+        firstName: newUser.dieticianProfile.firstName ?? '',
+        middleName: newUser.dieticianProfile.middleName ?? '',
+        lastName: newUser.dieticianProfile.lastName ?? '',
+        avatar: newUser.dieticianProfile.avatar ?? '',
+      }
 
-    contactDetailsFormValues.value = {
-      emailAddress: newUser.email ?? '',
-      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
-    }
+      contactDetailsFormValues.value = {
+        emailAddress: newUser.email ?? '',
+        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+      }
 
-    shortBioFormValues.value = {
-      shortBio: newUser.dieticianProfile.shortBio ?? '',
+      shortBioFormValues.value = {
+        shortBio: newUser.dieticianProfile.shortBio ?? '',
+      }
     }
-  }
-})
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">
