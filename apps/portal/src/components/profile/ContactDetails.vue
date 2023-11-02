@@ -196,7 +196,7 @@ export interface ContactDetailsFormValues {
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
   email: string
-  handleSubmit: () => Promise<void>
+  handleSubmit: (validate: boolean) => Promise<void>
 }>()
 const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
@@ -256,11 +256,14 @@ const handleVerifyToken = () => {
     {
       onSuccess: async () => {
         try {
-          await props.handleSubmit()
+          await props.handleSubmit(false)
           changeEmailDialog.value = false
+          showVerificationTokenField.value = false
+          verificationToken.value = ''
           errorMsg.value = ''
           currentEmailAddress.value = formValues.value.emailAddress
         } catch (error) {
+          console.log({ error })
           errorMsg.value = 'Error updating email address'
         }
       },

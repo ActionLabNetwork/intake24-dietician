@@ -29,7 +29,7 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
+      <v-form v-if="user" ref="form" @submit.prevent="() => handleSubmit()">
         <PersonalDetails
           v-if="personalDetailsFormValues"
           :default-state="personalDetailsFormValues"
@@ -126,8 +126,9 @@ const handleProfileDetailsUpdate = (
   profileFormValues.value = { ...profileFormValues.value, ...details }
 }
 
-const handleSubmit = async (): Promise<void> => {
-  await form.value.validate()
+const handleSubmit = async (validate = true): Promise<void> => {
+  if (validate) await form.value.validate()
+
   const errors = form.value.errors
 
   return new Promise((resolve, reject) => {

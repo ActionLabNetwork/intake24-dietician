@@ -12,6 +12,7 @@
         <ContactDetails
           :default-state="contactDetailsFormValues"
           mode="Edit"
+          :handle-submit="handleSubmit"
           @update="handleContactDetailsUpdate"
         />
         <PersonalDetails
@@ -154,9 +155,7 @@ const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
   recallFrequency.value = value
 }
 
-const handleSubmit = async () => {
-  await form.value.validate()
-
+const handleSubmit = async (): Promise<void> => {
   return new Promise((resolve, reject) => {
     console.log({ aggregatedData: aggregatedData.value })
     // Validate with zod
@@ -183,7 +182,7 @@ const handleSubmit = async () => {
       {
         onSuccess: () => {
           $toast.success('Patient details updated')
-          resolve('Patient details updated')
+          resolve()
         },
         onError: err => {
           $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
@@ -191,16 +190,7 @@ const handleSubmit = async () => {
       },
     )
 
-    // addPatientMutation.mutate(aggregatedData.value, {
-    //   onSuccess: () => {
-    //     $toast.success('Patient added to records')
-    //     resolve('Patient added to records')
-    //   },
-    //   onError: err => {
-    //     $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-    //   },
-    // })
-    resolve('Updated patient details')
+    resolve()
   })
 }
 

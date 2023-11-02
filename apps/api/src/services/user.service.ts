@@ -139,6 +139,14 @@ export const createUserService = (): IUserService => {
           } as const
         }
 
+        const patientOfDietician = dieticianWithPatient.patients[0]
+
+        // Update email address if needed
+        await patientOfDietician?.update({
+          email:
+            patientDetails.emailAddress ?? patientOfDietician.dataValues.email,
+        })
+
         // Update patient profile
         const updatedCount = await PatientProfile.update(
           {

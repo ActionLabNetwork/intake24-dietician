@@ -427,6 +427,8 @@ export const createAuthService = (
       lock: true,
     })
 
+    console.log({ tokenEntity })
+
     if (!tokenEntity) {
       return { ok: false, error: new Error('Invalid token') } as const
     }

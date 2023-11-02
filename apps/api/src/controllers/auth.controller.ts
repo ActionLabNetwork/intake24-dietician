@@ -37,7 +37,7 @@ export class AuthController extends Controller {
       container.resolve('hashingService'),
       container.resolve('tokenService'),
       container.resolve('emailService'),
-      container.resolve('userService')
+      container.resolve('userService'),
     )
 
     this.logger = container.resolve('createLogger')(AuthController.name)
@@ -468,7 +468,15 @@ export class AuthController extends Controller {
   @Security('jwt')
   public async verifyToken(@Body() data: { token: string }) {
     try {
-      await this.authService.verifyUserToken(data.token, 'change-email')
+      const result = await this.authService.verifyUserToken(
+        data.token,
+        'change-email',
+      )
+      console.log({ result })
+      if (!result.ok) {
+        this.setStatus(400)
+        return { tokenVerified: false, error: result.error.message }
+      }
       return { tokenVerified: true, error: undefined }
     } catch (error) {
       this.setStatus(500)

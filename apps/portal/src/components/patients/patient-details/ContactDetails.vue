@@ -44,7 +44,6 @@
                 autocomplete="given-name"
                 :value="formValues.firstName"
                 :rules="[requiredValidator('First name')]"
-                class="base-input"
                 @update="val => handleFieldUpdate('firstName', val)"
               >
                 <span class="input-label">
@@ -123,7 +122,6 @@
                 autocomplete="given-name"
                 :value="formValues.firstName"
                 :rules="[requiredValidator('First name')]"
-                class="base-input"
                 @update="val => handleFieldUpdate('firstName', val)"
               >
                 <span class="input-label">
@@ -184,23 +182,121 @@
             </BaseInput>
           </v-col>
           <v-col cols="12" md="4">
-            <!-- Email address -->
-            <BaseInput
-              type="email"
-              name="emailAddress"
-              autocomplete="email"
-              :value="formValues.emailAddress"
-              :rules="[emailValidator]"
-              class="base-input"
-              @update="newVal => handleFieldUpdate('emailAddress', newVal)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.contactDetails.email.label') }}
-              </span>
-              <span class="input-label suffix">
-                {{ t('profile.form.contactDetails.email.labelSuffix') }}
-              </span>
-            </BaseInput>
+            <div v-if="mode === 'Add'">
+              <!-- Email address -->
+              <BaseInput
+                type="email"
+                name="emailAddress"
+                autocomplete="email"
+                :value="formValues.emailAddress"
+                :rules="[emailValidator]"
+                @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+              >
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.email.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{ t('profile.form.contactDetails.email.labelSuffix') }}
+                </span>
+              </BaseInput>
+            </div>
+            <div v-if="mode === 'Edit'">
+              <!-- Email address -->
+              <BaseInput
+                type="email"
+                name="emailAddress"
+                autocomplete="email"
+                readonly
+                :value="currentEmailAddress"
+                :rules="[emailValidator]"
+                suffix-icon="mdi-mail"
+                :handle-icon-click="
+                  () => {
+                    changeEmailDialog = true
+                  }
+                "
+                @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+              >
+                <span class="input-label">
+                  {{ t('profile.form.contactDetails.email.label') }}
+                </span>
+                <span class="input-label suffix">
+                  {{ t('profile.form.contactDetails.email.labelSuffix') }}
+                </span>
+              </BaseInput>
+              <v-dialog v-model="changeEmailDialog" max-width="90vw">
+                <v-card>
+                  <v-card-title>Change Email</v-card-title>
+                  <v-card-text>
+                    <BaseInput
+                      type="email"
+                      :value="currentEmailAddress"
+                      readonly
+                    >
+                      <span class="input-label">
+                        {{ t('profile.form.contactDetails.email.label') }}
+                      </span>
+                    </BaseInput>
+                    <BaseInput
+                      type="email"
+                      :value="formValues.emailAddress"
+                      @update="
+                        newVal => handleFieldUpdate('emailAddress', newVal)
+                      "
+                    >
+                      <span class="input-label">
+                        New {{ t('profile.form.contactDetails.email.label') }}
+                      </span>
+                    </BaseInput>
+                    <v-btn
+                      size="small"
+                      type="submit"
+                      color="secondary text-capitalize"
+                      class="mb-10"
+                      :disabled="showVerificationTokenField"
+                      :loading="generateTokenMutation.isLoading.value"
+                      @click="handleSendVerificationToken"
+                    >
+                      {{
+                        showVerificationTokenField
+                          ? 'Verification token sent'
+                          : 'Send verification token'
+                      }}
+                    </v-btn>
+                    <v-text-field
+                      v-if="showVerificationTokenField"
+                      v-model="verificationToken"
+                      label="Enter Verification Token"
+                      required
+                    ></v-text-field>
+                    <v-alert
+                      v-if="errorMsg"
+                      type="error"
+                      dense
+                      border="top"
+                      variant="outlined"
+                    >
+                      {{ errorMsg }}
+                    </v-alert>
+                  </v-card-text>
+                  <v-card-actions>
+                    <v-btn
+                      :disabled="!verificationToken"
+                      color="primary"
+                      @click="handleVerifyToken"
+                    >
+                      Verify Token
+                    </v-btn>
+                    <v-btn
+                      color="grey"
+                      @click="() => (changeEmailDialog = false)"
+                    >
+                      Close
+                    </v-btn>
+                  </v-card-actions>
+                </v-card>
+              </v-dialog>
+            </div>
           </v-col>
           <v-col cols="12" md="4">
             <!-- Address -->
@@ -232,6 +328,10 @@ import { requiredValidator, emailValidator } from '@/validators/auth'
 import { mobileNumberValidator } from '@intake24-dietician/portal/validators/auth/profile'
 import { ref, watch } from 'vue'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import {
+  useGenerateToken,
+  useVerifyToken,
+} from '@intake24-dietician/portal/mutations/useAuth'
 
 export interface ContactDetailsFormValues {
   firstName: string
@@ -245,6 +345,7 @@ export interface ContactDetailsFormValues {
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
+  handleSubmit?: () => Promise<void>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
@@ -257,6 +358,16 @@ const { t } = useI18n<i18nOptions>()
 
 const imageUpload = ref()
 const avatarImage = ref()
+
+// Email change refs and composables
+const generateTokenMutation = useGenerateToken()
+const verifyTokenMutation = useVerifyToken()
+
+const currentEmailAddress = ref('')
+const changeEmailDialog = ref(false)
+const verificationToken = ref('')
+const showVerificationTokenField = ref(false)
+const errorMsg = ref('')
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<ContactDetailsFormValues>({ ...props.defaultState })
@@ -288,10 +399,50 @@ const handleImageUpload = () => {
   }
 }
 
+const handleSendVerificationToken = () => {
+  generateTokenMutation.mutate(
+    {
+      currentEmail: currentEmailAddress.value,
+      newEmail: formValues.value.emailAddress,
+    },
+    {
+      onSuccess() {
+        showVerificationTokenField.value = true
+        errorMsg.value = ''
+      },
+      onError() {
+        errorMsg.value =
+          'Error sending verification token. Please try another email address.'
+      },
+    },
+  )
+}
+
+const handleVerifyToken = () => {
+  verifyTokenMutation.mutate(
+    { token: verificationToken.value },
+    {
+      onSuccess: async () => {
+        try {
+          if (props.handleSubmit) await props.handleSubmit()
+
+          changeEmailDialog.value = false
+          errorMsg.value = ''
+          currentEmailAddress.value = formValues.value.emailAddress
+        } catch (error) {
+          errorMsg.value = 'Error updating email address'
+        }
+      },
+      onError() {
+        errorMsg.value = 'Invalid verification token'
+      },
+    },
+  )
+}
+
 watch(
   () => props.defaultState,
   newDefaultState => {
-    console.log({ newDefaultState })
     formValues.value = {
       ...formValues.value,
       firstName: newDefaultState.firstName,
@@ -299,6 +450,10 @@ watch(
     }
     avatarImage.value =
       newDefaultState.avatar ?? getDefaultAvatar(newDefaultState.emailAddress)
+
+    if (!currentEmailAddress.value) {
+      currentEmailAddress.value = newDefaultState.emailAddress
+    }
   },
   { immediate: true },
 )
