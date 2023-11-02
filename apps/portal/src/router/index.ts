@@ -63,9 +63,71 @@ const routes = [
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
+        path: '',
+        name: 'Dashboard',
+        component: () => import('@/views/dashboard/patients/Patients.vue'),
+        meta: {
+          requiresAuth: true,
+        },
+      } as const,
+      {
         path: 'my-patients',
         name: 'My Patients',
-        component: () => import('@/views/dashboard/Patients.vue'),
+        component: () => import('@/views/dashboard/patients/Patients.vue'),
+        meta: {
+          requiresAuth: true,
+        } as const,
+      },
+      // TODO: Replace this with dynamic route once backend is done
+      {
+        path: 'my-patients/patient-records/:id',
+        name: 'Patient records',
+        component: () =>
+          import('@/views/dashboard/patients/PatientRecords.vue'),
+        children: [
+          // {
+          //   path: 'feedback-records',
+          //   name: 'Feedback Records',
+          //   component: () =>
+          //     import(
+          //       '@/components/patients/feedback-records/FeedbackRecords.vue'
+          //     ),
+          //   meta: {
+          //     requiresAuth: true,
+          //   } as const,
+          // },
+          {
+            path: 'feedback-records',
+            name: 'Feedback Records',
+            component: () =>
+              import(
+                '@/components/patients/feedback-records/FeedbackRecords.vue'
+              ),
+            meta: {
+              requiresAuth: true,
+            } as const,
+          },
+          {
+            path: 'patient-details',
+            name: 'Patient Details',
+            component: () =>
+              import(
+                '@/components/patients/patient-details/PatientDetails.vue'
+              ),
+            meta: {
+              requiresAuth: true,
+            } as const,
+          },
+        ],
+        meta: {
+          requiresAuth: true,
+        } as const,
+      },
+      {
+        path: 'my-patients/add-patient',
+        name: 'Add patient',
+        component: () => import('@/views/dashboard/patients/AddPatient.vue'),
+
         meta: {
           requiresAuth: true,
         } as const,

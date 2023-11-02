@@ -8,9 +8,58 @@ import {
   BelongsTo,
 } from 'sequelize-typescript'
 import User from './user.model'
+import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+
+export interface PatientProfileAttributes {
+  userId: number
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  address: string
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalDetails?: unknown
+  additionalNotes: string
+  patientGoal: string
+  theme: string
+  sendAutomatedFeedback: boolean
+  recallFrequencyQuantity: number
+  recallFrequencyUnit: string
+  recallFrequencyEnd: ReminderConditions['reminderEnds']
+  avatar: string | null
+  user: User
+}
+
+interface PatientProfileCreationAttributes {
+  userId: number
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  address: string
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalDetails?: unknown
+  additionalNotes: string
+  patientGoal: string
+  theme: string
+  sendAutomatedFeedback: boolean
+  recallFrequencyQuantity: number
+  recallFrequencyUnit: string
+  recallFrequencyEnd: unknown
+  avatar: string | null
+}
 
 @Table
-class PatientProfile extends Model {
+class PatientProfile extends Model<
+  PatientProfileAttributes,
+  PatientProfileCreationAttributes
+> {
   @PrimaryKey
   @ForeignKey(() => User)
   @Column
@@ -50,7 +99,25 @@ class PatientProfile extends Model {
   public declare additionalNotes: string
 
   @Column
-  public declare goals: string
+  public declare patientGoal: string
+
+  @Column
+  public declare theme: string
+
+  @Column
+  public declare sendAutomatedFeedback: boolean
+
+  @Column
+  public declare recallFrequencyQuantity: number
+
+  @Column
+  public declare recallFrequencyUnit: string
+
+  @Column(DataType.JSONB)
+  public declare recallFrequencyEnd: ReminderConditions['reminderEnds']
+
+  @Column(DataType.TEXT)
+  public declare avatar: string | null
 
   @BelongsTo(() => User)
   public declare user: User

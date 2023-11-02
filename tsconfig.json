@@ -1,13 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "CommonJS",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "baseUrl": "./",
     "paths": {},
     "types": ["node", "jest", "jest-extended"],
-    "allowJs": false,
+    "allowJs": true,
     "sourceMap": true,
     "outDir": "dist",
     "esModuleInterop": true,
@@ -32,6 +32,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
   }
 }

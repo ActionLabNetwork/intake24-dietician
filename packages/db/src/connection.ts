@@ -1,6 +1,6 @@
-import mongoose from 'mongoose';
+import mongoose from 'mongoose'
 import { Sequelize } from 'sequelize-typescript'
-import { Op } from 'sequelize'
+import { Op, Transaction } from 'sequelize'
 import { getDBUrl, getMongoDBUrl, env } from './config/env'
 
 import Redis from 'ioredis'
@@ -16,7 +16,7 @@ const redis = new Redis({
   host: env.REDIS_CONNECTION_HOST,
 })
 
-const connectMongo = async() =>{
+const connectMongo = async () => {
   try {
     await mongoose.connect(getMongoDBUrl(), {
       keepAlive: true,
@@ -51,4 +51,12 @@ const connectRedis = async () => {
   }
 }
 
-export { sequelize, Op, connectPostgres, redis, connectRedis, connectMongo }
+export {
+  sequelize,
+  Op,
+  Transaction,
+  connectPostgres,
+  redis,
+  connectRedis,
+  connectMongo,
+}

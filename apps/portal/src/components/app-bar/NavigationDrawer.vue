@@ -13,7 +13,7 @@
       :title="`${user?.dieticianProfile.firstName} ${user?.dieticianProfile.lastName}`"
     ></v-list-item>
     <v-divider></v-divider>
-    <v-list nav active-color="primary">
+    <v-list nav color="primary">
       <v-list-item
         v-for="item in navItems"
         :key="item.value"
@@ -39,6 +39,7 @@ import router from '@/router'
 import { useProfile } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/vue-query'
 import { getInitials, getFullName } from '@/utils/profile'
+import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 const props = defineProps<{ drawer: boolean }>()
 const emit = defineEmits<{ change: [val: boolean] }>()
@@ -47,8 +48,11 @@ const queryClient = useQueryClient()
 queryClient.invalidateQueries({ queryKey: ['auth'] })
 
 const profileQuery = useProfile()
+const patientsQuery = usePatients()
 const logoutMutation = useLogout()
 const user = ref(profileQuery.data.value?.data.data.user)
+
+console.log({ patientsQuery })
 
 const navItems = [
   {
@@ -98,6 +102,22 @@ watch(
       _user.value.initials = getInitials(firstName, lastName)
       _user.value.fullName = getFullName(firstName, lastName)
       _user.value.email = email ?? ''
+    }
+  },
+)
+
+watch(
+  () => profileQuery.isError.value,
+  isError => {
+    if (isError) {
+      logoutMutation.mutate(
+        {},
+        {
+          onSuccess: () => {
+            router.push({ path: '/auth/login' })
+          },
+        },
+      )
     }
   },
 )

@@ -6,18 +6,18 @@ import {
   connectRedis,
   connectMongo,
 } from '@intake24-dietician/db/connection'
-// import initJobs from './jobs/queue'
+import initJobs from './jobs/queue'
 
-const port = env.API_PORT || 3005
+const port = env.AUTH_API_PORT || 3000
 
 Promise.all([connectPostgres(), connectRedis(), connectMongo()])
   .then(async () => {
-    console.log('✅ Connected to Postgres and Redis and Mongo')
-    // ;(async () => {
-    //   await initJobs().catch(() => {})
-    // })()
+    console.log('✅ Connected to Postgres, Redis and Mongo')
+    ;(async () => {
+      await initJobs().catch(() => {})
+    })()
     app.listen(port, () => {
-      console.log(`Auth listening at http://localhost:${port}`)
+      console.log(`API listening at http://localhost:${port}`)
     })
   })
   .catch(error => {

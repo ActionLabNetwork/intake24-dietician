@@ -25,6 +25,9 @@ const schema = z.object({
   AUTH_API_VERIFY_TOKEN_URI: withDevDefault(z.string(), '/auth/verify-token'),
   AUTH_API_UPLOAD_AVATAR: withDevDefault(z.string(), '/auth/upload-avatar'),
   AUTH_API_GET_AVATAR: withDevDefault(z.string(), '/auth/avatar'),
+  AUTH_API_GET_PATIENTS: withDevDefault(z.string(), '/patients'),
+  AUTH_API_CREATE_PATIENT: withDevDefault(z.string(), '/patients'),
+  AUTH_API_UPDATE_PATIENT: withDevDefault(z.string(), '/patients'),
 })
 
 const parsed = schema.safeParse(process.env)

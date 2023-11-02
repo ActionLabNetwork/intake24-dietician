@@ -67,13 +67,13 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
   @HasMany(() => Token)
   public declare resetToken: Token[]
 
-  @BelongsToMany(() => Role, { through: () => UserRole })
+  @BelongsToMany(() => Role, () => UserRole, 'userId', 'roleId')
   public declare roles: (Role & { UserRole: UserRole })[]
 
-  @BelongsToMany(() => User, { through: () => DieticianPatient })
+  @BelongsToMany(() => User, () => DieticianPatient, 'patientId', 'dieticianId')
   public declare dieticians: (User & { DieticianPatient: DieticianPatient })[]
 
-  @BelongsToMany(() => User, { through: () => DieticianPatient })
+  @BelongsToMany(() => User, () => DieticianPatient, 'dieticianId', 'patientId')
   public declare patients: (User & { DieticianPatient: DieticianPatient })[]
 
   @HasOne(() => DieticianProfile)

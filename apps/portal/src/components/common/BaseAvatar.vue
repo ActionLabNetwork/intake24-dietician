@@ -57,8 +57,6 @@ watch(data, newData => {
 
     user.value = newData.data.data.user
 
-    console.log({ newData: newData.data.data.user })
-
     _user.value.initials = getInitials(firstName, lastName)
     _user.value.fullName = getFullName(firstName, lastName)
     _user.value.email = email ?? ''

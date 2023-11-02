@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column">
-    <div class="form-label pl-2 pb-2">
+    <div :class="['form-label pb-2', labelClass]">
       <slot />
     </div>
     <v-text-field
@@ -16,6 +16,7 @@
       :model-value="value"
       :rules="rules"
       :readonly="readonly"
+      :suffix="suffix"
       @input="updateValue"
       @click:append-inner="handleIconClick"
       @click:append="handleOuterIconClick"
@@ -29,12 +30,14 @@ defineProps<{
   type: HTMLInputElement['type']
   placeholder?: string
   autocomplete?: HTMLInputElement['autocomplete']
+  suffix?: string
   suffixIcon?: string
   suffixIconOuter?: string
   name?: string
-  value?: HTMLInputElement['value']
+  value?: string | number
   rules?: ((value: string) => boolean | string)[]
   readonly?: boolean
+  labelClass?: string
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()

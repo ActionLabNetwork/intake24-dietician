@@ -5,7 +5,11 @@ import { UserAttributesWithDieticianProfile } from '@intake24-dietician/common/t
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<UserAttributesWithDieticianProfile | null>(null)
-  const { data, isLoading: isProfileLoading } = useProfile()
+  const {
+    data,
+    isLoading: isProfileLoading,
+    isSuccess: profileQuerySucceeded,
+  } = useProfile()
 
   watch(data, newVal => {
     if (newVal) {
@@ -13,5 +17,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   })
 
-  return { user, isProfileLoading }
+  return { user, isProfileLoading, profileQuerySucceeded }
 })

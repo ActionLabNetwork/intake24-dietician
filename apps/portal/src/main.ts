@@ -13,16 +13,21 @@ import { i18n } from '@intake24-dietician/i18n/index'
 
 // Plugins
 import { registerPlugins } from './plugins'
-import { VueQueryPlugin } from '@tanstack/vue-query'
-// import { useToast } from 'vue-toast-notification'
-// import 'vue-toast-notification/dist/theme-sugar.css'
+import { VueQueryPlugin, VueQueryPluginOptions } from '@tanstack/vue-query'
+
+const vueQueryPluginOptions: VueQueryPluginOptions = {
+  queryClientConfig: {
+    defaultOptions: {
+      queries: {
+        refetchOnWindowFocus: false,
+      },
+    },
+  },
+}
 
 const app = createApp(App)
 registerPlugins(app)
 
 app.use(i18n)
-app.use(VueQueryPlugin)
+app.use(VueQueryPlugin, vueQueryPluginOptions)
 app.mount('#app')
-
-// const $toast = useToast()
-// let instance = $toast.success('You did it!')

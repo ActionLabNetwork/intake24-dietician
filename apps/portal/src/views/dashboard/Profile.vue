@@ -1,7 +1,7 @@
 <template>
-  <v-main v-if="isProfileLoading" align="center">
+  <v-main v-if="isProfileLoading && !profileQuerySucceeded" align="center">
     <v-container>
-      <v-progress-circular indeterminate></v-progress-circular>
+      <v-progress-circular indeterminate />
     </v-container>
   </v-main>
   <v-main v-else class="wrapper">
@@ -31,21 +31,24 @@
       <v-divider class="my-10"></v-divider>
       <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
         <PersonalDetails
-          :user="user"
-          :profileFormValues="profileFormValues"
+          v-if="personalDetailsFormValues"
+          :default-state="personalDetailsFormValues"
+          :email="user.email"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ContactDetails
-          :user="user"
-          :profileFormValues="profileFormValues"
+          v-if="contactDetailsFormValues"
           class="mt-10"
+          :default-state="contactDetailsFormValues"
+          :email="user.email"
           :handleSubmit="handleSubmit"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ShortBio
+          v-if="shortBioFormValues"
           class="mt-16"
           :user="user"
-          :profileFormValues="profileFormValues"
+          :default-state="shortBioFormValues"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <div class="mt-16">
@@ -73,12 +76,11 @@ import PersonalDetails, {
 import ContactDetails, {
   ContactDetailsFormValues,
 } from '@/components/profile/ContactDetails.vue'
-import ShortBio from '@/components/profile/ShortBio.vue'
+import ShortBio, { ShortBioFormValues } from '@/components/profile/ShortBio.vue'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
-import { ShortBioFormValues } from '@/components/profile/ShortBio.vue'
 import { useUpdateProfile, useUploadAvatar } from '@/mutations/useAuth'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -89,7 +91,7 @@ import { VForm } from 'vuetify/lib/components/index.mjs'
 const { t } = useI18n<i18nOptions>()
 
 const authStore = useAuthStore()
-const { user, isProfileLoading } = storeToRefs(authStore)
+const { user, isProfileLoading, profileQuerySucceeded } = storeToRefs(authStore)
 
 const updateProfileMutation = useUpdateProfile()
 const uploadAvatarMutation = useUploadAvatar()
@@ -110,6 +112,10 @@ const profileFormValues = ref<DieticianProfileValues>({
   createdAt: new Date(),
   updatedAt: new Date(),
 })
+
+const personalDetailsFormValues = ref<PersonalDetailsFormValues>()
+const contactDetailsFormValues = ref<ContactDetailsFormValues>()
+const shortBioFormValues = ref<ShortBioFormValues>()
 
 const handleProfileDetailsUpdate = (
   details:
@@ -180,19 +186,40 @@ const disableSubmitButton = computed(() => {
   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
 })
 
+// eslint-disable-next-line complexity
 watch(user, newUser => {
-  profileFormValues.value = {
-    firstName: newUser?.dieticianProfile.firstName ?? '',
-    middleName: newUser?.dieticianProfile.middleName ?? '',
-    lastName: newUser?.dieticianProfile.lastName ?? '',
-    emailAddress: newUser?.email ?? '',
-    mobileNumber: newUser?.dieticianProfile.mobileNumber ?? '',
-    businessNumber: newUser?.dieticianProfile.businessNumber ?? '',
-    businessAddress: newUser?.dieticianProfile.businessAddress ?? '',
-    shortBio: newUser?.dieticianProfile.shortBio ?? '',
-    avatar: newUser?.dieticianProfile.avatar ?? null,
-    createdAt: newUser?.dieticianProfile.createdAt ?? new Date(),
-    updatedAt: newUser?.dieticianProfile.updatedAt ?? new Date(),
+  if (newUser) {
+    profileFormValues.value = {
+      firstName: newUser.dieticianProfile.firstName ?? '',
+      middleName: newUser.dieticianProfile.middleName ?? '',
+      lastName: newUser.dieticianProfile.lastName ?? '',
+      emailAddress: newUser.email ?? '',
+      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+      shortBio: newUser.dieticianProfile.shortBio ?? '',
+      avatar: newUser.dieticianProfile.avatar ?? null,
+      createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
+      updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
+    }
+
+    personalDetailsFormValues.value = {
+      firstName: newUser.dieticianProfile.firstName ?? '',
+      middleName: newUser.dieticianProfile.middleName ?? '',
+      lastName: newUser.dieticianProfile.lastName ?? '',
+      avatar: newUser.dieticianProfile.avatar ?? '',
+    }
+
+    contactDetailsFormValues.value = {
+      emailAddress: newUser.email ?? '',
+      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+    }
+
+    shortBioFormValues.value = {
+      shortBio: newUser.dieticianProfile.shortBio ?? '',
+    }
   }
 })
 </script>

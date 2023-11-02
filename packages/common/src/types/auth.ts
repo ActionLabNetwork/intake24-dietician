@@ -1,15 +1,22 @@
 import type { ApiResponse } from '@intake24-dietician/common/types/api'
 import type { JwtPayload } from 'jsonwebtoken'
 import type { Result } from './utils'
+import type { Theme } from './theme'
+import type { ReminderConditions } from './reminder'
 
 export interface UserAttributes {
   id: number
   email: string
   password: string
+  isVerified: boolean
 }
 
 export interface UserAttributesWithDieticianProfile extends UserAttributes {
   dieticianProfile: DieticianProfileValues
+}
+
+export interface UserAttributesWithPatientProfile extends UserAttributes {
+  patientProfile: PatientProfileValues
 }
 
 export interface UserWithToken {
@@ -51,6 +58,12 @@ export interface IAuthService {
     email: string,
     password: string,
   ) => Promise<Result<(UserWithToken & { jti: string }) | null>>
+  createPatient: (
+    dieticianId: number,
+    email: string,
+    password: string,
+    patientDetails: PatientProfileValues,
+  ) => Promise<Result<UserAttributes | null>>
   forgotPassword: (email: string) => Promise<Result<string>>
   resetPassword: (token: string, password: string) => Promise<Result<string>>
   refreshAccessToken: (refreshToken: string) => Promise<Result<UserWithToken>>
@@ -84,6 +97,9 @@ export interface IAuthService {
     token: string,
   ) => Promise<Result<UserWithToken>>
   uploadAvatar: (accessToken: string, buffer: string) => Promise<Result<string>>
+  verifyJwtToken: (
+    token: string,
+  ) => Result<{ tokenExpired: boolean; decoded: JwtPayload | null }>
 }
 
 export interface ITokenService {
@@ -112,8 +128,29 @@ export interface DieticianProfileValues {
   businessAddress: string
   shortBio: string
   avatar: string | null
-  updatedAt: Date
-  createdAt: Date
+  updatedAt?: Date
+  createdAt?: Date
+}
+
+export interface PatientProfileValues {
+  firstName: string
+  middleName: string
+  lastName: string
+  mobileNumber: string
+  emailAddress: string
+  address: string
+  avatar: string | null
+  age: number
+  gender: string
+  height: number
+  weight: number
+  additionalNotes: string
+  patientGoal: string
+  theme: Theme
+  sendAutomatedFeedback: boolean
+  recallFrequency: ReminderConditions
+  updatedAt?: Date
+  createdAt?: Date
 }
 
 export type TokenActionType =

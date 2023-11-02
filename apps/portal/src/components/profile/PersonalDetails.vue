@@ -50,7 +50,7 @@
                 class="base-input"
                 :handle-icon-click="
                   () => {
-                    formValues.firstName = user.dieticianProfile.firstName
+                    formValues.firstName = props.defaultState.firstName
                     emit('update', { ...formValues })
                   }
                 "
@@ -71,7 +71,7 @@
                 suffix-icon="mdi-restore"
                 :handle-icon-click="
                   () => {
-                    formValues.middleName = user.dieticianProfile.middleName
+                    formValues.middleName = props.defaultState.middleName
                     emit('update', { ...formValues })
                   }
                 "
@@ -90,7 +90,7 @@
                 suffix-icon="mdi-restore"
                 :handle-icon-click="
                   () => {
-                    formValues.lastName = user.dieticianProfile.lastName
+                    formValues.lastName = props.defaultState.lastName
                     emit('update', { ...formValues })
                   }
                 "
@@ -150,7 +150,7 @@
                 class="base-input"
                 :handle-icon-click="
                   () => {
-                    formValues.firstName = user.dieticianProfile.firstName
+                    formValues.firstName = props.defaultState.firstName
                     emit('update', { ...formValues })
                   }
                 "
@@ -171,7 +171,7 @@
                 suffix-icon="mdi-restore"
                 :handle-icon-click="
                   () => {
-                    formValues.middleName = user.dieticianProfile.middleName
+                    formValues.middleName = props.defaultState.middleName
                     emit('update', { ...formValues })
                   }
                 "
@@ -190,7 +190,7 @@
                 suffix-icon="mdi-restore"
                 :handle-icon-click="
                   () => {
-                    formValues.lastName = user.dieticianProfile.lastName
+                    formValues.lastName = props.defaultState.lastName
                     emit('update', { ...formValues })
                   }
                 "
@@ -218,10 +218,6 @@ import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { requiredValidator } from '@/validators/auth'
-import {
-  DieticianProfileValues,
-  UserAttributesWithDieticianProfile,
-} from '@intake24-dietician/common/types/auth'
 import { onMounted, ref } from 'vue'
 import { getDefaultAvatar } from '@/utils/profile'
 
@@ -233,8 +229,8 @@ export interface PersonalDetailsFormValues {
 }
 
 const props = defineProps<{
-  user: UserAttributesWithDieticianProfile
-  profileFormValues: DieticianProfileValues
+  defaultState: PersonalDetailsFormValues
+  email: string
 }>()
 const emit = defineEmits<{
   update: [value: PersonalDetailsFormValues]
@@ -248,16 +244,11 @@ const imageUpload = ref()
 const avatarImage = ref('')
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<PersonalDetailsFormValues>({
-  firstName: props.user.dieticianProfile.firstName,
-  middleName: props.user.dieticianProfile.middleName ?? '',
-  lastName: props.user.dieticianProfile.lastName ?? '',
-  avatar: props.user.dieticianProfile.avatar ?? '',
-})
+const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
 
 onMounted(() => {
-  const imageSrc = props.user.dieticianProfile.avatar
-  avatarImage.value = imageSrc || getDefaultAvatar(props.user.email)
+  const imageSrc = props.defaultState.avatar
+  avatarImage.value = imageSrc || getDefaultAvatar(props.email)
 })
 
 const handleFieldUpdate = useDebounceFn(

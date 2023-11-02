@@ -19,7 +19,6 @@
     "test:integration:coverage": "pnpm --filter * test:integration:coverage"
   },
   "private": true,
-  "type": "module",
   "engines": {
     "node": ">=18"
   },

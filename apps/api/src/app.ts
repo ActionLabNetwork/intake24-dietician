@@ -2,7 +2,7 @@ import type {
   Response as ExResponse,
   Request as ExRequest,
   NextFunction,
-} from 'express'
+} from 'express';
 import express from 'express'
 import bodyParser from 'body-parser'
 import { RegisterRoutes } from '../build/routes'
@@ -14,6 +14,7 @@ import multer from 'multer'
 import type { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const app = express()
+
 app.use(bodyParser.json())
 app.use(cookieParser())
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
@@ -21,7 +22,7 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 })
 app.use(
   cors({
-    origin: 'http://localhost:3001', // TODO: Change to ENV variable
+    origin: 'http://localhost:3001',
     allowedHeaders:
       'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
     exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',
@@ -29,6 +30,7 @@ app.use(
   }),
 )
 app.use(multer().single('file'))
+// app.use(pino({ logger: createLogger() }))
 
 RegisterRoutes(app)
 
@@ -39,7 +41,6 @@ app.use((_req, res: ExResponse) => {
   })
 })
 
-
 // TSOA Error Handler
 app.use(
   (
@@ -49,7 +50,6 @@ app.use(
     next: NextFunction,
     // eslint-disable-next-line max-params
   ): ExResponse | undefined => {
-    console.log({ err, type: typeof err })
     if (err instanceof ValidateError) {
       console.warn(`Caught Validation Error for ${req.path}:`, err.fields)
       return res.status(422).json({
@@ -59,7 +59,7 @@ app.use(
     }
     if (err instanceof Error) {
       return res.status(500).json({
-        message: 'Internal Server Errorzz',
+        message: 'Internal Server Error',
       })
     }
 
