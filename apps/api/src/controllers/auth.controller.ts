@@ -472,7 +472,7 @@ export class AuthController extends Controller {
         data.token,
         'change-email',
       )
-      console.log({ result })
+
       if (!result.ok) {
         this.setStatus(400)
         return { tokenVerified: false, error: result.error.message }

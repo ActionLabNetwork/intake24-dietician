@@ -32,6 +32,7 @@ export const createUserService = (): IUserService => {
         where: { id },
         include: [DieticianProfile, PatientProfile],
         attributes: { exclude: ['password'] },
+        paranoid: false
       })
 
       // Format patient profile

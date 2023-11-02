@@ -39,7 +39,11 @@ export const usePatientById = (userId: string) => {
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
-    AxiosResponse<{ data: Omit<UserAttributesWithPatientProfile, 'password'> }>
+    AxiosResponse<{
+      data: Omit<UserAttributesWithPatientProfile, 'password'> & {
+        deletionDate: Date
+      }
+    }>
   >({
     queryKey: [userId],
     queryFn: async () => {

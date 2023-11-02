@@ -10,7 +10,7 @@
     </p>
     <v-card
       class="card rounded-lg px-4 d-flex justify-space-between align-center mt-5"
-      width="75%"
+      width="100%"
       flat
     >
       <div>Send automated feedback?</div>

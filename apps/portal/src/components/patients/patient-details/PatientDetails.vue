@@ -6,6 +6,15 @@
       <div>
         <h1 class="text heading">Patient details</h1>
       </div>
+      <div>
+        <span class="text patient-status">Patient status: </span>
+        <v-chip
+          variant="flat"
+          :color="!!patient?.deletionDate ? 'neutral' : 'success'"
+          :text="!!patient?.deletionDate ? 'Archived' : 'Active'"
+        >
+        </v-chip>
+      </div>
     </div>
     <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
       <div>
@@ -83,8 +92,6 @@ import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 const route = useRoute()
 const patientQuery = usePatientById(route.params['id'] as string)
 const updatePatientMutation = useUpdatePatient()
-
-console.log({ patientQuery123: patientQuery.data.value?.data.data })
 
 const $toast = useToast()
 
@@ -194,6 +201,10 @@ const handleSubmit = async (): Promise<void> => {
   })
 }
 
+const patient = computed(() => {
+  return patientQuery.data.value?.data.data
+})
+
 watch(
   () => patientQuery.data.value?.data.data,
   newData => {
@@ -248,10 +259,10 @@ watch(
 }
 .text {
   padding-bottom: 0.5rem;
+  font-family: Roboto;
 
   &.heading {
     color: #000;
-    font-family: Roboto;
     font-size: 24px;
     font-style: normal;
     font-weight: 600;
@@ -260,12 +271,19 @@ watch(
 
   &.subheading {
     color: #555;
-    font-family: Roboto;
     font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 140%; /* 19.6px */
     letter-spacing: 0.14px;
+  }
+
+  &.patient-status {
+    color: #555;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
   }
 }
 </style>

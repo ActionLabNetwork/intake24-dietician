@@ -263,7 +263,6 @@ const handleVerifyToken = () => {
           errorMsg.value = ''
           currentEmailAddress.value = formValues.value.emailAddress
         } catch (error) {
-          console.log({ error })
           errorMsg.value = 'Error updating email address'
         }
       },
