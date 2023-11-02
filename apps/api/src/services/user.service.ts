@@ -106,57 +106,70 @@ export const createUserService = (): IUserService => {
     patientDetails: Partial<PatientProfileValues>,
   ): Promise<Result<number>> => {
     try {
+      // eslint-disable-next-line complexity
       return await sequelize.transaction(async t => {
-        const dietician = await DieticianProfile.findOne({
-          where: { userId: dieticianId },
-          include: [DieticianPatient],
-          transaction: t,
+        const dieticianWithPatient = await User.findByPk(dieticianId, {
+          include: [
+            {
+              model: User,
+              as: 'patients',
+              through: { attributes: [] },
+              where: { id: patientId },
+              include: [PatientProfile],
+              paranoid: false,
+            },
+          ],
         })
 
-        if (!dietician) {
+        if (!dieticianWithPatient) {
           return { ok: false, error: new Error('Dietician not found') } as const
         }
 
-        console.log({ dietician })
-
-        const patient = await PatientProfile.findOne({
-          where: { userId: patientId },
-          transaction: t,
-        })
-
-        if (!patient) {
+        if (dieticianWithPatient.patients.length === 0) {
           return { ok: false, error: new Error('Patient not found') } as const
+        }
+
+        const patientProfile =
+          dieticianWithPatient.patients[0]?.dataValues.patientProfile
+
+        if (!patientProfile) {
+          return {
+            ok: false,
+            error: new Error('Patient profile not found'),
+          } as const
         }
 
         // Update patient profile
         const updatedCount = await PatientProfile.update(
           {
-            firstName: patientDetails.firstName ?? patient.firstName,
-            middleName: patientDetails.middleName ?? patient.middleName,
-            lastName: patientDetails.lastName ?? patient.lastName,
-            mobileNumber: patientDetails.mobileNumber ?? patient.mobileNumber,
-            address: patientDetails.address ?? patient.address,
-            age: patientDetails.age ?? patient.age,
-            gender: patientDetails.gender ?? patient.gender,
-            height: patientDetails.height ?? patient.height,
-            weight: patientDetails.weight ?? patient.weight,
+            firstName: patientDetails.firstName ?? patientProfile.firstName,
+            middleName: patientDetails.middleName ?? patientProfile.middleName,
+            lastName: patientDetails.lastName ?? patientProfile.lastName,
+            mobileNumber:
+              patientDetails.mobileNumber ?? patientProfile.mobileNumber,
+            address: patientDetails.address ?? patientProfile.address,
+            age: patientDetails.age ?? patientProfile.age,
+            gender: patientDetails.gender ?? patientProfile.gender,
+            height: patientDetails.height ?? patientProfile.height,
+            weight: patientDetails.weight ?? patientProfile.weight,
             additionalNotes:
-              patientDetails.additionalNotes ?? patient.additionalNotes,
-            patientGoal: patientDetails.patientGoal ?? patient.patientGoal,
-            theme: patientDetails.theme ?? patient.theme,
+              patientDetails.additionalNotes ?? patientProfile.additionalNotes,
+            patientGoal:
+              patientDetails.patientGoal ?? patientProfile.patientGoal,
+            theme: patientDetails.theme ?? patientProfile.theme,
             sendAutomatedFeedback:
               patientDetails.sendAutomatedFeedback ??
-              patient.sendAutomatedFeedback,
+              patientProfile.sendAutomatedFeedback,
             recallFrequencyQuantity:
               patientDetails.recallFrequency?.reminderEvery.quantity ??
-              patient.recallFrequencyQuantity,
+              patientProfile.recallFrequencyQuantity,
             recallFrequencyUnit:
               patientDetails.recallFrequency?.reminderEvery.unit ??
-              patient.recallFrequencyUnit,
+              patientProfile.recallFrequencyUnit,
             recallFrequencyEnd:
               patientDetails.recallFrequency?.reminderEnds ??
-              patient.recallFrequencyEnd,
-            avatar: patientDetails.avatar ?? patient.avatar,
+              patientProfile.recallFrequencyEnd,
+            avatar: patientDetails.avatar ?? patientProfile.avatar,
           },
           { where: { userId: patientId }, transaction: t },
         )
@@ -259,8 +272,6 @@ export const createUserService = (): IUserService => {
         ...(transaction ? { transaction } : {}),
       })
 
-      console.log({ dietician })
-
       let _patient: User | null = null
       if (typeof patient === 'number') {
         _patient = await User.findOne({
@@ -270,8 +281,6 @@ export const createUserService = (): IUserService => {
       } else {
         _patient = patient
       }
-
-      console.log({ _patient })
 
       if (!dietician) {
         return {
@@ -295,8 +304,6 @@ export const createUserService = (): IUserService => {
         role => role.dataValues.name === 'patient',
       )
 
-      console.log({ dieticianHasDieticianRole, patientHasPatientRole })
-
       if (!dieticianHasDieticianRole) {
         return {
           ok: false,
@@ -319,11 +326,8 @@ export const createUserService = (): IUserService => {
         { ...(transaction ? { transaction } : {}) },
       )
 
-      console.log({ dieticianPatient })
-
       return { ok: true, value: dieticianPatient } as const
     } catch (error) {
-      console.log({ error })
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   }

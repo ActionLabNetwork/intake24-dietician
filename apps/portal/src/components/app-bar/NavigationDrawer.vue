@@ -39,7 +39,6 @@ import router from '@/router'
 import { useProfile } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/vue-query'
 import { getInitials, getFullName } from '@/utils/profile'
-import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 const props = defineProps<{ drawer: boolean }>()
 const emit = defineEmits<{ change: [val: boolean] }>()
@@ -48,11 +47,8 @@ const queryClient = useQueryClient()
 queryClient.invalidateQueries({ queryKey: ['auth'] })
 
 const profileQuery = useProfile()
-const patientsQuery = usePatients()
 const logoutMutation = useLogout()
 const user = ref(profileQuery.data.value?.data.data.user)
-
-console.log({ patientsQuery })
 
 const navItems = [
   {

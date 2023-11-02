@@ -18,7 +18,7 @@
     "test:integration": "pnpm --filter ./apps/{api,portal} test:integration",
     "test:integration:coverage": "pnpm --filter * test:integration:coverage"
   },
-  "private": true,
+  "prigit reset --hardvate": true,
   "engines": {
     "node": ">=18"
   },
