@@ -59,7 +59,17 @@ export interface IUserService {
   ) => Promise<Result<PatientProfileValues[]>>
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }
-export interface IApiService {
+export interface IRecallApiService {
   getRecallById: (id: string) => Promise<Result<IRecallExtended | null>>
   createRecall: (newRecall: IRecallExtended) => Promise<Result<string | null>>
+}
+
+export interface ISurveyApiService {
+  getSurveySecretByAlias: (id: string) => Promise<Result<string | null>>
+}
+
+export interface IQueryParams {
+  scope?: string;
+  sort?: string;
+  filter?: string;
 }

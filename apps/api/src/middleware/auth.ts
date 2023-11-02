@@ -6,14 +6,16 @@ import type { Result } from '@intake24-dietician/common/types/utils'
 import type { JwtPayload } from 'jsonwebtoken'
 import { createJwtTokenService } from '../services/token.service'
 import { match } from 'ts-pattern'
+import type { TTokenType } from '@intake24-dietician/common/types/auth'
 
 const tokenService = createJwtTokenService()
 
 const verifyJwtToken = (
   token: string,
-  tokenType: 'access-token' | 'refresh-token' = 'access-token',
+  tokenType: TTokenType = 'access-token',
+  secret: string = env.JWT_SECRET,
 ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
-  const decoded = tokenService.verify(token, env.JWT_SECRET)
+  const decoded = tokenService.verify(token, secret)
 
   return match(decoded)
     .with({ ok: true }, result => {
@@ -63,10 +65,25 @@ export function expressAuthentication(
   _securityName: string,
   scopes?: string[],
 ) {
-  const accessToken =
-    request.cookies['accessToken'] || request.headers['authorization']
+  console.log('I am in the Security middleware');
+  console.log('request.params ', request.params);
+  console.log('scope: ', scopes);
+  let tokenType: TTokenType = 'access-token'
+  let accessToken = request.cookies['accessToken']
+  let secret = env.JWT_SECRET
+  if (
+    scopes !== undefined &&
+    scopes.length !== 0 &&
+    scopes[0] === 'api_integration'
+  ) {
+    tokenType = 'api-autorization-token'
+    accessToken = request.headers['authorization']?.split(' ')[1]
+    const surveyID = request.params['requestSurveyId'] as string
+    console.log('surveyID: ', surveyID)
+  }
 
-  const decodedAccessToken = verifyJwtToken(accessToken, 'access-token')
+  console.log('verification params: ', accessToken, tokenType, secret);
+  const decodedAccessToken = verifyJwtToken(accessToken, tokenType, secret)
 
   return new Promise((resolve, reject) => {
     if (!accessToken) {
