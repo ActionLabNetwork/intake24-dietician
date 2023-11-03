@@ -9,6 +9,7 @@ import {
   Body,
   Path,
   Put,
+  Delete,
 } from 'tsoa'
 import type {
   IAuthService,
@@ -221,6 +222,81 @@ export class PatientController extends Controller {
             'Failed to create patient for dietician',
             result.value.decoded['userId'],
           )
+          return this.generateInvalidEmailClientErrorResponse()
+        }
+      })
+      .with({ ok: false }, () => {
+        return this.generateInternalServerErrorResponse()
+      })
+      .exhaustive()
+  }
+
+  @Put('/{userId}/restore')
+  @Security('jwt')
+  public async restorePatient(
+    @Request() request: express.Request,
+    @Path() userId: string,
+  ) {
+    const { accessToken } = request.cookies
+    const decoded = this.authService.verifyJwtToken(accessToken)
+
+    return match(decoded)
+      .with({ ok: true }, async result => {
+        if (result.value.decoded === null) {
+          this.logger.error('Invalid access token')
+          return this.generateUnauthorizedResponse()
+        }
+
+        if (result.value.tokenExpired) {
+          this.logger.error('Access token has expired. Please login again.')
+          return this.generateExpiredTokenResponse()
+        }
+
+        const patient =
+          await this.userService.restoreDeletedUserByIdOrEmail(userId)
+
+        if (patient.ok) {
+          this.logger.info('Successfully restored patient', userId)
+          return { data: { patient } }
+        } else {
+          this.logger.error('Failed to restore patient', userId)
+          return this.generateInvalidEmailClientErrorResponse()
+        }
+      })
+      .with({ ok: false }, () => {
+        return this.generateInternalServerErrorResponse()
+      })
+      .exhaustive()
+  }
+
+  @Delete('/{userId}')
+  @Security('jwt')
+  public async deletePatient(
+    @Request() request: express.Request,
+    @Path() userId: string,
+  ) {
+    const { accessToken } = request.cookies
+    const decoded = this.authService.verifyJwtToken(accessToken)
+
+    return match(decoded)
+      .with({ ok: true }, async result => {
+        if (result.value.decoded === null) {
+          this.logger.error('Invalid access token')
+          return this.generateUnauthorizedResponse()
+        }
+
+        if (result.value.tokenExpired) {
+          this.logger.error('Access token has expired. Please login again.')
+          return this.generateExpiredTokenResponse()
+        }
+
+        const patient = await this.userService.deleteUserByIdOrEmail(userId)
+
+        if (patient.ok) {
+          this.logger.info('Successfully deleted patient', userId)
+          return { data: { patient } }
+        } else {
+          this.logger.error('Failed to deleted patient', userId)
           return this.generateInvalidEmailClientErrorResponse()
         }
       })

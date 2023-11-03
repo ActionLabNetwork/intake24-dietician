@@ -28,6 +28,11 @@ const schema = z.object({
   AUTH_API_GET_PATIENTS: withDevDefault(z.string(), '/patients'),
   AUTH_API_CREATE_PATIENT: withDevDefault(z.string(), '/patients'),
   AUTH_API_UPDATE_PATIENT: withDevDefault(z.string(), '/patients'),
+  AUTH_API_DELETE_PATIENT: withDevDefault(z.string(), '/patients/{userId}'),
+  AUTH_API_RESTORE_PATIENT: withDevDefault(
+    z.string(),
+    '/patients/{userId}/restore',
+  ),
 })
 
 const parsed = schema.safeParse(process.env)

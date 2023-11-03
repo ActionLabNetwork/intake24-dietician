@@ -6,14 +6,25 @@
       <div>
         <h1 class="text heading">Patient details</h1>
       </div>
-      <div>
-        <span class="text patient-status">Patient status: </span>
-        <v-chip
-          variant="flat"
-          :color="!!patient?.deletionDate ? 'neutral' : 'success'"
-          :text="!!patient?.deletionDate ? 'Archived' : 'Active'"
-        >
-        </v-chip>
+      <div class="d-flex align-center justify-center">
+        <div class="mr-6">
+          <!-- Patient Status -->
+          <span class="text patient-status">Patient status: </span>
+          <v-chip
+            variant="flat"
+            :color="!!patient?.deletionDate ? 'neutral' : 'success'"
+            :text="!!patient?.deletionDate ? 'Archived' : 'Active'"
+          >
+          </v-chip>
+        </div>
+        <div>
+          <!-- Account action -->
+          <AccountActionMenu
+            v-if="patient"
+            :patient="patient"
+            @update="patientQuery.invalidatePatientByIdQuery()"
+          />
+        </div>
       </div>
     </div>
     <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
@@ -86,6 +97,7 @@ import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import AccountActionMenu from './AccountActionMenu.vue'
 
 // const { t } = useI18n<i18nOptions>()
 
@@ -202,6 +214,7 @@ const handleSubmit = async (): Promise<void> => {
 }
 
 const patient = computed(() => {
+  console.log({ PatientData: patientQuery.data.value?.data.data })
   return patientQuery.data.value?.data.data
 })
 

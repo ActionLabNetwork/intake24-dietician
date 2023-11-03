@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="patientQuery.isLoading.value" max-width="12rem">
+  <v-card :loading="patientQuery.isLoading.value" max-width="fit-content">
     <template v-slot:loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
