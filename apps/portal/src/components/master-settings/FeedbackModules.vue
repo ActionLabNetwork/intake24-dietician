@@ -37,196 +37,140 @@
           </div>
         </div>
       </div>
-      <v-divider class="my-10"></v-divider>
-      <v-form ref="form">
-        <div>
-          <v-row>
-            <v-col>
-              <p class="text section-heading font-weight-medium">
-                Country and visual theme selection
-              </p>
-              <div class="ml-5 mt-5">
+
+      <v-divider class="my-10" />
+      <div
+        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
+      >
+        <v-form ref="form">
+          <v-row
+            v-for="(fieldConfig, fieldName) in formConfig"
+            :key="fieldName"
+            class="mt-5"
+          >
+            <v-col cols="12" sm="6">
+              <div :class="fieldConfig.class">
                 <div class="d-flex justify-start align-start">
                   <div>
                     <div>
-                      <div class="text section-heading-2">
-                        Enter the survey ID linked with guideline specific to
-                        your country of practice provided to you by your admin
+                      <div
+                        :class="
+                          fieldConfig.heading.class ||
+                          'text section-heading-2 pl-0 pl-sm-5'
+                        "
+                      >
+                        {{ fieldConfig.heading.label }}
                       </div>
-                      <div class="text section-subheading">
-                        Selected country is linked with the food base & dietary
-                        guidelines which will be used for patient recall &
-                        feedback provision.
+                      <div
+                        v-if="fieldConfig.subheading"
+                        :class="
+                          fieldConfig.subheading.class ||
+                          'text section-subheading pl-0 pl-sm-5'
+                        "
+                      >
+                        {{ fieldConfig.subheading.label }}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </v-col>
-            <v-col>
-              <div class="survey-id-input">
-                <BaseInput type="text">
+            <v-col cols="12" sm="6">
+              <div
+                v-if="fieldConfig.element === 'input'"
+                class="survey-id-input"
+              >
+                <BaseInput
+                  type="text"
+                  v-bind="fieldConfig.props"
+                  :value="fieldConfig.value"
+                  v
+                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+                >
                   Intake24 Survey ID
                   <span class="text-primary">(required)</span>
                 </BaseInput>
               </div>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <div class="mt-5 ml-5">
-                <div class="d-flex justify-start align-start">
-                  <div>
-                    <div>
-                      <div class="text section-heading-2">
-                        Select a theme relevant for your patients
-                      </div>
-                      <div class="text section-subheading">
-                        Select a theme that is relevant for your patients in
-                        general. You can change the theme specific to a patient
-                        from patient information page.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </v-col>
-            <v-col>
-              <VisualThemeSelector
-                :default-state="theme"
-                hide-label
-                class="mt-5"
-                @update="handleVisualThemeUpdate"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <div class="mt-5">
-                <div class="d-flex justify-start align-start">
-                  <div>
-                    <div>
-                      <div class="text section-heading">
-                        Send patient automated feedback after every recall
-                      </div>
-                      <div class="text section-subheading">
-                        Every time a patient completes their recall, an
-                        automated feedback based on their recall data and
-                        pre-defined feedbacks will be shared with them on their
-                        email address
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </v-col>
-            <v-col>
-              <SendAutomatedFeedbackToggle
-                :default-state="sendAutomatedFeedback"
-                hide-label
-                @update="handleSendAutomatedFeedback"
-              />
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col>
-              <div class="mt-5">
-                <div class="d-flex justify-start align-start">
-                  <div>
-                    <div>
-                      <div class="text section-heading">
-                        Module selection and feedback personalisation
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div v-else>
+                <component
+                  :is="fieldConfig.component"
+                  v-bind="fieldConfig.props"
+                  :value="fieldConfig.value"
+                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+                />
               </div>
             </v-col>
           </v-row>
-        </div>
-        <div class="mt-10">
-          <p class="font-weight-medium">Review and save changes</p>
-          <div class="text subheading">
-            You have made changes to the master module setup. Review and confirm
-            the changes before you proceed with adding patients or reviewing
-            recall feedback
+          <div class="mt-10">
+            <p class="font-weight-medium">Review and save changes</p>
+            <div class="text subheading">
+              You have made changes to the master module setup. Review and
+              confirm the changes before you proceed with adding patients or
+              reviewing recall feedback
+            </div>
+            <v-btn
+              color="primary"
+              class="text-none mt-4"
+              type="submit"
+              :disabled="!isFormValid"
+              @click.prevent="handleSubmit"
+            >
+              Review and confirm changes
+            </v-btn>
           </div>
-          <v-btn
-            color="primary"
-            class="text-none mt-4"
-            type="submit"
-            :disabled="!isFormValid"
-            @click.prevent="handleSubmit"
-          >
-            Review and confirm changes
-          </v-btn>
-        </div>
-      </v-form>
+        </v-form>
+      </div>
     </v-container>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { ContactDetailsFormValues } from '@intake24-dietician/portal/components/patients/patient-details/ContactDetails.vue'
-import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
-import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { PatientSchema } from '@/schema/patient'
-import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 import BaseInput from '@/components/form/BaseInput.vue'
-import router from '@intake24-dietician/portal/router'
 // const { t } = useI18n<i18nOptions>()
 
+type CSSClass = string | string[] | object
+
+interface FormFieldConfig<TVal, TProps = Record<string, unknown>> {
+  heading: {
+    label: string
+    class?: CSSClass
+  }
+  subheading?: {
+    label: string
+    class?: CSSClass
+  }
+  component?: ReturnType<typeof defineComponent>
+  element?: string
+  props?: TProps
+  value?: TVal
+  class?: CSSClass
+  onUpdate?: (newValue: TVal) => void
+}
+
+interface FormConfig {
+  [key: string]: FormFieldConfig<any, any>
+}
+
 const $toast = useToast()
-const addPatientMutation = useAddPatient()
 
 const form = ref()
 
-const contactDetailsFormValues = ref<ContactDetailsFormValues>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  avatar: '',
-  mobileNumber: '',
-  emailAddress: '',
-  address: '',
-})
-
-const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
-  age: 20,
-  gender: 'Male',
-  weight: 70,
-  height: 170,
-  additionalNotes: '',
-  patientGoal: '',
-})
-
 const theme = ref<Theme>('Classic')
 const sendAutomatedFeedback = ref<boolean>(false)
-const recallFrequency = ref<ReminderConditions>({
-  reminderEvery: {
-    quantity: 5,
-    unit: 'days',
-  },
-  reminderEnds: {
-    type: 'never',
-  },
-})
 
 const aggregatedData = computed(() => ({
-  ...contactDetailsFormValues.value,
-  ...personalDetailsFormValues.value,
   theme: theme.value,
   sendAutomatedFeedback: sendAutomatedFeedback.value,
-  recallFrequency: recallFrequency.value,
   createdAt: new Date(),
   updatedAt: new Date(),
 }))
@@ -243,7 +187,7 @@ const handleSendAutomatedFeedback = (value: boolean) => {
   sendAutomatedFeedback.value = value
 }
 
-const handleSubmit = async () => {
+const handleSubmit = async (): Promise<void> => {
   await form.value.validate()
 
   return new Promise((resolve, reject) => {
@@ -263,18 +207,79 @@ const handleSubmit = async () => {
       return
     }
 
-    addPatientMutation.mutate(aggregatedData.value, {
-      onSuccess: () => {
-        $toast.success('Patient added to records')
-        resolve('Patient added to records')
-        router.push('/dashboard/my-patients')
-      },
-      onError: err => {
-        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-      },
-    })
+    resolve()
   })
 }
+
+let formConfig: FormConfig
+onMounted(() => {
+  formConfig = {
+    countryAndVisualThemeSelection: {
+      heading: {
+        label: 'Country and visual theme selection',
+        class: 'text heading',
+      },
+      class: 'text section-heading',
+    },
+    surveyIdInput: {
+      heading: {
+        label:
+          'Enter the survey ID linked with guideline specific to your country of practice provided to you by your admin',
+      },
+      subheading: {
+        label:
+          'Selected country is linked with the food base & dietary guidelines which will be used for patient recall & feedback provision.',
+      },
+      element: 'input',
+      props: {
+        type: 'text',
+        required: true,
+      },
+      value: '',
+      onUpdate: (value: string) => {
+        console.log({ value })
+      },
+    },
+    themeSelector: {
+      heading: { label: 'Select a theme relevant for your patients' },
+      subheading: {
+        label:
+          'Select a theme that is relevant for your patients in general. You can change the theme specific to a patient from patient information page.',
+      },
+      component: VisualThemeSelector,
+      props: {
+        defaultState: theme.value,
+        hideLabel: true,
+      },
+      value: theme,
+      onUpdate: (newTheme: Theme) => {
+        formConfig['themeSelector']!.value = newTheme
+        handleVisualThemeUpdate(newTheme)
+      },
+    },
+    sendAutomatedFeedback: {
+      heading: { label: 'Send patient automated feedback after every recall' },
+      subheading: {
+        label:
+          'Every time a patient completes their recall, an automated feedback based on their recall data and pre-defined feedbacks will be shared with them on their email address',
+      },
+      component: SendAutomatedFeedbackToggle,
+      props: {
+        defaultState: sendAutomatedFeedback.value,
+        hideLabel: true,
+      },
+      value: sendAutomatedFeedback,
+      onUpdate: (isEnabled: boolean) => {
+        formConfig['automatedFeedbackToggle']!.value = isEnabled
+        handleSendAutomatedFeedback(isEnabled)
+      },
+    },
+    // TODO: Add modules component
+    moduleSelectionAndFeedbackPersonalisation: {
+      heading: { label: 'Module selection and feedback personalisation' },
+    },
+  }
+})
 </script>
 
 <style scoped lang="scss">
