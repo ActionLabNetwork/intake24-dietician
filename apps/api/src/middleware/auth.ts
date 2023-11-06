@@ -6,7 +6,10 @@ import type { Result } from '@intake24-dietician/common/types/utils'
 import type { JwtPayload } from 'jsonwebtoken'
 import { createJwtTokenService } from '../services/token.service'
 import { match } from 'ts-pattern'
-import type { TTokenType } from '@intake24-dietician/common/types/auth'
+import type {
+  SurveyAttributes,
+  TTokenType,
+} from '@intake24-dietician/common/types/auth'
 
 const tokenService = createJwtTokenService()
 
@@ -16,7 +19,9 @@ const getTheSecret = async (
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
     const response = await fetch(
-      'http://localhost:8080/survey/' + surveyID + '?scope=api_integration',
+      `${env.HOST}:${env.API_PORT}/survey/` +
+        surveyID +
+        `?scope=api_integration`,
       {
         method: 'GET',
       },
@@ -30,10 +35,30 @@ const getTheSecret = async (
       return undefined
     }
 
-    const secret: string = await response.text()
+    const secret: Result<SurveyAttributes | null> =
+      (await response.json()) as Result<SurveyAttributes | null>
+    console.log('secret: ', secret)
+    if (secret.ok === false) {
+      console.log({
+        ok: false,
+        error: new Error(`Failed to fetch secret: ${secret.error}`),
+      })
+      return undefined
+    } else if (
+      secret.value === null ||
+      secret.value.intake24Secret.length === 0
+    ) {
+      console.log({
+        ok: false,
+        error: new Error(
+          `No secret assigned to the survey ID: ${secret.value}`,
+        ),
+      })
+      return null
+    }
 
     // TODO: Fix in the future to more elegant solution (better way to remove quotes)
-    return secret.trim().replace(/"/g, '')
+    return secret.value.intake24Secret.trim().replace(/"/g, '')
   }
 
   return env.JWT_SECRET
@@ -102,7 +127,17 @@ export async function expressAuthentication(
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
   let secret = await getTheSecret(surveyID, scopes ? scopes[0] : null)
-  if (! secret ) secret = env.JWT_SECRET
+  if (!secret) secret = env.JWT_SECRET
+  if (secret === null)
+    return new Promise(reject => {
+      reject(
+        generateErrorResponse(
+          '401',
+          'Unauthorized',
+          'No secret assigned to the survey ID',
+        ),
+      )
+    })
   if (
     scopes !== undefined &&
     scopes.length !== 0 &&

@@ -8,7 +8,7 @@ import {
 } from '@intake24-dietician/db/connection'
 import initJobs from './jobs/queue'
 
-const port = env.AUTH_API_PORT || 3000
+const port = env.API_PORT || 3000
 
 Promise.all([connectPostgres(), connectRedis(), connectMongo()])
   .then(async () => {

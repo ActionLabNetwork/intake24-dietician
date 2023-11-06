@@ -24,7 +24,7 @@ export const createSurveyService = () => {
     } 
     catch (error) {
       console.log(error);
-      return { ok: true, value:  new Error('Error retriving Survey data') } as const
+      return { ok: false, error:  new Error('Error retriving Survey data') } as const
     }
   }
 
