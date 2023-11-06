@@ -29,7 +29,7 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form v-if="user" ref="form" @submit.prevent="handleSubmit">
+      <v-form v-if="user" ref="form" @submit.prevent="() => handleSubmit()">
         <PersonalDetails
           v-if="personalDetailsFormValues"
           :default-state="personalDetailsFormValues"
@@ -126,8 +126,9 @@ const handleProfileDetailsUpdate = (
   profileFormValues.value = { ...profileFormValues.value, ...details }
 }
 
-const handleSubmit = async (): Promise<void> => {
-  await form.value.validate()
+const handleSubmit = async (validate = true): Promise<void> => {
+  if (validate) await form.value.validate()
+
   const errors = form.value.errors
 
   return new Promise((resolve, reject) => {
@@ -186,42 +187,46 @@ const disableSubmitButton = computed(() => {
   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
 })
 
-// eslint-disable-next-line complexity
-watch(user, newUser => {
-  if (newUser) {
-    profileFormValues.value = {
-      firstName: newUser.dieticianProfile.firstName ?? '',
-      middleName: newUser.dieticianProfile.middleName ?? '',
-      lastName: newUser.dieticianProfile.lastName ?? '',
-      emailAddress: newUser.email ?? '',
-      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
-      shortBio: newUser.dieticianProfile.shortBio ?? '',
-      avatar: newUser.dieticianProfile.avatar ?? null,
-      createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
-      updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
-    }
+watch(
+  user,
+  // eslint-disable-next-line complexity
+  newUser => {
+    if (newUser) {
+      profileFormValues.value = {
+        firstName: newUser.dieticianProfile.firstName ?? '',
+        middleName: newUser.dieticianProfile.middleName ?? '',
+        lastName: newUser.dieticianProfile.lastName ?? '',
+        emailAddress: newUser.email ?? '',
+        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+        shortBio: newUser.dieticianProfile.shortBio ?? '',
+        avatar: newUser.dieticianProfile.avatar ?? null,
+        createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
+        updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
+      }
 
-    personalDetailsFormValues.value = {
-      firstName: newUser.dieticianProfile.firstName ?? '',
-      middleName: newUser.dieticianProfile.middleName ?? '',
-      lastName: newUser.dieticianProfile.lastName ?? '',
-      avatar: newUser.dieticianProfile.avatar ?? '',
-    }
+      personalDetailsFormValues.value = {
+        firstName: newUser.dieticianProfile.firstName ?? '',
+        middleName: newUser.dieticianProfile.middleName ?? '',
+        lastName: newUser.dieticianProfile.lastName ?? '',
+        avatar: newUser.dieticianProfile.avatar ?? '',
+      }
 
-    contactDetailsFormValues.value = {
-      emailAddress: newUser.email ?? '',
-      mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-      businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-      businessAddress: newUser.dieticianProfile.businessAddress ?? '',
-    }
+      contactDetailsFormValues.value = {
+        emailAddress: newUser.email ?? '',
+        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
+        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
+        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+      }
 
-    shortBioFormValues.value = {
-      shortBio: newUser.dieticianProfile.shortBio ?? '',
+      shortBioFormValues.value = {
+        shortBio: newUser.dieticianProfile.shortBio ?? '',
+      }
     }
-  }
-})
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

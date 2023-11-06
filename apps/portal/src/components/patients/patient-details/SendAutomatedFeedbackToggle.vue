@@ -1,16 +1,19 @@
 <template>
   <div>
-    <p class="font-weight-medium">
-      Send patient automated feedback after every recall
-    </p>
-    <p class="subheading w-50">
-      Every time a patient completes their recall, an automated feedback based
-      on their recall data and pre-defined feedbacks will be shared with them on
-      their email address
-    </p>
+    <div v-if="!hideLabel">
+      <p class="font-weight-medium">
+        Send patient automated feedback after every recall
+      </p>
+      <p class="subheading w-50">
+        Every time a patient completes their recall, an automated feedback based
+        on their recall data and pre-defined feedbacks will be shared with them
+        on their email address
+      </p>
+    </div>
+
     <v-card
       class="card rounded-lg px-4 d-flex justify-space-between align-center mt-5"
-      width="75%"
+      width="100%"
       flat
     >
       <div>Send automated feedback?</div>
@@ -30,7 +33,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 
-const props = defineProps<{ defaultState: boolean }>()
+const props = withDefaults(
+  defineProps<{ defaultState: boolean; hideLabel?: boolean }>(),
+  { hideLabel: false },
+)
 const emit = defineEmits<{
   update: [value: boolean]
 }>()

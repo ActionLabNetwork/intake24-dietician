@@ -6,12 +6,33 @@
       <div>
         <h1 class="text heading">Patient details</h1>
       </div>
+      <div class="d-flex align-center justify-center">
+        <div class="mr-6">
+          <!-- Patient Status -->
+          <span class="text patient-status">Patient status: </span>
+          <v-chip
+            variant="flat"
+            :color="!!patient?.deletionDate ? 'neutral' : 'success'"
+            :text="!!patient?.deletionDate ? 'Archived' : 'Active'"
+          >
+          </v-chip>
+        </div>
+        <div>
+          <!-- Account action -->
+          <AccountActionMenu
+            v-if="patient"
+            :patient="patient"
+            @update="patientQuery.invalidatePatientByIdQuery()"
+          />
+        </div>
+      </div>
     </div>
     <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
       <div>
         <ContactDetails
           :default-state="contactDetailsFormValues"
           mode="Edit"
+          :handle-submit="handleSubmit"
           @update="handleContactDetailsUpdate"
         />
         <PersonalDetails
@@ -36,9 +57,6 @@
         />
       </div>
       <div>
-        <p class="font-weight-medium">
-          Review and add new patient to the records
-        </p>
         <v-btn
           color="primary"
           class="text-none mt-4"
@@ -46,7 +64,7 @@
           :disabled="!isFormValid"
           @click.prevent="handleSubmit"
         >
-          Add patient to records
+          Update patient details
         </v-btn>
       </div>
     </v-form>
@@ -76,14 +94,13 @@ import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import AccountActionMenu from './AccountActionMenu.vue'
 
 // const { t } = useI18n<i18nOptions>()
 
 const route = useRoute()
 const patientQuery = usePatientById(route.params['id'] as string)
 const updatePatientMutation = useUpdatePatient()
-
-console.log({ patientQuery123: patientQuery.data.value?.data.data })
 
 const $toast = useToast()
 
@@ -154,9 +171,7 @@ const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
   recallFrequency.value = value
 }
 
-const handleSubmit = async () => {
-  await form.value.validate()
-
+const handleSubmit = async (): Promise<void> => {
   return new Promise((resolve, reject) => {
     console.log({ aggregatedData: aggregatedData.value })
     // Validate with zod
@@ -183,7 +198,7 @@ const handleSubmit = async () => {
       {
         onSuccess: () => {
           $toast.success('Patient details updated')
-          resolve('Patient details updated')
+          resolve()
         },
         onError: err => {
           $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
@@ -191,18 +206,14 @@ const handleSubmit = async () => {
       },
     )
 
-    // addPatientMutation.mutate(aggregatedData.value, {
-    //   onSuccess: () => {
-    //     $toast.success('Patient added to records')
-    //     resolve('Patient added to records')
-    //   },
-    //   onError: err => {
-    //     $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-    //   },
-    // })
-    resolve('Updated patient details')
+    resolve()
   })
 }
+
+const patient = computed(() => {
+  console.log({ PatientData: patientQuery.data.value?.data.data })
+  return patientQuery.data.value?.data.data
+})
 
 watch(
   () => patientQuery.data.value?.data.data,
@@ -258,10 +269,10 @@ watch(
 }
 .text {
   padding-bottom: 0.5rem;
+  font-family: Roboto;
 
   &.heading {
     color: #000;
-    font-family: Roboto;
     font-size: 24px;
     font-style: normal;
     font-weight: 600;
@@ -270,12 +281,19 @@ watch(
 
   &.subheading {
     color: #555;
-    font-family: Roboto;
     font-size: 14px;
     font-style: normal;
     font-weight: 400;
     line-height: 140%; /* 19.6px */
     letter-spacing: 0.14px;
+  }
+
+  &.patient-status {
+    color: #555;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
   }
 }
 </style>

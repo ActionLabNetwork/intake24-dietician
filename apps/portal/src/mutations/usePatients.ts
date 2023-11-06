@@ -48,3 +48,61 @@ export const useUpdatePatient = () => {
     mutate,
   }
 }
+
+export const useDeletePatient = () => {
+  const deletePatientUri = env.AUTH_API_DELETE_PATIENT
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    unknown,
+    AxiosError<ApiResponseWithError>,
+    number | undefined
+  >({
+    mutationFn: patientId => {
+      if (!patientId) {
+        throw new Error('patientId is undefined')
+      }
+
+      return axios.delete(
+        deletePatientUri.replace('{userId}', patientId.toString()),
+      )
+    },
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useRestorePatient = () => {
+  const restorePatientUri = env.AUTH_API_RESTORE_PATIENT
+
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+    unknown,
+    AxiosError<ApiResponseWithError>,
+    number | undefined
+  >({
+    mutationFn: patientId => {
+      if (!patientId) {
+        throw new Error('patientId is undefined')
+      }
+
+      return axios.put(
+        restorePatientUri.replace('{userId}', patientId.toString()),
+      )
+    },
+  })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}

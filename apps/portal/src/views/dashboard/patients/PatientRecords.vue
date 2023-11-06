@@ -25,8 +25,8 @@
         </v-btn>
       </v-row>
       <v-row class="mt-6">
-        <v-col cols="2"><DetailsAndNavCard /></v-col>
-        <v-col cols="10" class="px-16">
+        <v-col cols="3"><DetailsAndNavCard /></v-col>
+        <v-col cols="9" class="px-16">
           <router-view />
         </v-col>
       </v-row>

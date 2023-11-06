@@ -4,7 +4,7 @@ import {
   PatientProfileValues,
   UserAttributesWithPatientProfile,
 } from '@intake24-dietician/common/types/auth'
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { getDefaultAvatar } from '../utils/profile'
 
@@ -34,12 +34,17 @@ export const usePatients = () => {
 }
 
 export const usePatientById = (userId: string) => {
+  const queryClient = useQueryClient()
   const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_GET_PATIENTS}/${userId}`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
-    AxiosResponse<{ data: Omit<UserAttributesWithPatientProfile, 'password'> }>
+    AxiosResponse<{
+      data: Omit<UserAttributesWithPatientProfile, 'password'> & {
+        deletionDate: Date
+      }
+    }>
   >({
     queryKey: [userId],
     queryFn: async () => {
@@ -56,11 +61,19 @@ export const usePatientById = (userId: string) => {
     },
   })
 
+  const invalidatePatientByIdQuery = async () => {
+    console.log('Invalidated')
+    await queryClient.invalidateQueries({ queryKey: [userId] })
+    await queryClient.refetchQueries({ queryKey: [userId] })
+    console.log({ data })
+  }
+
   return {
     data,
     isLoading,
     isError,
     error,
     isSuccess,
+    invalidatePatientByIdQuery,
   }
 }

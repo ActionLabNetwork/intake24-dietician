@@ -1,7 +1,7 @@
 <template>
   <div>
     <p class="font-weight-medium">Personal details</p>
-    <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
+    <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense align="center">
           <v-col cols="12" md="6">
@@ -77,7 +77,7 @@
     </v-card>
 
     <p class="font-weight-medium mt-16">Patient goal</p>
-    <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
+    <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <div>
           <v-textarea

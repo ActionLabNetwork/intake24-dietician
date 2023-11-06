@@ -1,0 +1,360 @@
+<template>
+  <div class="wrapper">
+    <v-container>
+      <div
+        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
+      >
+        <div>
+          <h1 class="text heading">Feedback module setup</h1>
+          <h3 class="text subheading">
+            Choose guidelines appropriate to your country of practise, a visual
+            theme for your patients, different modules important to you, and, if
+            necessary, tailor the feedback messages.
+          </h3>
+        </div>
+        <div class="alert-text">
+          <div>
+            <div class="d-flex align-center">
+              <div>
+                <v-icon icon="mdi-alert-outline" size="large" start />
+              </div>
+              <div>
+                There are changes made in master module setup, review and
+                confirm changes before proceeding!
+              </div>
+            </div>
+          </div>
+          <div class="align-self-center">
+            <v-btn
+              color="primary text-none"
+              class="mt-3 mt-sm-0"
+              :disabled="!isFormValid"
+              type="submit"
+              @click.prevent="handleSubmit"
+            >
+              Review and confirm changes
+            </v-btn>
+          </div>
+        </div>
+      </div>
+
+      <v-divider class="my-10" />
+      <div
+        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
+      >
+        <v-form ref="form">
+          <v-row
+            v-for="(fieldConfig, fieldName) in formConfig"
+            :key="fieldName"
+            class="mt-5"
+          >
+            <v-col cols="12" sm="6">
+              <div :class="fieldConfig.class">
+                <div class="d-flex justify-start align-start">
+                  <div>
+                    <div>
+                      <div
+                        :class="
+                          fieldConfig.heading.class ||
+                          'text section-heading-2 pl-0 pl-sm-5'
+                        "
+                      >
+                        {{ fieldConfig.heading.label }}
+                      </div>
+                      <div
+                        v-if="fieldConfig.subheading"
+                        :class="
+                          fieldConfig.subheading.class ||
+                          'text section-subheading pl-0 pl-sm-5'
+                        "
+                      >
+                        {{ fieldConfig.subheading.label }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </v-col>
+            <v-col cols="12" sm="6">
+              <div
+                v-if="fieldConfig.element === 'input'"
+                class="survey-id-input"
+              >
+                <BaseInput
+                  type="text"
+                  v-bind="fieldConfig.props"
+                  :value="fieldConfig.value"
+                  v
+                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+                >
+                  Intake24 Survey ID
+                  <span class="text-primary">(required)</span>
+                </BaseInput>
+              </div>
+              <div v-else>
+                <component
+                  :is="fieldConfig.component"
+                  v-bind="fieldConfig.props"
+                  :value="fieldConfig.value"
+                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+                />
+              </div>
+            </v-col>
+          </v-row>
+          <div class="mt-10">
+            <p class="font-weight-medium">Review and save changes</p>
+            <div class="text subheading">
+              You have made changes to the master module setup. Review and
+              confirm the changes before you proceed with adding patients or
+              reviewing recall feedback
+            </div>
+            <v-btn
+              color="primary"
+              class="text-none mt-4"
+              type="submit"
+              :disabled="!isFormValid"
+              @click.prevent="handleSubmit"
+            >
+              Review and confirm changes
+            </v-btn>
+          </div>
+        </v-form>
+      </div>
+    </v-container>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import { computed, defineComponent, onMounted, ref } from 'vue'
+// import { i18nOptions } from '@intake24-dietician/i18n/index'
+// import { useI18n } from 'vue-i18n'
+import 'vue-toast-notification/dist/theme-sugar.css'
+import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
+import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
+import { Theme } from '@intake24-dietician/common/types/theme'
+import { PatientSchema } from '@/schema/patient'
+import { useToast } from 'vue-toast-notification'
+import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
+import BaseInput from '@/components/form/BaseInput.vue'
+// const { t } = useI18n<i18nOptions>()
+
+type CSSClass = string | string[] | object
+
+interface FormFieldConfig<TVal, TProps = Record<string, unknown>> {
+  heading: {
+    label: string
+    class?: CSSClass
+  }
+  subheading?: {
+    label: string
+    class?: CSSClass
+  }
+  component?: ReturnType<typeof defineComponent>
+  element?: string
+  props?: TProps
+  value?: TVal
+  class?: CSSClass
+  onUpdate?: (newValue: TVal) => void
+}
+
+interface FormConfig {
+  [key: string]: FormFieldConfig<any, any>
+}
+
+const $toast = useToast()
+
+const form = ref()
+
+const theme = ref<Theme>('Classic')
+const sendAutomatedFeedback = ref<boolean>(false)
+
+const aggregatedData = computed(() => ({
+  theme: theme.value,
+  sendAutomatedFeedback: sendAutomatedFeedback.value,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+}))
+
+const isFormValid = computed(() => {
+  return PatientSchema.safeParse(aggregatedData.value).success
+})
+
+const handleVisualThemeUpdate = (_theme: Theme) => {
+  theme.value = _theme
+}
+
+const handleSendAutomatedFeedback = (value: boolean) => {
+  sendAutomatedFeedback.value = value
+}
+
+const handleSubmit = async (): Promise<void> => {
+  await form.value.validate()
+
+  return new Promise((resolve, reject) => {
+    // Validate with zod
+    const result = PatientSchema.safeParse(aggregatedData.value)
+
+    if (!result.success) {
+      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    // Validate with Vuetify
+    const errors = form.value.errors
+    if (errors.length > 0) {
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    resolve()
+  })
+}
+
+let formConfig: FormConfig
+onMounted(() => {
+  formConfig = {
+    countryAndVisualThemeSelection: {
+      heading: {
+        label: 'Country and visual theme selection',
+        class: 'text heading',
+      },
+      class: 'text section-heading',
+    },
+    surveyIdInput: {
+      heading: {
+        label:
+          'Enter the survey ID linked with guideline specific to your country of practice provided to you by your admin',
+      },
+      subheading: {
+        label:
+          'Selected country is linked with the food base & dietary guidelines which will be used for patient recall & feedback provision.',
+      },
+      element: 'input',
+      props: {
+        type: 'text',
+        required: true,
+      },
+      value: '',
+      onUpdate: (value: string) => {
+        console.log({ value })
+      },
+    },
+    themeSelector: {
+      heading: { label: 'Select a theme relevant for your patients' },
+      subheading: {
+        label:
+          'Select a theme that is relevant for your patients in general. You can change the theme specific to a patient from patient information page.',
+      },
+      component: VisualThemeSelector,
+      props: {
+        defaultState: theme.value,
+        hideLabel: true,
+      },
+      value: theme,
+      onUpdate: (newTheme: Theme) => {
+        formConfig['themeSelector']!.value = newTheme
+        handleVisualThemeUpdate(newTheme)
+      },
+    },
+    sendAutomatedFeedback: {
+      heading: { label: 'Send patient automated feedback after every recall' },
+      subheading: {
+        label:
+          'Every time a patient completes their recall, an automated feedback based on their recall data and pre-defined feedbacks will be shared with them on their email address',
+      },
+      component: SendAutomatedFeedbackToggle,
+      props: {
+        defaultState: sendAutomatedFeedback.value,
+        hideLabel: true,
+      },
+      value: sendAutomatedFeedback,
+      onUpdate: (isEnabled: boolean) => {
+        formConfig['automatedFeedbackToggle']!.value = isEnabled
+        handleSendAutomatedFeedback(isEnabled)
+      },
+    },
+    // TODO: Add modules component
+    moduleSelectionAndFeedbackPersonalisation: {
+      heading: { label: 'Module selection and feedback personalisation' },
+    },
+  }
+})
+</script>
+
+<style scoped lang="scss">
+.wrapper {
+  background: rgb(252, 249, 244);
+  background: -moz-linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  background: -webkit-linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  background: linear-gradient(
+    180deg,
+    rgba(252, 249, 244, 1) 20%,
+    rgba(255, 255, 255, 1) 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
+}
+.text {
+  max-width: 100%;
+  padding-bottom: 0.5rem;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: normal;
+
+  &.heading {
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &.subheading {
+    color: #555;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 140%; /* 19.6px */
+    letter-spacing: 0.14px;
+    max-width: 40vw;
+  }
+
+  &.section-heading {
+    color: #000;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  &.section-heading-2 {
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  &.section-subheading {
+    color: #555;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 140%; /* 19.6px */
+    letter-spacing: 0.14px;
+  }
+}
+
+.alert-text {
+  display: flex;
+  flex-direction: column;
+  max-width: 30vw;
+  gap: 0.5rem;
+}
+
+.survey-id-input {
+  background-color: white;
+  padding: 1rem;
+  border-radius: 0.5rem;
+}
+</style>

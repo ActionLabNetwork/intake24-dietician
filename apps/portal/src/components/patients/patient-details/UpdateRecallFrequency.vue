@@ -2,7 +2,7 @@
 <template>
   <div>
     <p class="font-weight-medium">Update recall frequency</p>
-    <v-card class="mt-4" width="75%" flat>
+    <v-card class="mt-4" width="100%" flat>
       <div class="v-row align-center">
         <div class="v-col">
           <BaseInput
@@ -28,7 +28,7 @@
         </div>
       </div>
     </v-card>
-    <v-card class="mt-4" width="75%" flat>
+    <v-card class="mt-4" width="100%" flat>
       <div class="form-label pb-2">
         Ends <span class="text-primary">(required)</span>
       </div>
@@ -147,7 +147,6 @@ const handleOccurrencesCountUpdate = (newVal: string) => {
 }
 
 watch(reminderConditions, newVal => {
-  console.log({ newVal })
   emit('update', newVal)
 })
 
