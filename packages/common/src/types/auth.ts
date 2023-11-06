@@ -13,6 +13,17 @@ export interface UserAttributes {
   isVerified: boolean
 }
 
+export interface SurveyAttributes {
+  id: number
+  intake24SurveyId: string
+  intake24Secret: string
+  alias: string
+  name: string
+  recallSubmissionUrl: string
+  owner: UserAttributes
+  ownerId: number
+}
+
 export interface UserAttributesWithDieticianProfile extends UserAttributes {
   dieticianProfile: DieticianProfileValues
 }

@@ -5,6 +5,7 @@ import type {
   DieticianProfileValues,
   PatientProfileValues,
   UserAttributes,
+  SurveyAttributes,
 } from './auth'
 import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
@@ -65,7 +66,7 @@ export interface IRecallApiService {
 }
 
 export interface ISurveyApiService {
-  getSurveySecretByAlias: (id: string) => Promise <string | null>
+  getSurveySecretByAlias: (id: string) => Promise < Result < SurveyAttributes | null | Error>>
 }
 
 export interface IQueryParams {
