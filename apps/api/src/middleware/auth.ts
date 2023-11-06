@@ -37,7 +37,6 @@ const getTheSecret = async (
 
     const secret: Result<SurveyAttributes | null> =
       (await response.json()) as Result<SurveyAttributes | null>
-    console.log('secret: ', secret)
     if (secret.ok === false) {
       console.log({
         ok: false,
