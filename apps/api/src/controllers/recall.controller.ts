@@ -8,15 +8,13 @@ import {
   //   Post,
   //   Put,
   //   Query,
-  //   Request,
   Route,
+  Security,
   SuccessResponse,
-  //   Security,
-  //   SuccessResponse,
   Tags,
 } from 'tsoa'
 import type { Request as ExRequest } from 'express'
-import type { IApiService } from '@intake24-dietician/common/types/api'
+import type { IRecallApiService } from '@intake24-dietician/common/types/api'
 import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { container } from '../ioc/container'
 import { createRecallService } from '../services/recall.service'
@@ -25,7 +23,7 @@ import { createRecallService } from '../services/recall.service'
 @Tags('Recall')
 export class RecallController extends Controller {
   private readonly logger
-  private readonly recallService: IApiService
+  private readonly recallService: IRecallApiService
 
   public constructor() {
     super()
@@ -42,6 +40,7 @@ export class RecallController extends Controller {
 
   @SuccessResponse('201', 'Created')
   @Post('{requestSurveyId}')
+  @Security('jwt', ['api_integration'])
   public async createRecall(
     @Request() request: ExRequest,
     @Path() requestSurveyId: string,

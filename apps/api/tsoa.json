@@ -8,7 +8,8 @@
     "securityDefinitions": {
       "jwt": {
         "type": "jwt",
-        "name": "JSON Web Token"
+        "name": "JSON Web Token",
+        "scopes": ["api_integration", "cookie"]
       }
     }
   },

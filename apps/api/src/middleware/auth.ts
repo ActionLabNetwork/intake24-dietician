@@ -6,14 +6,70 @@ import type { Result } from '@intake24-dietician/common/types/utils'
 import type { JwtPayload } from 'jsonwebtoken'
 import { createJwtTokenService } from '../services/token.service'
 import { match } from 'ts-pattern'
+import type {
+  SurveyAttributes,
+  TTokenType,
+} from '@intake24-dietician/common/types/auth'
 
 const tokenService = createJwtTokenService()
 
+const getTheSecret = async (
+  surveyID: string,
+  scope: string | null | undefined,
+) => {
+  if (scope !== undefined && scope === 'api_integration') {
+    const response = await fetch(
+      `${env.HOST}:${env.API_PORT}/survey/` +
+        surveyID +
+        `?scope=api_integration`,
+      {
+        method: 'GET',
+      },
+    )
+
+    if (!response.ok) {
+      console.log({
+        ok: false,
+        error: new Error(`Failed to fetch secret: ${response.statusText}`),
+      })
+      return undefined
+    }
+
+    const secret: Result<SurveyAttributes | null> =
+      (await response.json()) as Result<SurveyAttributes | null>
+    console.log('secret: ', secret)
+    if (secret.ok === false) {
+      console.log({
+        ok: false,
+        error: new Error(`Failed to fetch secret: ${secret.error}`),
+      })
+      return undefined
+    } else if (
+      secret.value === null ||
+      secret.value.intake24Secret.length === 0
+    ) {
+      console.log({
+        ok: false,
+        error: new Error(
+          `No secret assigned to the survey ID: ${secret.value}`,
+        ),
+      })
+      return null
+    }
+
+    // TODO: Fix in the future to more elegant solution (better way to remove quotes)
+    return secret.value.intake24Secret.trim().replace(/"/g, '')
+  }
+
+  return env.JWT_SECRET
+}
+
 const verifyJwtToken = (
   token: string,
-  tokenType: 'access-token' | 'refresh-token' = 'access-token',
+  tokenType: TTokenType = 'access-token',
+  secret: string = env.JWT_SECRET,
 ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
-  const decoded = tokenService.verify(token, env.JWT_SECRET)
+  const decoded = tokenService.verify(token, secret)
 
   return match(decoded)
     .with({ ok: true }, result => {
@@ -58,15 +114,40 @@ const verifyJwtToken = (
     .exhaustive()
 }
 
-export function expressAuthentication(
+export async function expressAuthentication(
   request: express.Request,
   _securityName: string,
   scopes?: string[],
 ) {
-  const accessToken =
-    request.cookies['accessToken'] || request.headers['authorization']
+  console.log('I am in the Security middleware')
+  console.log('request.params ', request.params)
+  console.log('scope: ', scopes)
 
-  const decodedAccessToken = verifyJwtToken(accessToken, 'access-token')
+  const surveyID = request.params['requestSurveyId'] as string
+  let tokenType: TTokenType = 'access-token'
+  let accessToken = request.cookies['accessToken']
+  let secret = await getTheSecret(surveyID, scopes ? scopes[0] : null)
+  if (!secret) secret = env.JWT_SECRET
+  if (secret === null)
+    return new Promise(reject => {
+      reject(
+        generateErrorResponse(
+          '401',
+          'Unauthorized',
+          'No secret assigned to the survey ID',
+        ),
+      )
+    })
+  if (
+    scopes !== undefined &&
+    scopes.length !== 0 &&
+    scopes[0] === 'api_integration'
+  ) {
+    tokenType = 'api-autorization-token'
+    accessToken = request.headers['authorization']?.split(' ')[1]
+  }
+
+  const decodedAccessToken = verifyJwtToken(accessToken, tokenType, secret)
 
   return new Promise((resolve, reject) => {
     if (!accessToken) {

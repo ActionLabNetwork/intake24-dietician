@@ -4,11 +4,24 @@ import type { Result } from './utils'
 import type { Theme } from './theme'
 import type { ReminderConditions } from './reminder'
 
+
+export type TTokenType = 'access-token' | 'refresh-token' | 'api-autorization-token'
 export interface UserAttributes {
   id: number
   email: string
   password: string
   isVerified: boolean
+}
+
+export interface SurveyAttributes {
+  id: number
+  intake24SurveyId: string
+  intake24Secret: string
+  alias: string
+  name: string
+  recallSubmissionUrl: string
+  owner: UserAttributes
+  ownerId: number
 }
 
 export interface UserAttributesWithDieticianProfile extends UserAttributes {
