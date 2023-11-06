@@ -1,6 +1,8 @@
 <template>
   <div>
-    <p class="font-weight-medium">Update visual theme for the patient</p>
+    <p v-if="!hideLabel" class="font-weight-medium">
+      Update visual theme for the patient
+    </p>
     <div class="flex-container mt-4">
       <v-card v-for="theme in themes" :key="theme.title" class="flex-item pb-4">
         <v-img :src="getImage(theme.img)" cover></v-img>
@@ -22,7 +24,7 @@
             </div>
           </div>
         </v-card-title>
-        <v-card-subtitle>{{ theme.description }}</v-card-subtitle>
+        <div class="description">{{ theme.description }}</div>
       </v-card>
     </div>
   </div>
@@ -40,7 +42,10 @@ interface ThemeRef {
   type: Theme
 }
 
-const props = defineProps<{ defaultState: Theme }>()
+const props = withDefaults(
+  defineProps<{ defaultState: Theme; hideLabel?: boolean }>(),
+  { hideLabel: false },
+)
 const emit = defineEmits<{
   update: [theme: Theme]
 }>()
@@ -92,7 +97,7 @@ watch(
   display: flex;
   flex-direction: column;
   gap: 2rem;
-  max-width: min(40rem, 50vw);
+  max-width: min(40rem, 60vw);
 
   @media only screen and (min-width: 768px) {
     flex-direction: row;
@@ -107,6 +112,16 @@ watch(
 
 .title {
   font-size: clamp(1rem, 0.462vw + 0.88rem, 1.25rem);
+  word-wrap: break-word; // Break long words to prevent overflow
   line-height: clamp(1.5rem, 0.231vw + 1.44rem, 1.625rem);
+}
+
+.description {
+  color: #555;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 130%; /* 18.2px */
+  letter-spacing: 0.14px;
+  padding: 0 1rem;
 }
 </style>

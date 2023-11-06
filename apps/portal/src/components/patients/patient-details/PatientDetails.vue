@@ -57,9 +57,6 @@
         />
       </div>
       <div>
-        <p class="font-weight-medium">
-          Review and add new patient to the records
-        </p>
         <v-btn
           color="primary"
           class="text-none mt-4"
@@ -67,7 +64,7 @@
           :disabled="!isFormValid"
           @click.prevent="handleSubmit"
         >
-          Add patient to records
+          Update patient details
         </v-btn>
       </div>
     </v-form>
