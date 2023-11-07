@@ -7,6 +7,7 @@ import Redis from 'ioredis'
 
 const sequelize = new Sequelize(getDBUrl('intake24-dietician-db'), {
   logging: false,
+
 })
 sequelize.addModels([__dirname + '/**/*.model.ts'])
 
@@ -35,7 +36,7 @@ const connectMongo = async () => {
 const connectPostgres = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync({ force: false })
+    await sequelize.sync({ force: true })
     console.log('✅ Connected to Database')
   } catch (error) {
     console.error('❌ Unable to connect to database:', error)

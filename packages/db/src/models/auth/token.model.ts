@@ -12,6 +12,7 @@ import {
   DataType,
 } from 'sequelize-typescript'
 import User from './user.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface TokenAttributes {
   id: number
@@ -30,7 +31,7 @@ interface TokenCreationAttributes {
   expiresAt: Date
 }
 
-@Table
+@Table(getTableConfig(Token.name, 'tokens'))
 class Token extends Model<TokenAttributes, TokenCreationAttributes> {
   @PrimaryKey
   @AutoIncrement

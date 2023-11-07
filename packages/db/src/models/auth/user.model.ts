@@ -20,6 +20,7 @@ import UserRole from './user-role.model'
 import DieticianPatient from './dietician-patient.model'
 import DieticianProfile from './dietician-profile.model'
 import PatientProfile from './patient-profile.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface UserAttributes {
   id: number
@@ -40,7 +41,7 @@ interface UserCreationAttributes {
   password: string
 }
 
-@Table
+@Table(getTableConfig(User.name, 'users'))
 class User extends Model<UserAttributes, UserCreationAttributes> {
   @PrimaryKey
   @AutoIncrement

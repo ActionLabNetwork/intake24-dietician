@@ -13,6 +13,7 @@ import Permission from './permission.model'
 import UserRole from './user-role.model'
 import User from './user.model'
 import RolePermission from './role-permission.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface RoleAttributes {
   id: number
@@ -24,7 +25,7 @@ interface RoleCreationAttributes {
   name: string
 }
 
-@Table
+@Table(getTableConfig(Role.name, 'roles'))
 class Role extends Model<RoleAttributes, RoleCreationAttributes> {
   @PrimaryKey
   @AutoIncrement

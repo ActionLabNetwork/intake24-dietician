@@ -8,6 +8,7 @@ import {
   DataType,
 } from 'sequelize-typescript'
 import User from './user.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface DieticianProfileAttributes {
   userId: number
@@ -26,7 +27,7 @@ interface DieticianProfileCreationAttributes {
   userId: number
 }
 
-@Table
+@Table(getTableConfig(DieticianProfile.name, 'dietician_profiles'))
 class DieticianProfile extends Model<
   DieticianProfileAttributes,
   DieticianProfileCreationAttributes
