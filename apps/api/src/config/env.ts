@@ -14,6 +14,7 @@ export const env = createEnv({
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
     JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
     JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),
+    JWT_API_INTEGRATION_ISSUER: withDevDefault(z.string(), 'intake24'),
     MAILTRAP_HOST: withDevDefault(z.string(), 'sandbox.smtp.mailtrap.io'),
     MAILTRAP_PORT: withDevDefault(
       z

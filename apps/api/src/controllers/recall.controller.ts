@@ -69,6 +69,7 @@ export class RecallController extends Controller {
         meals: requestBody.meals,
         survey: requestBody.survey,
         customFields: requestBody.customFields,
+        addedToRecallDb: new Date(),
     }
     return this.recallService.createRecall(recallTOBeSaved as IRecallExtended)
   }

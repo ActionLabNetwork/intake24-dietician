@@ -87,13 +87,30 @@ const verifyJwtToken = (
         } as const
       }
 
-      if (decoded?.['tokenType'] !== tokenType) {
+      if (
+        tokenType !== 'api-autorization-token' &&
+        decoded?.['tokenType'] !== tokenType
+      ) {
+        console.log('decoded: ', decoded)
         return {
           ok: false,
           error: new Error(
             `Invalid token type. Please provide ${
               tokenType === 'access-token' ? 'an' : 'a'
             } ${tokenType}.`,
+          ),
+        } as const
+      }
+
+      if (
+        tokenType === 'api-autorization-token' &&
+        decoded?.['iss'] !== env.JWT_API_INTEGRATION_ISSUER
+      ) {
+        console.log('decoded: ', decoded)
+        return {
+          ok: false,
+          error: new Error(
+            `Invalid token provider. Please provide a correct one`,
           ),
         } as const
       }
@@ -118,14 +135,11 @@ export async function expressAuthentication(
   _securityName: string,
   scopes?: string[],
 ) {
-  console.log('I am in the Security middleware')
-  console.log('request.params ', request.params)
-  console.log('scope: ', scopes)
-
   const surveyID = request.params['requestSurveyId'] as string
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
   let secret = await getTheSecret(surveyID, scopes ? scopes[0] : null)
+
   if (!secret) secret = env.JWT_SECRET
   if (secret === null)
     return new Promise(reject => {
@@ -161,6 +175,16 @@ export async function expressAuthentication(
 
     match(decodedAccessToken)
       .with({ ok: true }, result => {
+        // TODO: Might be too short for the intake24 integration, since the token is valid for 1 minute only
+        if (result.value.tokenExpired) {
+          reject(
+            generateErrorResponse(
+              '401',
+              'Unauthorized',
+              'Access token has expired',
+            ),
+          )
+        }
         if (scopes === undefined) {
           resolve(result.value)
         }

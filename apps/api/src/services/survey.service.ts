@@ -16,6 +16,7 @@ export const createSurveyService = () => {
   const getSurveySecretByAlias = async (id: string): Promise< Result <SurveyAttributes| null | Error >> => {
     try {
       const secret = await Survey.findOne({ where : { intake24SurveyId: id }, attributes: ['intake24Secret'] })
+      console.log('getSurveySecretByAlias: ', secret)
       if (secret !== null) return { ok: true, value: secret } as const
       return { ok: true, value: null } as const
     } 
