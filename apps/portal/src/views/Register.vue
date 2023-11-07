@@ -20,7 +20,7 @@ const formCols = computed(() => (mdAndUp.value ? 5 : 12))
 const heroImageCols = computed(() => (mdAndUp.value ? 7 : 0))
 </script>
 
-<style scoped>
+<style scoped lang=scss>
 .hero-image {
   background-image: url('@/assets/auth/register/RegisterHero.png');
   background-position: center;
