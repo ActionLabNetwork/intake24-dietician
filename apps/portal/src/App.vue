@@ -16,8 +16,7 @@ const i18nStore = useI18nStore()
 const { locale } = useI18n<i18nOptions>()
 const { systemLocale } = storeToRefs(i18nStore)
 
-const icon = useFavicon('logo.svg', { baseUrl: '/src/assets/', rel: 'icon' })
-console.log({ icon })
+useFavicon('logo.svg', { baseUrl: '/src/assets/', rel: 'icon' })
 
 watch(
   () => systemLocale.value,

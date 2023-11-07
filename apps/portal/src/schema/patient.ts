@@ -1,20 +1,10 @@
 import { z } from 'zod'
+import { MobileNumberSchema } from './common'
 
 export const genders = ['Male', 'Female', 'Other'] as const
 export const reminderUnits = ['days', 'weeks', 'months'] as const
 
-export type Gender = typeof genders[number]
-
-// Mobile number schemas
-const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/)
-const IndonesianMobileSchema = z.string().regex(/^\+?628\d{8,11}$/)
-const MalaysianMobileSchema = z.string().regex(/^01\d{7,8}$/)
-
-const MobileNumberSchema = z.union([
-  AustralianMobileSchema,
-  IndonesianMobileSchema,
-  MalaysianMobileSchema,
-])
+export type Gender = (typeof genders)[number]
 
 const ContactDetailsSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),

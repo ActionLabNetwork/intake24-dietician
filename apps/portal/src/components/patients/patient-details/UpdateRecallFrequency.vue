@@ -156,7 +156,6 @@ watch(reminderConditions, newVal => {
 watch(
   () => props.defaultState,
   newVal => {
-    console.log({ newVal })
     if (!newVal) return
 
     reminderConditions.value = newVal

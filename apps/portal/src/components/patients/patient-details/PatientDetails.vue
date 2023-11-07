@@ -173,7 +173,6 @@ const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
 
 const handleSubmit = async (): Promise<void> => {
   return new Promise((resolve, reject) => {
-    console.log({ aggregatedData: aggregatedData.value })
     // Validate with zod
     const result = PatientSchema.safeParse(aggregatedData.value)
 
@@ -211,7 +210,6 @@ const handleSubmit = async (): Promise<void> => {
 }
 
 const patient = computed(() => {
-  console.log({ PatientData: patientQuery.data.value?.data.data })
   return patientQuery.data.value?.data.data
 })
 

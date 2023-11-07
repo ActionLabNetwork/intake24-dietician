@@ -3,7 +3,7 @@
     <p class="font-weight-medium">
       {{ t('profile.form.shortBio.title') }}
     </p>
-    <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
+    <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
           <v-textarea

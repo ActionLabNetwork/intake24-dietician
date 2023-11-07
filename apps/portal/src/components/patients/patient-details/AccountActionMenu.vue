@@ -91,7 +91,6 @@ const activatePatientMutation = useRestorePatient()
 const deletePatientMutation = useDeletePatient()
 
 const archiveOrActivateLabel = computed(() => {
-  console.log({ patient: props.patient })
   return activateOrDelete.value === 'activate'
     ? 'Activate patient account'
     : 'Archive patient account'

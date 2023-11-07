@@ -62,10 +62,8 @@ export const usePatientById = (userId: string) => {
   })
 
   const invalidatePatientByIdQuery = async () => {
-    console.log('Invalidated')
     await queryClient.invalidateQueries({ queryKey: [userId] })
     await queryClient.refetchQueries({ queryKey: [userId] })
-    console.log({ data })
   }
 
   return {
