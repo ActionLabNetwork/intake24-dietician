@@ -15,8 +15,8 @@ const tokenService = createJwtTokenService()
 
 const getTheSecret = async (
   surveyID: string,
-  intake24SurveyId: string,
   scope: string | null | undefined,
+  intake24SurveyId: string | undefined = undefined,
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
     const response = await fetch(
@@ -141,9 +141,10 @@ export async function expressAuthentication(
   const surveyID = request.params['requestSurveyId'] as string
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
-  const intake24SurveyId = request.body.survey.slug as string
-  if (scopes !==undefined && scopes[0] === 'api_integration' && intake24SurveyId === undefined)
-    return new Promise(reject => {
+  let intake24SurveyId;
+  if (scopes !==undefined && scopes[0] === 'api_integration'){
+    intake24SurveyId = request.body.survey.slug as string
+    if (!intake24SurveyId) return new Promise(reject => {
       reject(
         generateErrorResponse(
           '422',
@@ -152,10 +153,12 @@ export async function expressAuthentication(
         ),
       )
     })
+  }
+
   let secret = await getTheSecret(
     surveyID,
-    intake24SurveyId,
     scopes ? scopes[0] : null,
+    intake24SurveyId,
   )
 
   if (!secret) secret = env.JWT_SECRET
