@@ -11,6 +11,7 @@ import {
 } from 'sequelize-typescript'
 import RolePermission from './role-permission.model'
 import Role from './role.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface PermissionAttributes {
   id: number
@@ -21,7 +22,7 @@ interface PermissionCreationAttributes {
   name: string
 }
 
-@Table
+@Table(getTableConfig(Permission.name, 'permissions'))
 class Permission extends Model<
   PermissionAttributes,
   PermissionCreationAttributes

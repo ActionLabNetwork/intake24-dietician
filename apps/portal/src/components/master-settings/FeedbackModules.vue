@@ -39,16 +39,14 @@
       </div>
 
       <v-divider class="my-10" />
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
-      >
+      <div>
         <v-form ref="form">
           <v-row
             v-for="(fieldConfig, fieldName) in formConfig"
             :key="fieldName"
             class="mt-5"
           >
-            <v-col cols="12" sm="6">
+            <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
               <div :class="fieldConfig.class">
                 <div class="d-flex justify-start align-start">
                   <div>
@@ -75,7 +73,8 @@
                 </div>
               </div>
             </v-col>
-            <v-col cols="12" sm="6">
+            <v-spacer />
+            <v-col cols="12" :sm="smColOptions(fieldConfig.column)" class="self-end">
               <div
                 v-if="fieldConfig.element === 'input'"
                 class="survey-id-input"
@@ -84,7 +83,7 @@
                   type="text"
                   v-bind="fieldConfig.props"
                   :value="fieldConfig.value"
-                  v
+                  placeholder="--- --- --- ---"
                   @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
                 >
                   Intake24 Survey ID
@@ -136,6 +135,7 @@ import { PatientSchema } from '@/schema/patient'
 import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 import BaseInput from '@/components/form/BaseInput.vue'
+import ModuleSelectionAndFeedbackPersonalisation from './ModuleSelectionAndFeedbackPersonalisation.vue'
 // const { t } = useI18n<i18nOptions>()
 
 type CSSClass = string | string[] | object
@@ -154,6 +154,7 @@ interface FormFieldConfig<TVal, TProps = Record<string, unknown>> {
   props?: TProps
   value?: TVal
   class?: CSSClass
+  column: 1 | 2
   onUpdate?: (newValue: TVal) => void
 }
 
@@ -167,6 +168,8 @@ const form = ref()
 
 const theme = ref<Theme>('Classic')
 const sendAutomatedFeedback = ref<boolean>(false)
+
+const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
 
 const aggregatedData = computed(() => ({
   theme: theme.value,
@@ -220,6 +223,7 @@ onMounted(() => {
         class: 'text heading',
       },
       class: 'text section-heading',
+      column: 2,
     },
     surveyIdInput: {
       heading: {
@@ -236,6 +240,7 @@ onMounted(() => {
         required: true,
       },
       value: '',
+      column: 2,
       onUpdate: (value: string) => {
         console.log({ value })
       },
@@ -252,6 +257,7 @@ onMounted(() => {
         hideLabel: true,
       },
       value: theme,
+      column: 2,
       onUpdate: (newTheme: Theme) => {
         formConfig['themeSelector']!.value = newTheme
         handleVisualThemeUpdate(newTheme)
@@ -269,6 +275,7 @@ onMounted(() => {
         hideLabel: true,
       },
       value: sendAutomatedFeedback,
+      column: 2,
       onUpdate: (isEnabled: boolean) => {
         formConfig['automatedFeedbackToggle']!.value = isEnabled
         handleSendAutomatedFeedback(isEnabled)
@@ -277,6 +284,8 @@ onMounted(() => {
     // TODO: Add modules component
     moduleSelectionAndFeedbackPersonalisation: {
       heading: { label: 'Module selection and feedback personalisation' },
+      component: ModuleSelectionAndFeedbackPersonalisation,
+      column: 1,
     },
   }
 })

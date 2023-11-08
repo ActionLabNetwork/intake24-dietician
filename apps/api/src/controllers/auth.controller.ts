@@ -73,7 +73,7 @@ export class AuthController extends Controller {
           { email: hash(email), action: 'login' },
           'User logged in',
         )
-        this.setAuthHeaders(result.value.token)
+        this.setAuthHeaders(result.value.token, 'both')
         return { data: { email: result.value.email } }
       })
       .with({ ok: false }, result => {
@@ -123,7 +123,7 @@ export class AuthController extends Controller {
           )
         }
 
-        this.setAuthHeaders(result.value.token)
+        this.setAuthHeaders(result.value.token, 'both')
         this.logger.info(
           { email: hash(email), action: 'register', statusCode: 201 },
           'User registered',
@@ -203,7 +203,7 @@ export class AuthController extends Controller {
           { email: hash(identifier), action: 'login' },
           'User logged in',
         )
-        this.setAuthHeaders(result.value.token)
+        this.setAuthHeaders(result.value.token, 'both')
         return { data: { email: result.value.email } }
       })
       .with({ ok: false }, result => {
@@ -358,9 +358,10 @@ export class AuthController extends Controller {
 
     return match(isJwtValid)
       .with({ ok: true }, result => {
-        this.setHeader('Set-Cookie', [
-          `accessToken=${result.value};HttpOnly;SameSite=none;Secure;Path=/`,
-        ])
+        this.setAuthHeaders(
+          { accessToken: result.value, refreshToken: '' },
+          'access',
+        )
         return { isAuthenticated: true }
       })
       .with({ ok: false }, () => {
@@ -528,10 +529,20 @@ export class AuthController extends Controller {
       .exhaustive()
   }
 
-  private setAuthHeaders(token: Token): void {
-    this.setHeader('Set-Cookie', [
-      `accessToken=${token.accessToken};HttpOnly;SameSite=none;Secure;Path=/`,
-      `refreshToken=${token.refreshToken};HttpOnly;SameSite=none;Secure;Path=/`,
-    ])
+  private setAuthHeaders(
+    token: Token,
+    scope: 'access' | 'refresh' | 'both',
+  ): void {
+    let cookies: string[] = []
+
+    if (scope === 'access' || scope === 'both') {
+      cookies.push(`accessToken=${token.accessToken};HttpOnly;Secure;Path=/`)
+    }
+
+    if (scope === 'refresh' || scope === 'both') {
+      cookies.push(`refreshToken=${token.refreshToken};HttpOnly;Secure;Path=/`)
+    }
+
+    this.setHeader('Set-Cookie', cookies)
   }
 }

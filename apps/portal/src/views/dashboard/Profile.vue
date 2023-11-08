@@ -141,7 +141,6 @@ const handleSubmit = async (validate = true): Promise<void> => {
       {
         dieticianProfile: {
           ...profileFormValues.value,
-          avatar: '',
         },
       },
       {

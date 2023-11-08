@@ -3,30 +3,30 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Roles', null, {})
+    await queryInterface.bulkDelete('roles', null, {})
     await queryInterface.sequelize.query(
-      'ALTER SEQUENCE "Roles_id_seq" RESTART WITH 1',
+      'ALTER SEQUENCE "roles_id_seq" RESTART WITH 1',
     )
     await queryInterface.bulkInsert(
-      'Roles',
+      'roles',
       [
         {
           name: 'admin',
           description: '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
         },
         {
           name: 'dietician',
           description: '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
         },
         {
           name: 'patient',
           description: '',
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          created_at: new Date(),
+          updated_at: new Date(),
         },
       ],
       {},
@@ -34,6 +34,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.bulkDelete('Roles', null, {})
+    await queryInterface.bulkDelete('roles', null, {})
   },
 }

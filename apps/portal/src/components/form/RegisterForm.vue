@@ -119,6 +119,7 @@ import {
 
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import router from '@intake24-dietician/portal/router'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -145,6 +146,9 @@ const handleSubmit = () => {
         password: password.value,
       },
       {
+        onSuccess() {
+          router.push('/dashboard/my-profile')
+        },
         onError() {
           error.value =
             'Invalid credentials. Please try again with a different one.'

@@ -25,8 +25,10 @@
         </v-btn>
       </v-row>
       <v-row class="mt-6">
-        <v-col cols="3"><DetailsAndNavCard /></v-col>
-        <v-col cols="9" class="px-16">
+        <v-col cols="12" md="3"
+          ><DetailsAndNavCard class="mx-auto mb-10"
+        /></v-col>
+        <v-col cols="12" md="9" class="px-16">
           <router-view />
         </v-col>
       </v-row>
@@ -57,7 +59,7 @@ const breadcrumbItems = ref([
   },
   {
     title: 'Patient records',
-    disabled: false,
+    disabled: true,
     href: '/dashboard/patient-records',
   },
 ])

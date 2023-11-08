@@ -1,22 +1,13 @@
 import { z } from 'zod'
+import { MobileNumberSchema } from './common'
+import { createFormSchema } from '../types/validation.types'
 
 export const genders = ['Male', 'Female', 'Other'] as const
 export const reminderUnits = ['days', 'weeks', 'months'] as const
 
-export type Gender = typeof genders[number]
+export type Gender = (typeof genders)[number]
 
-// Mobile number schemas
-const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/)
-const IndonesianMobileSchema = z.string().regex(/^\+?628\d{8,11}$/)
-const MalaysianMobileSchema = z.string().regex(/^01\d{7,8}$/)
-
-const MobileNumberSchema = z.union([
-  AustralianMobileSchema,
-  IndonesianMobileSchema,
-  MalaysianMobileSchema,
-])
-
-const ContactDetailsSchema = z.object({
+export const ContactDetailsSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   middleName: z.string(),
   lastName: z.string(),
@@ -25,6 +16,24 @@ const ContactDetailsSchema = z.object({
   emailAddress: z.string().email('Invalid email address'),
   address: z.string(),
 })
+
+export const contactDetailsSchemaName = createFormSchema(
+  ['firstName', 'middleName', 'lastName'] as const,
+  {
+    firstName: z.string().min(1, 'First name is required'),
+    middleName: z.string(),
+    lastName: z.string(),
+  },
+)
+
+export const contactDetailsSchemaContact = createFormSchema(
+  ['mobileNumber', 'emailAddress', 'address'] as const,
+  {
+    mobileNumber: MobileNumberSchema,
+    emailAddress: z.string().email(),
+    address: z.string(),
+  },
+)
 
 const PersonalDetailsSchema = z.object({
   age: z.number(),

@@ -23,7 +23,7 @@ if (!token) {
 }
 </script>
 
-<style>
+<style scoped lang="scss">
 .hero-image {
   background-image: url('@/assets/auth/register/RegisterHero.png');
   background-position: center;

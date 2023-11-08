@@ -1,8 +1,8 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div>
-    <p class="font-weight-medium">Update recall frequency</p>
-    <v-card class="mt-4" width="100%" flat>
+    <p v-if="!hideLabel" class="font-weight-medium">Update recall frequency</p>
+    <v-card class="wrapper mt-4" width="100%" flat>
       <div class="v-row align-center">
         <div class="v-col">
           <BaseInput
@@ -28,7 +28,7 @@
         </div>
       </div>
     </v-card>
-    <v-card class="mt-4" width="100%" flat>
+    <v-card class="wrapper mt-4" width="100%" flat>
       <div class="form-label pb-2">
         Ends <span class="text-primary">(required)</span>
       </div>
@@ -83,7 +83,10 @@ import {
   units,
 } from '@intake24-dietician/common/types/reminder'
 
-const props = defineProps<{ defaultState: ReminderConditions }>()
+const props = withDefaults(
+  defineProps<{ defaultState: ReminderConditions; hideLabel?: boolean }>(),
+  { hideLabel: false },
+)
 const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
 
 const reminderConditions = ref<ReminderConditions>({
@@ -153,7 +156,6 @@ watch(reminderConditions, newVal => {
 watch(
   () => props.defaultState,
   newVal => {
-    console.log({ newVal })
     if (!newVal) return
 
     reminderConditions.value = newVal
@@ -177,6 +179,9 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.wrapper {
+  background-color: inherit;
+}
 .subheading {
   color: #555;
   font-family: Roboto;

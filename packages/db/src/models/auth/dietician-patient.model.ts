@@ -6,8 +6,9 @@ import {
   Table,
 } from 'sequelize-typescript'
 import User from './user.model'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
-@Table
+@Table(getTableConfig(DieticianPatient.name, 'dietician_patients'))
 class DieticianPatient extends Model {
   @PrimaryKey
   @ForeignKey(() => User)

@@ -7,76 +7,41 @@
           <v-row dense justify="center" align="center">
             <v-col class="v-col-2" align="center">
               <div class="d-flex flex-column">
-                <v-avatar size="100%" class="avatar mx-auto">
-                  <v-img
-                    :src="avatarImage"
-                    alt="Avatar"
-                    height="100%"
-                    width="100%"
-                  />
-                </v-avatar>
-                <v-btn
-                  class="mt-5 text-center font-weight-medium text-capitalize"
-                  flat
-                  @click="
-                    () => {
-                      imageUpload.click()
-                    }
-                  "
-                >
-                  {{ mode === 'Add' ? 'Upload Image' : 'Update Image' }}
-                </v-btn>
-                <input
-                  ref="imageUpload"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  @change="handleImageUpload"
+                <ImageUpload
+                  :default-state="defaultState.avatar || ''"
+                  @update="value => handleFieldUpdate('avatar', value)"
                 />
               </div>
             </v-col>
             <v-divider vertical class="mx-5"></v-divider>
             <v-col>
-              <!-- First name -->
-              <BaseInput
-                type="text"
-                name="firstName"
-                autocomplete="given-name"
-                :value="formValues.firstName"
-                :rules="[requiredValidator('First name')]"
-                @update="val => handleFieldUpdate('firstName', val)"
+              <div
+                v-for="(config, fieldName) in formConfigNames"
+                :key="fieldName"
               >
-                <span class="input-label">
-                  {{ t('profile.form.personalDetails.firstName.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <!-- Middle name -->
-              <BaseInput
-                type="text"
-                name="middleName"
-                autocomplete="additional-name"
-                :value="formValues.middleName"
-                @update="val => handleFieldUpdate('middleName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.middleName.label') }}
-                </p>
-              </BaseInput>
-              <!-- Last name -->
-              <BaseInput
-                type="text"
-                name="lastName"
-                autocomplete="family-name"
-                :value="formValues.lastName"
-                @update="val => handleFieldUpdate('lastName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.lastName.label') }}
-                </p>
-              </BaseInput>
+                <div v-if="config.type === 'input'">
+                  <BaseInput
+                    :type="config.inputType ?? 'text'"
+                    :name="config.key"
+                    :rules="config.rules ?? []"
+                    :autocomplete="config.autocomplete ?? 'off'"
+                    :value="formValues[fieldName]"
+                    :suffix-icon="config.suffixIcon ?? ''"
+                    :handle-icon-click="
+                      config.handleSuffixIconClick ?? (() => {})
+                    "
+                    :class="config.class"
+                    @update="config.handleUpdate"
+                  >
+                    <span class="input-label">
+                      {{ config.label }}
+                    </span>
+                    <span v-if="config.labelSuffix" class="input-label suffix">
+                      {{ config.labelSuffix }}
+                    </span>
+                  </BaseInput>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -84,77 +49,42 @@
         <div v-else>
           <v-row dense justify="center" align="center">
             <div class="d-flex flex-column">
-              <v-avatar size="100%" class="avatar mx-auto">
-                <v-img
-                  :src="avatarImage"
-                  alt="Avatar"
-                  height="100%"
-                  width="100%"
-                />
-              </v-avatar>
-              <v-btn
-                class="mt-5 text-center font-weight-medium text-capitalize"
-                flat
-                @click="
-                  () => {
-                    imageUpload.click()
-                  }
-                "
-              >
-                {{ mode === 'Add' ? 'Upload Image' : 'Update Image' }}
-              </v-btn>
-              <input
-                ref="imageUpload"
-                type="file"
-                accept="image/*"
-                hidden
-                @change="handleImageUpload"
+              <ImageUpload
+                :default-state="defaultState.avatar || ''"
+                @update="value => handleFieldUpdate('avatar', value)"
               />
             </div>
           </v-row>
           <v-divider class="my-5" />
           <v-row dense justify="center" align="center">
             <v-col>
-              <!-- First name -->
-              <BaseInput
-                type="text"
-                name="firstName"
-                autocomplete="given-name"
-                :value="formValues.firstName"
-                :rules="[requiredValidator('First name')]"
-                @update="val => handleFieldUpdate('firstName', val)"
+              <div
+                v-for="(config, fieldName) in formConfigNames"
+                :key="fieldName"
               >
-                <span class="input-label">
-                  {{ t('profile.form.personalDetails.firstName.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <!-- Middle name -->
-              <BaseInput
-                type="text"
-                name="middleName"
-                autocomplete="additional-name"
-                :value="formValues.middleName"
-                @update="val => handleFieldUpdate('middleName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.middleName.label') }}
-                </p>
-              </BaseInput>
-              <!-- Last name -->
-              <BaseInput
-                type="text"
-                name="lastName"
-                autocomplete="family-name"
-                :value="formValues.lastName"
-                @update="val => handleFieldUpdate('lastName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.lastName.label') }}
-                </p>
-              </BaseInput>
+                <div v-if="config.type === 'input'">
+                  <BaseInput
+                    :type="config.inputType ?? 'text'"
+                    :name="config.key"
+                    :rules="config.rules ?? []"
+                    :autocomplete="config.autocomplete ?? 'off'"
+                    :value="formValues[fieldName]"
+                    :suffix-icon="config.suffixIcon ?? ''"
+                    :handle-icon-click="
+                      config.handleSuffixIconClick ?? (() => {})
+                    "
+                    :class="config.class"
+                    @update="config.handleUpdate"
+                  >
+                    <span class="input-label">
+                      {{ config.label }}
+                    </span>
+                    <span v-if="config.labelSuffix" class="input-label suffix">
+                      {{ config.labelSuffix }}
+                    </span>
+                  </BaseInput>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -163,153 +93,95 @@
     <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
-          <v-col cols="12" md="4">
-            <!-- Mobile number -->
-            <BaseInput
-              type="tel"
-              name="mobileNumber"
-              autocomplete="tel"
-              :value="formValues.mobileNumber"
-              :rules="[mobileNumberValidator]"
-              @update="newVal => handleFieldUpdate('mobileNumber', newVal)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.contactDetails.mobileNumber.label') }}
-              </span>
-              <span class="input-label suffix">
-                {{ t('profile.form.contactDetails.mobileNumber.labelSuffix') }}
-              </span>
-            </BaseInput>
-          </v-col>
-          <v-col cols="12" md="4">
-            <div v-if="mode === 'Add'">
-              <!-- Email address -->
+          <v-col
+            v-for="(fieldConfig, fieldName) in formConfigContact"
+            :key="fieldName"
+            cols="12"
+            md="4"
+          >
+            <div v-if="fieldConfig.type === 'input'">
               <BaseInput
-                type="email"
-                name="emailAddress"
-                autocomplete="email"
-                :value="formValues.emailAddress"
-                :rules="[emailValidator]"
-                @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                :type="fieldConfig.inputType ?? 'text'"
+                :name="fieldName"
+                :value="formValues[fieldName]"
+                :suffix-icon="fieldConfig.suffixIcon"
+                :handle-icon-click="fieldConfig.handleSuffixIconClick"
+                :rules="fieldConfig.rules"
+                :readonly="fieldConfig.readonly || false"
+                @update="newVal => handleFieldUpdate(fieldName, newVal)"
               >
                 <span class="input-label">
-                  {{ t('profile.form.contactDetails.email.label') }}
+                  {{ fieldConfig.label }}
                 </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.contactDetails.email.labelSuffix') }}
+                <span v-if="fieldConfig.labelSuffix" class="input-label suffix">
+                  {{ fieldConfig.labelSuffix }}
                 </span>
               </BaseInput>
             </div>
-            <div v-if="mode === 'Edit'">
-              <!-- Email address -->
-              <BaseInput
-                type="email"
-                name="emailAddress"
-                autocomplete="email"
-                readonly
-                :value="currentEmailAddress"
-                :rules="[emailValidator]"
-                suffix-icon="mdi-mail"
-                :handle-icon-click="
-                  () => {
-                    changeEmailDialog = true
-                  }
-                "
-                @update="newVal => handleFieldUpdate('emailAddress', newVal)"
-              >
-                <span class="input-label">
-                  {{ t('profile.form.contactDetails.email.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.contactDetails.email.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <v-dialog v-model="changeEmailDialog" max-width="90vw">
-                <v-card>
-                  <v-card-title>Change Email</v-card-title>
-                  <v-card-text>
-                    <BaseInput
-                      type="email"
-                      :value="currentEmailAddress"
-                      readonly
-                    >
-                      <span class="input-label">
-                        {{ t('profile.form.contactDetails.email.label') }}
-                      </span>
-                    </BaseInput>
-                    <BaseInput
-                      type="email"
-                      :value="formValues.emailAddress"
-                      @update="
-                        newVal => handleFieldUpdate('emailAddress', newVal)
-                      "
-                    >
-                      <span class="input-label">
-                        New {{ t('profile.form.contactDetails.email.label') }}
-                      </span>
-                    </BaseInput>
-                    <v-btn
-                      size="small"
-                      type="submit"
-                      color="secondary text-capitalize"
-                      class="mb-10"
-                      :disabled="showVerificationTokenField"
-                      :loading="generateTokenMutation.isLoading.value"
-                      @click="handleSendVerificationToken"
-                    >
-                      {{
-                        showVerificationTokenField
-                          ? 'Verification token sent'
-                          : 'Send verification token'
-                      }}
-                    </v-btn>
-                    <v-text-field
-                      v-if="showVerificationTokenField"
-                      v-model="verificationToken"
-                      label="Enter Verification Token"
-                      required
-                    ></v-text-field>
-                    <v-alert
-                      v-if="errorMsg"
-                      type="error"
-                      dense
-                      border="top"
-                      variant="outlined"
-                    >
-                      {{ errorMsg }}
-                    </v-alert>
-                  </v-card-text>
-                  <v-card-actions>
-                    <v-btn
-                      :disabled="!verificationToken"
-                      color="primary"
-                      @click="handleVerifyToken"
-                    >
-                      Verify Token
-                    </v-btn>
-                    <v-btn
-                      color="grey"
-                      @click="() => (changeEmailDialog = false)"
-                    >
-                      Close
-                    </v-btn>
-                  </v-card-actions>
-                </v-card>
-              </v-dialog>
-            </div>
           </v-col>
-          <v-col cols="12" md="4">
-            <!-- Address -->
-            <BaseInput
-              type="text"
-              name="address"
-              autocomplete="address-level3"
-              :value="formValues.address"
-              @update="newVal => handleFieldUpdate('address', newVal)"
-            >
-              <span class="input-label"> Address </span>
-            </BaseInput>
-          </v-col>
+          <v-dialog v-model="changeEmailDialog" max-width="90vw">
+            <v-card>
+              <v-card-title>Change Email</v-card-title>
+              <v-card-text>
+                <BaseInput type="email" :value="currentEmailAddress" readonly>
+                  <span class="input-label">
+                    {{ t('profile.form.contactDetails.email.label') }}
+                  </span>
+                </BaseInput>
+                <BaseInput
+                  type="email"
+                  :value="formValues.emailAddress"
+                  @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                >
+                  <span class="input-label">
+                    New {{ t('profile.form.contactDetails.email.label') }}
+                  </span>
+                </BaseInput>
+                <v-btn
+                  size="small"
+                  type="submit"
+                  color="secondary text-capitalize"
+                  class="mb-10"
+                  :disabled="showVerificationTokenField"
+                  :loading="generateTokenMutation.isLoading.value"
+                  @click="handleSendVerificationToken"
+                >
+                  {{
+                    showVerificationTokenField
+                      ? 'Verification token sent'
+                      : 'Send verification token'
+                  }}
+                </v-btn>
+                <v-text-field
+                  v-if="showVerificationTokenField"
+                  v-model="verificationToken"
+                  label="Enter Verification Token"
+                  required
+                ></v-text-field>
+                <v-alert
+                  v-if="errorMsg"
+                  type="error"
+                  dense
+                  border="top"
+                  variant="outlined"
+                >
+                  {{ errorMsg }}
+                </v-alert>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn
+                  :disabled="!verificationToken"
+                  color="primary"
+                  @click="handleVerifyToken"
+                >
+                  Verify Token
+                </v-btn>
+                <v-btn color="grey" @click="() => (changeEmailDialog = false)">
+                  Close
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-row>
       </v-container>
     </v-card>
@@ -324,14 +196,18 @@ import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
-import { requiredValidator, emailValidator } from '@/validators/auth'
-import { mobileNumberValidator } from '@intake24-dietician/portal/validators/auth/profile'
 import { ref, watch } from 'vue'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import {
   useGenerateToken,
   useVerifyToken,
 } from '@intake24-dietician/portal/mutations/useAuth'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
+import { Form } from '../../profile/types'
+import ImageUpload from '../../profile/ImageUpload.vue'
+import {
+  contactDetailsSchemaName,
+  contactDetailsSchemaContact,
+} from '@intake24-dietician/portal/schema/patient'
 
 export interface ContactDetailsFormValues {
   firstName: string
@@ -356,9 +232,6 @@ const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-const imageUpload = ref()
-const avatarImage = ref()
-
 // Email change refs and composables
 const generateTokenMutation = useGenerateToken()
 const verifyTokenMutation = useVerifyToken()
@@ -379,25 +252,6 @@ const handleFieldUpdate = useDebounceFn(
   },
   INPUT_DEBOUNCE_TIME,
 )
-
-const handleImageUpload = () => {
-  const file = imageUpload.value.files[0]
-
-  if (!file) return
-
-  const objectURL = URL.createObjectURL(file)
-  avatarImage.value = objectURL
-
-  const reader = new FileReader()
-  reader.readAsDataURL(file)
-  reader.onloadend = () => {
-    const base64data = reader.result
-    formValues.value.avatar = base64data?.toString() ?? ''
-    emit('update', { ...formValues.value })
-
-    URL.revokeObjectURL(objectURL)
-  }
-}
 
 const handleSendVerificationToken = () => {
   generateTokenMutation.mutate(
@@ -440,6 +294,100 @@ const handleVerifyToken = () => {
   )
 }
 
+const formConfigNames: Form<(typeof contactDetailsSchemaName.fields)[number]> =
+  {
+    firstName: {
+      key: 'firstName',
+      label: t('profile.form.personalDetails.firstName.label'),
+      required: true,
+      labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(contactDetailsSchemaName.schema.firstName, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('firstName', val),
+    },
+    middleName: {
+      key: 'middleName',
+      label: t('profile.form.personalDetails.middleName.label'),
+      required: false,
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(contactDetailsSchemaName.schema.middleName, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('middleName', val),
+    },
+    lastName: {
+      key: 'lastName',
+      label: t('profile.form.personalDetails.lastName.label'),
+      required: false,
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(contactDetailsSchemaName.schema.lastName, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('lastName', val),
+    },
+  }
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+const formConfigContact: Form<
+  (typeof contactDetailsSchemaContact.fields)[number]
+  // eslint-disable-next-line vue/no-setup-props-destructure
+> = {
+  mobileNumber: {
+    key: 'mobileNumber',
+    autocomplete: 'tel',
+    label: t('profile.form.contactDetails.mobileNumber.label'),
+    labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
+    required: true,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchemaContact.schema.mobileNumber, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('mobileNumber', val),
+  },
+  emailAddress: {
+    key: 'emailAddress',
+    autocomplete: 'email',
+    label: t('profile.form.contactDetails.email.label'),
+    labelSuffix: t('profile.form.contactDetails.email.labelSuffix'),
+    required: true,
+    readonly: props.mode === 'Edit',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchemaContact.schema.emailAddress, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('emailAddress', val),
+    suffixIcon: 'mdi-mail',
+    handleSuffixIconClick: () => {
+      changeEmailDialog.value = true
+    },
+  },
+  address: {
+    key: 'address',
+    autocomplete: 'address-level3',
+    label: 'Address',
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchemaContact.schema.address, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('address', val),
+  },
+}
+
 watch(
   () => props.defaultState,
   newDefaultState => {
@@ -448,8 +396,6 @@ watch(
       firstName: newDefaultState.firstName,
       lastName: newDefaultState.lastName,
     }
-    avatarImage.value =
-      newDefaultState.avatar ?? getDefaultAvatar(newDefaultState.emailAddress)
 
     if (!currentEmailAddress.value) {
       currentEmailAddress.value = newDefaultState.emailAddress

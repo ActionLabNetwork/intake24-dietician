@@ -1,8 +1,8 @@
 <template>
   <v-row>
     <v-col class="pt-0">
-      <div class="d-flex justify-space-between">
-        <p class="title">Feedback records</p>
+      <div class="d-flex flex-column flex-sm-row justify-space-between">
+        <p class="title mb-3 mb-sm-0">Feedback records</p>
         <v-btn append-icon="mdi-plus" color="primary" class="text-none">
           Compose new feedback
         </v-btn>

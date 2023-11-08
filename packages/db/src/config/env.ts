@@ -1,4 +1,5 @@
 import type { DBName } from '@intake24-dietician/common/types/database'
+import type { TableOptions, Model } from 'sequelize-typescript'
 import type { TypeOf } from 'zod'
 import { z } from 'zod'
 
@@ -42,6 +43,19 @@ const getMongoDBUrl = () => {
     MONGO_RECALL_DB_NAME,
   } = env
   return `mongodb://${MONGO_RECAL_DB_ROOT_USERNAME}:${MONGO_RECAL_DB_ROOT_PASSWORD}@localhost:${MONGO_RECALL_DB_PORT}/${MONGO_RECALL_DB_NAME}?authSource=admin`
+}
+
+export const getTableConfig = (
+  modelName: string,
+  tableName: string,
+): TableOptions<Model<any, any>> => {
+  return {
+    modelName: modelName,
+    tableName: tableName,
+    freezeTableName: true,
+    underscored: true,
+    timestamps: true,
+  }
 }
 
 export { env, getDBUrl, getMongoDBUrl }

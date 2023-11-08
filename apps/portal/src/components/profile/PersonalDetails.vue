@@ -3,204 +3,83 @@
     <p class="font-weight-medium">
       {{ t('profile.form.personalDetails.title') }}
     </p>
-    <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
+    <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <div v-if="mdAndUp">
           <v-row dense justify="center" align="center">
-            <v-col class="v-col-2" align="center">
+            <v-col cols="2" align="center">
               <div class="d-flex flex-column">
-                <v-avatar size="100%" class="avatar mx-auto">
-                  <v-img
-                    :src="avatarImage"
-                    alt="Avatar"
-                    height="100%"
-                    width="100%"
-                  />
-                </v-avatar>
-                <v-btn
-                  class="mt-5 text-center font-weight-medium text-capitalize"
-                  flat
-                  @click="
-                    () => {
-                      imageUpload.click()
-                    }
+                <ImageUpload
+                  :default-state="
+                    defaultState.avatar || getDefaultAvatar(email)
                   "
-                >
-                  {{ t('profile.form.personalDetails.uploadImage') }}
-                </v-btn>
-                <input
-                  ref="imageUpload"
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  @change="handleImageUpload"
+                  @update="value => handleFieldUpdate('avatar', value)"
                 />
               </div>
             </v-col>
             <v-divider vertical class="mx-5"></v-divider>
             <v-col>
-              <!-- First name -->
-              <BaseInput
-                type="text"
-                name="firstName"
-                autocomplete="given-name"
-                :value="formValues.firstName"
-                :rules="[requiredValidator('First name')]"
-                suffix-icon="mdi-restore"
-                class="base-input"
-                :handle-icon-click="
-                  () => {
-                    formValues.firstName = props.defaultState.firstName
-                    emit('update', { ...formValues })
-                  }
-                "
-                @update="val => handleFieldUpdate('firstName', val)"
-              >
-                <span class="input-label">
-                  {{ t('profile.form.personalDetails.firstName.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <!-- Middle name -->
-              <BaseInput
-                type="text"
-                name="middleName"
-                autocomplete="additional-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.middleName = props.defaultState.middleName
-                    emit('update', { ...formValues })
-                  }
-                "
-                :value="formValues.middleName"
-                @update="val => handleFieldUpdate('middleName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.middleName.label') }}
-                </p>
-              </BaseInput>
-              <!-- Last name -->
-              <BaseInput
-                type="text"
-                name="lastName"
-                autocomplete="family-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.lastName = props.defaultState.lastName
-                    emit('update', { ...formValues })
-                  }
-                "
-                :value="formValues.lastName"
-                @update="val => handleFieldUpdate('lastName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.lastName.label') }}
-                </p>
-              </BaseInput>
+              <div v-for="(config, fieldName) in formConfig" :key="fieldName">
+                <div v-if="config.type === 'input'">
+                  <BaseInput
+                    :type="config.inputType ?? 'text'"
+                    :name="config.key"
+                    :rules="config.rules ?? []"
+                    :autocomplete="config.autocomplete ?? 'off'"
+                    :value="formValues[fieldName]"
+                    :suffix-icon="config.suffixIcon ?? ''"
+                    :handle-icon-click="
+                      config.handleSuffixIconClick ?? (() => {})
+                    "
+                    :class="config.class"
+                    @update="config.handleUpdate"
+                  >
+                    <span class="input-label">
+                      {{ config.label }}
+                    </span>
+                    <span v-if="config.labelSuffix" class="input-label suffix">
+                      {{ config.labelSuffix }}
+                    </span>
+                  </BaseInput>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
-
         <div v-else>
           <v-row dense justify="center" align="center">
             <div class="d-flex flex-column">
-              <v-avatar size="100%" class="avatar mx-auto">
-                <v-img
-                  :src="avatarImage"
-                  alt="Avatar"
-                  height="100%"
-                  width="100%"
-                />
-              </v-avatar>
-              <v-btn
-                class="mt-5 text-center font-weight-medium text-capitalize"
-                flat
-                @click="
-                  () => {
-                    imageUpload.click()
-                  }
-                "
-              >
-                {{ t('profile.form.personalDetails.uploadImage') }}
-              </v-btn>
-              <input
-                ref="imageUpload"
-                type="file"
-                accept="image/*"
-                hidden
-                @change="handleImageUpload"
+              <ImageUpload
+                :default-state="defaultState.avatar || getDefaultAvatar(email)"
+                @update="value => handleFieldUpdate('avatar', value)"
               />
             </div>
           </v-row>
           <v-divider class="my-5" />
           <v-row dense justify="center" align="center">
             <v-col>
-              <!-- First name -->
-              <BaseInput
-                type="text"
-                name="firstName"
-                autocomplete="given-name"
-                :value="formValues.firstName"
-                :rules="[requiredValidator('First name')]"
-                suffix-icon="mdi-restore"
-                class="base-input"
-                :handle-icon-click="
-                  () => {
-                    formValues.firstName = props.defaultState.firstName
-                    emit('update', { ...formValues })
-                  }
-                "
-                @update="val => handleFieldUpdate('firstName', val)"
-              >
-                <span class="input-label">
-                  {{ t('profile.form.personalDetails.firstName.label') }}
-                </span>
-                <span class="input-label suffix">
-                  {{ t('profile.form.personalDetails.firstName.labelSuffix') }}
-                </span>
-              </BaseInput>
-              <!-- Middle name -->
-              <BaseInput
-                type="text"
-                name="middleName"
-                autocomplete="additional-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.middleName = props.defaultState.middleName
-                    emit('update', { ...formValues })
-                  }
-                "
-                :value="formValues.middleName"
-                @update="val => handleFieldUpdate('middleName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.middleName.label') }}
-                </p>
-              </BaseInput>
-              <!-- Last name -->
-              <BaseInput
-                type="text"
-                name="lastName"
-                autocomplete="family-name"
-                suffix-icon="mdi-restore"
-                :handle-icon-click="
-                  () => {
-                    formValues.lastName = props.defaultState.lastName
-                    emit('update', { ...formValues })
-                  }
-                "
-                :value="formValues.lastName"
-                @update="val => handleFieldUpdate('lastName', val)"
-              >
-                <p class="input-label">
-                  {{ t('profile.form.personalDetails.lastName.label') }}
-                </p>
-              </BaseInput>
+              <div v-for="(config, fieldName) in formConfig" :key="fieldName">
+                <div v-if="config.type === 'input'">
+                  <BaseInput
+                    :type="config.inputType ?? 'text'"
+                    :name="config.key"
+                    :rules="config.rules ?? []"
+                    :autocomplete="config.autocomplete ?? 'off'"
+                    :value="formValues[fieldName]"
+                    :suffix-icon="config.suffixIcon ?? ''"
+                    :handle-icon-click="config.handleSuffixIconClick"
+                    :class="config.class"
+                    @update="config.handleUpdate"
+                  >
+                    <span class="input-label">
+                      {{ config.label }}
+                    </span>
+                    <span v-if="config.labelSuffix" class="input-label suffix">
+                      {{ config.labelSuffix }}
+                    </span>
+                  </BaseInput>
+                </div>
+              </div>
             </v-col>
           </v-row>
         </div>
@@ -217,9 +96,12 @@ import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
-import { requiredValidator } from '@/validators/auth'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { getDefaultAvatar } from '@/utils/profile'
+import { Form } from './types'
+import ImageUpload from './ImageUpload.vue'
+import { z } from 'zod'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
 
 export interface PersonalDetailsFormValues {
   firstName: string
@@ -240,16 +122,8 @@ const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-const imageUpload = ref()
-const avatarImage = ref('')
-
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
-
-onMounted(() => {
-  const imageSrc = props.defaultState.avatar
-  avatarImage.value = imageSrc || getDefaultAvatar(props.email)
-})
 
 const handleFieldUpdate = useDebounceFn(
   (fieldName: keyof PersonalDetailsFormValues, newVal: string) => {
@@ -259,23 +133,38 @@ const handleFieldUpdate = useDebounceFn(
   INPUT_DEBOUNCE_TIME,
 )
 
-const handleImageUpload = () => {
-  const file = imageUpload.value.files[0]
+const schema = {
+  firstName: z.string().min(1, 'First name is required'),
+}
 
-  if (!file) return
-
-  const objectURL = URL.createObjectURL(file)
-  avatarImage.value = objectURL
-
-  const reader = new FileReader()
-  reader.readAsDataURL(file)
-  reader.onloadend = () => {
-    const base64data = reader.result
-    formValues.value.avatar = base64data?.toString() ?? ''
-    emit('update', { ...formValues.value })
-
-    URL.revokeObjectURL(objectURL)
-  }
+const fields = ['firstName', 'middleName', 'lastName'] as const
+const formConfig: Form<(typeof fields)[number]> = {
+  firstName: {
+    key: 'firstName',
+    label: t('profile.form.personalDetails.firstName.label'),
+    required: true,
+    labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
+    type: 'input',
+    inputType: 'text',
+    rules: [(value: string) => validateWithZod(schema.firstName, value)],
+    handleUpdate: val => handleFieldUpdate('firstName', val),
+  },
+  middleName: {
+    key: 'middleName',
+    label: t('profile.form.personalDetails.middleName.label'),
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    handleUpdate: val => handleFieldUpdate('middleName', val),
+  },
+  lastName: {
+    key: 'lastName',
+    label: t('profile.form.personalDetails.lastName.label'),
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    handleUpdate: val => handleFieldUpdate('lastName', val),
+  },
 }
 </script>
 <style scoped lang="scss">

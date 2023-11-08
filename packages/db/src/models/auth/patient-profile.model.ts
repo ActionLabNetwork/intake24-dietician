@@ -9,6 +9,7 @@ import {
 } from 'sequelize-typescript'
 import User from './user.model'
 import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface PatientProfileAttributes {
   userId: number
@@ -55,7 +56,7 @@ interface PatientProfileCreationAttributes {
   avatar: string | null
 }
 
-@Table
+@Table(getTableConfig(PatientProfile.name, 'patient_profiles'))
 class PatientProfile extends Model<
   PatientProfileAttributes,
   PatientProfileCreationAttributes

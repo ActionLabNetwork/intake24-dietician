@@ -1,174 +1,102 @@
 <template>
   <div>
-    <v-card :width="mdAndUp ? '75%' : '100%'" class="mt-5">
+    <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
         <v-row dense justify="center" align="center">
-          <v-col cols="12" md="4">
-            <!-- Email address -->
+          <v-col
+            v-for="(fieldConfig, fieldName) in formConfig"
+            :key="fieldName"
+            :cols="fieldConfig.layout?.cols"
+            :sm="fieldConfig.layout?.sm"
+            :md="fieldConfig.layout?.md"
+            :lg="fieldConfig.layout?.lg"
+            :xl="fieldConfig.layout?.xl"
+          >
+            <v-divider
+              v-if="fieldConfig.layout && shouldShowDivider(fieldConfig.layout)"
+              class="mb-5"
+            />
             <BaseInput
-              type="email"
-              name="emailAddress"
-              autocomplete="email"
-              readonly
-              :value="currentEmailAddress"
-              :rules="[emailValidator]"
-              suffix-icon="mdi-mail"
-              :handle-icon-click="
-                () => {
-                  changeEmailDialog = true
-                }
-              "
-              class="base-input"
-              @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+              :type="fieldConfig.inputType ?? 'text'"
+              :name="fieldName"
+              :value="formValues[fieldName]"
+              :suffix-icon="fieldConfig.suffixIcon"
+              :handle-icon-click="fieldConfig.handleSuffixIconClick"
+              :rules="fieldConfig.rules"
+              :readonly="fieldConfig.readonly || false"
+              @update="newVal => handleFieldUpdate(fieldName, newVal)"
             >
               <span class="input-label">
-                {{ t('profile.form.contactDetails.email.label') }}
+                {{ fieldConfig.label }}
               </span>
-              <span class="input-label suffix">
-                {{ t('profile.form.contactDetails.email.labelSuffix') }}
-              </span>
-            </BaseInput>
-            <v-dialog v-model="changeEmailDialog" max-width="90vw">
-              <v-card>
-                <v-card-title>Change Email</v-card-title>
-                <v-card-text>
-                  <BaseInput type="email" :value="currentEmailAddress" readonly>
-                    <span class="input-label">
-                      {{ t('profile.form.contactDetails.email.label') }}
-                    </span>
-                  </BaseInput>
-                  <BaseInput
-                    type="email"
-                    :value="formValues.emailAddress"
-                    @update="
-                      newVal => handleFieldUpdate('emailAddress', newVal)
-                    "
-                  >
-                    <span class="input-label">
-                      New {{ t('profile.form.contactDetails.email.label') }}
-                    </span>
-                  </BaseInput>
-                  <v-btn
-                    size="small"
-                    type="submit"
-                    color="secondary text-capitalize"
-                    class="mb-10"
-                    :disabled="showVerificationTokenField"
-                    :loading="generateTokenMutation.isLoading.value"
-                    @click="handleSendVerificationToken"
-                  >
-                    {{
-                      showVerificationTokenField
-                        ? 'Verification token sent'
-                        : 'Send verification token'
-                    }}
-                  </v-btn>
-                  <v-text-field
-                    v-if="showVerificationTokenField"
-                    v-model="verificationToken"
-                    label="Enter Verification Token"
-                    required
-                  ></v-text-field>
-                  <v-alert
-                    v-if="errorMsg"
-                    type="error"
-                    dense
-                    border="top"
-                    variant="outlined"
-                  >
-                    {{ errorMsg }}
-                  </v-alert>
-                </v-card-text>
-                <v-card-actions>
-                  <v-btn
-                    :disabled="!verificationToken"
-                    color="primary"
-                    @click="handleVerifyToken"
-                  >
-                    Verify Token
-                  </v-btn>
-                  <v-btn
-                    color="grey"
-                    @click="() => (changeEmailDialog = false)"
-                  >
-                    Close
-                  </v-btn>
-                </v-card-actions>
-              </v-card>
-            </v-dialog>
-          </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <!-- Mobile number -->
-            <BaseInput
-              type="tel"
-              name="mobileNumber"
-              autocomplete="tel"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.mobileNumber = props.defaultState.mobileNumber
-                  emit('update', { ...formValues })
-                }
-              "
-              :value="formValues.mobileNumber"
-              :rules="[mobileNumberValidator]"
-              @update="newVal => handleFieldUpdate('mobileNumber', newVal)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.contactDetails.mobileNumber.label') }}
-              </span>
-              <span class="input-label suffix">
-                {{ t('profile.form.contactDetails.mobileNumber.labelSuffix') }}
+              <span v-if="fieldConfig.labelSuffix" class="input-label suffix">
+                {{ fieldConfig.labelSuffix }}
               </span>
             </BaseInput>
           </v-col>
-          <v-col cols="12" sm="6" md="4">
-            <!-- Business number -->
-            <BaseInput
-              type="text"
-              name="businessNumber"
-              autocomplete="tel"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.businessNumber =
-                    props.defaultState.businessNumber ?? ''
-                  emit('update', { ...formValues })
-                }
-              "
-              :value="formValues.businessNumber"
-              @update="newVal => handleFieldUpdate('businessNumber', newVal)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.contactDetails.businessNumber.label') }}
-              </span>
-            </BaseInput>
-          </v-col>
-        </v-row>
-        <v-divider class="my-3"></v-divider>
-        <v-row>
-          <v-col cols="12">
-            <!-- Business address -->
-            <BaseInput
-              type="text"
-              name="businessAddress"
-              autocomplete="address-level3"
-              suffix-icon="mdi-restore"
-              :handle-icon-click="
-                () => {
-                  formValues.businessAddress =
-                    props.defaultState.businessAddress ?? ''
-                  emit('update', { ...formValues })
-                }
-              "
-              :value="formValues.businessAddress"
-              @update="newVal => handleFieldUpdate('businessAddress', newVal)"
-            >
-              <span class="input-label">
-                {{ t('profile.form.contactDetails.businessAddress.label') }}
-              </span>
-            </BaseInput>
-          </v-col>
+          <v-dialog v-model="changeEmailDialog" max-width="90vw">
+            <v-card>
+              <v-card-title>Change Email</v-card-title>
+              <v-card-text>
+                <BaseInput type="email" :value="currentEmailAddress" readonly>
+                  <span class="input-label">
+                    {{ t('profile.form.contactDetails.email.label') }}
+                  </span>
+                </BaseInput>
+                <BaseInput
+                  type="email"
+                  :value="formValues.emailAddress"
+                  @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                >
+                  <span class="input-label">
+                    New {{ t('profile.form.contactDetails.email.label') }}
+                  </span>
+                </BaseInput>
+                <v-btn
+                  size="small"
+                  type="submit"
+                  color="secondary text-capitalize"
+                  class="mb-10"
+                  :disabled="showVerificationTokenField"
+                  :loading="generateTokenMutation.isLoading.value"
+                  @click="handleSendVerificationToken"
+                >
+                  {{
+                    showVerificationTokenField
+                      ? 'Verification token sent'
+                      : 'Send verification token'
+                  }}
+                </v-btn>
+                <v-text-field
+                  v-if="showVerificationTokenField"
+                  v-model="verificationToken"
+                  label="Enter Verification Token"
+                  required
+                ></v-text-field>
+                <v-alert
+                  v-if="errorMsg"
+                  type="error"
+                  dense
+                  border="top"
+                  variant="outlined"
+                >
+                  {{ errorMsg }}
+                </v-alert>
+              </v-card-text>
+              <v-card-actions>
+                <v-btn
+                  :disabled="!verificationToken"
+                  color="primary"
+                  @click="handleVerifyToken"
+                >
+                  Verify Token
+                </v-btn>
+                <v-btn color="grey" @click="() => (changeEmailDialog = false)">
+                  Close
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
         </v-row>
       </v-container>
     </v-card>
@@ -182,9 +110,10 @@ import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { useDebounceFn } from '@vueuse/core'
 import { INPUT_DEBOUNCE_TIME } from '@/constants'
-import { emailValidator } from '@/validators/auth'
-import { mobileNumberValidator } from '@/validators/auth/profile'
 import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
+import { Form, Layout } from './types'
+import { contactDetailsSchema } from '@intake24-dietician/portal/schema/profile'
 
 export interface ContactDetailsFormValues {
   emailAddress: string
@@ -212,6 +141,12 @@ const { t } = useI18n<i18nOptions>()
 const currentEmailAddress = ref('')
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<ContactDetailsFormValues>(props.defaultState)
+
+const shouldShowDivider = (layout: Layout) => {
+  return (
+    layout.cols === 12 && !layout.sm && !layout.md && !layout.lg && !layout.xl
+  )
+}
 
 onMounted(() => {
   currentEmailAddress.value = props.email
@@ -271,6 +206,74 @@ const handleVerifyToken = () => {
       },
     },
   )
+}
+
+const fields = contactDetailsSchema.fields
+type Field = (typeof fields)[number]
+
+const formConfig: Form<Field> = {
+  emailAddress: {
+    key: 'emailAddress',
+    autocomplete: 'email',
+    label: t('profile.form.contactDetails.email.label'),
+    labelSuffix: t('profile.form.contactDetails.email.labelSuffix'),
+    required: true,
+    readonly: true,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchema.schema.emailAddress, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('emailAddress', val),
+    layout: { cols: 12, md: 4 },
+    suffixIcon: 'mdi-mail',
+    handleSuffixIconClick: () => {
+      changeEmailDialog.value = true
+    },
+  },
+  mobileNumber: {
+    key: 'mobileNumber',
+    autocomplete: 'tel',
+    label: t('profile.form.contactDetails.mobileNumber.label'),
+    labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
+    required: true,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchema.schema.mobileNumber, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('mobileNumber', val),
+    layout: { cols: 12, md: 4 },
+  },
+  businessNumber: {
+    key: 'businessNumber',
+    label: t('profile.form.contactDetails.businessNumber.label'),
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchema.schema.businessNumber, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('businessNumber', val),
+    layout: { cols: 12, md: 4 },
+  },
+  businessAddress: {
+    key: 'businessAddress',
+    autocomplete: 'address-level3',
+    label: t('profile.form.contactDetails.businessAddress.label'),
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(contactDetailsSchema.schema.businessAddress, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('businessAddress', val),
+    layout: { cols: 12 },
+  },
 }
 </script>
 <style scoped lang="scss">
