@@ -171,6 +171,7 @@ export class PatientController extends Controller {
           )
           return { data: { patient } }
         } else {
+          console.log(patient.error)
           this.logger.error(
             'Failed to create patient for dietician',
             result.value.decoded['userId'],

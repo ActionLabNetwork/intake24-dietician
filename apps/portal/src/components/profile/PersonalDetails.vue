@@ -46,7 +46,6 @@
             </v-col>
           </v-row>
         </div>
-
         <div v-else>
           <v-row dense justify="center" align="center">
             <div class="d-flex flex-column">
@@ -68,9 +67,7 @@
                     :autocomplete="config.autocomplete ?? 'off'"
                     :value="formValues[fieldName]"
                     :suffix-icon="config.suffixIcon ?? ''"
-                    :handle-icon-click="
-                      config.handleSuffixIconClick ?? (() => {})
-                    "
+                    :handle-icon-click="config.handleSuffixIconClick"
                     :class="config.class"
                     @update="config.handleUpdate"
                   >
@@ -104,6 +101,7 @@ import { getDefaultAvatar } from '@/utils/profile'
 import { Form } from './types'
 import ImageUpload from './ImageUpload.vue'
 import { z } from 'zod'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
 
 export interface PersonalDetailsFormValues {
   firstName: string
@@ -137,16 +135,6 @@ const handleFieldUpdate = useDebounceFn(
 
 const schema = {
   firstName: z.string().min(1, 'First name is required'),
-}
-
-const validateWithZod = (schema: z.ZodString, value: string) => {
-  const result = schema.safeParse(value)
-  if (result.success) {
-    return true
-  } else {
-    const issue = result.error.issues[0]
-    return issue ? issue.message : 'Invalid value'
-  }
 }
 
 const fields = ['firstName', 'middleName', 'lastName'] as const
