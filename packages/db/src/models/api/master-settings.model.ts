@@ -3,21 +3,20 @@ import {
   Column,
   Model,
   Default,
-  HasOne,
   BelongsTo,
   ForeignKey,
+  HasOne,
+  PrimaryKey,
+  AutoIncrement,
 } from 'sequelize-typescript'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
-import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 import RecallFrequency from './recall-frequency.model'
 import DieticianProfile from '../auth/dietician-profile.model'
 
 export interface MasterSettingsAttributes {
   theme: string
   sendAutomatedFeedback: boolean
-  recallFrequencyQuantity: number
-  recallFrequencyUnit: string
-  recallFrequencyEnd: ReminderConditions['reminderEnds']
+  recallFrequency: RecallFrequency
 
   // TODO: Associate with modules
 }
@@ -28,11 +27,16 @@ interface MasterSettingsCreationAttributes {
   recallFrequency: RecallFrequency
 }
 
-@Table(getTableConfig(MasterSettings.name, 'dietician_profiles'))
+@Table(getTableConfig(MasterSettings.name, 'master_settings'))
 class MasterSettings extends Model<
   MasterSettingsAttributes,
   MasterSettingsCreationAttributes
 > {
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @Default('Classic')
   @Column
   public declare theme: string

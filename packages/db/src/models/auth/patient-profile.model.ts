@@ -7,6 +7,7 @@ import {
   Model,
   BelongsTo,
   HasOne,
+  AutoIncrement,
 } from 'sequelize-typescript'
 import User from './user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
@@ -45,7 +46,7 @@ interface PatientProfileCreationAttributes {
   additionalDetails?: unknown
   additionalNotes: string
   patientGoal: string
-  patientPreferences: PatientPreferences
+  // patientPreferences: PatientPreferences
   avatar: string | null
 }
 
@@ -55,6 +56,10 @@ class PatientProfile extends Model<
   PatientProfileCreationAttributes
 > {
   @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @ForeignKey(() => User)
   @Column
   public declare userId: number

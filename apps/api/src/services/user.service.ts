@@ -32,21 +32,24 @@ export const createUserService = (): IUserService => {
         where: { id },
         include: [DieticianProfile, PatientProfile],
         attributes: { exclude: ['password'] },
-        paranoid: false
+        paranoid: false,
       })
 
       // Format patient profile
       if (user?.patientProfile) {
         const formattedPatientProfile = {
           ...user.patientProfile.dataValues,
-          theme: user.patientProfile.theme as Theme,
+          theme: user.patientProfile.patientPreferences.theme as Theme,
           emailAddress: user.email,
           recallFrequency: {
             reminderEvery: {
-              quantity: user.patientProfile.recallFrequencyQuantity,
-              unit: user.patientProfile.recallFrequencyUnit as Unit,
+              quantity:
+                user.patientProfile.patientPreferences.recallFrequency.quantity,
+              unit: user.patientProfile.patientPreferences.recallFrequency
+                .unit as Unit,
             },
-            reminderEnds: user.patientProfile.recallFrequencyEnd,
+            reminderEnds:
+              user.patientProfile.patientPreferences.recallFrequency.end,
           },
         }
 
@@ -165,19 +168,24 @@ export const createUserService = (): IUserService => {
               patientDetails.additionalNotes ?? patientProfile.additionalNotes,
             patientGoal:
               patientDetails.patientGoal ?? patientProfile.patientGoal,
-            theme: patientDetails.theme ?? patientProfile.theme,
-            sendAutomatedFeedback:
-              patientDetails.sendAutomatedFeedback ??
-              patientProfile.sendAutomatedFeedback,
-            recallFrequencyQuantity:
-              patientDetails.recallFrequency?.reminderEvery.quantity ??
-              patientProfile.recallFrequencyQuantity,
-            recallFrequencyUnit:
-              patientDetails.recallFrequency?.reminderEvery.unit ??
-              patientProfile.recallFrequencyUnit,
-            recallFrequencyEnd:
-              patientDetails.recallFrequency?.reminderEnds ??
-              patientProfile.recallFrequencyEnd,
+            // patientPreferences: {
+            //   theme:
+            //     patientDetails.theme ?? patientProfile.patientPreferences.theme,
+            //   sendAutomatedFeedback:
+            //     patientDetails.sendAutomatedFeedback ??
+            //     patientProfile.patientPreferences.sendAutomatedFeedback,
+            //   recallFrequency: {
+            //     quantity:
+            //       patientDetails.recallFrequency?.reminderEvery.quantity ??
+            //       patientProfile.patientPreferences.recallFrequency.quantity,
+            //     unit:
+            //       patientDetails.recallFrequency?.reminderEvery.unit ??
+            //       patientProfile.patientPreferences.recallFrequency.unit,
+            //     end:
+            //       patientDetails.recallFrequency?.reminderEnds ??
+            //       patientProfile.patientPreferences.recallFrequency.end,
+            //   },
+            // },
             avatar: patientDetails.avatar ?? patientProfile.avatar,
           },
           { where: { userId: patientId }, transaction: t },
@@ -343,7 +351,7 @@ export const createUserService = (): IUserService => {
 
   const getPatientsOfDietician = async (
     dieticianId: number,
-  ): Promise<Result<PatientProfileValues[]>> => {
+  ): Promise<Result<Partial<PatientProfileValues>[]>> => {
     const user = await User.findByPk(dieticianId, {
       include: [
         {
@@ -363,7 +371,7 @@ export const createUserService = (): IUserService => {
 
     const patientProfileValues =
       user?.patients.map(f => {
-        const profileValues: PatientProfileValues & {
+        const profileValues: Partial<PatientProfileValues> & {
           id: number
           isArchived: boolean
         } = {
@@ -382,19 +390,19 @@ export const createUserService = (): IUserService => {
           additionalNotes:
             f.dataValues.patientProfile.dataValues.additionalNotes,
           patientGoal: f.dataValues.patientProfile.dataValues.patientGoal,
-          theme: f.dataValues.patientProfile.dataValues.theme as Theme,
-          sendAutomatedFeedback:
-            f.dataValues.patientProfile.dataValues.sendAutomatedFeedback,
-          recallFrequency: {
-            reminderEvery: {
-              quantity:
-                f.dataValues.patientProfile.dataValues.recallFrequencyQuantity,
-              unit: f.dataValues.patientProfile.dataValues
-                .recallFrequencyUnit as Unit,
-            },
-            reminderEnds:
-              f.dataValues.patientProfile.dataValues.recallFrequencyEnd,
-          },
+          // theme: f.dataValues.patientProfile.dataValues.theme as Theme,
+          // sendAutomatedFeedback:
+          //   f.dataValues.patientProfile.dataValues.sendAutomatedFeedback,
+          // recallFrequency: {
+          //   reminderEvery: {
+          //     quantity:
+          //       f.dataValues.patientProfile.dataValues.recallFrequencyQuantity,
+          //     unit: f.dataValues.patientProfile.dataValues
+          //       .recallFrequencyUnit as Unit,
+          //   },
+          //   reminderEnds:
+          //     f.dataValues.patientProfile.dataValues.recallFrequencyEnd,
+          // },
           isArchived: !!f.dataValues.deletionDate,
         }
 

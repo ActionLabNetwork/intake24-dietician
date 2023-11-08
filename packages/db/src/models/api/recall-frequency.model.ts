@@ -1,22 +1,22 @@
 import {
   Table,
-  PrimaryKey,
-  AutoIncrement,
   Column,
   DataType,
   Model,
   ForeignKey,
   BelongsTo,
+  PrimaryKey,
+  AutoIncrement,
 } from 'sequelize-typescript'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import PatientPreferences from './patient-preferences.model'
+import MasterSettings from './master-settings.model'
 
 export interface RecallFrequencyAttributes {
-  id: number
   quantity: number
   unit: string
   end: unknown
-  patientProfileId: number
+  patientPreferencesId: number
 }
 
 interface RecallFrequencyCreationAttributes {
@@ -24,7 +24,7 @@ interface RecallFrequencyCreationAttributes {
   unit: string
   end: unknown
   reminderMessage: string
-  patientProfileId: number
+  patientPreferencesId: number
 }
 
 @Table(getTableConfig(RecallFrequency.name, 'recall_frequencies'))
@@ -32,11 +32,6 @@ class RecallFrequency extends Model<
   RecallFrequencyAttributes,
   RecallFrequencyCreationAttributes
 > {
-  @PrimaryKey
-  @AutoIncrement
-  @Column
-  public declare id: number
-
   @Column
   public declare quantity: number
 
@@ -49,12 +44,24 @@ class RecallFrequency extends Model<
   @Column(DataType.TEXT)
   public declare reminderMessage: string
 
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @ForeignKey(() => PatientPreferences)
   @Column
   public declare patientPreferencesId: number
 
-  @BelongsTo(() => PatientPreferences)
+  @BelongsTo(() => PatientPreferences, 'patientPreferencesId')
   public declare patientPreferences: PatientPreferences
+
+  @ForeignKey(() => MasterSettings)
+  @Column
+  public declare masterSettingsId: number
+
+  @BelongsTo(() => MasterSettings, 'masterSettingsId')
+  public declare masterSettings: MasterSettings
 }
 
 export default RecallFrequency

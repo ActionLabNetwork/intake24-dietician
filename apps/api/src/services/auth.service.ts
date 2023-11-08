@@ -28,6 +28,8 @@ import { match, P } from 'ts-pattern'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import type { IUserService } from '@intake24-dietician/common/types/api'
+import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -613,7 +615,7 @@ export const createAuthService = (
               )
 
               // Create patient profile
-              await PatientProfile.create(
+              const patientProfile = await PatientProfile.create(
                 {
                   userId: user.id,
                   firstName: patientDetails.firstName,
@@ -627,18 +629,31 @@ export const createAuthService = (
                   weight: patientDetails.weight,
                   additionalNotes: patientDetails.additionalNotes,
                   patientGoal: patientDetails.patientGoal,
-                  theme: patientDetails.theme,
-                  sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
-                  recallFrequencyQuantity:
-                    patientDetails.recallFrequency.reminderEvery.quantity,
-                  recallFrequencyUnit:
-                    patientDetails.recallFrequency.reminderEvery.unit,
-                  recallFrequencyEnd:
-                    patientDetails.recallFrequency.reminderEnds,
                   avatar: patientDetails.avatar,
                 },
-                { transaction: t },
+                {
+                  transaction: t,
+                  include: [
+                    { model: PatientPreferences, include: [RecallFrequency] },
+                  ],
+                },
               )
+
+              // Create Patient Preferences
+              const patientPreferences = await PatientPreferences.create({
+                patientProfileId: patientProfile.id,
+                theme: patientDetails.theme,
+                sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
+              })
+
+              // Create Recall Frequency
+              await RecallFrequency.create({
+                quantity: patientDetails.recallFrequency.reminderEvery.quantity,
+                unit: patientDetails.recallFrequency.reminderEvery.unit,
+                end: patientDetails.recallFrequency.reminderEnds,
+                reminderMessage: '',
+                patientPreferencesId: patientPreferences.id,
+              })
 
               // Assign patient role
               const patientRole = await Role.findOne({

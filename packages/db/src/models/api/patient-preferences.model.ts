@@ -1,29 +1,30 @@
 import {
   Table,
-  PrimaryKey,
   ForeignKey,
   Column,
   DataType,
   Model,
   BelongsTo,
   HasOne,
-  AutoIncrement,
+  PrimaryKey,
 } from 'sequelize-typescript'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
-import RecallFrequency from '@/models/api/recall-frequency.model'
-import PatientProfile from '@/models/auth/patient-profile.model'
+import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 
 export interface PatientPreferencesAttributes {
   id: number
   theme: string
   sendAutomatedFeedback: boolean
   recallFrequency: RecallFrequency
+  avatar: string | null
+  patientProfileId: number
 }
 
 interface PatientPreferencesCreationAttributes {
   theme: string
   sendAutomatedFeedback: boolean
-  recallFrequency: RecallFrequency
+  patientProfileId: number
 }
 
 @Table(getTableConfig(PatientPreferences.name, 'patient_profiles'))
@@ -32,7 +33,6 @@ class PatientPreferences extends Model<
   PatientPreferencesCreationAttributes
 > {
   @PrimaryKey
-  @AutoIncrement
   @Column
   public declare id: number
 

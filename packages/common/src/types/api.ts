@@ -57,7 +57,7 @@ export interface IUserService {
   ) => Promise<Result<DieticianPatient>>
   getPatientsOfDietician: (
     dieticianId: number,
-  ) => Promise<Result<PatientProfileValues[]>>
+  ) => Promise<Result<Partial<PatientProfileValues>[]>>
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }
 export interface IRecallApiService {
@@ -66,11 +66,13 @@ export interface IRecallApiService {
 }
 
 export interface ISurveyApiService {
-  getSurveySecretByAlias: (id: string) => Promise < Result < SurveyAttributes | null | Error>>
+  getSurveySecretByAlias: (
+    id: string,
+  ) => Promise<Result<SurveyAttributes | null | Error>>
 }
 
 export interface IQueryParams {
-  scope?: string;
-  sort?: string;
-  filter?: string;
+  scope?: string
+  sort?: string
+  filter?: string
 }
