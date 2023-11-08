@@ -15,6 +15,7 @@ const tokenService = createJwtTokenService()
 
 const getTheSecret = async (
   surveyID: string,
+  intake24SurveyId: string,
   scope: string | null | undefined,
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
@@ -45,12 +46,14 @@ const getTheSecret = async (
       return undefined
     } else if (
       secret.value === null ||
-      secret.value.intake24Secret.length === 0
+      secret.value.intake24Secret.length === 0 ||
+      secret.value.intake24SurveyId.length === 0 ||
+      secret.value.intake24SurveyId !== intake24SurveyId
     ) {
       console.log({
         ok: false,
         error: new Error(
-          `No secret assigned to the survey ID: ${secret.value}`,
+          `No secret assigned to the survey ID or mismatching intake24 survey slugs: ${secret.value}`,
         ),
       })
       return null
@@ -138,7 +141,22 @@ export async function expressAuthentication(
   const surveyID = request.params['requestSurveyId'] as string
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
-  let secret = await getTheSecret(surveyID, scopes ? scopes[0] : null)
+  const intake24SurveyId = request.body.survey.slug as string
+  if (scopes !==undefined && scopes[0] === 'api_integration' && intake24SurveyId === undefined)
+    return new Promise(reject => {
+      reject(
+        generateErrorResponse(
+          '422',
+          'Unprocessable Entity',
+          'No enough data received for the recall',
+        ),
+      )
+    })
+  let secret = await getTheSecret(
+    surveyID,
+    intake24SurveyId,
+    scopes ? scopes[0] : null,
+  )
 
   if (!secret) secret = env.JWT_SECRET
   if (secret === null)
@@ -176,15 +194,15 @@ export async function expressAuthentication(
     match(decodedAccessToken)
       .with({ ok: true }, result => {
         // TODO: Might be too short for the intake24 integration, since the token is valid for 1 minute only
-        if (result.value.tokenExpired) {
-          reject(
-            generateErrorResponse(
-              '401',
-              'Unauthorized',
-              'Access token has expired',
-            ),
-          )
-        }
+        // if (result.value.tokenExpired) {
+        //   reject(
+        //     generateErrorResponse(
+        //       '401',
+        //       'Unauthorized',
+        //       'Access token has expired',
+        //     ),
+        //   )
+        // }
         if (scopes === undefined) {
           resolve(result.value)
         }
