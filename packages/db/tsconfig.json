@@ -5,7 +5,8 @@
     "paths": {
       "@intake24-dietician/common/*": ["../common/src/*"],
       "@intake24-dietician/db/*": ["src/*"],
-      "@intake24-dietician/*": ["../*/src"]
+      "@intake24-dietician/*": ["../*/src"],
+      "@/*": ["src/*"]
     }
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts"],
