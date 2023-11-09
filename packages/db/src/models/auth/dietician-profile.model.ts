@@ -13,6 +13,7 @@ import { getTableConfig } from '@intake24-dietician/db/config/env'
 import MasterSettings from '../api/master-settings.model'
 
 export interface DieticianProfileAttributes {
+  id: number
   userId: number
   firstName: string
   middleName: string

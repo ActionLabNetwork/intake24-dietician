@@ -19,8 +19,20 @@ import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/di
 import moment from 'moment'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
+import {
+  createBaseDieticianProfileRepository,
+  createBaseRoleRepository,
+  createBaseUserRepository,
+  createBaseUserRoleRepository,
+} from './factory'
 
 export const createUserRepository = (): IUserRepository => {
+  // Base Repositories
+  const baseUserRepository = createBaseUserRepository()
+  const baseDieticianProfileRepository = createBaseDieticianProfileRepository()
+  const baseRoleRepository = createBaseRoleRepository()
+  const baseUserRoleRepository = createBaseUserRoleRepository()
+
   const findOne = async (criteria: { id?: number; email?: string }) => {
     return await User.findOne({ where: criteria })
   }
@@ -42,8 +54,7 @@ export const createUserRepository = (): IUserRepository => {
     hashedPassword: string,
   ): Promise<UserDTO | null> => {
     const newUser = await sequelize.transaction(async t => {
-      // Create user
-      const user = await User.create(
+      const user = await baseUserRepository.createOne(
         {
           email,
           password: hashedPassword,
@@ -52,25 +63,30 @@ export const createUserRepository = (): IUserRepository => {
       )
 
       // Create dietician profile
-      await DieticianProfile.create(
-        {
-          userId: user.id,
-        },
+      await baseDieticianProfileRepository.createOne(
+        { userId: user.id },
         { transaction: t },
       )
 
       // Assign dietician role
-      const dieticianRole = await Role.findOne({
-        where: { name: 'dietician' },
-        lock: true,
-        transaction: t,
-      })
+      // const dieticianRole = await Role.findOne({
+      //   where: { name: 'dietician' },
+      //   lock: true,
+      //   transaction: t,
+      // })
+
+      const dieticianRole = await baseRoleRepository.findOne(
+        {
+          name: 'dietician',
+        },
+        { transaction: t },
+      )
 
       if (dieticianRole) {
-        await UserRole.create(
+        await baseUserRoleRepository.createOne(
           {
             userId: user.id,
-            roleId: dieticianRole.id,
+            roleId: dieticianRole.id!,
           },
           { transaction: t },
         )

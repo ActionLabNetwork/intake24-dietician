@@ -5,6 +5,10 @@ import type { Result } from '@intake24-dietician/common/types/utils'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 
+export interface IBaseRepository {
+  createOne: (data: any) => Promise<Result<any>>
+}
+
 export interface IUserRepository {
   findOne: (criteria: {
     id?: number
@@ -42,4 +46,8 @@ export interface ITokenRepository {
   }) => Promise<TokenDTO | null>
   findOne: (token: string) => Promise<TokenDTO | null>
   destroyOne: (token: string) => Promise<boolean>
+}
+
+export interface IDieticianProfileRepository {
+  createOne: (userId: number) => Promise<DieticianProfileDTO | null>
 }
