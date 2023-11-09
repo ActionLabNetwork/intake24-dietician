@@ -22,8 +22,11 @@ interface NutrientTypesCreationAttributes {
   unitId: string
 }
 
-@Table(getTableConfig(NutrientTypes.name, 'nutrient_types'))
-class NutrientTypes extends Model<NutrientTypesAttributes, NutrientTypesCreationAttributes> {
+@Table(getTableConfig(NutrientTypes.name, 'nutrient_types', false))
+class NutrientTypes extends Model<
+  NutrientTypesAttributes,
+  NutrientTypesCreationAttributes
+> {
   @PrimaryKey
   @Column({
     allowNull: false,

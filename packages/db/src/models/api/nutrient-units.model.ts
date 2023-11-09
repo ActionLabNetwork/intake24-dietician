@@ -19,8 +19,11 @@ interface NutrientUnitsCreationAttributes {
   symbol: string
 }
 
-@Table(getTableConfig(NutrientUnits.name, 'nutrient_units'))
-class NutrientUnits extends Model<NutrientUnitsAttributes, NutrientUnitsCreationAttributes> {
+@Table(getTableConfig(NutrientUnits.name, 'nutrient_units', false))
+class NutrientUnits extends Model<
+  NutrientUnitsAttributes,
+  NutrientUnitsCreationAttributes
+> {
   @PrimaryKey
   @Column({
     allowNull: false,
@@ -43,7 +46,6 @@ class NutrientUnits extends Model<NutrientUnitsAttributes, NutrientUnitsCreation
     type: DataType.STRING,
   })
   public declare symbol: string
-
 }
 
 export default NutrientUnits

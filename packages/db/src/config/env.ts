@@ -48,13 +48,14 @@ const getMongoDBUrl = () => {
 export const getTableConfig = (
   modelName: string,
   tableName: string,
+  timestamps = true,
 ): TableOptions<Model<any, any>> => {
   return {
     modelName: modelName,
     tableName: tableName,
     freezeTableName: true,
     underscored: true,
-    timestamps: true,
+    timestamps: timestamps,
   }
 }
 
