@@ -16,5 +16,19 @@ export const createTokenRepository = (): ITokenRepository => {
     return createTokenDTO(await Token.create(params))
   }
 
-  return { createToken }
+  const findOne = async (token: string): Promise<TokenDTO | null> => {
+    const _token = await Token.findOne({ where: { token } })
+
+    if (!_token) {
+      return null
+    }
+    return createTokenDTO(_token)
+  }
+
+  const destroyOne = async (token: string): Promise<boolean> => {
+    const rowsAffected = await Token.destroy({ where: { token } })
+    return rowsAffected > 0
+  }
+
+  return { createToken, findOne, destroyOne }
 }

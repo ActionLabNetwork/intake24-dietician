@@ -3,6 +3,7 @@ import type { TokenDTO } from '@intake24-dietician/common/entities/token.dto'
 import type { TokenActionType } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 
 export interface IUserRepository {
   findOne: (criteria: {
@@ -19,6 +20,17 @@ export interface IUserRepository {
     email: string,
     details: Partial<DieticianProfileDTO>,
   ) => Promise<boolean>
+  uploadAvatar: (userId: number, buffer: string) => Promise<boolean>
+  createPatient: (params: {
+    dieticianId: number
+    email: string
+    hashedPassword: string
+    patientDetails: PatientProfileDTO
+  }) => Promise<Result<UserDTO>>
+  assignPatientToDieticianById: (
+    dieticianId: number,
+    patientId: number,
+  ) => Promise<Result<boolean>>
 }
 
 export interface ITokenRepository {
@@ -28,4 +40,6 @@ export interface ITokenRepository {
     actionType: TokenActionType
     expiresAt: Date
   }) => Promise<TokenDTO | null>
+  findOne: (token: string) => Promise<TokenDTO | null>
+  destroyOne: (token: string) => Promise<boolean>
 }

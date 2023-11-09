@@ -7,7 +7,6 @@ import Redis from 'ioredis'
 
 const sequelize = new Sequelize(getDBUrl('intake24-dietician-db'), {
   logging: false,
-
 })
 sequelize.addModels([__dirname + '/**/*.model.ts'])
 
@@ -28,7 +27,7 @@ const connectMongo = async () => {
     })
     console.log('✅ Connected to Mongo database')
   } catch (error) {
-    console.log(getMongoDBUrl());
+    console.log(getMongoDBUrl())
     console.error('❌ Unable to connect to Mongo database:', error)
   }
 }

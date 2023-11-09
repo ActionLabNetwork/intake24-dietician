@@ -20,22 +20,17 @@ import type {
 } from '@intake24-dietician/db/types/repositories'
 import type { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
-import Token from '@intake24-dietician/db/models/auth/token.model'
 import moment from 'moment'
 import crypto from 'crypto'
-import { sequelize, redis } from '@intake24-dietician/db/connection'
+import { redis } from '@intake24-dietician/db/connection'
 import { createLogger } from '../middleware/logger'
-import Role from '@intake24-dietician/db/models/auth/role.model'
-import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import { match, P } from 'ts-pattern'
 import type { Result } from '@intake24-dietician/common/types/utils'
-import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import type { IUserService } from '@intake24-dietician/common/types/api'
-import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
-import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -45,7 +40,7 @@ export const createAuthService = (
   tokenService: ITokenService,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _emailService: IEmailService,
-  userService: IUserService,
+  _userService: IUserService,
   userRepository: IUserRepository,
   tokenRepository: ITokenRepository,
 ): IAuthService => {
@@ -337,7 +332,10 @@ export const createAuthService = (
 
           const updated = await userRepository.updateProfile(
             details.emailAddress,
-            details satisfies Partial<DieticianProfileDTO>,
+            {
+              ...details,
+              userId: decoded['userId'],
+            } satisfies Partial<DieticianProfileDTO>,
           )
 
           return { ok: true, value: updated } as const
@@ -389,10 +387,7 @@ export const createAuthService = (
     actionType: TokenActionType,
     destroyToken = true,
   ): Promise<Result<string>> => {
-    const tokenEntity = await Token.findOne({
-      where: { token },
-      lock: true,
-    })
+    const tokenEntity = await tokenRepository.findOne(token)
 
     if (!tokenEntity) {
       return { ok: false, error: new Error('Invalid token') } as const
@@ -410,7 +405,7 @@ export const createAuthService = (
     }
 
     if (destroyToken) {
-      tokenEntity.destroy()
+      tokenRepository.destroyOne(token)
     }
 
     return { ok: true, value: 'User token has been verified' } as const
@@ -425,12 +420,11 @@ export const createAuthService = (
     return match(isVerified)
       .with({ ok: true }, async () => {
         // We know for sure the token has been verified
-        const tokenEntity = (await Token.findOne({
-          where: { token },
-        })) as Token
+        const tokenEntity = await tokenRepository.findOne(token)
 
-        const user = await User.findOne({
-          where: { id: tokenEntity.userId, email },
+        const user = await userRepository.findOne({
+          id: tokenEntity?.userId,
+          email,
         })
 
         if (user === null) {
@@ -441,10 +435,10 @@ export const createAuthService = (
         }
 
         if (!user.isVerified) {
-          user.update({ isVerified: true })
+          await userRepository.updateOne(user.id, { isVerified: true })
         }
 
-        tokenEntity.destroy()
+        await tokenRepository.destroyOne(token)
 
         return {
           ok: true,
@@ -475,24 +469,18 @@ export const createAuthService = (
             return { ok: false, error: new Error('Invalid token') } as const
           }
 
-          await sequelize.transaction(async t => {
-            const user = await User.findOne({
-              where: { id: decoded['userId'] },
-              include: [DieticianProfile],
-              transaction: t,
-            })
+          const uploadResult = await userRepository.uploadAvatar(
+            decoded['userId'],
+            buffer,
+          )
 
-            if (!user) {
-              throw new Error('User not found')
-            }
-
-            await user.dieticianProfile.update(
-              { avatar: buffer },
-              { transaction: t },
-            )
-          })
-
-          return { ok: true, value: 'Avatar uploaded successfully' } as const
+          if (uploadResult) {
+            return { ok: true, value: 'Avatar uploaded successfully' } as const
+          }
+          return {
+            ok: false,
+            error: new Error('Failed to upload avatar'),
+          } as const
         })
         .with({ ok: false }, () => {
           return {
@@ -560,7 +548,8 @@ export const createAuthService = (
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
-  ): Promise<Result<UserAttributes>> => {
+  ): Promise<Result<UserDTO>> => {
+    console.log('Creating Patient')
     try {
       const isEmailValid = await validateNewEmailAvailability(email)
 
@@ -568,106 +557,37 @@ export const createAuthService = (
         .with({ ok: true }, async () => {
           const hashedPassword = await hashingService.hash(password)
 
-          try {
-            return await sequelize.transaction(async t => {
-              // Create user
-              const user = await User.create(
-                {
-                  email,
-                  password: hashedPassword,
-                },
-                { transaction: t },
-              )
-
-              // Create patient profile
-              const patientProfile = await PatientProfile.create(
-                {
-                  userId: user.id,
-                  firstName: patientDetails.firstName,
-                  middleName: patientDetails.middleName,
-                  lastName: patientDetails.lastName,
-                  mobileNumber: patientDetails.mobileNumber,
-                  address: patientDetails.address,
-                  age: patientDetails.age,
-                  gender: patientDetails.gender,
-                  height: patientDetails.height,
-                  weight: patientDetails.weight,
-                  additionalNotes: patientDetails.additionalNotes,
-                  patientGoal: patientDetails.patientGoal,
-                  avatar: patientDetails.avatar,
-                },
-                {
-                  transaction: t,
-                  include: [
-                    { model: PatientPreferences, include: [RecallFrequency] },
-                  ],
-                },
-              )
-
-              // Create Patient Preferences
-              const patientPreferences = await PatientPreferences.create({
-                patientProfileId: patientProfile.id,
-                theme: patientDetails.theme,
-                sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
-              })
-
-              // Create Recall Frequency
-              await RecallFrequency.create({
+          const patientDetailsDTO: PatientProfileDTO = {
+            firstName: patientDetails.firstName,
+            middleName: patientDetails.middleName,
+            lastName: patientDetails.lastName,
+            mobileNumber: patientDetails.mobileNumber,
+            address: patientDetails.address,
+            avatar: patientDetails.avatar,
+            age: patientDetails.age,
+            gender: patientDetails.gender,
+            height: patientDetails.height,
+            weight: patientDetails.weight,
+            additionalNotes: patientDetails.additionalNotes,
+            patientGoal: patientDetails.patientGoal,
+            patientPreferences: {
+              theme: patientDetails.theme,
+              sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
+              recallFrequency: {
+                id: 0,
                 quantity: patientDetails.recallFrequency.reminderEvery.quantity,
                 unit: patientDetails.recallFrequency.reminderEvery.unit,
                 end: patientDetails.recallFrequency.reminderEnds,
-                reminderMessage: '',
-                patientPreferencesId: patientPreferences.id,
-              })
-
-              // Assign patient role
-              const patientRole = await Role.findOne({
-                where: { name: 'patient' },
-                lock: true,
-                transaction: t,
-              })
-
-              if (patientRole) {
-                await UserRole.create(
-                  {
-                    userId: user.id,
-                    roleId: patientRole.id,
-                  },
-                  { transaction: t },
-                )
-              }
-
-              const userWithRole = await User.findByPk(user.id, {
-                include: [Role],
-                transaction: t,
-              })
-
-              if (!userWithRole) {
-                throw new Error('User not found')
-              }
-
-              // Associate patient with dietician
-              const result = await userService.assignPatientToDieticianById(
-                dieticianId,
-                userWithRole,
-                t,
-              )
-
-              if (!result.ok) {
-                throw result.error
-              }
-
-              return {
-                ok: true,
-                value: user.get({ plain: true }),
-              } as const
-            })
-          } catch (error) {
-            return {
-              ok: false as const,
-              error: new Error(getErrorMessage(error)),
-            } as const
+              },
+            },
           }
+
+          return await userRepository.createPatient({
+            dieticianId,
+            email,
+            hashedPassword,
+            patientDetails: patientDetailsDTO,
+          })
         })
         .with({ ok: false }, result => {
           return { ok: false, error: result.error } as const

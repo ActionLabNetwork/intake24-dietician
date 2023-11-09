@@ -2,11 +2,11 @@ import {
   Table,
   ForeignKey,
   Column,
-  DataType,
   Model,
   BelongsTo,
   HasOne,
   PrimaryKey,
+  AutoIncrement,
 } from 'sequelize-typescript'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
@@ -17,7 +17,6 @@ export interface PatientPreferencesAttributes {
   theme: string
   sendAutomatedFeedback: boolean
   recallFrequency: RecallFrequency
-  avatar: string | null
   patientProfileId: number
 }
 
@@ -27,12 +26,13 @@ interface PatientPreferencesCreationAttributes {
   patientProfileId: number
 }
 
-@Table(getTableConfig(PatientPreferences.name, 'patient_profiles'))
+@Table(getTableConfig(PatientPreferences.name, 'patient_preferences'))
 class PatientPreferences extends Model<
   PatientPreferencesAttributes,
   PatientPreferencesCreationAttributes
 > {
   @PrimaryKey
+  @AutoIncrement
   @Column
   public declare id: number
 
@@ -44,9 +44,6 @@ class PatientPreferences extends Model<
 
   @HasOne(() => RecallFrequency)
   public declare recallFrequency: RecallFrequency
-
-  @Column(DataType.TEXT)
-  public declare avatar: string | null
 
   @ForeignKey(() => PatientProfile)
   @Column
