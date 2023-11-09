@@ -14,6 +14,10 @@ import type {
   TokenActionType,
   PatientProfileValues,
 } from '@intake24-dietician/common/types/auth'
+import type {
+  ITokenRepository,
+  IUserRepository,
+} from '@intake24-dietician/db/types/repositories'
 import type { JwtPayload } from 'jsonwebtoken'
 import { z } from 'zod'
 import Token from '@intake24-dietician/db/models/auth/token.model'
@@ -30,6 +34,8 @@ import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.m
 import type { IUserService } from '@intake24-dietician/common/types/api'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
@@ -40,13 +46,13 @@ export const createAuthService = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _emailService: IEmailService,
   userService: IUserService,
+  userRepository: IUserRepository,
+  tokenRepository: ITokenRepository,
 ): IAuthService => {
   const register = async (
     email: string,
     password: string,
-  ): Promise<
-    Result<(UserAttributes & { token: TokenType; jti: string }) | null>
-  > => {
+  ): Promise<Result<(UserDTO & { token: TokenType; jti: string }) | null>> => {
     try {
       const isEmailValid = await validateNewEmailAvailability(email)
 
@@ -55,53 +61,27 @@ export const createAuthService = (
           const hashedPassword = await hashingService.hash(password)
 
           try {
-            return sequelize.transaction(async t => {
-              // Create user
-              const user = await User.create(
-                {
-                  email,
-                  password: hashedPassword,
-                },
-                { transaction: t },
-              )
+            const newUser = await userRepository.createUser(
+              email,
+              hashedPassword,
+            )
 
-              // Create dietician profile
-              await DieticianProfile.create(
-                {
-                  userId: user.id,
-                },
-                { transaction: t },
-              )
-
-              // Assign dietician role
-              const dieticianRole = await Role.findOne({
-                where: { name: 'dietician' },
-                lock: true,
-                transaction: t,
-              })
-
-              if (dieticianRole) {
-                await UserRole.create(
-                  {
-                    userId: user.id,
-                    roleId: dieticianRole.id,
-                  },
-                  { transaction: t },
-                )
-              }
-
-              // Generate token and session
-              const { jti, token } = await generateToken(user, 'both')
-
+            if (!newUser) {
               return {
-                ok: true,
-                value: {
-                  ...user.get({ plain: true }),
-                  token: token as TokenType,
-                  jti,
-                },
+                ok: false,
+                error: new Error(getErrorMessage('Failed to register user')),
               } as const
-            })
+            }
+
+            const { jti, token } = await generateToken(newUser, 'both')
+            return {
+              ok: true,
+              value: {
+                ...newUser,
+                token: token as TokenType,
+                jti,
+              },
+            } as const
           } catch (error) {
             return {
               ok: false as const,
@@ -128,28 +108,53 @@ export const createAuthService = (
     Result<(UserAttributes & { token: TokenType; jti: string }) | null>
   > => {
     try {
-      const getUser = async (): Promise<User | null> => {
-        const user = await User.findOne({ where: { email } })
+      const getUser = async (): Promise<UserDTO | null> => {
+        const user = await userRepository.findOne({ email })
         return user
       }
 
-      const verifyPassword = async (user: User): Promise<Result<boolean>> =>
-        await hashingService.verify(user.dataValues.password, password)
+      const verifyPassword = async (
+        user: UserDTO,
+      ): Promise<Result<boolean>> => {
+        const result = await hashingService.verify(user.password, password)
+        console.log({ result })
+        return result
+      }
 
-      const userWithToken = await match(await getUser())
-        .with(null, () => null)
+      const userWithToken: Result<
+        (UserAttributes & { token: TokenType; jti: string }) | null
+      > = await match(await getUser())
+        .with(null, () => {
+          return {
+            ok: false,
+            error: new Error(getErrorMessage('User not found')),
+          } as const
+        })
         .otherwise(async user => {
           return match(await verifyPassword(user))
-            .with({ ok: true }, () => {
-              if (!user?.isVerified) {
-                user?.update({ isVerified: true })
+            .with({ ok: true }, async result => {
+              if (!result.value) {
+                return {
+                  ok: false,
+                  error: new Error(getErrorMessage('Invalid password')),
+                } as const
               }
-              return generateTokenAndReturnValues(user)
+              if (!user.isVerified) {
+                userRepository.updateOne(user.id, { isVerified: true })
+              }
+
+              return {
+                ok: true,
+                value: await generateTokenAndReturnValues(user),
+              } as const
             })
-            .otherwise(() => null)
+            .otherwise(() => ({
+              ok: false,
+              error: new Error(getErrorMessage('User not found')),
+            }))
         })
 
-      return { ok: true, value: userWithToken } as const
+      return userWithToken
     } catch (error) {
       return { ok: false, error: new Error('login function failed') } as const
     }
@@ -189,35 +194,10 @@ export const createAuthService = (
     token: string,
     password: string,
   ): Promise<Result<string>> => {
-    const result = await sequelize.transaction(async t => {
-      const tokenEntity = await Token.findOne({
-        where: { token },
-        lock: true,
-        transaction: t,
-      })
-
-      if (!tokenEntity) {
-        return { ok: false, error: new Error('Invalid token') } as const
-      }
-
-      if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-        return { ok: false, error: new Error('Token has expired') } as const
-      }
-
-      await User.update(
-        { password: await hashingService.hash(password) },
-        { where: { id: tokenEntity.userId }, transaction: t },
-      )
-
-      await Token.destroy({
-        where: { userId: tokenEntity.userId },
-        transaction: t,
-      })
-
-      return { ok: true, value: 'Password reset successful' } as const
-    })
-
-    return result
+    return await userRepository.resetPassword(
+      token,
+      await hashingService.hash(password),
+    )
   }
 
   const getUser = async (
@@ -344,10 +324,9 @@ export const createAuthService = (
   const updateProfile = async (
     details: DieticianProfileValues,
     accessToken: string,
-  ): Promise<Result<string>> => {
+  ): Promise<Result<boolean>> => {
     try {
       const decoded = verifyJwtToken(accessToken)
-
       return match(decoded)
         .with({ ok: true }, async result => {
           const decoded = result.value.decoded
@@ -356,24 +335,12 @@ export const createAuthService = (
             return { ok: false, error: new Error('Invalid token') } as const
           }
 
-          return await sequelize.transaction(async t => {
-            const user = await User.findOne({
-              where: { id: decoded['userId'] },
-              include: [DieticianProfile],
-              transaction: t,
-            })
+          const updated = await userRepository.updateProfile(
+            details.emailAddress,
+            details satisfies Partial<DieticianProfileDTO>,
+          )
 
-            if (!user) {
-              return { ok: false, error: new Error('User not found') } as const
-            }
-
-            await user.update(
-              { email: details.emailAddress },
-              { transaction: t },
-            )
-            await user.dieticianProfile.update(details, { transaction: t })
-            return { ok: true, value: 'Profile updated successfully' } as const
-          })
+          return { ok: true, value: updated } as const
         })
         .with({ ok: false }, () => {
           return {
@@ -394,16 +361,14 @@ export const createAuthService = (
     let token = ''
 
     try {
-      const user = await User.findOne({
-        where: { email },
-      })
+      const user = await userRepository.findOne({ email })
 
       if (!user) {
         return { ok: false, error: new Error('User not found') } as const
       }
 
       token = crypto.randomBytes(32).toString('hex')
-      await Token.create({
+      tokenRepository.createToken({
         userId: user.id,
         token,
         actionType,
@@ -722,7 +687,7 @@ export const createAuthService = (
   ): Promise<Result<boolean>> => {
     try {
       const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await User.findOne({ where: { email } }))
+      const emailExists = Boolean(await userRepository.findOne({ email }))
 
       if (!isValidEmail) {
         return {
@@ -754,7 +719,7 @@ export const createAuthService = (
   ): Promise<Result<boolean>> => {
     try {
       const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await User.findOne({ where: { email } }))
+      const emailExists = Boolean(await userRepository.findOne({ email }))
 
       if (!isValidEmail) {
         return {
@@ -918,55 +883,43 @@ export const createAuthService = (
   }
 
   const generateToken = async (
-    user: User,
+    user: UserDTO,
     type: 'access' | 'refresh' | 'both',
   ): Promise<{ jti: string; token: TokenType }> => {
     const jti = crypto.randomBytes(16).toString('hex')
 
-    const accessTokenPayload: TokenPayload = {
+    const createPayload = (
+      tokenType: TokenPayload['tokenType'],
+    ): TokenPayload => ({
       userId: user.id,
-      email: user.dataValues.email,
-      tokenType: 'access-token',
+      email: user.email,
+      tokenType,
       jti,
-    }
+    })
 
-    const refreshTokenPayload: TokenPayload = {
-      userId: user.id,
-      email: user.dataValues.email,
-      tokenType: 'refresh-token',
-      jti,
+    const createAndAssignToken = (
+      tokenType: TokenPayload['tokenType'],
+      ttl: number,
+    ) => {
+      const payload = createPayload(tokenType)
+      return createToken(payload, env.JWT_SECRET, ttl)
     }
 
     const token: TokenType = { accessToken: '', refreshToken: '' }
 
-    match(type)
-      .with('access', () => {
-        token.accessToken = createToken(
-          accessTokenPayload,
-          env.JWT_SECRET,
-          env.JWT_ACCESS_TOKEN_TTL,
-        )
-      })
-      .with('refresh', () => {
-        token.refreshToken = createToken(
-          refreshTokenPayload,
-          env.JWT_SECRET,
-          env.JWT_REFRESH_TOKEN_TTL,
-        )
-      })
-      .with('both', () => {
-        token.accessToken = createToken(
-          accessTokenPayload,
-          env.JWT_SECRET,
-          env.JWT_ACCESS_TOKEN_TTL,
-        )
-        token.refreshToken = createToken(
-          refreshTokenPayload,
-          env.JWT_SECRET,
-          env.JWT_REFRESH_TOKEN_TTL,
-        )
-      })
-      .exhaustive()
+    if (type === 'access' || type === 'both') {
+      token.accessToken = createAndAssignToken(
+        'access-token',
+        env.JWT_ACCESS_TOKEN_TTL,
+      )
+    }
+
+    if (type === 'refresh' || type === 'both') {
+      token.refreshToken = createAndAssignToken(
+        'refresh-token',
+        env.JWT_REFRESH_TOKEN_TTL,
+      )
+    }
 
     await saveTokenIntoRedis(token, jti)
     return { jti, token }
@@ -1001,10 +954,10 @@ export const createAuthService = (
     return tokenInRedis
   }
 
-  const generateTokenAndReturnValues = async (user: User) => {
+  const generateTokenAndReturnValues = async (user: UserDTO) => {
     const { jti, token } = await generateToken(user, 'both')
     return {
-      ...user.get({ plain: true }),
+      ...user,
       token,
       jti,
     }

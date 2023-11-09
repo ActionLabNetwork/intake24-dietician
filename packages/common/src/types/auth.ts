@@ -4,8 +4,10 @@ import type { Result } from './utils'
 import type { Theme } from './theme'
 import type { ReminderConditions } from './reminder'
 
-
-export type TTokenType = 'access-token' | 'refresh-token' | 'api-autorization-token'
+export type TTokenType =
+  | 'access-token'
+  | 'refresh-token'
+  | 'api-autorization-token'
 export interface UserAttributes {
   id: number
   email: string
@@ -89,7 +91,7 @@ export interface IAuthService {
   updateProfile: (
     details: DieticianProfileValues,
     accessToken: string,
-  ) => Promise<Result<string>>
+  ) => Promise<Result<boolean>>
   generateUserTokenForPasswordlessAuth: (
     email: string,
   ) => Promise<Result<string>>

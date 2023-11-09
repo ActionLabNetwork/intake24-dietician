@@ -38,6 +38,8 @@ export class PatientController extends Controller {
       container.resolve('tokenService'),
       container.resolve('emailService'),
       container.resolve('userService'),
+      container.resolve('userRepository'),
+      container.resolve('tokenRepository'),
     )
     this.userService = createUserService()
 
