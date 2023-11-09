@@ -10,7 +10,7 @@ import {
   DataType,
   PrimaryKey,
 } from 'sequelize-typescript'
-import User from './user.model'
+import User from '../auth/user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 
 export interface SurveyAttributes {

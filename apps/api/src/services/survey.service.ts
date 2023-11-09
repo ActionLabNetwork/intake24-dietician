@@ -5,7 +5,7 @@
 // import { z } from 'zod'
 
 import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
-import Survey from "@intake24-dietician/db/models/auth/survey.model"
+import Survey from "@intake24-dietician/db/models/api/survey.model"
 import type { Result } from '@intake24-dietician/common/types/utils'
 
 // import { createLogger } from '../middleware/logger'
