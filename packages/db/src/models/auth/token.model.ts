@@ -13,13 +13,14 @@ import {
 } from 'sequelize-typescript'
 import User from './user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
+import type { TokenActionType } from '@intake24-dietician/common/types/auth'
 
 export interface TokenAttributes {
   id: number
   userId: number
   author: User
   token: string
-  actionType: string
+  actionType: TokenActionType
   expiresAt: Date
   isActive: boolean
 }
@@ -27,7 +28,7 @@ export interface TokenAttributes {
 interface TokenCreationAttributes {
   userId: number
   token: string
-  actionType: string
+  actionType: TokenActionType
   expiresAt: Date
 }
 
@@ -50,7 +51,7 @@ class Token extends Model<TokenAttributes, TokenCreationAttributes> {
   @Column
   public declare token: string
 
-  @Column
+  @Column(DataType.TEXT)
   public declare actionType: string
 
   @AllowNull(false)

@@ -14,6 +14,7 @@ import { getTableConfig } from '@intake24-dietician/db/config/env'
 import PatientPreferences from '../api/patient-preferences.model'
 
 export interface PatientProfileAttributes {
+  id: number
   userId: number
   firstName: string
   middleName: string
@@ -24,7 +25,7 @@ export interface PatientProfileAttributes {
   gender: string
   height: number
   weight: number
-  additionalDetails?: unknown
+  additionalDetails?: Record<string, unknown>
   additionalNotes: string
   patientGoal: string
   patientPreferences: PatientPreferences
@@ -43,7 +44,7 @@ interface PatientProfileCreationAttributes {
   gender: string
   height: number
   weight: number
-  additionalDetails?: unknown
+  additionalDetails?: Record<string, unknown>
   additionalNotes: string
   patientGoal: string
   // patientPreferences: PatientPreferences

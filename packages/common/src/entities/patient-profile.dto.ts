@@ -2,8 +2,8 @@ import type PatientProfile from '@intake24-dietician/db/models/auth/patient-prof
 import type { PatientPreferencesDTO } from './patient-preferences.dto'
 
 export interface PatientProfileDTO {
-  id?: number
-  userId?: number
+  id: number
+  userId: number
   firstName: string
   middleName: string
   lastName: string

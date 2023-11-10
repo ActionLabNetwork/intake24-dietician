@@ -104,7 +104,7 @@ export const createAuthService = (
   > => {
     try {
       const getUser = async (): Promise<UserDTO | null> => {
-        const user = await userRepository.findOne({ email })
+        const user = (await userRepository.findOne({ email })) ?? null
         return user
       }
 
@@ -112,7 +112,6 @@ export const createAuthService = (
         user: UserDTO,
       ): Promise<Result<boolean>> => {
         const result = await hashingService.verify(user.password, password)
-        console.log({ result })
         return result
       }
 
@@ -135,7 +134,7 @@ export const createAuthService = (
                 } as const
               }
               if (!user.isVerified) {
-                userRepository.updateOne(user.id, { isVerified: true })
+                userRepository.updateOne({ id: user.id }, { isVerified: true })
               }
 
               return {
@@ -422,10 +421,11 @@ export const createAuthService = (
         // We know for sure the token has been verified
         const tokenEntity = await tokenRepository.findOne(token)
 
-        const user = await userRepository.findOne({
-          id: tokenEntity?.userId,
-          email,
-        })
+        const user =
+          (await userRepository.findOne({
+            id: tokenEntity?.userId,
+            email,
+          })) ?? null
 
         if (user === null) {
           return {
@@ -435,7 +435,7 @@ export const createAuthService = (
         }
 
         if (!user.isVerified) {
-          await userRepository.updateOne(user.id, { isVerified: true })
+          await userRepository.updateOne({ id: user.id }, { isVerified: true })
         }
 
         await tokenRepository.destroyOne(token)
@@ -557,7 +557,7 @@ export const createAuthService = (
         .with({ ok: true }, async () => {
           const hashedPassword = await hashingService.hash(password)
 
-          const patientDetailsDTO: PatientProfileDTO = {
+          const patientDetailsDTO: Omit<PatientProfileDTO, 'id' | 'userId'> = {
             firstName: patientDetails.firstName,
             middleName: patientDetails.middleName,
             lastName: patientDetails.lastName,
@@ -577,6 +577,7 @@ export const createAuthService = (
                 id: 0,
                 quantity: patientDetails.recallFrequency.reminderEvery.quantity,
                 unit: patientDetails.recallFrequency.reminderEvery.unit,
+                reminderMessage: '',
                 end: patientDetails.recallFrequency.reminderEnds,
               },
             },

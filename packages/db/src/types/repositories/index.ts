@@ -4,17 +4,37 @@ import type { TokenActionType } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 
-export interface IBaseRepository {
-  createOne: (data: any) => Promise<Result<any>>
+export interface IEntity {
+  [key: string]: any
 }
 
-export interface IUserRepository {
-  findOne: (criteria: {
-    id?: number
-    email?: string
-  }) => Promise<UserDTO | null>
-  updateOne: (id: number, data: Partial<UserDTO>) => Promise<UserDTO | null>
+export interface IBaseRepository<
+  TAttributes extends IEntity,
+  TCreationAttributes extends IEntity,
+> {
+  createOne: (
+    data: TCreationAttributes,
+    options?: { transaction?: any; include?: any },
+  ) => Promise<TAttributes>
+  findOne: (
+    params: Partial<TAttributes>,
+    options?: { transaction?: any; include?: any },
+  ) => Promise<TAttributes | undefined>
+  updateOne: (
+    where: Partial<TAttributes>,
+    data: Partial<TAttributes>,
+    options?: { transaction: any },
+  ) => Promise<TAttributes | undefined>
+  destroyOne: (
+    where: Partial<TAttributes>,
+    options?: { transaction: any },
+  ) => Promise<boolean>
+}
+
+export interface IUserRepository
+  extends ReturnType<(typeof baseRepositories)['baseUserRepository']> {
   createUser: (email: string, hashedPassword: string) => Promise<UserDTO | null>
   resetPassword: (
     token: string,
@@ -29,7 +49,7 @@ export interface IUserRepository {
     dieticianId: number
     email: string
     hashedPassword: string
-    patientDetails: PatientProfileDTO
+    patientDetails: Omit<PatientProfileDTO, 'id' | 'userId'>
   }) => Promise<Result<UserDTO>>
   assignPatientToDieticianById: (
     dieticianId: number,

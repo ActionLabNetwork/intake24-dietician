@@ -11,18 +11,21 @@ import {
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import PatientPreferences from './patient-preferences.model'
 import MasterSettings from './master-settings.model'
+import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 
 export interface RecallFrequencyAttributes {
+  id: number
   quantity: number
-  unit: string
-  end: unknown
+  unit: ReminderConditions['reminderEvery']['unit']
+  end: ReminderConditions['reminderEnds']
+  reminderMessage: string
   patientPreferencesId: number
 }
 
 interface RecallFrequencyCreationAttributes {
   quantity: number
-  unit: string
-  end: unknown
+  unit: ReminderConditions['reminderEvery']['unit']
+  end: ReminderConditions['reminderEnds']
   reminderMessage: string
   patientPreferencesId: number
 }
@@ -35,11 +38,11 @@ class RecallFrequency extends Model<
   @Column
   public declare quantity: number
 
-  @Column
-  public declare unit: string
+  @Column(DataType.TEXT)
+  public declare unit: ReminderConditions['reminderEvery']['unit']
 
   @Column(DataType.JSONB)
-  public declare end: unknown
+  public declare end: ReminderConditions['reminderEnds']
 
   @Column(DataType.TEXT)
   public declare reminderMessage: string

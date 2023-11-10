@@ -3,14 +3,11 @@ import User from '@intake24-dietician/db/models/auth/user.model'
 import type { Transaction } from '@intake24-dietician/db/connection'
 import { sequelize } from '@intake24-dietician/db/connection'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
-import Token from '@intake24-dietician/db/models/auth/token.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
-import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import {
   type UserDTO,
   createUserDTO,
 } from '@intake24-dietician/common/entities/user.dto'
-import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
@@ -19,34 +16,32 @@ import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/di
 import moment from 'moment'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import {
-  createBaseDieticianProfileRepository,
-  createBaseRoleRepository,
-  createBaseUserRepository,
-  createBaseUserRoleRepository,
-} from './factory'
+import { baseRepositories } from './singleton'
 
 export const createUserRepository = (): IUserRepository => {
   // Base Repositories
-  const baseUserRepository = createBaseUserRepository()
-  const baseDieticianProfileRepository = createBaseDieticianProfileRepository()
-  const baseRoleRepository = createBaseRoleRepository()
-  const baseUserRoleRepository = createBaseUserRoleRepository()
-
-  const findOne = async (criteria: { id?: number; email?: string }) => {
-    return await User.findOne({ where: criteria })
-  }
-
-  const updateOne = async (
-    id: number,
-    data: Partial<UserDTO>,
-  ): Promise<UserDTO | null> => {
-    const [, affectedRows] = await User.update(data, {
-      where: { id },
-      returning: true,
-    })
-
-    return affectedRows[0] ? createUserDTO(affectedRows[0]) : null
+  const {
+    baseUserRepository,
+    baseDieticianProfileRepository,
+    basePatientProfileRepository,
+    baseRoleRepository,
+    baseUserRoleRepository,
+    baseTokenRepository,
+    basePatientPreferencesRepository,
+    baseRecallFrequencyRepository,
+  } = {
+    baseUserRepository: baseRepositories.baseUserRepository(),
+    baseDieticianProfileRepository:
+      baseRepositories.baseDieticianProfileRepository(),
+    basePatientProfileRepository:
+      baseRepositories.basePatientProfileRepository(),
+    baseRoleRepository: baseRepositories.baseRoleRepository(),
+    baseUserRoleRepository: baseRepositories.baseUserRoleRepository(),
+    baseTokenRepository: baseRepositories.baseTokenRepository(),
+    basePatientPreferencesRepository:
+      baseRepositories.basePatientPreferencesRepository(),
+    baseRecallFrequencyRepository:
+      baseRepositories.baseRecallFrequencyRepository(),
   }
 
   const createUser = async (
@@ -67,13 +62,6 @@ export const createUserRepository = (): IUserRepository => {
         { userId: user.id },
         { transaction: t },
       )
-
-      // Assign dietician role
-      // const dieticianRole = await Role.findOne({
-      //   where: { name: 'dietician' },
-      //   lock: true,
-      //   transaction: t,
-      // })
 
       const dieticianRole = await baseRoleRepository.findOne(
         {
@@ -104,11 +92,10 @@ export const createUserRepository = (): IUserRepository => {
   ): Promise<Result<string>> => {
     try {
       return sequelize.transaction(async t => {
-        const tokenEntity = await Token.findOne({
-          where: { token },
-          lock: true,
-          transaction: t,
-        })
+        const tokenEntity = await baseTokenRepository.findOne(
+          { token },
+          { transaction: t },
+        )
 
         if (!tokenEntity) {
           return { ok: false, error: new Error('Invalid token') } as const
@@ -118,15 +105,18 @@ export const createUserRepository = (): IUserRepository => {
           return { ok: false, error: new Error('Token has expired') } as const
         }
 
-        await User.update(
-          { password: hashedPassword },
-          { where: { id: tokenEntity.userId }, transaction: t },
+        await baseUserRepository.updateOne(
+          { id: tokenEntity.userId },
+          {
+            password: hashedPassword,
+          },
+          { transaction: t },
         )
 
-        await Token.destroy({
-          where: { userId: tokenEntity.userId },
-          transaction: t,
-        })
+        await baseTokenRepository.destroyOne(
+          { id: tokenEntity.id },
+          { transaction: t },
+        )
 
         return {
           ok: true,
@@ -146,18 +136,27 @@ export const createUserRepository = (): IUserRepository => {
     details: Partial<DieticianProfileDTO>,
   ) => {
     const result = await sequelize.transaction(async t => {
-      const user = await User.findOne({
-        where: { id: details.userId },
-        include: [DieticianProfile],
-        transaction: t,
-      })
+      const user = await baseUserRepository.findOne(
+        { id: details.userId },
+        { transaction: t, include: [DieticianProfile] },
+      )
 
       if (!user) {
         return { ok: false, error: new Error('User not found') } as const
       }
 
-      await user.update({ email }, { transaction: t })
-      await user.dieticianProfile.update(details, { transaction: t })
+      await baseUserRepository.updateOne(
+        { id: user.id },
+        { email },
+        { transaction: t },
+      )
+
+      await baseDieticianProfileRepository.updateOne(
+        { userId: user.id },
+        details,
+        { transaction: t },
+      )
+
       return { ok: true, value: 'Profile updated successfully' } as const
     })
 
@@ -170,20 +169,21 @@ export const createUserRepository = (): IUserRepository => {
   ): Promise<boolean> => {
     try {
       return await sequelize.transaction(async t => {
-        const user = await User.findOne({
-          where: { id: userId },
-          include: [DieticianProfile],
-          transaction: t,
-        })
+        const user = await baseUserRepository.findOne(
+          { id: userId },
+          { transaction: t, include: [DieticianProfile] },
+        )
 
         if (!user) {
           throw new Error('User not found')
         }
 
-        await user.dieticianProfile.update(
+        await baseDieticianProfileRepository.updateOne(
+          { userId: user.id },
           { avatar: buffer },
           { transaction: t },
         )
+
         return true
       })
     } catch (error) {
@@ -195,23 +195,19 @@ export const createUserRepository = (): IUserRepository => {
     dieticianId: number
     email: string
     hashedPassword: string
-    patientDetails: PatientProfileDTO
+    patientDetails: Omit<PatientProfileDTO, 'id' | 'userId'>
   }): Promise<Result<UserDTO>> => {
     const { dieticianId, email, hashedPassword, patientDetails } = params
-    console.log({ params })
     try {
       return await sequelize.transaction(async t => {
         // Create user
-        const user = await User.create(
-          {
-            email,
-            password: hashedPassword,
-          },
+        const user = await baseUserRepository.createOne(
+          { email, password: hashedPassword },
           { transaction: t },
         )
 
         // Create patient profile
-        const patientProfile = await PatientProfile.create(
+        const patientProfile = await basePatientProfileRepository.createOne(
           {
             userId: user.id,
             firstName: patientDetails.firstName,
@@ -237,19 +233,34 @@ export const createUserRepository = (): IUserRepository => {
 
         // Create Patient Preferences
         if (patientDetails.patientPreferences) {
-          const patientPreferences = await PatientPreferences.create(
-            {
-              patientProfileId: patientProfile.id,
-              theme: patientDetails.patientPreferences?.theme,
-              sendAutomatedFeedback:
-                patientDetails.patientPreferences?.sendAutomatedFeedback,
-            },
-            { transaction: t },
-          )
+          // const patientPreferences = await PatientPreferences.create(
+          //   {
+          //     patientProfileId: patientProfile.id,
+          //     theme: patientDetails.patientPreferences?.theme,
+          //     sendAutomatedFeedback:
+          //       patientDetails.patientPreferences?.sendAutomatedFeedback,
+          //   },
+          //   { transaction: t },
+          // )
+
+          const patientPreferences =
+            await basePatientPreferencesRepository.createOne(
+              {
+                patientProfileId: patientProfile.id,
+                theme: patientDetails.patientPreferences?.theme,
+                sendAutomatedFeedback:
+                  patientDetails.patientPreferences?.sendAutomatedFeedback,
+              },
+              { transaction: t },
+            )
+
+          if (!patientPreferences) {
+            throw new Error('Could not create patient preferences')
+          }
 
           // Create Recall Frequency
           if (patientDetails.patientPreferences?.recallFrequency) {
-            await RecallFrequency.create(
+            await baseRecallFrequencyRepository.createOne(
               {
                 quantity:
                   patientDetails.patientPreferences.recallFrequency.quantity,
@@ -264,26 +275,25 @@ export const createUserRepository = (): IUserRepository => {
         }
 
         // Assign patient role
-        const patientRole = await Role.findOne({
-          where: { name: 'patient' },
-          lock: true,
-          transaction: t,
-        })
+        const patientRole = await baseRoleRepository.findOne(
+          { name: 'patient' },
+          { transaction: t },
+        )
 
         if (patientRole) {
-          await UserRole.create(
+          await baseUserRoleRepository.createOne(
             {
               userId: user.id,
-              roleId: patientRole.id,
+              roleId: patientRole.id!,
             },
             { transaction: t },
           )
         }
 
-        const userWithRole = await User.findByPk(user.id, {
-          include: [Role],
-          transaction: t,
-        })
+        const userWithRole = await baseUserRepository.findOne(
+          { id: user.id },
+          { include: [Role], transaction: t },
+        )
 
         if (!userWithRole) {
           throw new Error('User not found')
@@ -320,11 +330,12 @@ export const createUserRepository = (): IUserRepository => {
     transaction?: Transaction,
   ): Promise<Result<boolean>> => {
     try {
-      const dietician = await User.findOne({
-        where: { id: dieticianId },
-        include: [Role, { model: User, as: 'patients' }],
-        ...(transaction ? { transaction } : {}),
-      })
+      const dietician = await baseUserRepository.findOne(
+        {
+          id: dieticianId,
+        },
+        { include: [Role, { model: User, as: 'patients' }], transaction },
+      )
 
       if (!dietician) {
         return {
@@ -333,11 +344,12 @@ export const createUserRepository = (): IUserRepository => {
         } as const
       }
 
-      const patient = await User.findOne({
-        where: { id: patientId },
-        include: [Role],
-        ...(transaction ? { transaction } : {}),
-      })
+      const patient = await baseUserRepository.findOne(
+        {
+          id: patientId,
+        },
+        { include: [Role], transaction },
+      )
 
       if (!patient) {
         return {
@@ -347,11 +359,11 @@ export const createUserRepository = (): IUserRepository => {
       }
 
       const dieticianHasDieticianRole = dietician?.roles?.some(
-        role => role.dataValues.name === 'dietician',
+        role => role.name === 'dietician',
       )
 
       const patientHasPatientRole = patient?.roles?.some(
-        role => role.dataValues.name === 'patient',
+        role => role.name === 'patient',
       )
 
       if (!dieticianHasDieticianRole) {
@@ -389,8 +401,7 @@ export const createUserRepository = (): IUserRepository => {
   }
 
   return {
-    findOne,
-    updateOne,
+    ...baseUserRepository,
     createUser,
     resetPassword,
     updateProfile,

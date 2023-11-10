@@ -14,9 +14,12 @@ import { z } from 'zod'
 import { toInt } from 'radash'
 import type { Theme } from '@intake24-dietician/common/types/theme'
 import type { Unit } from '@intake24-dietician/common/types/reminder'
+// import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
+  // const userRepository = createUserRepository()
+
   const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
     try {
       const users = await User.findAll({ limit, offset })
@@ -28,6 +31,12 @@ export const createUserService = (): IUserService => {
 
   const getUserById = async (id: string): Promise<Result<User | null>> => {
     try {
+      // const user = await userRepository.findOne(
+      //   { id: Number(id) },
+      //   {
+      //     include: [DieticianProfile, PatientProfile],
+      //   },
+      // )
       const user = await User.findOne({
         where: { id },
         include: [DieticianProfile, PatientProfile],

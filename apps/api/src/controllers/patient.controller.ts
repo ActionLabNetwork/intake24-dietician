@@ -117,6 +117,7 @@ export class PatientController extends Controller {
         }
 
         const patient = await this.userService.getUserById(userId)
+        console.log({ patient })
 
         return match(patient)
           .with({ ok: true }, patientResult => {

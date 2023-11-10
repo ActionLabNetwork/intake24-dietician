@@ -3,9 +3,11 @@ import type { ReminderConditions } from '@intake24-dietician/common/types/remind
 
 export interface RecallFrequencyDTO {
   id?: number
+  patientPreferencesId?: number
   quantity: ReminderConditions['reminderEvery']['quantity']
   unit: ReminderConditions['reminderEvery']['unit']
   end: ReminderConditions['reminderEnds']
+  reminderMessage: string
   createdAt?: Date
   updatedAt?: Date
 }
@@ -15,9 +17,11 @@ export const createRecallFrequencyDTO = (
 ) => {
   return {
     id: details.id,
+    patientPreferencesId: details.patientPreferencesId,
     quantity: details.quantity,
     unit: details.unit,
     end: details.end,
+    reminderMessage: details.reminderMessage,
     createdAt: details.createdAt,
     updatedAt: details.updatedAt,
   }
