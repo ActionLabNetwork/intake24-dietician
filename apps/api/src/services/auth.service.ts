@@ -757,9 +757,7 @@ export const createAuthService = (
               } as const
             }
 
-            const user = await User.findOne({
-              where: { id: decoded['userId'] },
-            })
+            const user = await userRepository.findOne({ id: decoded['userId'] })
 
             if (!user) {
               return { ok: false, error: new Error('User not found') } as const
@@ -769,7 +767,7 @@ export const createAuthService = (
             return {
               ok: true,
               value: {
-                ...user.get({ plain: true }),
+                ...user,
                 token,
                 jti,
               },

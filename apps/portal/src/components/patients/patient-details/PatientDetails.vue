@@ -218,28 +218,39 @@ watch(
   newData => {
     if (!newData) return
 
+    console.log({ newData })
+
     contactDetailsFormValues.value = {
-      firstName: newData.patientProfile.firstName,
-      middleName: newData.patientProfile.middleName,
-      lastName: newData.patientProfile.lastName,
-      avatar: newData.patientProfile.avatar ?? getDefaultAvatar(newData.email),
-      mobileNumber: newData.patientProfile.mobileNumber,
+      firstName: newData.patientProfile!.firstName,
+      middleName: newData.patientProfile!.middleName,
+      lastName: newData.patientProfile!.lastName,
+      avatar: newData.patientProfile!.avatar ?? getDefaultAvatar(newData.email),
+      mobileNumber: newData.patientProfile!.mobileNumber,
       emailAddress: newData.email,
-      address: newData.patientProfile.address,
+      address: newData.patientProfile!.address,
     }
 
     personalDetailsFormValues.value = {
-      age: newData.patientProfile.age,
-      gender: newData.patientProfile.gender as Gender,
-      weight: newData.patientProfile.weight,
-      height: newData.patientProfile.height,
-      additionalNotes: newData.patientProfile.additionalNotes,
-      patientGoal: newData.patientProfile.patientGoal,
+      age: newData.patientProfile!.age,
+      gender: newData.patientProfile!.gender as Gender,
+      weight: newData.patientProfile!.weight,
+      height: newData.patientProfile!.height,
+      additionalNotes: newData.patientProfile!.additionalNotes,
+      patientGoal: newData.patientProfile!.patientGoal,
     }
 
-    theme.value = newData.patientProfile.theme
-    sendAutomatedFeedback.value = newData.patientProfile.sendAutomatedFeedback
-    recallFrequency.value = newData.patientProfile.recallFrequency
+    theme.value = newData.patientProfile!.patientPreferences!.theme as Theme
+    sendAutomatedFeedback.value =
+      newData.patientProfile!.patientPreferences!.sendAutomatedFeedback
+    recallFrequency.value = {
+      reminderEvery: {
+        quantity:
+          newData.patientProfile!.patientPreferences!.recallFrequency!.quantity,
+        unit: newData.patientProfile!.patientPreferences!.recallFrequency!.unit,
+      },
+      reminderEnds:
+        newData.patientProfile!.patientPreferences!.recallFrequency!.end,
+    }
   },
   { immediate: true },
 )

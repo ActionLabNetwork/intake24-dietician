@@ -1,7 +1,7 @@
 import type DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 export interface DieticianProfileDTO {
-  id: number
+  id?: number
   userId: number
   firstName: string
   middleName: string

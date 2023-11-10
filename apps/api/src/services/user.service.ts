@@ -14,11 +14,14 @@ import { z } from 'zod'
 import { toInt } from 'radash'
 import type { Theme } from '@intake24-dietician/common/types/theme'
 import type { Unit } from '@intake24-dietician/common/types/reminder'
-// import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
+import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
-  // const userRepository = createUserRepository()
+  const userRepository = createUserRepository()
 
   const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
     try {
@@ -29,41 +32,55 @@ export const createUserService = (): IUserService => {
     }
   }
 
-  const getUserById = async (id: string): Promise<Result<User | null>> => {
+  const getUserById = async (id: string): Promise<Result<UserDTO | null>> => {
     try {
-      // const user = await userRepository.findOne(
-      //   { id: Number(id) },
-      //   {
-      //     include: [DieticianProfile, PatientProfile],
-      //   },
-      // )
-      const user = await User.findOne({
-        where: { id },
-        include: [DieticianProfile, PatientProfile],
-        attributes: { exclude: ['password'] },
-        paranoid: false,
+      const user = await userRepository.findOne(
+        { id: Number(id) },
+        {
+          include: [
+            DieticianProfile,
+            {
+              model: PatientProfile,
+              include: [
+                { model: PatientPreferences, include: [RecallFrequency] },
+              ],
+            },
+          ],
+        },
+      )
+
+      if (!user) {
+        return { ok: false, error: new Error('User not found') } as const
+      }
+
+      console.log({
+        user,
+        profile: user.patientProfile,
+        pref: user.patientProfile?.patientPreferences,
+        recall: user.patientProfile?.patientPreferences?.recallFrequency,
       })
 
       // Format patient profile
-      if (user?.patientProfile) {
+      if (user.patientProfile) {
         const formattedPatientProfile = {
-          ...user.patientProfile.dataValues,
-          theme: user.patientProfile.patientPreferences.theme as Theme,
+          ...user.patientProfile,
+          theme: user.patientProfile.patientPreferences?.theme as Theme,
           emailAddress: user.email,
           recallFrequency: {
             reminderEvery: {
               quantity:
-                user.patientProfile.patientPreferences.recallFrequency.quantity,
-              unit: user.patientProfile.patientPreferences.recallFrequency
-                .unit as Unit,
+                user.patientProfile.patientPreferences?.recallFrequency
+                  ?.quantity,
+              unit: user.patientProfile.patientPreferences?.recallFrequency
+                ?.unit as Unit,
             },
             reminderEnds:
-              user.patientProfile.patientPreferences.recallFrequency.end,
+              user.patientProfile.patientPreferences?.recallFrequency?.end,
           },
         }
 
-        user.patientProfile.dataValues = {
-          ...user.patientProfile.dataValues,
+        user.patientProfile = {
+          ...user.patientProfile,
           ...formattedPatientProfile,
         }
       }
@@ -118,6 +135,7 @@ export const createUserService = (): IUserService => {
     patientId: number,
     patientDetails: Partial<PatientProfileValues>,
   ): Promise<Result<number>> => {
+    console.log({ patientDetails })
     try {
       // eslint-disable-next-line complexity
       return await sequelize.transaction(async t => {

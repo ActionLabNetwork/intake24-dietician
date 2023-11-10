@@ -93,7 +93,7 @@ class PatientProfile extends Model<
   public declare weight: number
 
   @Column(DataType.JSONB)
-  public declare additionalDetails: unknown
+  public declare additionalDetails: Record<string, unknown>
 
   @Column
   public declare additionalNotes: string

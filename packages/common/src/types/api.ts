@@ -11,6 +11,7 @@ import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
 import type User from '@intake24-dietician/db/models/auth/user.model'
 import type { Transaction } from '@intake24-dietician/db/connection'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -31,7 +32,7 @@ export interface IUserService {
     limit?: number,
     offset?: number,
   ) => Promise<Result<UserAttributes[]>>
-  getUserById: (id: string) => Promise<Result<User | null>>
+  getUserById: (id: string) => Promise<Result<UserDTO | null>>
   getUserByEmail: (email: string) => Promise<Result<User | null>>
   updateProfile: (
     id: number,

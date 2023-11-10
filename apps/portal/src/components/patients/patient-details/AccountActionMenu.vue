@@ -70,16 +70,16 @@
 </template>
 
 <script setup lang="ts">
-import { UserAttributesWithPatientProfile } from '@intake24-dietician/common/types/auth'
 import { computed, ref } from 'vue'
 import {
   useRestorePatient,
   useDeletePatient,
 } from '@intake24-dietician/portal/mutations/usePatients'
+import { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 
 const props = defineProps<{
   patient:
-    | (Omit<UserAttributesWithPatientProfile, 'password'> & {
+    | (Omit<UserDTO, 'password'> & {
         deletionDate: Date
       })
     | undefined
@@ -121,7 +121,7 @@ const actions = computed(
 )
 
 const fullName = computed(() => {
-  return `${props.patient?.patientProfile.firstName} ${props.patient?.patientProfile.lastName}`
+  return `${props.patient?.patientProfile?.firstName} ${props.patient?.patientProfile?.lastName}`
 })
 
 const dialog = ref({
