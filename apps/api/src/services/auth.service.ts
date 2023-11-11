@@ -549,7 +549,6 @@ export const createAuthService = (
     password: string,
     patientDetails: PatientProfileValues,
   ): Promise<Result<UserDTO>> => {
-    console.log('Creating Patient')
     try {
       const isEmailValid = await validateNewEmailAvailability(email)
 

@@ -195,7 +195,6 @@ const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
 }
 
 const handleSubmit = async () => {
-  console.log({ aggregatedData })
   await form.value.validate()
 
   return new Promise((resolve, reject) => {

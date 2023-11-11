@@ -2,30 +2,37 @@ import type { IUserService } from '@intake24-dietician/common/types/api'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import type { Transaction } from '@intake24-dietician/db/connection'
-import { Op, sequelize } from '@intake24-dietician/db/connection'
-import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
+import { Op } from '@intake24-dietician/db/connection'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
-import Role from '@intake24-dietician/db/models/auth/role.model'
-import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { z } from 'zod'
 import { toInt } from 'radash'
 import type { Theme } from '@intake24-dietician/common/types/theme'
 import type { Unit } from '@intake24-dietician/common/types/reminder'
 import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import { createDieticianProfileRepository } from '@intake24-dietician/db/repositories/dietician-profile.repository'
+import { createRoleRepository } from '@intake24-dietician/db/repositories/role.repository'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
+import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
   const userRepository = createUserRepository()
+  const dieticianProfileRepository = createDieticianProfileRepository()
+  const roleRepository = createRoleRepository()
+  const baseUserRoleRepository = baseRepositories.baseUserRoleRepository()
 
-  const listUsers = async (limit = 10, offset = 0): Promise<Result<User[]>> => {
+  const listUsers = async (
+    limit = 10,
+    offset = 0,
+  ): Promise<Result<UserDTO[]>> => {
     try {
-      const users = await User.findAll({ limit, offset })
+      const users = await userRepository.findMany({ limit, offset })
       return { ok: true, value: users } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
@@ -52,13 +59,6 @@ export const createUserService = (): IUserService => {
       if (!user) {
         return { ok: false, error: new Error('User not found') } as const
       }
-
-      console.log({
-        user,
-        profile: user.patientProfile,
-        pref: user.patientProfile?.patientPreferences,
-        recall: user.patientProfile?.patientPreferences?.recallFrequency,
-      })
 
       // Format patient profile
       if (user.patientProfile) {
@@ -93,7 +93,7 @@ export const createUserService = (): IUserService => {
 
   const getUserByEmail = async (
     email: string,
-  ): Promise<Result<User | null>> => {
+  ): Promise<Result<UserDTO | null>> => {
     try {
       const isValidEmail = z.string().email().safeParse(email).success
 
@@ -102,10 +102,11 @@ export const createUserService = (): IUserService => {
       }
       return {
         ok: true,
-        value: await User.findOne({
-          where: { email },
-          include: [DieticianProfile],
-        }),
+        value:
+          (await userRepository.findOne(
+            { email },
+            { include: [DieticianProfile] },
+          )) ?? null,
       } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
@@ -114,17 +115,20 @@ export const createUserService = (): IUserService => {
 
   const updateProfile = async (
     id: number,
-    details: Partial<DieticianProfile>,
-  ): Promise<Result<DieticianProfile>> => {
+    details: Partial<DieticianProfileDTO>,
+  ): Promise<Result<DieticianProfileDTO | null>> => {
     try {
-      const profile = await DieticianProfile.findOne({ where: { userId: id } })
+      const profile = await dieticianProfileRepository.findOne({ userId: id })
 
       if (!profile) {
         return { ok: false, error: new Error('Profile not found') } as const
       }
 
-      const updatedProfile = await profile.update(details)
-      return { ok: true, value: updatedProfile } as const
+      const updatedProfile = await dieticianProfileRepository.updateOne(
+        { id },
+        details,
+      )
+      return { ok: true, value: updatedProfile ?? null } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
@@ -135,94 +139,13 @@ export const createUserService = (): IUserService => {
     patientId: number,
     patientDetails: Partial<PatientProfileValues>,
   ): Promise<Result<number>> => {
-    console.log({ patientDetails })
     try {
       // eslint-disable-next-line complexity
-      return await sequelize.transaction(async t => {
-        const dieticianWithPatient = await User.findByPk(dieticianId, {
-          include: [
-            {
-              model: User,
-              as: 'patients',
-              through: { attributes: [] },
-              where: { id: patientId },
-              include: [PatientProfile],
-              paranoid: false,
-            },
-          ],
-        })
-
-        if (!dieticianWithPatient) {
-          return { ok: false, error: new Error('Dietician not found') } as const
-        }
-
-        if (dieticianWithPatient.patients.length === 0) {
-          return { ok: false, error: new Error('Patient not found') } as const
-        }
-
-        const patientProfile =
-          dieticianWithPatient.patients[0]?.dataValues.patientProfile
-
-        if (!patientProfile) {
-          return {
-            ok: false,
-            error: new Error('Patient profile not found'),
-          } as const
-        }
-
-        const patientOfDietician = dieticianWithPatient.patients[0]
-
-        // Update email address if needed
-        await patientOfDietician?.update({
-          email:
-            patientDetails.emailAddress ?? patientOfDietician.dataValues.email,
-        })
-
-        // Update patient profile
-        const updatedCount = await PatientProfile.update(
-          {
-            firstName: patientDetails.firstName ?? patientProfile.firstName,
-            middleName: patientDetails.middleName ?? patientProfile.middleName,
-            lastName: patientDetails.lastName ?? patientProfile.lastName,
-            mobileNumber:
-              patientDetails.mobileNumber ?? patientProfile.mobileNumber,
-            address: patientDetails.address ?? patientProfile.address,
-            age: patientDetails.age ?? patientProfile.age,
-            gender: patientDetails.gender ?? patientProfile.gender,
-            height: patientDetails.height ?? patientProfile.height,
-            weight: patientDetails.weight ?? patientProfile.weight,
-            additionalNotes:
-              patientDetails.additionalNotes ?? patientProfile.additionalNotes,
-            patientGoal:
-              patientDetails.patientGoal ?? patientProfile.patientGoal,
-            // patientPreferences: {
-            //   theme:
-            //     patientDetails.theme ?? patientProfile.patientPreferences.theme,
-            //   sendAutomatedFeedback:
-            //     patientDetails.sendAutomatedFeedback ??
-            //     patientProfile.patientPreferences.sendAutomatedFeedback,
-            //   recallFrequency: {
-            //     quantity:
-            //       patientDetails.recallFrequency?.reminderEvery.quantity ??
-            //       patientProfile.patientPreferences.recallFrequency.quantity,
-            //     unit:
-            //       patientDetails.recallFrequency?.reminderEvery.unit ??
-            //       patientProfile.patientPreferences.recallFrequency.unit,
-            //     end:
-            //       patientDetails.recallFrequency?.reminderEnds ??
-            //       patientProfile.patientPreferences.recallFrequency.end,
-            //   },
-            // },
-            avatar: patientDetails.avatar ?? patientProfile.avatar,
-          },
-          { where: { userId: patientId }, transaction: t },
-        )
-
-        return {
-          ok: true,
-          value: updatedCount[0],
-        } as const
-      })
+      return await userRepository.updatePatient(
+        dieticianId,
+        patientId,
+        patientDetails,
+      )
     } catch (error) {
       return {
         ok: false,
@@ -257,18 +180,18 @@ export const createUserService = (): IUserService => {
     }
   }
 
-  const createRole = async (name: string): Promise<Result<Role>> => {
+  const createRole = async (name: string): Promise<Result<RoleDTO>> => {
     try {
-      const role = await Role.create({ name })
+      const role = await roleRepository.createOne({ name })
       return { ok: true, value: role } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
   }
 
-  const deleteRole = async (name: string): Promise<Result<number>> => {
+  const deleteRole = async (name: string): Promise<Result<boolean>> => {
     try {
-      const role = await Role.destroy({ where: { name } })
+      const role = await roleRepository.destroyOne({ name })
       return { ok: true, value: role } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
@@ -277,8 +200,8 @@ export const createUserService = (): IUserService => {
 
   const assignRoleToUserById = async (userId: number, roleName: string) => {
     try {
-      const user = await User.findOne({ where: { id: userId } })
-      const role = await Role.findOne({ where: { name: roleName } })
+      const user = await userRepository.findOne({ id: userId })
+      const role = await roleRepository.findOne({ name: roleName })
 
       if (!user) {
         return { ok: false, error: new Error('User not found') } as const
@@ -287,90 +210,12 @@ export const createUserService = (): IUserService => {
         return { ok: false, error: new Error('Role not found') } as const
       }
 
-      const userRole = await UserRole.create({
+      const userRole = baseUserRoleRepository.createOne({
         userId: userId,
-        roleId: role.id,
+        roleId: role.id!,
       })
+
       return { ok: true, value: userRole } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
-
-  const assignPatientToDieticianById = async (
-    dieticianId: number,
-    patient: number | User,
-    transaction?: Transaction,
-  ) => {
-    try {
-      if (typeof patient === 'number' && dieticianId === patient) {
-        return {
-          ok: false,
-          error: new Error('Dietician and patient cannot be the same'),
-        } as const
-      }
-
-      const dietician = await User.findOne({
-        where: { id: dieticianId },
-        include: [Role, { model: User, as: 'patients' }],
-        ...(transaction ? { transaction } : {}),
-      })
-
-      let _patient: User | null = null
-      if (typeof patient === 'number') {
-        _patient = await User.findOne({
-          where: { id: patient },
-          include: [Role],
-        })
-      } else {
-        _patient = patient
-      }
-
-      if (!dietician) {
-        return {
-          ok: false,
-          error: new Error('Dietician account not found'),
-        } as const
-      }
-
-      if (!_patient) {
-        return {
-          ok: false,
-          error: new Error('Patient account not found'),
-        } as const
-      }
-
-      const dieticianHasDieticianRole = dietician?.roles?.some(
-        role => role.dataValues.name === 'dietician',
-      )
-
-      const patientHasPatientRole = _patient?.roles?.some(
-        role => role.dataValues.name === 'patient',
-      )
-
-      if (!dieticianHasDieticianRole) {
-        return {
-          ok: false,
-          error: new Error('Dietician does not have the dietician role'),
-        } as const
-      }
-
-      if (!patientHasPatientRole) {
-        return {
-          ok: false,
-          error: new Error('Patient does not have the patient role'),
-        } as const
-      }
-
-      const dieticianPatient = await DieticianPatient.create(
-        {
-          dieticianId: dietician.id,
-          patientId: _patient.id,
-        },
-        { ...(transaction ? { transaction } : {}) },
-      )
-
-      return { ok: true, value: dieticianPatient } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
@@ -484,7 +329,6 @@ export const createUserService = (): IUserService => {
     createRole,
     deleteRole,
     assignRoleToUserById,
-    assignPatientToDieticianById,
     getPatientsOfDietician,
     validateNewEmailAvailability,
   }

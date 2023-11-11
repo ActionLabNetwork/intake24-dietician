@@ -9,14 +9,18 @@ import { createArgonHashingService } from '../services/hashing.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createEmailService } from '../services/email.service'
 import { pick, crush, mapKeys, omit } from 'radash'
-import type User from '@intake24-dietician/db/models/auth/user.model'
 import type DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import { createTokenRepository } from '@intake24-dietician/db/repositories/token.repository'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 
 const authService = createAuthService(
   createArgonHashingService(),
   createJwtTokenService(),
   createEmailService(),
   createUserService(),
+  createUserRepository(),
+  createTokenRepository(),
 )
 const userService = createUserService()
 
@@ -97,18 +101,20 @@ program
       process.exit()
     }
 
-    const getFormattedUser = async (user: User) => {
+    const getFormattedUser = async (user: UserDTO) => {
       const formatted = mapKeys(
         crush({
-          ...pick(user.dataValues, ['id', 'email', 'isVerified']),
-          dieticianProfile: pick(user.dataValues.dieticianProfile.dataValues, [
-            'firstName',
-            'middleName',
-            'lastName',
-            'mobileNumber',
-            'businessNumber',
-            'businessAddress',
-          ]),
+          ...pick(user, ['id', 'email', 'isVerified']),
+          dieticianProfile: user.dieticianProfile
+            ? pick(user.dieticianProfile, [
+                'firstName',
+                'middleName',
+                'lastName',
+                'mobileNumber',
+                'businessNumber',
+                'businessAddress',
+              ])
+            : undefined,
         }) as Record<string, unknown>,
         (key: string) => key.replace('dieticianProfile.', ''),
       )

@@ -17,6 +17,8 @@ import moment from 'moment'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { baseRepositories } from './singleton'
+import PatientProfile from '../models/auth/patient-profile.model'
+import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 
 export const createUserRepository = (): IUserRepository => {
   // Base Repositories
@@ -324,6 +326,154 @@ export const createUserRepository = (): IUserRepository => {
     }
   }
 
+  const updatePatient = async (
+    dieticianId: number,
+    patientId: number,
+    patientDetails: Partial<PatientProfileValues>,
+  ): Promise<Result<number>> => {
+    console.log('Updating patient...')
+    // eslint-disable-next-line complexity
+    return await sequelize.transaction(async t => {
+      const dieticianWithPatient = await User.findByPk(dieticianId, {
+        include: [
+          {
+            model: User,
+            as: 'patients',
+            through: { attributes: [] },
+            where: { id: patientId },
+            include: [
+              {
+                model: PatientProfile,
+                include: [
+                  { model: PatientPreferences, include: [RecallFrequency] },
+                ],
+              },
+            ],
+            paranoid: false,
+          },
+        ],
+      })
+
+      if (!dieticianWithPatient) {
+        return { ok: false, error: new Error('Dietician not found') } as const
+      }
+
+      if (dieticianWithPatient.patients.length === 0) {
+        return { ok: false, error: new Error('Patient not found') } as const
+      }
+
+      const patientProfile =
+        dieticianWithPatient.patients[0]?.dataValues.patientProfile
+
+      if (!patientProfile) {
+        return {
+          ok: false,
+          error: new Error('Patient profile not found'),
+        } as const
+      }
+
+      const patientOfDietician = dieticianWithPatient.patients[0]
+
+      // Update email address if needed
+      await patientOfDietician?.update({
+        email:
+          patientDetails.emailAddress ?? patientOfDietician.dataValues.email,
+      })
+
+      // Update patient profile
+      const updatedCount = await PatientProfile.update(
+        {
+          firstName: patientDetails.firstName ?? patientProfile.firstName,
+          middleName: patientDetails.middleName ?? patientProfile.middleName,
+          lastName: patientDetails.lastName ?? patientProfile.lastName,
+          mobileNumber:
+            patientDetails.mobileNumber ?? patientProfile.mobileNumber,
+          address: patientDetails.address ?? patientProfile.address,
+          age: patientDetails.age ?? patientProfile.age,
+          gender: patientDetails.gender ?? patientProfile.gender,
+          height: patientDetails.height ?? patientProfile.height,
+          weight: patientDetails.weight ?? patientProfile.weight,
+          additionalNotes:
+            patientDetails.additionalNotes ?? patientProfile.additionalNotes,
+          patientGoal: patientDetails.patientGoal ?? patientProfile.patientGoal,
+          // patientPreferences: {
+          //   theme:
+          //     patientDetails.theme ?? patientProfile.patientPreferences.theme,
+          //   sendAutomatedFeedback:
+          //     patientDetails.sendAutomatedFeedback ??
+          //     patientProfile.patientPreferences.sendAutomatedFeedback,
+          //   recallFrequency: {
+          //     quantity:
+          //       patientDetails.recallFrequency?.reminderEvery.quantity ??
+          //       patientProfile.patientPreferences.recallFrequency.quantity,
+          //     unit:
+          //       patientDetails.recallFrequency?.reminderEvery.unit ??
+          //       patientProfile.patientPreferences.recallFrequency.unit,
+          //     end:
+          //       patientDetails.recallFrequency?.reminderEnds ??
+          //       patientProfile.patientPreferences.recallFrequency.end,
+          //   },
+          // },
+          avatar: patientDetails.avatar ?? patientProfile.avatar,
+        },
+        { where: { userId: patientId }, transaction: t },
+      )
+
+      // Update patient preferences
+      const patientPreferences = patientProfile.dataValues.patientPreferences
+
+      if (patientPreferences) {
+        const updatedPP = await PatientPreferences.update(
+          {
+            theme:
+              patientDetails.theme ?? patientProfile.patientPreferences.theme,
+            sendAutomatedFeedback:
+              patientDetails.sendAutomatedFeedback ??
+              patientProfile.patientPreferences.sendAutomatedFeedback,
+          },
+          {
+            where: { id: patientPreferences.id },
+            transaction: t,
+            returning: true,
+          },
+        )
+
+        console.log({ updatedPP: updatedPP[1][0]?.dataValues })
+
+        // Update recall frequency
+        const recallFrequency = patientPreferences.dataValues.recallFrequency
+
+        if (recallFrequency) {
+          const updatedRF = await RecallFrequency.update(
+            {
+              quantity:
+                patientDetails.recallFrequency?.reminderEvery.quantity ??
+                patientProfile.patientPreferences.recallFrequency.quantity,
+              unit:
+                patientDetails.recallFrequency?.reminderEvery.unit ??
+                patientProfile.patientPreferences.recallFrequency.unit,
+              end:
+                patientDetails.recallFrequency?.reminderEnds ??
+                patientProfile.patientPreferences.recallFrequency.end,
+            },
+            {
+              where: { id: recallFrequency.id },
+              transaction: t,
+              returning: true,
+            },
+          )
+
+          console.log({ updatedRF: updatedRF[1][0]?.dataValues })
+        }
+      }
+
+      return {
+        ok: true,
+        value: updatedCount[0],
+      } as const
+    })
+  }
+
   const assignPatientToDieticianById = async (
     dieticianId: number,
     patientId: number,
@@ -405,6 +555,7 @@ export const createUserRepository = (): IUserRepository => {
     createUser,
     resetPassword,
     updateProfile,
+    updatePatient,
     uploadAvatar,
     createPatient,
     assignPatientToDieticianById,

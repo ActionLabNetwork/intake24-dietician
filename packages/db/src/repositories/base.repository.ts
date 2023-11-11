@@ -47,6 +47,20 @@ export const createBaseRepository = <
     return foundModel?.get({ plain: true })
   }
 
+  const findMany = async ({
+    limit = 10,
+    offset = 0,
+  }: {
+    limit: number
+    offset: number
+  }) => {
+    const models = await Model.findAll({
+      limit,
+      offset,
+    })
+    return models.map(model => model.get({ plain: true }))
+  }
+
   const updateOne = async (
     where: Partial<TAttributes>,
     data: Partial<TAttributes>,
@@ -74,5 +88,5 @@ export const createBaseRepository = <
     return rowsAffected > 0
   }
 
-  return { createOne, findOne, updateOne, destroyOne }
+  return { createOne, findOne, findMany, updateOne, destroyOne }
 }

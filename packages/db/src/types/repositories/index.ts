@@ -1,10 +1,14 @@
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { TokenDTO } from '@intake24-dietician/common/entities/token.dto'
-import type { TokenActionType } from '@intake24-dietician/common/types/auth'
+import type {
+  PatientProfileValues,
+  TokenActionType,
+} from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
+import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 
 export interface IEntity {
   [key: string]: any
@@ -22,6 +26,10 @@ export interface IBaseRepository<
     params: Partial<TAttributes>,
     options?: { transaction?: any; include?: any },
   ) => Promise<TAttributes | undefined>
+  findMany: (options: {
+    limit: number
+    offset: number
+  }) => Promise<TAttributes[]>
   updateOne: (
     where: Partial<TAttributes>,
     data: Partial<TAttributes>,
@@ -44,6 +52,11 @@ export interface IUserRepository
     email: string,
     details: Partial<DieticianProfileDTO>,
   ) => Promise<boolean>
+  updatePatient: (
+    dieticianId: number,
+    patientId: number,
+    patientDetails: Partial<PatientProfileValues>,
+  ) => Promise<Result<number>>
   uploadAvatar: (userId: number, buffer: string) => Promise<boolean>
   createPatient: (params: {
     dieticianId: number
@@ -68,6 +81,9 @@ export interface ITokenRepository {
   destroyOne: (token: string) => Promise<boolean>
 }
 
-export interface IDieticianProfileRepository {
-  createOne: (userId: number) => Promise<DieticianProfileDTO | null>
-}
+export type IDieticianProfileRepository = IBaseRepository<
+  DieticianProfileDTO,
+  Pick<DieticianProfileDTO, 'userId'>
+>
+
+export type IRoleRepository = IBaseRepository<RoleDTO, Pick<RoleDTO, 'name'>>

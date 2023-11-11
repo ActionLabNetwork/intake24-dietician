@@ -93,8 +93,8 @@ import { useToast } from 'vue-toast-notification'
 import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import AccountActionMenu from './AccountActionMenu.vue'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 // const { t } = useI18n<i18nOptions>()
 
@@ -218,38 +218,62 @@ watch(
   newData => {
     if (!newData) return
 
-    console.log({ newData })
-
     contactDetailsFormValues.value = {
-      firstName: newData.patientProfile!.firstName,
-      middleName: newData.patientProfile!.middleName,
-      lastName: newData.patientProfile!.lastName,
-      avatar: newData.patientProfile!.avatar ?? getDefaultAvatar(newData.email),
-      mobileNumber: newData.patientProfile!.mobileNumber,
+      firstName:
+        newData.patientProfile?.firstName ??
+        contactDetailsFormValues.value.firstName,
+      middleName:
+        newData.patientProfile?.middleName ??
+        contactDetailsFormValues.value.middleName,
+      lastName:
+        newData.patientProfile?.lastName ??
+        contactDetailsFormValues.value.lastName,
+      avatar: newData.patientProfile?.avatar ?? getDefaultAvatar(newData.email),
+      mobileNumber:
+        newData.patientProfile?.mobileNumber ??
+        contactDetailsFormValues.value.mobileNumber,
       emailAddress: newData.email,
-      address: newData.patientProfile!.address,
+      address:
+        newData.patientProfile?.address ??
+        contactDetailsFormValues.value.address,
     }
 
     personalDetailsFormValues.value = {
-      age: newData.patientProfile!.age,
-      gender: newData.patientProfile!.gender as Gender,
-      weight: newData.patientProfile!.weight,
-      height: newData.patientProfile!.height,
-      additionalNotes: newData.patientProfile!.additionalNotes,
-      patientGoal: newData.patientProfile!.patientGoal,
+      age: newData.patientProfile?.age ?? personalDetailsFormValues.value.age,
+      gender:
+        (newData.patientProfile?.gender as Gender) ??
+        personalDetailsFormValues.value.gender,
+      weight:
+        newData.patientProfile?.weight ??
+        personalDetailsFormValues.value.weight,
+      height:
+        newData.patientProfile?.height ??
+        personalDetailsFormValues.value.height,
+      additionalNotes:
+        newData.patientProfile?.additionalNotes ??
+        personalDetailsFormValues.value.additionalNotes,
+      patientGoal:
+        newData.patientProfile?.patientGoal ??
+        personalDetailsFormValues.value.patientGoal,
     }
 
-    theme.value = newData.patientProfile!.patientPreferences!.theme as Theme
+    theme.value = (newData.patientProfile?.patientPreferences?.theme ??
+      theme.value) as Theme
     sendAutomatedFeedback.value =
-      newData.patientProfile!.patientPreferences!.sendAutomatedFeedback
+      newData.patientProfile?.patientPreferences?.sendAutomatedFeedback ??
+      sendAutomatedFeedback.value
     recallFrequency.value = {
       reminderEvery: {
         quantity:
-          newData.patientProfile!.patientPreferences!.recallFrequency!.quantity,
-        unit: newData.patientProfile!.patientPreferences!.recallFrequency!.unit,
+          newData.patientProfile?.patientPreferences?.recallFrequency
+            ?.quantity ?? recallFrequency.value.reminderEvery.quantity,
+        unit:
+          newData.patientProfile?.patientPreferences?.recallFrequency?.unit ??
+          recallFrequency.value.reminderEvery.unit,
       },
       reminderEnds:
-        newData.patientProfile!.patientPreferences!.recallFrequency!.end,
+        newData.patientProfile?.patientPreferences?.recallFrequency?.end ??
+        recallFrequency.value.reminderEnds,
     }
   },
   { immediate: true },
@@ -278,7 +302,6 @@ watch(
 }
 .text {
   padding-bottom: 0.5rem;
-  font-family: Roboto;
 
   &.heading {
     color: #000;

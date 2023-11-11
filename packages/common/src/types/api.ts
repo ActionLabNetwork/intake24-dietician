@@ -1,17 +1,10 @@
-import type DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
-import type Role from '@intake24-dietician/db/models/auth/role.model'
-import type UserRole from '@intake24-dietician/db/models/auth/user-role.model'
-import type {
-  DieticianProfileValues,
-  PatientProfileValues,
-  UserAttributes,
-  SurveyAttributes,
-} from './auth'
+import type { PatientProfileValues, SurveyAttributes } from './auth'
 import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
-import type User from '@intake24-dietician/db/models/auth/user.model'
-import type { Transaction } from '@intake24-dietician/db/connection'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
+import type { DieticianProfileDTO } from 'src/entities/dietician-profile.dto'
+import type { UserRoleDTO } from 'src/entities/user-role.dto'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -28,16 +21,13 @@ export interface ApiRequest<T> {
 export type ApiResponse<T> = ApiResponseWithData<T> | ApiResponseWithError
 
 export interface IUserService {
-  listUsers: (
-    limit?: number,
-    offset?: number,
-  ) => Promise<Result<UserAttributes[]>>
+  listUsers: (limit?: number, offset?: number) => Promise<Result<UserDTO[]>>
   getUserById: (id: string) => Promise<Result<UserDTO | null>>
-  getUserByEmail: (email: string) => Promise<Result<User | null>>
+  getUserByEmail: (email: string) => Promise<Result<UserDTO | null>>
   updateProfile: (
     id: number,
-    details: Partial<UserAttributes>,
-  ) => Promise<Result<Omit<DieticianProfileValues, 'emailAddress'>>>
+    details: Partial<DieticianProfileDTO>,
+  ) => Promise<Result<DieticianProfileDTO | null>>
   updatePatient: (
     dieticianId: number,
     patientId: number,
@@ -45,17 +35,12 @@ export interface IUserService {
   ) => Promise<Result<number>>
   deleteUserByIdOrEmail: (idOrEmail: string) => Promise<Result<number>>
   restoreDeletedUserByIdOrEmail: (idOrEmail: string) => Promise<Result<void>>
-  createRole: (name: string) => Promise<Result<Role>>
-  deleteRole: (name: string) => Promise<Result<number>>
+  createRole: (name: string) => Promise<Result<RoleDTO>>
+  deleteRole: (name: string) => Promise<Result<boolean>>
   assignRoleToUserById: (
     userId: number,
     roleName: string,
-  ) => Promise<Result<UserRole>>
-  assignPatientToDieticianById: (
-    dieticianId: number,
-    patient: number | User,
-    transaction?: Transaction,
-  ) => Promise<Result<DieticianPatient>>
+  ) => Promise<Result<UserRoleDTO>>
   getPatientsOfDietician: (
     dieticianId: number,
   ) => Promise<Result<Partial<PatientProfileValues>[]>>

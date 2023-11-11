@@ -117,7 +117,6 @@ export class PatientController extends Controller {
         }
 
         const patient = await this.userService.getUserById(userId)
-        console.log({ patient })
 
         return match(patient)
           .with({ ok: true }, patientResult => {
@@ -174,7 +173,6 @@ export class PatientController extends Controller {
           )
           return { data: { patient } }
         } else {
-          console.log(patient.error)
           this.logger.error(
             'Failed to create patient for dietician',
             result.value.decoded['userId'],
@@ -217,13 +215,13 @@ export class PatientController extends Controller {
 
         if (patient.ok) {
           this.logger.info(
-            'Successfully created patient for dietician',
+            'Successfully updated patient for dietician',
             result.value.decoded['userId'],
           )
           return { data: { patient } }
         } else {
           this.logger.error(
-            'Failed to create patient for dietician',
+            'Failed to update patient for dietician',
             result.value.decoded['userId'],
           )
           return this.generateInvalidEmailClientErrorResponse()
