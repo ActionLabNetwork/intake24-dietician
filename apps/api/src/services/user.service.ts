@@ -53,6 +53,7 @@ export const createUserService = (): IUserService => {
               ],
             },
           ],
+          paranoid: false,
         },
       )
 

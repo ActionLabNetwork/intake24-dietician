@@ -1,3 +1,9 @@
+/**
+ * This file defines interfaces for repositories that interact with the database.
+ * It exports interfaces for base repository, user repository, token repository, dietician profile repository and role repository.
+ * The interfaces define methods for creating, finding, updating and deleting data from the database.
+ * The interfaces also define the types of data that can be passed to these methods.
+ */
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { TokenDTO } from '@intake24-dietician/common/entities/token.dto'
 import type {
@@ -9,6 +15,7 @@ import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/di
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
+
 
 export interface IEntity {
   [key: string]: any
@@ -24,7 +31,8 @@ export interface IBaseRepository<
   ) => Promise<TAttributes>
   findOne: (
     params: Partial<TAttributes>,
-    options?: { transaction?: any; include?: any },
+    options?: { transaction?: any; include?: any; paranoid?: boolean },
+    paranoid?: boolean,
   ) => Promise<TAttributes | undefined>
   findMany: (options: {
     limit: number

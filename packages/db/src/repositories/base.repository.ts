@@ -36,13 +36,15 @@ export const createBaseRepository = <
     options?: {
       transaction?: Transaction
       include?: Includeable | Includeable[]
+      paranoid?: boolean
     },
   ): Promise<TAttributes | undefined> => {
-    const { transaction, include } = options || {}
+    const { transaction, include, paranoid } = options || {}
     const foundModel = await Model.findOne({
       where: params as unknown as WhereOptions<TAttributes>,
       ...(transaction ? { transaction } : {}),
       ...(include ? { include } : {}),
+      ...(paranoid !== undefined ? { paranoid } : {}),
     })
     return foundModel?.get({ plain: true })
   }

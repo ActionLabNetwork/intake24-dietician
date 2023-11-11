@@ -81,8 +81,9 @@ import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import ContactDetails, {
   ContactDetailsFormValues,
 } from '@intake24-dietician/portal/components/patients/patient-details/ContactDetails.vue'
-import PersonalDetails from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
-import { PersonalDetailsFormValues } from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
+import PersonalDetails, {
+  PersonalDetailsFormValues,
+} from '@intake24-dietician/portal/components/patients/patient-details/PersonalDetails.vue'
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
