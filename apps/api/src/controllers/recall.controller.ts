@@ -50,26 +50,26 @@ export class RecallController extends Controller {
     console.log(requestSurveyId)
     console.log(survey, id)
     // TODO: Validate the auth Token
-    console.log("Auth Token: ", request.headers.authorization || '');
+    console.log('Auth Token: ', request.headers.authorization || '')
     const recallTOBeSaved: IRecallExtended = {
-        // TODO: add validation for the request surveyID
-        dietionSurveyId: requestSurveyId,
-        id: requestBody.id,
-        surveyId: requestBody.surveyId,
-        userId: requestBody.userId,
-        startTime: requestBody.startTime,
-        endTime: requestBody.endTime,
-        submissionTime: requestBody.submissionTime,
-        log: requestBody.log,
-        uxSessionId: requestBody.uxSessionId,
-        userAgent: requestBody.userAgent,
-        createdAt: requestBody.createdAt,
-        updatedAt: requestBody.updatedAt,
-        user: requestBody.user,
-        meals: requestBody.meals,
-        survey: requestBody.survey,
-        customFields: requestBody.customFields,
-        addedToRecallDb: new Date(),
+      // TODO: add validation for the request surveyID
+      dietionSurveyId: requestSurveyId,
+      id: requestBody.id,
+      surveyId: requestBody.surveyId,
+      userId: requestBody.userId,
+      startTime: requestBody.startTime,
+      endTime: requestBody.endTime,
+      submissionTime: requestBody.submissionTime,
+      log: requestBody.log,
+      uxSessionId: requestBody.uxSessionId,
+      userAgent: requestBody.userAgent,
+      createdAt: requestBody.createdAt,
+      updatedAt: requestBody.updatedAt,
+      user: requestBody.user,
+      meals: requestBody.meals,
+      survey: requestBody.survey,
+      customFields: requestBody.customFields,
+      addedToRecallDb: new Date(),
     }
     return this.recallService.createRecall(recallTOBeSaved as IRecallExtended)
   }

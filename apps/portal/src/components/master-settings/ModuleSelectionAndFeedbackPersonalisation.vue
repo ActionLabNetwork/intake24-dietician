@@ -42,7 +42,9 @@
         </v-row>
 
         <!-- Preview -->
-        <div style="background-color: bisque; height: 30rem; margin: 1rem" />
+        <div class="ma-4">
+          <EnergyIntakeModule />
+        </div>
 
         <!-- Feedback Personalisation -->
         <div>
@@ -63,6 +65,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import EnergyIntakeModule from '../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 
 const items = ref([
   {

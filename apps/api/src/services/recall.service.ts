@@ -20,8 +20,13 @@ export const createRecallService = () => {
     console.log('Trying to find the recall by ID: ', id)
     try {
       const recall = await Recall.findOne({ id: id })
-      if (recall) return { ok: true, value: recall as unknown as IRecallExtended } as const
-        return { ok: true, value: null } as const
+      console.log({ recall })
+      if (recall)
+        return {
+          ok: true,
+          value: recall as unknown as IRecallExtended,
+        } as const
+      return { ok: true, value: null } as const
     } catch (error) {
       return {
         ok: false,

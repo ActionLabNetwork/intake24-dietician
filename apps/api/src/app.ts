@@ -2,7 +2,7 @@ import type {
   Response as ExResponse,
   Request as ExRequest,
   NextFunction,
-} from 'express';
+} from 'express'
 import express from 'express'
 import bodyParser from 'body-parser'
 import { RegisterRoutes } from '../build/routes'
@@ -15,7 +15,7 @@ import type { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 export const app = express()
 
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cookieParser())
 app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
   return res.send(swaggerUi.generateHTML(await import('../build/swagger.json')))
@@ -50,6 +50,7 @@ app.use(
     next: NextFunction,
     // eslint-disable-next-line max-params
   ): ExResponse | undefined => {
+    console.log({ err })
     if (err instanceof ValidateError) {
       console.warn(`Caught Validation Error for ${req.path}:`, err.fields)
       return res.status(422).json({
