@@ -31,13 +31,14 @@ export const useAddPatient = () => {
 export const useUpdatePatient = () => {
   const updatePatientUri = env.AUTH_API_UPDATE_PATIENT
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    PatientProfileValues & { patientId: number }
-  >({
-    mutationFn: body => axios.put(updatePatientUri, body),
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation<
+      unknown,
+      AxiosError<ApiResponseWithError>,
+      PatientProfileValues & { patientId: number }
+    >({
+      mutationFn: body => axios.put(updatePatientUri, body),
+    })
 
   return {
     data,
@@ -46,6 +47,7 @@ export const useUpdatePatient = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 

@@ -30,30 +30,38 @@
     <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
       <div>
         <ContactDetails
-          :default-state="contactDetailsFormValues"
+          :default-state="patientForm.formValues.value.contactDetailsFormValues"
           mode="Edit"
           :handle-submit="handleSubmit"
-          @update="handleContactDetailsUpdate"
+          @update="
+            patientForm.handleFormUpdate('contactDetailsFormValues', $event)
+          "
         />
         <PersonalDetails
-          :default-state="personalDetailsFormValues"
+          :default-state="
+            patientForm.formValues.value.personalDetailsFormValues
+          "
           class="mt-16"
-          @update="handlePersonalDetailsUpdate"
+          @update="
+            patientForm.handleFormUpdate('personalDetailsFormValues', $event)
+          "
         />
         <VisualThemeSelector
           class="mt-10"
-          :default-state="theme"
-          @update="handleVisualThemeUpdate"
+          :default-state="patientForm.formValues.value.theme"
+          @update="patientForm.handleFormUpdate('theme', $event)"
         />
         <SendAutomatedFeedbackToggle
           class="mt-10"
-          :default-state="sendAutomatedFeedback"
-          @update="handleSendAutomatedFeedback"
+          :default-state="patientForm.formValues.value.sendAutomatedFeedback"
+          @update="
+            patientForm.handleFormUpdate('sendAutomatedFeedback', $event)
+          "
         />
         <UpdateRecallFrequency
           class="mt-10"
-          :default-state="recallFrequency"
-          @update="handleRecallFrequencyUpdate"
+          :default-state="patientForm.formValues.value.recallFrequency"
+          @update="patientForm.handleFormUpdate('recallFrequency', $event)"
         />
       </div>
       <div>
@@ -77,7 +85,6 @@ import { computed, ref, watch } from 'vue'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import ContactDetails, {
   ContactDetailsFormValues,
 } from '@intake24-dietician/portal/components/patients/patient-details/ContactDetails.vue'
@@ -95,7 +102,8 @@ import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { useForm } from '@/composables/useForm'
+import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 
 // const { t } = useI18n<i18nOptions>()
 
@@ -106,107 +114,68 @@ const updatePatientMutation = useUpdatePatient()
 const $toast = useToast()
 
 const form = ref()
-
-const contactDetailsFormValues = ref<ContactDetailsFormValues>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  avatar: '',
-  mobileNumber: '',
-  emailAddress: '',
-  address: '',
+const formValues = ref({
+  contactDetailsFormValues: ref<ContactDetailsFormValues>({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    avatar: '',
+    mobileNumber: '',
+    emailAddress: '',
+    address: '',
+  }),
+  personalDetailsFormValues: ref<PersonalDetailsFormValues>({
+    age: 30,
+    gender: 'Male',
+    weight: 80,
+    height: 180,
+    additionalNotes: '',
+    patientGoal: '',
+  }),
+  theme: ref<Theme>('Classic'),
+  sendAutomatedFeedback: ref<boolean>(false),
+  recallFrequency: ref<ReminderConditions>({
+    reminderEvery: {
+      quantity: 5,
+      unit: 'days',
+    },
+    reminderEnds: {
+      type: 'never',
+    },
+  }),
 })
 
-const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
-  age: 30,
-  gender: 'Male',
-  weight: 80,
-  height: 180,
-  additionalNotes: '',
-  patientGoal: '',
+const patientForm = useForm<
+  typeof formValues,
+  PatientProfileValues & { patientId: number }
+>({
+  initialValues: formValues,
+  schema: PatientSchema,
+  $toast: $toast,
+  mutationFn: updatePatientMutation.mutateAsync,
 })
 
-const theme = ref<Theme>('Classic')
-const sendAutomatedFeedback = ref<boolean>(false)
-const recallFrequency = ref<ReminderConditions>({
-  reminderEvery: {
-    quantity: 5,
-    unit: 'days',
-  },
-  reminderEnds: {
-    type: 'never',
-  },
-})
+const aggregatedData = computed(() => {
+  const { contactDetailsFormValues, personalDetailsFormValues, ...rest } =
+    patientForm.formValues.value
 
-const aggregatedData = computed(() => ({
-  ...contactDetailsFormValues.value,
-  ...personalDetailsFormValues.value,
-  theme: theme.value,
-  sendAutomatedFeedback: sendAutomatedFeedback.value,
-  recallFrequency: recallFrequency.value,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}))
+  return {
+    ...contactDetailsFormValues,
+    ...personalDetailsFormValues,
+    ...rest,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }
+})
 
 const isFormValid = computed(() => {
-  return PatientSchema.safeParse(aggregatedData.value).success
+  return patientForm.isFormValid(aggregatedData.value)
 })
 
-const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
-  contactDetailsFormValues.value = values
-}
-
-const handlePersonalDetailsUpdate = (values: PersonalDetailsFormValues) => {
-  personalDetailsFormValues.value = values
-}
-
-const handleVisualThemeUpdate = (_theme: Theme) => {
-  theme.value = _theme
-}
-
-const handleSendAutomatedFeedback = (value: boolean) => {
-  sendAutomatedFeedback.value = value
-}
-
-const handleRecallFrequencyUpdate = (value: ReminderConditions) => {
-  recallFrequency.value = value
-}
-
 const handleSubmit = async (): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    // Validate with zod
-    const result = PatientSchema.safeParse(aggregatedData.value)
-
-    if (!result.success) {
-      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    // Validate with Vuetify
-    const errors = form.value.errors
-    if (errors.length > 0) {
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    updatePatientMutation.mutate(
-      {
-        ...aggregatedData.value,
-        patientId: Number(route.params['id']),
-      },
-      {
-        onSuccess: () => {
-          $toast.success('Patient details updated')
-          resolve()
-        },
-        onError: err => {
-          $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-        },
-      },
-    )
-
-    resolve()
+  return await patientForm.handleSubmit(aggregatedData.value, {
+    ...aggregatedData.value,
+    patientId: Number(route.params['id']),
   })
 }
 
@@ -219,62 +188,96 @@ watch(
   newData => {
     if (!newData) return
 
-    contactDetailsFormValues.value = {
-      firstName:
-        newData.patientProfile?.firstName ??
-        contactDetailsFormValues.value.firstName,
-      middleName:
-        newData.patientProfile?.middleName ??
-        contactDetailsFormValues.value.middleName,
-      lastName:
-        newData.patientProfile?.lastName ??
-        contactDetailsFormValues.value.lastName,
-      avatar: newData.patientProfile?.avatar ?? getDefaultAvatar(newData.email),
-      mobileNumber:
-        newData.patientProfile?.mobileNumber ??
-        contactDetailsFormValues.value.mobileNumber,
-      emailAddress: newData.email,
-      address:
-        newData.patientProfile?.address ??
-        contactDetailsFormValues.value.address,
+    const updateFormValue = <T,>(
+      formValue: T,
+      newValue: T | null | undefined,
+    ) => {
+      return newValue ?? formValue
     }
 
-    personalDetailsFormValues.value = {
-      age: newData.patientProfile?.age ?? personalDetailsFormValues.value.age,
-      gender:
-        (newData.patientProfile?.gender as Gender) ??
-        personalDetailsFormValues.value.gender,
-      weight:
-        newData.patientProfile?.weight ??
-        personalDetailsFormValues.value.weight,
-      height:
-        newData.patientProfile?.height ??
-        personalDetailsFormValues.value.height,
-      additionalNotes:
-        newData.patientProfile?.additionalNotes ??
-        personalDetailsFormValues.value.additionalNotes,
-      patientGoal:
-        newData.patientProfile?.patientGoal ??
-        personalDetailsFormValues.value.patientGoal,
-    }
+    const contactDetails = patientForm.formValues.value.contactDetailsFormValues
+    const personalDetails =
+      patientForm.formValues.value.personalDetailsFormValues
 
-    theme.value = (newData.patientProfile?.patientPreferences?.theme ??
-      theme.value) as Theme
-    sendAutomatedFeedback.value =
-      newData.patientProfile?.patientPreferences?.sendAutomatedFeedback ??
-      sendAutomatedFeedback.value
-    recallFrequency.value = {
-      reminderEvery: {
-        quantity:
-          newData.patientProfile?.patientPreferences?.recallFrequency
-            ?.quantity ?? recallFrequency.value.reminderEvery.quantity,
-        unit:
-          newData.patientProfile?.patientPreferences?.recallFrequency?.unit ??
-          recallFrequency.value.reminderEvery.unit,
+    patientForm.formValues.value = {
+      contactDetailsFormValues: {
+        firstName: updateFormValue(
+          contactDetails.firstName,
+          newData.patientProfile?.firstName,
+        ),
+        middleName: updateFormValue(
+          contactDetails.middleName,
+          newData.patientProfile?.middleName,
+        ),
+        lastName: updateFormValue(
+          contactDetails.lastName,
+          newData.patientProfile?.lastName,
+        ),
+        avatar: updateFormValue(
+          contactDetails.avatar,
+          newData.patientProfile?.avatar,
+        ),
+        mobileNumber: updateFormValue(
+          contactDetails.mobileNumber,
+          newData.patientProfile?.mobileNumber,
+        ),
+        emailAddress: updateFormValue(
+          contactDetails.emailAddress,
+          newData.email,
+        ),
+        address: updateFormValue(
+          contactDetails.address,
+          newData.patientProfile?.address,
+        ),
       },
-      reminderEnds:
-        newData.patientProfile?.patientPreferences?.recallFrequency?.end ??
-        recallFrequency.value.reminderEnds,
+      personalDetailsFormValues: {
+        age: updateFormValue(personalDetails.age, newData.patientProfile?.age),
+        gender: updateFormValue(
+          personalDetails.gender,
+          newData.patientProfile?.gender,
+        ) as Gender,
+        weight: updateFormValue(
+          personalDetails.weight,
+          newData.patientProfile?.weight,
+        ),
+        height: updateFormValue(
+          personalDetails.height,
+          newData.patientProfile?.height,
+        ),
+        additionalNotes: updateFormValue(
+          personalDetails.additionalNotes,
+          newData.patientProfile?.additionalNotes,
+        ),
+        patientGoal: updateFormValue(
+          personalDetails.patientGoal,
+          newData.patientProfile?.patientGoal,
+        ),
+      },
+      theme: updateFormValue(
+        patientForm.formValues.value.theme,
+        newData.patientProfile?.patientPreferences?.theme,
+      ) as Theme,
+      sendAutomatedFeedback: updateFormValue(
+        patientForm.formValues.value.sendAutomatedFeedback,
+        newData.patientProfile?.patientPreferences?.sendAutomatedFeedback,
+      ),
+      recallFrequency: {
+        reminderEvery: {
+          quantity: updateFormValue(
+            patientForm.formValues.value.recallFrequency.reminderEvery.quantity,
+            newData.patientProfile?.patientPreferences?.recallFrequency
+              ?.quantity,
+          ),
+          unit: updateFormValue(
+            patientForm.formValues.value.recallFrequency.reminderEvery.unit,
+            newData.patientProfile?.patientPreferences?.recallFrequency?.unit,
+          ),
+        },
+        reminderEnds: updateFormValue(
+          patientForm.formValues.value.recallFrequency.reminderEnds,
+          newData.patientProfile?.patientPreferences?.recallFrequency?.end,
+        ),
+      },
     }
   },
   { immediate: true },
@@ -310,15 +313,6 @@ watch(
     font-style: normal;
     font-weight: 600;
     line-height: normal;
-  }
-
-  &.subheading {
-    color: #555;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%; /* 19.6px */
-    letter-spacing: 0.14px;
   }
 
   &.patient-status {
