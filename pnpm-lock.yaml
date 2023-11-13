@@ -480,6 +480,9 @@ importers:
       core-js:
         specifier: ^3.32.2
         version: 3.32.2
+      moment:
+        specifier: ^2.29.4
+        version: 2.29.4
       pinia:
         specifier: ^2.1.6
         version: 2.1.6(typescript@5.2.2)(vue@3.3.4)

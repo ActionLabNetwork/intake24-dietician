@@ -48,6 +48,9 @@ export interface IUserService {
 }
 export interface IRecallApiService {
   getRecallById: (id: string) => Promise<Result<IRecallExtended | null>>
+  getRecallsByUserId: (
+    userId: string,
+  ) => Promise<Result<IRecallExtended[]>>
   createRecall: (newRecall: IRecallExtended) => Promise<Result<string | null>>
 }
 

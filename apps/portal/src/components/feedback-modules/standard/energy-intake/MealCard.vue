@@ -4,7 +4,7 @@
     :style="{ background: colors.backgroundColor }"
   >
     <div><img :src="src" :alt="alt" /></div>
-    <div>{{ label }}</div>
+    <div class="font-weight-medium">{{ label }}</div>
     <div
       class="energy-value d-flex justify-center"
       :style="{

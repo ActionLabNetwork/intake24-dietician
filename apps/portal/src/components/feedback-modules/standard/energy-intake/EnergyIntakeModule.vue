@@ -1,7 +1,18 @@
+<!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div class="d-flex align-center">
-    <img :src="Logo" alt="Logo" />
-    <div class="ml-4 font-weight-medium">Energy Intake</div>
+  <div class="d-flex justify-space-between align-center">
+    <div class="d-flex align-center">
+      <img :src="Logo" alt="Logo" />
+      <div class="ml-4 font-weight-medium">Energy Intake</div>
+    </div>
+    <div>
+      <VueDatePicker
+        v-model="date"
+        :teleport="true"
+        :enable-time-picker="false"
+        :allowed-dates="allowedDates"
+      />
+    </div>
   </div>
   <div class="mt-6 total-energy-container">
     Total energy: {{ totalEnergy }}kcal
@@ -18,20 +29,29 @@
     </div>
   </div>
   <v-divider class="my-6" />
+  <div>
+    <pre>{{ JSON.stringify(debugData, null, 2) }}</pre>
+  </div>
 </template>
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
-import { useRecallById } from '@/queries/useRecall'
+import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
 import MealCard from './MealCard.vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import moment from 'moment'
+import { reactive } from 'vue'
 
-const recallQuery = useRecallById(ref('d97795d1-bf36-4487-8ca3-696166f4a953'))
+const recallId = ref('d97795d1-bf36-4487-8ca3-696166f4a953')
+const recallQuery = useRecallById(recallId)
+const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
 
 const colors = {
@@ -92,9 +112,18 @@ const mealCards = ref({
   },
 })
 
+const debugData = reactive({})
+
+const date = ref<Date>()
+const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
+const allowedDates = computed(() => {
+  return recallDates.value.map(date => date.startTime)
+})
+
 watch(
   () => recallQuery.data.value?.data,
   data => {
+    console.log({ data })
     // TODO: Improve typings, remove uses of any
     const calculateFoodEnergy = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
@@ -115,6 +144,9 @@ watch(
         return total + calculateFoodEnergy(food)
       }, 0)
 
+      debugData[meal.name] = { name: meal.name, mealEnergy }
+      console.log({ debugData })
+
       const card = Object.values(mealCards.value).find(m => m.key === meal.name)
       if (card) {
         card.value = Math.floor(mealEnergy)
@@ -132,6 +164,32 @@ watch(
     }
   },
 )
+
+watch(
+  () => recallsQuery.data.value?.data,
+  data => {
+    if (data?.ok) {
+      recallDates.value = data.value.map(recall => ({
+        id: recall.id,
+        startTime: recall.startTime,
+        endTime: recall.endTime,
+      }))
+      console.log({ recallDates })
+    }
+  },
+)
+
+watch(date, newDate => {
+  console.log({ newDate })
+  console.log(date.value?.toISOString())
+
+  const recall = recallDates.value.find(d =>
+    moment(d.startTime).isSame(date.value, 'day'),
+  )
+
+  recallId.value = recall?.id ?? ''
+  console.log({ recall })
+})
 </script>
 <style scoped lang="scss">
 .total-energy-container {

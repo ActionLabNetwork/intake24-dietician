@@ -19,6 +19,9 @@ import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { container } from '../ioc/container'
 import { createRecallService } from '../services/recall.service'
 
+/**
+ * Controller for handling recall related requests.
+ */
 @Route('recall')
 @Tags('Recall')
 export class RecallController extends Controller {
@@ -36,6 +39,11 @@ export class RecallController extends Controller {
   public async getRecallById(@Path() id: string): Promise<unknown> {
     this.logger.info('getRecallById inside: ', { id })
     return this.recallService.getRecallById(id)
+  }
+
+  @Get('users/{userId}')
+  public async getRecallsByUserId(@Path() userId: string): Promise<unknown> {
+    return this.recallService.getRecallsByUserId(userId)
   }
 
   @SuccessResponse('201', 'Created')
