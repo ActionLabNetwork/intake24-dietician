@@ -1,3 +1,10 @@
+/**
+ * @file This file contains the implementation of the authentication service.
+ * It provides methods for user registration, login, password reset, token validation, and logout.
+ * It also includes methods for updating user profiles and generating user tokens.
+ * @summary The authentication service is responsible for handling user authentication and authorization.
+ * @packageDocumentation
+ */
 /* eslint-disable max-params */
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
