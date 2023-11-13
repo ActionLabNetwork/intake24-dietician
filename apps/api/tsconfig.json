@@ -15,6 +15,7 @@
     "types": ["node", "jest", "jest-extended"],
     "outDir": "dist"
   },
-  "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts", "src/server.ts"],
-  "exclude": ["node_modules"]
+  // "include": ["src/**/*.ts", "__tests__/**/*.ts", "jest.config.ts", "src/server.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

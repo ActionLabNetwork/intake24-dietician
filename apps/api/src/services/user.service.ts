@@ -19,6 +19,7 @@ import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
+import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
@@ -199,7 +200,10 @@ export const createUserService = (): IUserService => {
     }
   }
 
-  const assignRoleToUserById = async (userId: number, roleName: string) => {
+  const assignRoleToUserById = async (
+    userId: number,
+    roleName: string,
+  ): Promise<Result<UserRoleDTO>> => {
     try {
       const user = await userRepository.findOne({ id: userId })
       const role = await roleRepository.findOne({ name: roleName })
@@ -211,7 +215,7 @@ export const createUserService = (): IUserService => {
         return { ok: false, error: new Error('Role not found') } as const
       }
 
-      const userRole = baseUserRoleRepository.createOne({
+      const userRole = await baseUserRoleRepository.createOne({
         userId: userId,
         roleId: role.id!,
       })

@@ -8,7 +8,7 @@
     "node": ">=16"
   },
   "scripts": {
-    "build": "pnpm build:clean && tsoa spec-and-routes && webpack",
+    "build": "pnpm build:clean && tsc && tsoa spec-and-routes && webpack",
     "build:clean": "rimraf dist",
     "dev": "concurrently \"nodemon\" \"nodemon -x tsoa spec-and-routes\" --env NODE_ENV=development",
     "start": "webpack-dev-server dist/main.js",
@@ -50,6 +50,7 @@
     "nodemon": "^3.0.1",
     "pino": "^8.15.1",
     "pino-http": "^8.5.0",
+    "promise.any": "^2.0.6",
     "radash": "^11.0.0",
     "redis": "^4.6.10",
     "sequelize-mock": "^0.10.2",

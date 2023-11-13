@@ -12,7 +12,7 @@ import type {
 } from '@intake24-dietician/common/types/auth'
 
 import * as authServiceModule from '../src/services/auth.service'
-import { container } from '@intake24-dietician/auth/ioc/container'
+import { container } from '@intake24-dietician/api/ioc/container'
 
 jest.mock('../src/services/auth.service')
 jest.mock('../src/ioc/container')
