@@ -25,17 +25,19 @@
 import { defineProps } from 'vue'
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
 
-const props = defineProps<{
+export interface MealCardProps {
   src: string
   label: string
   alt: string
-  colors: {
-    backgroundColor?: string
-    valueCardBgColor?: string
-    valueCardBorderColor?: string
-  }
   value: number
-}>()
+  colors: {
+    backgroundColor: string
+    valueCardBgColor: string
+    valueCardBorderColor: string
+  }
+}
+
+const props = defineProps<MealCardProps>()
 </script>
 
 <style scoped>

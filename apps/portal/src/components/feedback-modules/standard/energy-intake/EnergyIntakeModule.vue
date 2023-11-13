@@ -29,90 +29,100 @@
     </div>
   </div>
   <v-divider class="my-6" />
-  <div>
-    <pre>{{ JSON.stringify(debugData, null, 2) }}</pre>
-  </div>
 </template>
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch } from 'vue'
+import { computed, ref, watch, reactive } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
-import Dinner from '@/assets/modules/energy-intake/dinner.svg'
-import Lunch from '@/assets/modules/energy-intake/lunch.svg'
-import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard from './MealCard.vue'
+// import Dinner from '@/assets/modules/energy-intake/dinner.svg'
+// import Lunch from '@/assets/modules/energy-intake/lunch.svg'
+// import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
+import MealCard, { MealCardProps } from './MealCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
-import { reactive } from 'vue'
 
 const recallId = ref('d97795d1-bf36-4487-8ca3-696166f4a953')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
 
-const colors = {
-  breakfast: {
+const colors = [
+  {
     backgroundColor: '#FFFCF0',
     valueCardBgColor: '#FFF5D1',
     valueCardBorderColor: '#FFCB45',
   },
-  midsnacks: {
+  {
     backgroundColor: '#EBFFF3',
     valueCardBgColor: '#AEFFCF',
     valueCardBorderColor: '#19D464',
   },
-  lunch: {
+  {
     backgroundColor: '#FFF4EF',
     valueCardBgColor: '#FDE4D9',
     valueCardBorderColor: '#FF9E45',
   },
-  dinner: {
+  {
     backgroundColor: '#F5F4FF',
     valueCardBgColor: '#E5E4FF',
     valueCardBorderColor: '#4945FF',
   },
-} as const
+]
 
-const mealCards = ref({
-  breakfast: {
-    key: 'Breakfast',
-    src: Breakfast,
-    label: 'Breakfast',
-    alt: 'breakfast',
-    value: 0,
-    colors: colors.breakfast,
-  },
-  midsnacks: {
-    key: 'Midsnacks',
-    src: MidSnacks,
-    label: 'Mid-snacks',
-    alt: 'mid-snacks',
-    value: 0,
-    colors: colors.midsnacks,
-  },
-  lunch: {
-    key: 'Lunch',
-    src: Lunch,
-    label: 'Lunch',
-    alt: 'lunch',
-    value: 0,
-    colors: colors.lunch,
-  },
-  dinner: {
-    key: 'Dinner',
-    src: Dinner,
-    label: 'Dinner',
-    alt: 'dinner',
-    value: 0,
-    colors: colors.dinner,
-  },
-})
+let lastTwoColorsIndices: number[] = []
 
-const debugData = reactive({})
+const getRandomColour = () => {
+  let randomIndex
+  do {
+    randomIndex = Math.floor(Math.random() * colors.length)
+  } while (lastTwoColorsIndices.includes(randomIndex))
+
+  if (lastTwoColorsIndices.length > 1) {
+    lastTwoColorsIndices.shift() // Remove the oldest color index
+  }
+  lastTwoColorsIndices.push(randomIndex) // Add the new color index
+  return colors[randomIndex]!
+}
+
+// const mealCards = ref({
+//   breakfast: {
+//     key: 'Breakfast',
+//     src: Breakfast,
+//     label: 'Breakfast',
+//     alt: 'breakfast',
+//     value: 0,
+//     colors: colors.breakfast,
+//   },
+//   midsnacks: {
+//     key: 'Midsnacks',
+//     src: MidSnacks,
+//     label: 'Mid-snacks',
+//     alt: 'mid-snacks',
+//     value: 0,
+//     colors: colors.midsnacks,
+//   },
+//   lunch: {
+//     key: 'Lunch',
+//     src: Lunch,
+//     label: 'Lunch',
+//     alt: 'lunch',
+//     value: 0,
+//     colors: colors.lunch,
+//   },
+//   dinner: {
+//     key: 'Dinner',
+//     src: Dinner,
+//     label: 'Dinner',
+//     alt: 'dinner',
+//     value: 0,
+//     colors: colors.dinner,
+//   },
+// })
+const mealCards = reactive<Record<string, MealCardProps>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
@@ -144,13 +154,16 @@ watch(
         return total + calculateFoodEnergy(food)
       }, 0)
 
-      debugData[meal.name] = { name: meal.name, mealEnergy }
-      console.log({ debugData })
-
-      const card = Object.values(mealCards.value).find(m => m.key === meal.name)
-      if (card) {
-        card.value = Math.floor(mealEnergy)
+      // TODO: src and colors may be mapped to specific meals for consistency
+      mealCards[meal.name] = {
+        src: Breakfast,
+        label: meal.name,
+        alt: meal.name,
+        value: Math.floor(mealEnergy),
+        colors: getRandomColour(),
       }
+
+      console.log({ mealCards })
 
       return mealEnergy
     }
@@ -203,7 +216,7 @@ watch(date, newDate => {
 .grid-container {
   margin-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1rem;
 }
 
