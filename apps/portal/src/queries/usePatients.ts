@@ -1,12 +1,10 @@
 import { env } from '@/config/env'
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import {
-  PatientProfileValues,
-  UserAttributesWithPatientProfile,
-} from '@intake24-dietician/common/types/auth'
+import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { getDefaultAvatar } from '../utils/profile'
+import { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 
 export const usePatients = () => {
   const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_GET_PATIENTS}`
@@ -41,7 +39,7 @@ export const usePatientById = (userId: string) => {
     unknown,
     AxiosError<ApiResponseWithError>,
     AxiosResponse<{
-      data: Omit<UserAttributesWithPatientProfile, 'password'> & {
+      data: Omit<UserDTO, 'password'> & {
         deletionDate: Date
       }
     }>
@@ -49,14 +47,14 @@ export const usePatientById = (userId: string) => {
     queryKey: [userId],
     queryFn: async () => {
       const response: AxiosResponse<{
-        data: Omit<UserAttributesWithPatientProfile, 'password'>
+        data: Omit<UserDTO, 'password'>
       }> = await axios.get(sessionUri)
 
       const avatar =
-        response.data.data.patientProfile.avatar ||
+        response.data.data.patientProfile?.avatar ||
         getDefaultAvatar(response.data.data.email)
 
-      response.data.data.patientProfile.avatar = avatar
+      response.data.data.patientProfile!.avatar = avatar
       return response
     },
   })

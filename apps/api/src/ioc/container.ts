@@ -9,6 +9,8 @@ import { createEmailService } from '../services/email.service'
 import { createJwtTokenService } from '../services/token.service'
 import { createUserService } from '../services/user.service'
 import { createLogger } from '../middleware/logger'
+import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import { createTokenRepository } from '@intake24-dietician/db/repositories/token.repository'
 import type {
   IAuthService,
   IEmailService,
@@ -16,6 +18,10 @@ import type {
   ITokenService,
 } from '@intake24-dietician/common/types/auth'
 import type { IUserService } from '@intake24-dietician/common/types/api'
+import type {
+  ITokenRepository,
+  IUserRepository,
+} from '@intake24-dietician/db/types/repositories'
 
 interface IContainer {
   authService: IAuthService
@@ -23,6 +29,8 @@ interface IContainer {
   tokenService: ITokenService
   emailService: IEmailService
   userService: IUserService
+  userRepository: IUserRepository
+  tokenRepository: ITokenRepository
   user: typeof User
   token: typeof Token
   recall: typeof Recall
@@ -36,6 +44,8 @@ container.register({
   tokenService: asFunction(createJwtTokenService),
   emailService: asFunction(createEmailService),
   userService: asFunction(createUserService),
+  userRepository: asFunction(createUserRepository),
+  tokenRepository: asFunction(createTokenRepository),
   user: asValue(User),
   token: asValue(Token),
   recall: asValue(Recall),

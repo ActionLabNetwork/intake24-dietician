@@ -6,11 +6,14 @@ import {
   BelongsTo,
   Default,
   DataType,
+  HasOne,
 } from 'sequelize-typescript'
 import User from './user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
+import MasterSettings from '../api/master-settings.model'
 
 export interface DieticianProfileAttributes {
+  id: number
   userId: number
   firstName: string
   middleName: string
@@ -69,6 +72,9 @@ class DieticianProfile extends Model<
 
   @BelongsTo(() => User)
   public declare user: User
+
+  @HasOne(() => MasterSettings)
+  public declare masterSettings: MasterSettings
 }
 
 export default DieticianProfile

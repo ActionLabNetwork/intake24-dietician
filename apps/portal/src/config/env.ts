@@ -33,6 +33,7 @@ const schema = z.object({
     z.string(),
     '/patients/{userId}/restore',
   ),
+  API_RECALL: withDevDefault(z.string(), '/recall'),
 })
 
 const parsed = schema.safeParse(process.env)

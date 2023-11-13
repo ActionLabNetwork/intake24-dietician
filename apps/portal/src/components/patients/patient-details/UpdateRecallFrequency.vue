@@ -24,6 +24,9 @@
             flat
             :model-value="reminderConditions.reminderEvery.unit"
             density="comfortable"
+            @update:model-value="
+              newVal => (reminderConditions.reminderEvery.unit = newVal)
+            "
           ></v-select>
         </div>
       </div>

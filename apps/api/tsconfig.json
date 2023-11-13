@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@": ["src/*"],
+      "@/*": ["src/*"],
       "@intake24-dietician/api/*": ["src/*"],
       "@intake24-dietician/api-tests/*": ["__tests__/*"],
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],

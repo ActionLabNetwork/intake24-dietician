@@ -38,6 +38,8 @@ export class PatientController extends Controller {
       container.resolve('tokenService'),
       container.resolve('emailService'),
       container.resolve('userService'),
+      container.resolve('userRepository'),
+      container.resolve('tokenRepository'),
     )
     this.userService = createUserService()
 
@@ -171,7 +173,6 @@ export class PatientController extends Controller {
           )
           return { data: { patient } }
         } else {
-          console.log(patient.error)
           this.logger.error(
             'Failed to create patient for dietician',
             result.value.decoded['userId'],
@@ -214,13 +215,13 @@ export class PatientController extends Controller {
 
         if (patient.ok) {
           this.logger.info(
-            'Successfully created patient for dietician',
+            'Successfully updated patient for dietician',
             result.value.decoded['userId'],
           )
           return { data: { patient } }
         } else {
           this.logger.error(
-            'Failed to create patient for dietician',
+            'Failed to update patient for dietician',
             result.value.decoded['userId'],
           )
           return this.generateInvalidEmailClientErrorResponse()

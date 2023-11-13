@@ -6,12 +6,15 @@ import {
   DataType,
   Model,
   BelongsTo,
+  HasOne,
+  AutoIncrement,
 } from 'sequelize-typescript'
 import User from './user.model'
-import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
+import PatientPreferences from '../api/patient-preferences.model'
 
 export interface PatientProfileAttributes {
+  id: number
   userId: number
   firstName: string
   middleName: string
@@ -22,14 +25,10 @@ export interface PatientProfileAttributes {
   gender: string
   height: number
   weight: number
-  additionalDetails?: unknown
+  additionalDetails?: Record<string, unknown>
   additionalNotes: string
   patientGoal: string
-  theme: string
-  sendAutomatedFeedback: boolean
-  recallFrequencyQuantity: number
-  recallFrequencyUnit: string
-  recallFrequencyEnd: ReminderConditions['reminderEnds']
+  patientPreferences: PatientPreferences
   avatar: string | null
   user: User
 }
@@ -45,14 +44,10 @@ interface PatientProfileCreationAttributes {
   gender: string
   height: number
   weight: number
-  additionalDetails?: unknown
+  additionalDetails?: Record<string, unknown>
   additionalNotes: string
   patientGoal: string
-  theme: string
-  sendAutomatedFeedback: boolean
-  recallFrequencyQuantity: number
-  recallFrequencyUnit: string
-  recallFrequencyEnd: unknown
+  // patientPreferences: PatientPreferences
   avatar: string | null
 }
 
@@ -62,6 +57,10 @@ class PatientProfile extends Model<
   PatientProfileCreationAttributes
 > {
   @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @ForeignKey(() => User)
   @Column
   public declare userId: number
@@ -94,7 +93,7 @@ class PatientProfile extends Model<
   public declare weight: number
 
   @Column(DataType.JSONB)
-  public declare additionalDetails: unknown
+  public declare additionalDetails: Record<string, unknown>
 
   @Column
   public declare additionalNotes: string
@@ -102,20 +101,8 @@ class PatientProfile extends Model<
   @Column
   public declare patientGoal: string
 
-  @Column
-  public declare theme: string
-
-  @Column
-  public declare sendAutomatedFeedback: boolean
-
-  @Column
-  public declare recallFrequencyQuantity: number
-
-  @Column
-  public declare recallFrequencyUnit: string
-
-  @Column(DataType.JSONB)
-  public declare recallFrequencyEnd: ReminderConditions['reminderEnds']
+  @HasOne(() => PatientPreferences)
+  public declare patientPreferences: PatientPreferences
 
   @Column(DataType.TEXT)
   public declare avatar: string | null
