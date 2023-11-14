@@ -21,7 +21,7 @@ const getTheSecret = async (
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
     const response = await fetch(
-      `${env.HOST}:${env.API_PORT}/survey/` +
+      `${env.API_EXTERNAL_HOST}/survey/` +
         surveyID +
         `?scope=api_integration`,
       {
