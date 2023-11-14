@@ -175,10 +175,10 @@ router.beforeEach(async (to, _from, next) => {
   }
 })
 
-axios.defaults.baseURL = env.AUTH_API_HOST
+axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 const isUserAuthenticated = async () => {
   try {
-    const response = await axios.get(env.AUTH_API_VALIDATE_JWT_URI, {
+    const response = await axios.get(env.VITE_AUTH_API_VALIDATE_JWT_URI, {
       withCredentials: true,
     })
     return response.data.isAuthenticated

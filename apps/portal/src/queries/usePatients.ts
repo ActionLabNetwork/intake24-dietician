@@ -7,7 +7,7 @@ import { getDefaultAvatar } from '../utils/profile'
 import { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 
 export const usePatients = () => {
-  const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_GET_PATIENTS}`
+  const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
@@ -33,7 +33,7 @@ export const usePatients = () => {
 
 export const usePatientById = (userId: string) => {
   const queryClient = useQueryClient()
-  const sessionUri = `${env.AUTH_API_HOST}${env.AUTH_API_GET_PATIENTS}/${userId}`
+  const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}/${userId}`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,

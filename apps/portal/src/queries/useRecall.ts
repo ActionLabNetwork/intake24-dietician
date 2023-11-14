@@ -14,7 +14,7 @@ export const useRecallById = (recallId: Ref<string>) => {
   >({
     queryKey: ['recallId', recallId],
     queryFn: async () => {
-      const uri = `${env.AUTH_API_HOST}${env.API_RECALL}/${recallId.value}`
+      const uri = `${env.VITE_AUTH_API_HOST}${env.VITE_API_RECALL}/${recallId.value}`
       return await axios.get(uri)
     },
   })
@@ -29,7 +29,7 @@ export const useRecallById = (recallId: Ref<string>) => {
 }
 
 export const useRecallsByUserId = (userId: Ref<string>) => {
-  const uri = `${env.AUTH_API_HOST}${env.API_RECALL}/users/${userId.value}`
+  const uri = `${env.VITE_AUTH_API_HOST}${env.VITE_API_RECALL}/users/${userId.value}`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,

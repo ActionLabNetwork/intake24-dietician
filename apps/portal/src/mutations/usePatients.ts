@@ -5,10 +5,10 @@ import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 
 axios.defaults.withCredentials = true
-axios.defaults.baseURL = env.AUTH_API_HOST
+axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddPatient = () => {
-  const addPatientUri = env.AUTH_API_CREATE_PATIENT
+  const addPatientUri = env.VITE_AUTH_API_CREATE_PATIENT
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     unknown,
@@ -29,7 +29,7 @@ export const useAddPatient = () => {
 }
 
 export const useUpdatePatient = () => {
-  const updatePatientUri = env.AUTH_API_UPDATE_PATIENT
+  const updatePatientUri = env.VITE_AUTH_API_UPDATE_PATIENT
 
   const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation<
@@ -52,7 +52,7 @@ export const useUpdatePatient = () => {
 }
 
 export const useDeletePatient = () => {
-  const deletePatientUri = env.AUTH_API_DELETE_PATIENT
+  const deletePatientUri = env.VITE_AUTH_API_DELETE_PATIENT
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     unknown,
@@ -81,7 +81,7 @@ export const useDeletePatient = () => {
 }
 
 export const useRestorePatient = () => {
-  const restorePatientUri = env.AUTH_API_RESTORE_PATIENT
+  const restorePatientUri = env.VITE_AUTH_API_RESTORE_PATIENT
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     unknown,
