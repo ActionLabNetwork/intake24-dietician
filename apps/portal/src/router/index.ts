@@ -69,14 +69,14 @@ const routes = [
         meta: {
           requiresAuth: true,
         },
-      } as const,
+      },
       {
         path: 'my-patients',
         name: 'My Patients',
         component: () => import('@/views/dashboard/patients/Patients.vue'),
         meta: {
           requiresAuth: true,
-        } as const,
+        },
       },
       // TODO: Replace this with dynamic route once backend is done
       {
@@ -85,17 +85,6 @@ const routes = [
         component: () =>
           import('@/views/dashboard/patients/PatientRecords.vue'),
         children: [
-          // {
-          //   path: 'feedback-records',
-          //   name: 'Feedback Records',
-          //   component: () =>
-          //     import(
-          //       '@/components/patients/feedback-records/FeedbackRecords.vue'
-          //     ),
-          //   meta: {
-          //     requiresAuth: true,
-          //   } as const,
-          // },
           {
             path: 'feedback-records',
             name: 'Feedback Records',
@@ -105,7 +94,7 @@ const routes = [
               ),
             meta: {
               requiresAuth: true,
-            } as const,
+            },
           },
           {
             path: 'patient-details',
@@ -118,10 +107,18 @@ const routes = [
               requiresAuth: true,
             } as const,
           },
+          {
+            path: 'patient-recalls',
+            name: 'Patient Recalls',
+            component: () =>
+              import(
+                '@/components/patients/patient-details/PatientRecalls.vue'
+              ),
+          },
         ],
         meta: {
           requiresAuth: true,
-        } as const,
+        },
       },
       {
         path: 'my-patients/add-patient',
@@ -130,7 +127,7 @@ const routes = [
 
         meta: {
           requiresAuth: true,
-        } as const,
+        },
       },
       {
         path: 'master-settings',
@@ -138,7 +135,7 @@ const routes = [
         component: () => import('@/views/dashboard/MasterSettings.vue'),
         meta: {
           requiresAuth: true,
-        } as const,
+        },
       },
       {
         path: 'my-profile',
@@ -146,10 +143,10 @@ const routes = [
         component: () => import('@/views/dashboard/Profile.vue'),
         meta: {
           requiresAuth: true,
-        } as const,
+        },
       },
     ],
-  } as const,
+  },
 ]
 
 const router = createRouter({

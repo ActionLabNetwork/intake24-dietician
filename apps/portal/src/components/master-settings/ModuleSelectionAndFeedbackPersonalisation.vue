@@ -1,28 +1,32 @@
 <template>
   <v-row class="ml-2">
-    <v-col cols="2">
-      <v-card class="">
+    <v-col cols="3">
+      <v-card>
         <v-list>
-          <div class="font-weight-medium pl-3">Module templates</div>
-          <div
-            v-for="(item, i) in items"
-            :key="i"
-            class="d-flex justify-center align-baseline"
+          <draggable
+            v-model="items"
+            item-key="title"
+            @start="drag = true"
+            @end="drag = false"
           >
-            <v-checkbox
-              v-model="selectedModules"
-              :label="item.title"
-              :value="item.value"
-              color="primary"
-            ></v-checkbox>
-          </div>
+            <template #item="{ element }">
+              <div>
+                <v-checkbox
+                  v-model="selectedModules"
+                  :label="element.title"
+                  :value="element.value"
+                  color="primary"
+                ></v-checkbox>
+              </div>
+            </template>
+          </draggable>
         </v-list>
       </v-card>
     </v-col>
-    <v-col cols="10" width="100%">
+    <v-col cols="0" width="100%">
       <!-- TODO: Replace this with the individual modules -->
       <v-card class="mx-auto" min-height="50rem">
-        <v-row align="center">
+        <!-- <v-row align="center">
           <v-col cols="6">
             <div class="pt-5 pl-5">
               <div class="font-weight-medium">Fibre intake</div>
@@ -39,7 +43,7 @@
               <v-switch inset color="success" label="Use this module" />
             </div>
           </v-col>
-        </v-row>
+        </v-row> -->
 
         <!-- Preview -->
         <div class="ma-4">
@@ -66,6 +70,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import EnergyIntakeModule from '../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+import draggable from 'vuedraggable'
+
+const drag = ref(false)
 
 const items = ref([
   {

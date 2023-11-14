@@ -107,7 +107,10 @@ watch(
 
 .flex-item {
   flex: 1;
-  margin-right: 1rem;
+
+  &:first-child {
+    margin-right: 1rem;
+  }
 }
 
 .title {

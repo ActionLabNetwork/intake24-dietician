@@ -51,16 +51,16 @@ const paddedId = computed(() => {
 
 const fullName = computed(() => {
   const firstName =
-  patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value.data.data.patientProfile.firstName : ''
+    patientQuery.data.value?.data.data.patientProfile?.firstName ?? ''
   const lastName =
-  patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value?.data.data.patientProfile.lastName : ''
+    patientQuery.data.value?.data.data.patientProfile?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
 
 const avatar = computed(() => {
   return (
-    patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value?.data.data.patientProfile.avatar :
+    patientQuery.data.value?.data.data.patientProfile?.avatar ??
     getDefaultAvatar('')
   )
 })
@@ -75,6 +75,11 @@ const navItems = [
     title: 'Patient details',
     value: 'patientDetails',
     to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-details`,
+  },
+  {
+    title: 'Patient recalls',
+    value: 'patientRecalls',
+    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-recalls`,
   },
 ]
 </script>

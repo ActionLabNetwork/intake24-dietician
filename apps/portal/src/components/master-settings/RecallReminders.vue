@@ -2,7 +2,7 @@
   <div class="wrapper">
     <v-container>
       <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
+        class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
         <div>
           <h1 class="text heading">Recall reminder setup</h1>
