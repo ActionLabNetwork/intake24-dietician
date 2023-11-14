@@ -59,7 +59,9 @@
         <tr class="text-center">
           <td class="text-left">
             <div class="d-flex align-center">
-              <v-avatar :image="getDefaultAvatar(item.raw.name)" />
+              <v-avatar
+                :image="item.raw.avatar ?? getDefaultAvatar(item.raw.email)"
+              />
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>
@@ -212,7 +214,7 @@ const headers = ref<PatientTableHeaders[]>([
 
 const search = ref('')
 
-function randomDate(start: Date, end: Date) {
+const randomDate = (start: Date, end: Date) => {
   return new Date(
     start.getTime() + Math.random() * (end.getTime() - start.getTime()),
   )
@@ -235,6 +237,8 @@ watch(
       newPatients.map(patient => {
         return {
           id: patient.id,
+          email: patient.emailAddress,
+          avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
           lastRecall: getRandomDate(),
@@ -251,10 +255,6 @@ watch(
 )
 </script>
 <style scoped lang="scss">
-.v-data-table thead tr {
-  background-color: #fcfaf7;
-  padding: 0.5rem 0; // Adjust the padding as desired
-}
 .table-header {
   cursor: pointer;
   color: #555555;
