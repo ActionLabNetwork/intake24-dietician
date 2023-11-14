@@ -52,7 +52,16 @@ export const createRecallService = () => {
         .where('userId')
         .equals(userId)
         .sort({ startTime: 1 })
+
       const formattedRecalls = recalls.map(recall => {
+        const meals = recall.meals.map(m => {
+          return {
+            name: m.name,
+            hours: m.hours,
+            minutes: m.minutes,
+            foods: m.foods.length,
+          }
+        })
         return {
           id: recall.id,
           user: { ...recall.user },
@@ -60,6 +69,7 @@ export const createRecallService = () => {
           userId: recall.userId,
           startTime: recall.startTime,
           endTime: recall.endTime,
+          meals: meals,
         }
       })
       return {

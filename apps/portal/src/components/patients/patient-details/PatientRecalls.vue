@@ -1,10 +1,15 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div>
-    <!-- <div>Meal Diary</div> -->
+    <div class="d-flex flex-row align-center pb-5">
+      <div class="pr-3">
+        <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
+      </div>
+      <div class="font-weight-bold text-h6">Meal Diary</div>
+    </div>
     <v-timeline side="end" align="start" density="compact">
       <v-timeline-item
-        v-for="(item, i) in items"
+        v-for="(recall, i) in recalls"
         :key="i"
         dot-color="orange"
         size="small"
@@ -12,14 +17,32 @@
       >
         <v-card>
           <v-card-title :class="['text-h6', `bg-primary`]">
-            Recall Day {{ i + 1 }}
+            Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
           </v-card-title>
           <v-card-text class="bg-white text--primary pt-4" width="100%">
-            <v-expansion-panels>
-              <v-expansion-panel
-                title="Title"
-                text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, ratione debitis quis est labore voluptatibus! Eaque cupiditate minima"
-              >
+            <v-expansion-panels
+              v-for="meal in recall.meals"
+              :key="meal.id"
+              class="mt-5"
+              variant="inset"
+              color="#FFBE99"
+            >
+              <v-expansion-panel>
+                <v-expansion-panel-title color="#FFBE99">
+                  <div class="d-flex align-center">
+                    <v-icon icon="mdi-food-apple" start />
+                    <div class="font-weight-medium">
+                      {{ meal.name }} ({{
+                        getMealTime(meal.hours, meal.minutes)
+                      }})
+                    </div>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text>
+                  <div class="pa-2">
+                    <div>Total exchanges: {{ meal.foods }}</div>
+                  </div>
+                </v-expansion-panel-text>
               </v-expansion-panel>
             </v-expansion-panels>
           </v-card-text>
@@ -27,204 +50,33 @@
       </v-timeline-item>
     </v-timeline>
   </div>
-  <div class="d-flex justify-space-between align-center">
-    <div class="d-flex align-center">
-      <img :src="Logo" alt="Logo" />
-      <div class="ml-4 font-weight-medium">Energy Intake</div>
-    </div>
-    <div>
-      <VueDatePicker
-        v-model="date"
-        :teleport="true"
-        :enable-time-picker="false"
-        :allowed-dates="allowedDates"
-      />
-    </div>
-  </div>
-  <div class="mt-6 total-energy-container">
-    Total energy: {{ totalEnergy }}kcal
-  </div>
-  <div class="grid-container">
-    <div v-for="(meal, key) in mealCards" :key="key">
-      <MealCard
-        :src="meal.src"
-        :label="meal.label"
-        :alt="meal.alt"
-        :colors="meal.colors"
-        :value="meal.value"
-      />
-    </div>
-  </div>
-  <v-divider class="my-6" />
 </template>
 
 <script setup lang="ts">
-import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive } from 'vue'
-import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
-// import Dinner from '@/assets/modules/energy-intake/dinner.svg'
-// import Lunch from '@/assets/modules/energy-intake/lunch.svg'
-// import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, {
-  MealCardProps,
-} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import { useRecallsByUserId } from '@/queries/useRecall'
+import { ref, watch, computed } from 'vue'
+import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
 import moment from 'moment'
 
-const items = ref([
-  {
-    color: 'red-lighten-2',
-    icon: 'mdi-star',
-  },
-  {
-    color: 'purple-lighten-2',
-    icon: 'mdi-book-variant',
-  },
-  {
-    color: 'green-lighten-1',
-    icon: 'mdi-airballoon',
-  },
-  {
-    color: 'indigo-lighten-2',
-    icon: 'mdi-layers-triple',
-  },
-])
-
 const recallId = ref('')
-const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
-const totalEnergy = ref(0)
 
-const colors = [
-  {
-    backgroundColor: '#FFFCF0',
-    valueCardBgColor: '#FFF5D1',
-    valueCardBorderColor: '#FFCB45',
-  },
-  {
-    backgroundColor: '#EBFFF3',
-    valueCardBgColor: '#AEFFCF',
-    valueCardBorderColor: '#19D464',
-  },
-  {
-    backgroundColor: '#FFF4EF',
-    valueCardBgColor: '#FDE4D9',
-    valueCardBorderColor: '#FF9E45',
-  },
-  {
-    backgroundColor: '#F5F4FF',
-    valueCardBgColor: '#E5E4FF',
-    valueCardBorderColor: '#4945FF',
-  },
-]
+const recalls = computed(() => {
+  return recallsQuery.data.value?.data.ok
+    ? recallsQuery.data.value?.data.value
+    : null
+})
 
-let lastTwoColorsIndices: number[] = []
-
-const getRandomColour = () => {
-  let randomIndex
-  do {
-    randomIndex = Math.floor(Math.random() * colors.length)
-  } while (lastTwoColorsIndices.includes(randomIndex))
-
-  if (lastTwoColorsIndices.length > 1) {
-    lastTwoColorsIndices.shift() // Remove the oldest color index
-  }
-  lastTwoColorsIndices.push(randomIndex) // Add the new color index
-  return colors[randomIndex]!
+const getMealTime = (hours: number, minutes: number) => {
+  return (
+    hours.toString().padStart(2, '0') +
+    ':' +
+    minutes.toString().padStart(2, '0')
+  )
 }
-
-// const mealCards = ref({
-//   breakfast: {
-//     key: 'Breakfast',
-//     src: Breakfast,
-//     label: 'Breakfast',
-//     alt: 'breakfast',
-//     value: 0,
-//     colors: colors.breakfast,
-//   },
-//   midsnacks: {
-//     key: 'Midsnacks',
-//     src: MidSnacks,
-//     label: 'Mid-snacks',
-//     alt: 'mid-snacks',
-//     value: 0,
-//     colors: colors.midsnacks,
-//   },
-//   lunch: {
-//     key: 'Lunch',
-//     src: Lunch,
-//     label: 'Lunch',
-//     alt: 'lunch',
-//     value: 0,
-//     colors: colors.lunch,
-//   },
-//   dinner: {
-//     key: 'Dinner',
-//     src: Dinner,
-//     label: 'Dinner',
-//     alt: 'dinner',
-//     value: 0,
-//     colors: colors.dinner,
-//   },
-// })
-const mealCards = reactive<Record<string, MealCardProps>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
-
-watch(
-  () => recallQuery.data.value?.data,
-  data => {
-    console.log({ data })
-    // TODO: Improve typings, remove uses of any
-    const calculateFoodEnergy = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: any,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          return (
-            total + (nutrient.nutrientType.id === '1' ? nutrient.amount : 0)
-          )
-        },
-        0,
-      )
-    }
-
-    const calculateMealEnergy = (meal: IRecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodEnergy(food)
-      }, 0)
-
-      // TODO: src and colors may be mapped to specific meals for consistency
-      mealCards[meal.name] = {
-        src: Breakfast,
-        label: meal.name,
-        alt: meal.name,
-        value: Math.floor(mealEnergy),
-        colors: getRandomColour(),
-      }
-
-      console.log({ mealCards })
-
-      return mealEnergy
-    }
-
-    if (data?.ok && data.value) {
-      totalEnergy.value = Math.floor(
-        data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealEnergy(meal)
-        }, 0),
-      )
-    }
-  },
-)
 
 watch(
   () => recallsQuery.data.value?.data,
@@ -238,7 +90,6 @@ watch(
 
       // Default to latest recall date
       date.value = recallDates.value.at(-1)?.startTime
-      console.log({ recallDates })
     }
   },
 )
