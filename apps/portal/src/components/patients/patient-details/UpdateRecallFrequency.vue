@@ -55,6 +55,7 @@
             v-model="date"
             :teleport="true"
             text-input
+            format="dd/MM/yyyy HH:mm"
             @update:model-value="handleDatePickerUpdate"
           ></VueDatePicker>
           <div v-show="frequencyRadio === 'after'">

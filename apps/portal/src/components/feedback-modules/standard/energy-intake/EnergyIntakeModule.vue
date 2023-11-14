@@ -10,6 +10,8 @@
         v-model="date"
         :teleport="true"
         :enable-time-picker="false"
+        text-input
+        format="dd/MM/yyyy"
         :allowed-dates="allowedDates"
       />
     </div>
@@ -176,6 +178,7 @@ watch(
       )
     }
   },
+  { immediate: true },
 )
 
 watch(
@@ -193,6 +196,7 @@ watch(
       console.log({ recallDates })
     }
   },
+  { immediate: true },
 )
 
 watch(date, newDate => {
