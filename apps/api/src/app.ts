@@ -26,7 +26,7 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 })
 app.use(
   cors({
-    origin: `${HOST}:${PORT}`,
+    origin: [`${HOST}:${PORT}`, `${env.PORTAL_APP_HOST}`],
     allowedHeaders:
       'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
     exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',
