@@ -12,8 +12,12 @@ import { ValidateError } from 'tsoa'
 import cookieParser from 'cookie-parser'
 import multer from 'multer'
 import type { ApiResponseWithError } from '@intake24-dietician/common/types/api'
+import { env } from './config/env'
 
 export const app = express()
+
+const HOST = env.HOST || 'http://localhost'
+const PORT = env.PORTAL_APP_PORT || '3001'
 
 app.use(bodyParser.json({ limit: '50mb' }))
 app.use(cookieParser())
@@ -22,7 +26,7 @@ app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
 })
 app.use(
   cors({
-    origin: 'http://localhost:3001',
+    origin: [`${HOST}:${PORT}`, `${env.PORTAL_APP_HOST}`],
     allowedHeaders:
       'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
     exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',

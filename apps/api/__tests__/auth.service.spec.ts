@@ -8,8 +8,8 @@ import Role from '@intake24-dietician/db/models/auth/role.model'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import Token from '@intake24-dietician/db/models/auth/token.model'
 import { createAuthService } from '../src/services/auth.service'
-import { createArgonHashingService } from '@intake24-dietician/auth/services/hashing.service'
-import { createJwtTokenService } from '@intake24-dietician/auth/services/token.service'
+import { createArgonHashingService } from '@intake24-dietician/api/services/hashing.service'
+import { createJwtTokenService } from '@intake24-dietician/api/services/token.service'
 import { createEmailService } from '../src/services/email.service'
 import { sequelize } from '@intake24-dietician/db/connection'
 import { redis } from '@intake24-dietician/db/connection'
@@ -19,6 +19,9 @@ import type {
 } from '@intake24-dietician/common/types/auth'
 import crypto from 'crypto'
 import moment from 'moment'
+import { createUserService } from '@/services/user.service'
+import { createUserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import { createTokenRepository } from '@intake24-dietician/db/repositories/token.repository'
 
 // Mock vendor dependencies
 jest.mock('argon2')
@@ -54,6 +57,9 @@ describe('AuthService', () => {
       createArgonHashingService(),
       createJwtTokenService(),
       createEmailService(),
+      createUserService(),
+      createUserRepository(),
+      createTokenRepository(),
     )
   const mockSendMail = jest.fn()
 

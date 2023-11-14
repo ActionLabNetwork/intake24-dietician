@@ -53,7 +53,7 @@ services:
     image: redis:latest
     command: redis-server
     env_file:
-      - ../apps/auth/.env.development
+      - ../apps/api/.env.development
     volumes:
       - redis:/var/lib/redis
       - redis-config:/usr/local/etc/redis/redis.conf
@@ -72,7 +72,7 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379
     env_file:
-      - ../apps/auth/.env.development
+      - ../apps/api/.env.development
     ports:
       - ${REDIS_COMMANDER_PORT}:8081
     networks:

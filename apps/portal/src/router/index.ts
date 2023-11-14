@@ -151,10 +151,10 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(process.env['BASE_URL']),
-  routes: routes as RouteRecordRaw[],
+  routes: routes as unknown as RouteRecordRaw[],
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const isAuthenticated = await isUserAuthenticated()
   const hideIfAuthenticated = to.matched.some(
     record => record.meta['hideIfAuthenticated'],
@@ -172,10 +172,10 @@ router.beforeEach(async (to, from, next) => {
   }
 })
 
-axios.defaults.baseURL = env.AUTH_API_HOST
+axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 const isUserAuthenticated = async () => {
   try {
-    const response = await axios.get(env.AUTH_API_VALIDATE_JWT_URI, {
+    const response = await axios.get(env.VITE_AUTH_API_VALIDATE_JWT_URI, {
       withCredentials: true,
     })
     return response.data.isAuthenticated

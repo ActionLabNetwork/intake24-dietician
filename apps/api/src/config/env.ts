@@ -9,8 +9,9 @@ export const env = createEnv({
   clientPrefix: 'PUBLIC_',
   server: {
     HOST: withDevDefault(z.string(), 'http://localhost'),
-    API_PORT: withDevDefault(z.number(), 8080),
-    PORTAL_APP_PORT: withDevDefault(z.number(), 3001),
+    API_PORT: withDevDefault(z.string(), '8080'),
+    PORTAL_APP_HOST: withDevDefault(z.string(), 'http://localhost'),
+    PORTAL_APP_PORT: withDevDefault(z.string(), '3001'),
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
     JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
     JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),

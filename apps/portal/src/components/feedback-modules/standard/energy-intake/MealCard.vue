@@ -22,7 +22,6 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps } from 'vue'
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
 
 export interface MealCardProps {

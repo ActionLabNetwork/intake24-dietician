@@ -15,7 +15,7 @@ import {
 axios.defaults.withCredentials = true
 
 export const useRegister = () => {
-  const registerUri = `${env.AUTH_API_HOST}${env.AUTH_API_REGISTER_URI}`
+  const registerUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_REGISTER_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<AuthResponse>,
@@ -36,7 +36,7 @@ export const useRegister = () => {
 }
 
 export const useLogin = () => {
-  const loginUri = `${env.AUTH_API_HOST}${env.AUTH_API_LOGIN_URI}`
+  const loginUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGIN_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<
@@ -62,7 +62,7 @@ export const useLogin = () => {
 }
 
 export const useForgotPassword = () => {
-  const forgotPasswordUri = `${env.AUTH_API_HOST}${env.AUTH_API_FORGOT_PASSWORD_URI}`
+  const forgotPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_FORGOT_PASSWORD_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<AuthResponse>,
@@ -84,7 +84,7 @@ export const useForgotPassword = () => {
 }
 
 export const useResetPassword = () => {
-  const resetPasswordUri = `${env.AUTH_API_HOST}${env.AUTH_API_RESET_PASSWORD_URI}`
+  const resetPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_RESET_PASSWORD_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<AuthResponse>,
@@ -113,7 +113,7 @@ export const useResetPassword = () => {
 }
 
 export const useLogout = () => {
-  const logoutUri = `${env.AUTH_API_HOST}${env.AUTH_API_LOGOUT_URI}`
+  const logoutUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGOUT_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse,
@@ -134,7 +134,7 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
-  const profileUri = `${env.AUTH_API_HOST}${env.AUTH_API_PROFILE_URI}`
+  const profileUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_PROFILE_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
@@ -157,7 +157,7 @@ export const useUpdateProfile = () => {
 }
 
 export const useGenerateToken = () => {
-  const generateTokenUri = `${env.AUTH_API_HOST}${env.AUTH_API_GENERATE_TOKEN_URI}`
+  const generateTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GENERATE_TOKEN_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ token: string }>>,
@@ -178,7 +178,7 @@ export const useGenerateToken = () => {
 }
 
 export const useVerifyToken = () => {
-  const verifyTokenUri = `${env.AUTH_API_HOST}${env.AUTH_API_VERIFY_TOKEN_URI}`
+  const verifyTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_VERIFY_TOKEN_URI}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ tokenVerified: boolean }>>,
@@ -199,7 +199,7 @@ export const useVerifyToken = () => {
 }
 
 export const useUploadAvatar = () => {
-  const uploadAvatarUri = `${env.AUTH_API_HOST}${env.AUTH_API_UPLOAD_AVATAR}`
+  const uploadAvatarUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_UPLOAD_AVATAR}`
 
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ avatarBlob: string }>>,

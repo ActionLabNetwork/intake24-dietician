@@ -8,11 +8,11 @@
     "paths": {
       "@intake24-dietician/portal/*": ["src/*"],
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],
+      "@intake24-dietician/db/*": ["../../packages/db/src/*"],
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
       "@intake24-dietician/*": ["../../packages/*/src"],
       "@/*": ["src/*"]
     },
-    "typeRoots": ["./node_modules/@types, ./node_modules/vuetify/types"]
   },
   "include": [
     "src/**/*.ts",

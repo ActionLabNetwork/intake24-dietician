@@ -10,7 +10,7 @@
     </template>
     <v-card-item>
       <v-card-title class="text-center">
-        <v-avatar size="x-large" :image="avatar" />
+        <v-avatar size="x-large" :image="avatar ?? ''" />
         <p class="title text-md mt-4">{{ fullName }}</p>
       </v-card-title>
       <v-card-subtitle class="text-center">
