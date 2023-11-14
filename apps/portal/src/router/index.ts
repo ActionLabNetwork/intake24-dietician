@@ -154,10 +154,10 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(process.env['BASE_URL']),
-  routes: routes as RouteRecordRaw[],
+  routes: routes as unknown as RouteRecordRaw[],
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from, next) => {
   const isAuthenticated = await isUserAuthenticated()
   const hideIfAuthenticated = to.matched.some(
     record => record.meta['hideIfAuthenticated'],

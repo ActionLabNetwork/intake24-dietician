@@ -220,6 +220,9 @@ importers:
       pino-http:
         specifier: ^8.5.0
         version: 8.5.0
+      promise.any:
+        specifier: ^2.0.6
+        version: 2.0.6
       radash:
         specifier: ^11.0.0
         version: 11.0.0

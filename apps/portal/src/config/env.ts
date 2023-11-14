@@ -1,7 +1,7 @@
 import { z, TypeOf } from 'zod'
 
 const withDevDefault = <T extends z.ZodTypeAny>(schema: T, val: TypeOf<T>) =>
-  process.env['NODE_ENV'] !== 'production' ? schema.default(val) : schema
+  import.meta.env.PROD ? schema.default(val) : schema
 
 const schema = z.object({
   AUTH_API_HOST: withDevDefault(z.string(), 'http://localhost:8080'),
@@ -36,7 +36,7 @@ const schema = z.object({
   API_RECALL: withDevDefault(z.string(), '/recall'),
 })
 
-const parsed = schema.safeParse(process.env)
+const parsed = schema.safeParse(import.meta.env)
 if (!parsed.success) {
   console.error(
     '❌ Invalid environment variables:',

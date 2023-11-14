@@ -10,7 +10,7 @@
     </template>
     <v-card-item>
       <v-card-title class="text-center">
-        <v-avatar size="x-large" :image="avatar" />
+        <v-avatar size="x-large" :image="avatar ?? ''" />
         <p class="title text-md mt-4">{{ fullName }}</p>
       </v-card-title>
       <v-card-subtitle class="text-center">
@@ -51,16 +51,16 @@ const paddedId = computed(() => {
 
 const fullName = computed(() => {
   const firstName =
-    patientQuery.data.value?.data.data.patientProfile.firstName ?? ''
+  patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value.data.data.patientProfile.firstName : ''
   const lastName =
-    patientQuery.data.value?.data.data.patientProfile.lastName ?? ''
+  patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value?.data.data.patientProfile.lastName : ''
 
   return `${firstName} ${lastName}`
 })
 
 const avatar = computed(() => {
   return (
-    patientQuery.data.value?.data.data.patientProfile.avatar ??
+    patientQuery.data.value?.data.data.patientProfile ? patientQuery.data.value?.data.data.patientProfile.avatar :
     getDefaultAvatar('')
   )
 })

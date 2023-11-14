@@ -3,8 +3,8 @@ import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
-import type { DieticianProfileDTO } from 'src/entities/dietician-profile.dto'
-import type { UserRoleDTO } from 'src/entities/user-role.dto'
+import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
 
 export interface ApiResponseWithData<T> {
   data: T
