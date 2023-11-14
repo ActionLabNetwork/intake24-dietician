@@ -3,7 +3,7 @@
   <div class="d-flex justify-space-between align-center">
     <div class="d-flex align-center">
       <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
-      <div class="ml-4 font-weight-medium">Energy Intake</div>
+      <div class="ml-4 font-weight-medium">Carbs Exchange</div>
     </div>
     <div>
       <VueDatePicker
@@ -17,16 +17,17 @@
     </div>
   </div>
   <div class="mt-6 total-energy-container">
-    Total energy: {{ totalEnergy }}kcal
+    Total carb exchanges: {{ totalEnergy }}
   </div>
   <div class="grid-container">
     <div v-for="(meal, key) in mealCards" :key="key">
-      <MealCard
+      <CarbsExchangeCard
         :src="meal.src"
         :label="meal.label"
         :alt="meal.alt"
         :colors="meal.colors"
         :value="meal.value"
+        :foods="meal.foods"
       />
     </div>
   </div>
@@ -34,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
+import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
@@ -42,7 +43,13 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 // import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 // import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 // import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, { MealCardProps } from './MealCard.vue'
+import {
+  CARBS_EXCHANGE_MULTIPLIER,
+  NUTRIENTS_CARBS_ID,
+} from '@/constants/recall'
+import CarbsExchangeCard, {
+  CarbsExchangeProps,
+} from '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
@@ -90,41 +97,7 @@ const getRandomColour = () => {
   return colors[randomIndex]!
 }
 
-// const mealCards = ref({
-//   breakfast: {
-//     key: 'Breakfast',
-//     src: Breakfast,
-//     label: 'Breakfast',
-//     alt: 'breakfast',
-//     value: 0,
-//     colors: colors.breakfast,
-//   },
-//   midsnacks: {
-//     key: 'Midsnacks',
-//     src: MidSnacks,
-//     label: 'Mid-snacks',
-//     alt: 'mid-snacks',
-//     value: 0,
-//     colors: colors.midsnacks,
-//   },
-//   lunch: {
-//     key: 'Lunch',
-//     src: Lunch,
-//     label: 'Lunch',
-//     alt: 'lunch',
-//     value: 0,
-//     colors: colors.lunch,
-//   },
-//   dinner: {
-//     key: 'Dinner',
-//     src: Dinner,
-//     label: 'Dinner',
-//     alt: 'dinner',
-//     value: 0,
-//     colors: colors.dinner,
-//   },
-// })
-const mealCards = reactive<Record<string, MealCardProps>>({})
+const mealCards = reactive<Record<string, CarbsExchangeProps>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
@@ -136,23 +109,27 @@ watch(
   () => recallQuery.data.value?.data,
   data => {
     // TODO: Improve typings, remove uses of any
-    const calculateFoodEnergy = (food: { nutrients: any[] }) => {
+    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
         (
           total: any,
           nutrient: { nutrientType: { id: string }; amount: any },
         ) => {
           return (
-            total + (nutrient.nutrientType.id === '1' ? nutrient.amount : 0)
+            total +
+            (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
+              ? nutrient.amount
+              : 0) *
+              CARBS_EXCHANGE_MULTIPLIER
           )
         },
         0,
       )
     }
 
-    const calculateMealEnergy = (meal: IRecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodEnergy(food)
+    const calculateMealCarbsExchange = (meal: IRecallMeal) => {
+      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+        return total + calculateFoodCarbsExchange(food)
       }, 0)
 
       // TODO: src and colors may be mapped to specific meals for consistency
@@ -160,17 +137,21 @@ watch(
         src: Breakfast,
         label: meal.name,
         alt: meal.name,
-        value: Math.floor(mealEnergy),
+        value: Math.floor(mealCarbsExchange),
         colors: getRandomColour(),
+        foods: meal.foods.map(f => ({
+          name: f['englishName'],
+          value: Math.floor(calculateFoodCarbsExchange(f as any)),
+        })),
       }
 
-      return mealEnergy
+      return mealCarbsExchange
     }
 
     if (data?.ok && data.value) {
       totalEnergy.value = Math.floor(
         data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealEnergy(meal)
+          return totalEnergy + calculateMealCarbsExchange(meal)
         }, 0),
       )
     }
@@ -218,13 +199,8 @@ watch(
 .grid-container {
   margin-top: 1rem;
   display: grid;
+  grid-auto-rows: 1fr;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1rem;
-}
-
-.grid-item {
-  background: #ddd;
-  padding: 1rem;
-  border-radius: 10px;
 }
 </style>

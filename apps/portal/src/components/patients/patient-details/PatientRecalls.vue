@@ -1,79 +1,27 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div>
-    <div class="d-flex flex-row align-center pb-5">
-      <div class="pr-3">
-        <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
-      </div>
-      <div class="font-weight-bold text-h6">Meal Diary</div>
-    </div>
-    <v-timeline side="end" align="start" density="compact">
-      <v-timeline-item
-        v-for="(recall, i) in recalls"
-        :key="i"
-        dot-color="orange"
-        size="small"
-        width="100%"
-      >
-        <v-card>
-          <v-card-title :class="['text-h6', `bg-primary`]">
-            Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
-          </v-card-title>
-          <v-card-text class="bg-white text--primary pt-4" width="100%">
-            <v-expansion-panels
-              v-for="meal in recall.meals"
-              :key="meal.id"
-              class="mt-5"
-              variant="inset"
-              color="#FFBE99"
-            >
-              <v-expansion-panel>
-                <v-expansion-panel-title color="#FFBE99">
-                  <div class="d-flex align-center">
-                    <v-icon icon="mdi-food-apple" start />
-                    <div class="font-weight-medium">
-                      {{ meal.name }} ({{
-                        getMealTime(meal.hours, meal.minutes)
-                      }})
-                    </div>
-                  </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <div class="pa-2">
-                    <div>Total exchanges: {{ meal.foods }}</div>
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </v-card-text>
-        </v-card>
-      </v-timeline-item>
-    </v-timeline>
+    <div><BaseTabs :tabs="tabs" /></div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useRecallsByUserId } from '@/queries/useRecall'
-import { ref, watch, computed } from 'vue'
-import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
+import { ref, watch } from 'vue'
 import moment from 'moment'
+import BaseTabs from '../../common/BaseTabs.vue'
+import MealDiaryModule from '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+import EnergyIntakeModule from '../../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+import CarbsExchangeModule from '../../feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+
+const tabs = [
+  { name: 'Meal Diary', value: 0, component: MealDiaryModule },
+  { name: 'Energy Intake', value: 1, component: EnergyIntakeModule },
+  { name: 'Carbs Exchange', value: 2, component: CarbsExchangeModule },
+]
 
 const recallId = ref('')
 const recallsQuery = useRecallsByUserId(ref('4072'))
-
-const recalls = computed(() => {
-  return recallsQuery.data.value?.data.ok
-    ? recallsQuery.data.value?.data.value
-    : null
-})
-
-const getMealTime = (hours: number, minutes: number) => {
-  return (
-    hours.toString().padStart(2, '0') +
-    ':' +
-    minutes.toString().padStart(2, '0')
-  )
-}
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])

@@ -1,8 +1,12 @@
 <template>
-  <v-layout>
-    <v-app-bar></v-app-bar>
-  </v-layout>
-  <div class="wrapper"><BaseTabs :tabs="tabs" /></div>
+  <v-main class="wrapper">
+    <v-layout>
+      <v-app-bar></v-app-bar>
+    </v-layout>
+    <v-container>
+      <div class="wrapper"><BaseTabs :tabs="tabs" /></div>
+    </v-container>
+  </v-main>
 </template>
 
 <script lang="ts" setup>
