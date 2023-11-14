@@ -36,7 +36,7 @@ const schema = z.object({
   API_RECALL: withDevDefault(z.string(), '/recall'),
 })
 
-const parsed = schema.safeParse(process.env)
+const parsed = schema.safeParse(import.meta.env)
 if (!parsed.success) {
   console.error(
     '❌ Invalid environment variables:',

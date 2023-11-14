@@ -10,3 +10,5 @@ export const ACCEPTED_IMAGE_TYPES = [
   'image/png',
   'image/webp',
 ]
+
+export const COLOR_PRIMARY = '#EE672D'

@@ -3,8 +3,8 @@ import type { IRecallExtended } from './recall'
 import type { Result } from './utils'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
-import type { DieticianProfileDTO } from 'src/entities/dietician-profile.dto'
-import type { UserRoleDTO } from 'src/entities/user-role.dto'
+import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -48,9 +48,7 @@ export interface IUserService {
 }
 export interface IRecallApiService {
   getRecallById: (id: string) => Promise<Result<IRecallExtended | null>>
-  getRecallsByUserId: (
-    userId: string,
-  ) => Promise<Result<IRecallExtended[]>>
+  getRecallsByUserId: (userId: string) => Promise<Result<IRecallExtended[]>>
   createRecall: (newRecall: IRecallExtended) => Promise<Result<string | null>>
 }
 

@@ -1,5 +1,32 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
+  <div>
+    <!-- <div>Meal Diary</div> -->
+    <v-timeline side="end" align="start" density="compact">
+      <v-timeline-item
+        v-for="(item, i) in items"
+        :key="i"
+        dot-color="orange"
+        size="small"
+        width="100%"
+      >
+        <v-card>
+          <v-card-title :class="['text-h6', `bg-primary`]">
+            Recall Day {{ i + 1 }}
+          </v-card-title>
+          <v-card-text class="bg-white text--primary pt-4" width="100%">
+            <v-expansion-panels>
+              <v-expansion-panel
+                title="Title"
+                text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Commodi, ratione debitis quis est labore voluptatibus! Eaque cupiditate minima"
+              >
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </v-card-text>
+        </v-card>
+      </v-timeline-item>
+    </v-timeline>
+  </div>
   <div class="d-flex justify-space-between align-center">
     <div class="d-flex align-center">
       <img :src="Logo" alt="Logo" />
@@ -40,10 +67,31 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 // import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 // import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 // import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, { MealCardProps } from './MealCard.vue'
+import MealCard, {
+  MealCardProps,
+} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
+
+const items = ref([
+  {
+    color: 'red-lighten-2',
+    icon: 'mdi-star',
+  },
+  {
+    color: 'purple-lighten-2',
+    icon: 'mdi-book-variant',
+  },
+  {
+    color: 'green-lighten-1',
+    icon: 'mdi-airballoon',
+  },
+  {
+    color: 'indigo-lighten-2',
+    icon: 'mdi-layers-triple',
+  },
+])
 
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)

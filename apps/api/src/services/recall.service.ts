@@ -48,7 +48,10 @@ export const createRecallService = () => {
     userId: string,
   ): Promise<Result<IRecallExtended[]>> => {
     try {
-      const recalls = await Recall.find().where('userId').equals(userId)
+      const recalls = await Recall.find()
+        .where('userId')
+        .equals(userId)
+        .sort({ startTime: 1 })
       const formattedRecalls = recalls.map(recall => {
         return {
           id: recall.id,
@@ -59,7 +62,6 @@ export const createRecallService = () => {
           endTime: recall.endTime,
         }
       })
-      console.log({ formattedRecalls })
       return {
         ok: true,
         value: formattedRecalls as unknown as IRecallExtended[],
