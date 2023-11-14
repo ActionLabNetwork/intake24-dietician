@@ -11,6 +11,7 @@ import type {
   TTokenType,
 } from '@intake24-dietician/common/types/auth'
 
+
 const tokenService = createJwtTokenService()
 
 const getTheSecret = async (
