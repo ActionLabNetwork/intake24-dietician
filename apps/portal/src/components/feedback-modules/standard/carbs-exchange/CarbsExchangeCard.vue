@@ -33,7 +33,12 @@
         <p>{{ food.name }}</p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
-            <v-img :src="Mascot" :width="35" aspect-ratio="16/9"></v-img>
+            <!-- <v-img :src="Mascot" :width="35" aspect-ratio="16/9" /> -->
+            <Mascot
+              :fill="
+                chroma(colors.valueCardBgColor).darken(1).saturate(5).hex()
+              "
+            />
           </div>
         </div>
       </div>
@@ -43,7 +48,7 @@
 
 <script setup lang="ts">
 import { computed, defineProps } from 'vue'
-import Mascot from '@/assets/modules/carbs-exchange/carbs-exchange-mascot.svg'
+import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
 import chroma from 'chroma-js'
 
 export interface CarbsExchangeProps {
@@ -62,9 +67,7 @@ export interface CarbsExchangeProps {
 const props = defineProps<CarbsExchangeProps>()
 
 const totalExchange = computed(() => {
-  return props.foods.reduce((acc, curr) => {
-    return acc + curr.value
-  }, 0)
+  return props.foods.reduce((acc, curr) => acc + curr.value, 0)
 })
 </script>
 
@@ -72,6 +75,7 @@ const totalExchange = computed(() => {
 .wrapper {
   padding: 1rem;
   border-radius: 10px;
+  height: 100%;
 }
 
 .energy-value {

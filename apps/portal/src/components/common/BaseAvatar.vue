@@ -31,12 +31,8 @@ import BasePreferences from './BasePreferences.vue'
 import { useLogout } from '@/mutations/useAuth'
 import { useProfile } from '@/queries/useAuth'
 import router from '@/router'
-import { useQueryClient } from '@tanstack/vue-query'
 import { ref, watch } from 'vue'
 import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
-
-const queryClient = useQueryClient()
-queryClient.invalidateQueries({ queryKey: ['auth'] })
 
 const { data, isLoading: isProfileLoading } = useProfile()
 
@@ -48,23 +44,21 @@ const _user = ref({
 })
 
 watch(data, newData => {
-  if (newData) {
-    const {
-      firstName,
-      lastName,
-      emailAddress: email,
-    } = newData.data.data.user.dieticianProfile
+  if (!newData) return
+  const {
+    firstName,
+    lastName,
+    emailAddress: email,
+  } = newData.data.data.user.dieticianProfile
 
-    user.value = newData.data.data.user
+  user.value = newData.data.data.user
 
-    _user.value.initials = getInitials(firstName, lastName)
-    _user.value.fullName = getFullName(firstName, lastName)
-    _user.value.email = email ?? ''
-  }
+  _user.value.initials = getInitials(firstName, lastName)
+  _user.value.fullName = getFullName(firstName, lastName)
+  _user.value.email = email ?? ''
 })
 
 const logoutMutation = useLogout()
-
 const handleLogout = () => {
   logoutMutation.mutate(
     {},

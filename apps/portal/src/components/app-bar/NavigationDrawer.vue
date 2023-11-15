@@ -8,7 +8,7 @@
     <v-list-item
       class="py-5"
       :prepend-avatar="
-        user?.dieticianProfile.avatar ?? '@/assets/dashboard/avatar.svg'
+        user?.dieticianProfile.avatar ?? getDefaultAvatar(user?.email ?? '')
       "
       :title="`${user?.dieticianProfile.firstName} ${user?.dieticianProfile.lastName}`"
     ></v-list-item>
@@ -39,6 +39,7 @@ import router from '@/router'
 import { useProfile } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/vue-query'
 import { getInitials, getFullName } from '@/utils/profile'
+import { getDefaultAvatar } from '@/utils/profile'
 
 const props = defineProps<{ drawer: boolean }>()
 const emit = defineEmits<{ change: [val: boolean] }>()
@@ -86,19 +87,18 @@ const _user = ref({
 watch(
   () => profileQuery.data.value,
   newData => {
-    if (newData) {
-      const {
-        firstName,
-        lastName,
-        emailAddress: email,
-      } = newData.data.data.user.dieticianProfile
+    if (!newData) return
+    const {
+      firstName,
+      lastName,
+      emailAddress: email,
+    } = newData.data.data.user.dieticianProfile
 
-      user.value = newData.data.data.user
+    user.value = newData.data.data.user
 
-      _user.value.initials = getInitials(firstName, lastName)
-      _user.value.fullName = getFullName(firstName, lastName)
-      _user.value.email = email ?? ''
-    }
+    _user.value.initials = getInitials(firstName, lastName)
+    _user.value.fullName = getFullName(firstName, lastName)
+    _user.value.email = email ?? ''
   },
 )
 
