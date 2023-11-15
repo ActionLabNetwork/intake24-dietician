@@ -8,7 +8,7 @@
     <div
       class="energy-value d-flex justify-center"
       :style="{
-        border: `1px solid ${colors.valueCardBorderColor}`,
+        border: `2px solid ${colors.valueCardBorderColor}`,
         background: colors.valueCardBgColor,
       }"
     >
