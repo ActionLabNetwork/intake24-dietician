@@ -61,7 +61,7 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 
-const recallId = ref('abcde')
+const recallId = ref('')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
@@ -145,16 +145,15 @@ watch(
   { immediate: true },
 )
 
-watch(
-  () => date.value,
-  newDate => {
-    console.log({ newDate })
-    const recall = recallDates.value.find(d =>
-      moment(d.startTime).isSame(newDate, 'day'),
-    )
-    recallId.value = recall?.id ?? ''
-  },
-)
+watch(date, newDate => {
+  console.log({ newDate })
+  const recall = recallDates.value.find(d =>
+    moment(d.startTime).isSame(newDate, 'day'),
+  )
+
+  recallId.value = recall?.id ?? ''
+  recallQuery.refetch()
+})
 
 watch(
   () => recallsQuery.data.value?.data,
