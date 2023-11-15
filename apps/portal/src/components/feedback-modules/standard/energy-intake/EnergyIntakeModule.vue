@@ -17,7 +17,7 @@
     </div>
   </div>
   <div class="mt-6 total-energy-container">
-    Total energy: {{ totalEnergy }}kcal
+    Total energy: {{ totalEnergy.toLocaleString() }}kcal
   </div>
   <div>
     <div class="grid-container">
@@ -60,6 +60,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
+import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)
@@ -104,7 +105,10 @@ watch(
           nutrient: { nutrientType: { id: string }; amount: any },
         ) => {
           return (
-            total + (nutrient.nutrientType.id === '1' ? nutrient.amount : 0)
+            total +
+            (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
+              ? nutrient.amount
+              : 0)
           )
         },
         0,

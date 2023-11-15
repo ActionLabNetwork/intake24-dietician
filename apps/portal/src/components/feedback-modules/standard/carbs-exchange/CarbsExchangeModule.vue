@@ -70,7 +70,7 @@ const getColours = (base: string) => {
   let _base = base ?? '#fff'
   return {
     backgroundColor: _base,
-    valueCardBgColor: chroma(_base).darken(1).hex(),
+    valueCardBgColor: chroma(_base).darken(1).saturate(2).alpha(0.7).hex(),
     valueCardBorderColor: chroma(_base).darken(2).hex(),
   }
 }
