@@ -19,18 +19,26 @@
   <div class="mt-6 total-energy-container">
     Total carb exchanges: {{ totalEnergy }}
   </div>
-  <div class="grid-container">
-    <div v-for="(meal, key) in mealCards" :key="key">
-      <CarbsExchangeCard
-        :src="meal.src"
-        :label="meal.label"
-        :alt="meal.alt"
-        :colors="meal.colors"
-        :value="meal.value"
-        :foods="meal.foods"
-      />
+  <div>
+    <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+    <div v-if="recallQuery.isError.value" class="mt-10">
+      <v-alert
+        type="error"
+        title="Error fetching recall data"
+        text="Please try again later."
+      ></v-alert>
+    </div>
+    <div v-else class="grid-container">
+      <div v-for="(meal, key, index) in mealCards" :key="key">
+        <CarbsExchangeCard
+          :label="meal.label"
+          :colors="getColours(colorPalette[index]!)"
+          :foods="meal.foods"
+        />
+      </div>
     </div>
   </div>
+
   <v-divider class="my-6" />
 </template>
 
@@ -39,10 +47,6 @@ import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
-import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
-// import Dinner from '@/assets/modules/energy-intake/dinner.svg'
-// import Lunch from '@/assets/modules/energy-intake/lunch.svg'
-// import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
@@ -53,57 +57,32 @@ import CarbsExchangeCard, {
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
+import chroma from 'chroma-js'
+import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
+import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 
-const recallId = ref('')
+const recallId = ref('abcde')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
 
-const colors = [
-  {
-    backgroundColor: '#FFFCF0',
-    valueCardBgColor: '#FFF5D1',
-    valueCardBorderColor: '#FFCB45',
-  },
-  {
-    backgroundColor: '#EBFFF3',
-    valueCardBgColor: '#AEFFCF',
-    valueCardBorderColor: '#19D464',
-  },
-  {
-    backgroundColor: '#FFF4EF',
-    valueCardBgColor: '#FDE4D9',
-    valueCardBorderColor: '#FF9E45',
-  },
-  {
-    backgroundColor: '#F5F4FF',
-    valueCardBgColor: '#E5E4FF',
-    valueCardBorderColor: '#4945FF',
-  },
-]
-
-let lastTwoColorsIndices: number[] = []
-
-const getRandomColour = () => {
-  let randomIndex
-  do {
-    randomIndex = Math.floor(Math.random() * colors.length)
-  } while (lastTwoColorsIndices.includes(randomIndex))
-
-  if (lastTwoColorsIndices.length > 1) {
-    lastTwoColorsIndices.shift() // Remove the oldest color index
+const getColours = (base: string) => {
+  let _base = base ?? '#fff'
+  return {
+    backgroundColor: _base,
+    valueCardBgColor: chroma(_base).darken(1).hex(),
+    valueCardBorderColor: chroma(_base).darken(2).hex(),
   }
-  lastTwoColorsIndices.push(randomIndex) // Add the new color index
-  return colors[randomIndex]!
 }
 
-const mealCards = reactive<Record<string, CarbsExchangeProps>>({})
+let mealCards = reactive<Record<string, CarbsExchangeProps>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 const allowedDates = computed(() => {
   return recallDates.value.map(date => date.startTime)
 })
+const colorPalette = ref<string[]>([])
 
 watch(
   () => recallQuery.data.value?.data,
@@ -134,11 +113,12 @@ watch(
 
       // TODO: src and colors may be mapped to specific meals for consistency
       mealCards[meal.name] = {
-        src: Breakfast,
         label: meal.name,
-        alt: meal.name,
-        value: Math.floor(mealCarbsExchange),
-        colors: getRandomColour(),
+        colors: {
+          backgroundColor: '#fff',
+          valueCardBgColor: '#fff',
+          valueCardBorderColor: '#fff',
+        },
         foods: meal.foods.map(f => ({
           name: f['englishName'],
           value: Math.floor(calculateFoodCarbsExchange(f as any)),
@@ -149,6 +129,12 @@ watch(
     }
 
     if (data?.ok && data.value) {
+      colorPalette.value = generatePastelPalette(
+        data.value.meals.length + 1,
+        data.value.meals.map(meal => meal.hours),
+      )
+
+      mealCards = {}
       totalEnergy.value = Math.floor(
         data.value.meals.reduce((totalEnergy, meal) => {
           return totalEnergy + calculateMealCarbsExchange(meal)
@@ -157,6 +143,17 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => date.value,
+  newDate => {
+    console.log({ newDate })
+    const recall = recallDates.value.find(d =>
+      moment(d.startTime).isSame(newDate, 'day'),
+    )
+    recallId.value = recall?.id ?? ''
+  },
 )
 
 watch(
@@ -172,17 +169,6 @@ watch(
       // Default to latest recall date
       date.value = recallDates.value.at(-1)?.startTime
     }
-  },
-  { immediate: true },
-)
-
-watch(
-  date,
-  newDate => {
-    const recall = recallDates.value.find(d =>
-      moment(d.startTime).isSame(newDate, 'day'),
-    )
-    recallId.value = recall?.id ?? ''
   },
   { immediate: true },
 )

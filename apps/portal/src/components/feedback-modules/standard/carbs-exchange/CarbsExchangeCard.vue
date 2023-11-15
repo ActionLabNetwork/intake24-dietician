@@ -52,10 +52,7 @@ import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Ma
 import chroma from 'chroma-js'
 
 export interface CarbsExchangeProps {
-  src: string
   label: string
-  alt: string
-  value: number
   colors: {
     backgroundColor: string
     valueCardBgColor: string

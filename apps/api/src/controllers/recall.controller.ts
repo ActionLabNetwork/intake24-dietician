@@ -38,7 +38,14 @@ export class RecallController extends Controller {
   @Get('{id}')
   public async getRecallById(@Path() id: string): Promise<unknown> {
     this.logger.info('getRecallById inside: ', { id })
-    return this.recallService.getRecallById(id)
+    const recall = await this.recallService.getRecallById(id)
+
+    if (!recall.ok) {
+      this.setStatus(404)
+      throw new Error('Recall not found')
+    }
+
+    return recall
   }
 
   @Get('users/{userId}')
