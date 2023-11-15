@@ -13,14 +13,10 @@
           >
             <div>
               <h1 class="text heading">
-                Welcome back {{ user?.dieticianProfile.firstName }}
+                {{ t('patients.disclaimerNotrifications.title', { username: user?.dieticianProfile.firstName}) }}
               </h1>
               <h3 class="text subheading">
-                You have
-                <span class="font-weight-medium">3 new notifications</span>
-                and
-                <span class="font-weight-medium">3 new recalls </span>
-                submissions since the last time you logged in.
+                {{ t('patients.disclaimerNotrifications.subtitle', {newSurveysNumber: 3, newNotificationsNumber: 1}) }}
               </h3>
             </div>
             <div>
@@ -31,7 +27,7 @@
                 density="comfortable"
                 @click="welcomeAlert = false"
               >
-                Dismiss
+              {{t('patients.disclaimerNotrifications.dismiss')}}
               </v-btn>
             </div>
           </div>
@@ -40,7 +36,7 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary :summary="summary" />
+        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" />
         <PatientList
           :patients-data="patientsQuery.data.value?.data.data ?? []"
         />
@@ -57,16 +53,14 @@ import { computed, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import HomeSummary from '@/components/patients/HomeSummary.vue'
+import HomeSummary from '@/components/common/HomeSummary.vue'
+import type { Summary, SummaryKeys } from '@/components/common/HomeSummary.vue'
 import PatientList from '@/components/patients/PatientList.vue'
 import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
 
-// const { t } = useI18n<i18nOptions>()
-export interface Summary {
-  total: number
-  active: number
-  archived: number
-}
+const { t } = useI18n<i18nOptions>()
 
 const authStore = useAuthStore()
 const { user, isProfileLoading } = storeToRefs(authStore)
@@ -90,6 +84,13 @@ const summary = computed((): Summary => {
     },
     { total: 0, active: 0, archived: 0 },
   )
+})
+
+const summaryKeys = computed((): SummaryKeys => {
+  return {
+    entry: t('patients.entry'),
+    entrySingular: t('patients.entrySingular'),
+  }
 })
 </script>
 

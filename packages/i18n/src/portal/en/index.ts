@@ -4,6 +4,8 @@ import { forgotPassword } from './forgotPassword'
 import { resetPassword } from './resetPassword'
 import { profile } from './profile'
 import { appBar } from './appBar'
+import { surveys } from './surveys'
+import { patients } from './patients'
 
 const messages = {
   login,
@@ -12,6 +14,8 @@ const messages = {
   forgotPassword,
   resetPassword,
   profile,
+  patients,
+  surveys,
 }
 
 export default messages
