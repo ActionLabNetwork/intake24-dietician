@@ -13,6 +13,38 @@
             <template #item="{ element }">
               <v-list-item
                 :key="element.value"
+                :value="element.value"
+                :active="element.value === selectedModule"
+                rounded="xl"
+                class="ma-2"
+                @click="() => handleModuleSelect(element.title)"
+              >
+                <div
+                  class="d-flex flex-row flex-md-row align-center justify-space-between px-2"
+                >
+                  <div class="d-flex">
+                    <div><v-icon icon="mdi-drag"></v-icon></div>
+                    <div>{{ element.title }}</div>
+                  </div>
+                  <div>
+                    <v-switch
+                      v-model:model-value="element.selected"
+                      class="d-flex align-center"
+                      color="success"
+                    ></v-switch>
+                  </div>
+                </div>
+              </v-list-item>
+            </template>
+          </draggable>
+        </v-list>
+      </v-card>
+    </div>
+  </div>
+</template>
+
+<!-- <v-list-item
+                :key="element.value"
                 :title="element.title"
                 :subtitle="element.selected ? 'enabled' : 'disabled'"
                 :value="element.value"
@@ -31,14 +63,7 @@
                     color="success"
                   ></v-switch>
                 </template>
-              </v-list-item>
-            </template>
-          </draggable>
-        </v-list>
-      </v-card>
-    </div>
-  </div>
-</template>
+              </v-list-item> -->
 
 <script setup lang="ts">
 import { defineComponent, onMounted, ref, watch } from 'vue'

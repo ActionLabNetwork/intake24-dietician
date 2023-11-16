@@ -1,7 +1,9 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div class="d-flex justify-space-between align-center">
-    <div class="d-flex align-center">
+  <div
+    class="d-flex flex-column flex-sm-row justify-space-between align-center"
+  >
+    <div class="d-flex align-center mb-5 mb-sm-0">
       <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
       <div class="ml-4 font-weight-medium">Carbs Exchange</div>
     </div>

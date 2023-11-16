@@ -20,14 +20,14 @@
         </v-btn>
       </v-row>
       <v-row class="mt-6">
-        <v-col cols="12" sm="2">
+        <v-col cols="12" md="3">
           <DetailsAndNavCard class="mx-sm-0 mx-auto mb-10" />
           <ModuleSelectList
             v-if="route.path.includes('patient-recalls')"
             @update="handleModuleUpdate"
           />
         </v-col>
-        <v-col cols="12" sm="10" class="px-16">
+        <v-col cols="12" md="9" class="px-16">
           <router-view />
         </v-col>
       </v-row>
