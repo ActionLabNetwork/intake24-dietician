@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="patientQuery.isLoading.value" max-width="fit-content">
+  <v-card :loading="patientQuery.isLoading.value">
     <template v-slot:loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
@@ -9,10 +9,10 @@
       ></v-progress-linear>
     </template>
     <v-card-item>
-      <v-card-title class="text-center">
+      <div class="text-center font-weight-medium">
         <v-avatar size="x-large" :image="avatar ?? ''" />
         <p class="title text-md mt-4">{{ fullName }}</p>
-      </v-card-title>
+      </div>
       <v-card-subtitle class="text-center">
         ID: {{ paddedId }}
       </v-card-subtitle>
@@ -24,6 +24,7 @@
             :key="item.value"
             :title="item.title"
             :to="item.to"
+            :active="item.selected.value"
             align="center"
           />
         </v-list>
@@ -70,16 +71,19 @@ const navItems = [
     title: 'Feedback records',
     value: 'feedbackRecords',
     to: `/dashboard/my-patients/patient-records/${route.params['id']}/feedback-records`,
+    selected: computed(() => route.path.includes('feedback-records')),
   },
   {
     title: 'Patient details',
     value: 'patientDetails',
     to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-details`,
+    selected: computed(() => route.path.includes('patient-details')),
   },
   {
     title: 'Patient recalls',
     value: 'patientRecalls',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-recalls`,
+    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-recalls/meal-diary`,
+    selected: computed(() => route.path.includes('patient-recalls')),
   },
 ]
 </script>

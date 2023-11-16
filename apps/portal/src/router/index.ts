@@ -114,6 +114,35 @@ const routes = [
               import(
                 '@/components/patients/patient-details/PatientRecalls.vue'
               ),
+            children: [
+              {
+                path: 'meal-diary',
+                name: 'Meal Diary',
+                component: () =>
+                  import(
+                    '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+                  ),
+                meta: {
+                  requiresAuth: true,
+                } as const,
+              },
+              {
+                path: 'energy-intake',
+                name: 'Energy Intake',
+                component: () =>
+                  import(
+                    '@/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+                  ),
+              },
+              {
+                path: 'carbs-exchange',
+                name: 'Carbs Exchange',
+                component: () =>
+                  import(
+                    '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+                  ),
+              },
+            ],
           },
         ],
         meta: {

@@ -27,7 +27,12 @@
         </div>
       </div>
     </div>
-    <v-form v-if="patientQuery.isSuccess.value" ref="form" class="mt-8">
+    <v-form
+      v-if="patientQuery.isSuccess.value"
+      ref="form"
+      class="mt-8"
+      autocomplete="on"
+    >
       <div>
         <ContactDetails
           :default-state="patientForm.formValues.value.contactDetailsFormValues"

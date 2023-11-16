@@ -111,9 +111,9 @@ watch(
         return total + calculateFoodCarbsExchange(food)
       }, 0)
 
-      // TODO: src and colors may be mapped to specific meals for consistency
       mealCards[meal.name] = {
         label: meal.name,
+        // Setting defaults to white
         colors: {
           backgroundColor: '#fff',
           valueCardBgColor: '#fff',

@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div>
-    <div><BaseTabs :tabs="tabs" /></div>
+    <router-view />
   </div>
 </template>
 
@@ -9,16 +9,6 @@
 import { useRecallsByUserId } from '@/queries/useRecall'
 import { ref, watch } from 'vue'
 import moment from 'moment'
-import BaseTabs from '../../common/BaseTabs.vue'
-import MealDiaryModule from '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
-import EnergyIntakeModule from '../../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
-import CarbsExchangeModule from '../../feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
-
-const tabs = [
-  { name: 'Meal Diary', value: 0, component: MealDiaryModule },
-  { name: 'Energy Intake', value: 1, component: EnergyIntakeModule },
-  { name: 'Carbs Exchange', value: 2, component: CarbsExchangeModule },
-]
 
 const recallId = ref('')
 const recallsQuery = useRecallsByUserId(ref('4072'))

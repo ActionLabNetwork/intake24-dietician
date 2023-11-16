@@ -40,7 +40,7 @@
                 </v-expansion-panel-title>
                 <v-expansion-panel-text>
                   <div class="pa-2">
-                    <div>Total exchanges: {{ meal.foods }}</div>
+                    <div>Number of foods: {{ meal.foods }}</div>
                   </div>
                 </v-expansion-panel-text>
               </v-expansion-panel>

@@ -3,7 +3,9 @@
     class="wrapper d-flex flex-column"
     :style="{ background: colors.backgroundColor }"
   >
-    <div class="font-weight-medium d-flex justify-space-between align-center">
+    <div
+      class="font-weight-medium d-flex justify-space-between align-center pa-2"
+    >
       <div>{{ label }}</div>
       <div
         class="carb-counter text-center"
