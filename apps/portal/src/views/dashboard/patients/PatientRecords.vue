@@ -27,7 +27,7 @@
             @update="handleModuleUpdate"
           />
         </v-col>
-        <v-col cols="12" md="9" class="px-16">
+        <v-col cols="12" md="9">
           <router-view />
         </v-col>
       </v-row>

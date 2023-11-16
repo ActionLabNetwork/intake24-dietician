@@ -22,34 +22,13 @@
     <div class="mt-6 total-energy-container">
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </div>
-    <div>
-      <div class="grid-container">
-        <BaseProgressCircular v-if="recallQuery.isLoading.value" />
-        <div v-if="recallQuery.isError.value" class="mt-10">
-          <v-alert
-            type="error"
-            title="Error fetching recall data"
-            text="Please try again later."
-          ></v-alert>
-        </div>
-        <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-          <MealCard
-            :src="meal.src"
-            :label="meal.label"
-            :alt="meal.alt"
-            :colors="getColours(colorPalette[index]!)"
-            :value="meal.value"
-          />
-        </div>
-      </div>
-    </div>
+    <PieChartSection />
 
     <v-divider class="my-6" />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
@@ -57,30 +36,29 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, {
-  MealCardProps,
-} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
+import { MealCardProps } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
-import chroma from 'chroma-js'
+// import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
+import PieChartSection from './PieChartSection.vue'
 
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
 
-const getColours = (base: string) => {
-  let _base = base ?? '#fff'
-  return {
-    backgroundColor: _base,
-    valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
-    valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
-  }
-}
+// const getColours = (base: string) => {
+//   let _base = base ?? '#fff'
+//   return {
+//     backgroundColor: _base,
+//     valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
+//     valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
+//   }
+// }
 
 const colorPalette = ref<string[]>([])
 
