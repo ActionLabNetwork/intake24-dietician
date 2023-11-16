@@ -1,49 +1,51 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div
-    class="d-flex flex-column flex-sm-row justify-space-between align-center"
-  >
-    <div class="d-flex align-center mb-5 mb-sm-0">
-      <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
-      <div class="ml-4 font-weight-medium">Energy Intake</div>
-    </div>
-    <div>
-      <VueDatePicker
-        v-model="date"
-        :teleport="true"
-        :enable-time-picker="false"
-        text-input
-        format="dd/MM/yyyy"
-        :allowed-dates="allowedDates"
-      />
-    </div>
-  </div>
-  <div class="mt-6 total-energy-container">
-    Total energy: {{ totalEnergy.toLocaleString() }}kcal
-  </div>
-  <div>
-    <div class="grid-container">
-      <BaseProgressCircular v-if="recallQuery.isLoading.value" />
-      <div v-if="recallQuery.isError.value" class="mt-10">
-        <v-alert
-          type="error"
-          title="Error fetching recall data"
-          text="Please try again later."
-        ></v-alert>
+  <v-card class="pa-4">
+    <div
+      class="d-flex flex-column flex-sm-row justify-space-between align-center"
+    >
+      <div class="d-flex align-center mb-5 mb-sm-0">
+        <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
+        <div class="ml-4 font-weight-medium">Energy Intake</div>
       </div>
-      <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-        <MealCard
-          :src="meal.src"
-          :label="meal.label"
-          :alt="meal.alt"
-          :colors="getColours(colorPalette[index]!)"
-          :value="meal.value"
+      <div>
+        <VueDatePicker
+          v-model="date"
+          :teleport="true"
+          :enable-time-picker="false"
+          text-input
+          format="dd/MM/yyyy"
+          :allowed-dates="allowedDates"
         />
       </div>
     </div>
-  </div>
+    <div class="mt-6 total-energy-container">
+      Total energy: {{ totalEnergy.toLocaleString() }}kcal
+    </div>
+    <div>
+      <div class="grid-container">
+        <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+        <div v-if="recallQuery.isError.value" class="mt-10">
+          <v-alert
+            type="error"
+            title="Error fetching recall data"
+            text="Please try again later."
+          ></v-alert>
+        </div>
+        <div v-for="(meal, key, index) in mealCards" v-else :key="key">
+          <MealCard
+            :src="meal.src"
+            :label="meal.label"
+            :alt="meal.alt"
+            :colors="getColours(colorPalette[index]!)"
+            :value="meal.value"
+          />
+        </div>
+      </div>
+    </div>
 
-  <v-divider class="my-6" />
+    <v-divider class="my-6" />
+  </v-card>
 </template>
 
 <script setup lang="ts">
@@ -56,13 +58,16 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, { MealCardProps } from './MealCard.vue'
+import MealCard, {
+  MealCardProps,
+} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
+// import { MealCardProps } from './MealCard.vue'
 
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)

@@ -142,6 +142,14 @@ const routes = [
                     '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
                   ),
               },
+              {
+                path: 'fibre-intake',
+                name: 'Fibre Intake',
+                component: () =>
+                  import(
+                    '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+                  ),
+              },
             ],
           },
         ],

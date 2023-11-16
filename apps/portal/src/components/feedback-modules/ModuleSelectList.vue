@@ -97,6 +97,7 @@ const items = ref([
     selected: false,
     to: '/energy-intake',
   },
+  { title: 'Fibre intake', value: 4, selected: false, to: '/fibre-intake' },
 ])
 
 const selectedModule = ref(1)
