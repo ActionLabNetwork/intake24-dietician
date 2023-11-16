@@ -1,3 +1,3 @@
-export const NUTRIENTS_ENERGY_INTAKE_ID = 1
+export const NUTRIENTS_ENERGY_INTAKE_ID = '1'
 export const NUTRIENTS_CARBS_ID = '13'
 export const CARBS_EXCHANGE_MULTIPLIER = 1 / 10

@@ -396,24 +396,6 @@ export const createUserRepository = (): IUserRepository => {
           additionalNotes:
             patientDetails.additionalNotes ?? patientProfile.additionalNotes,
           patientGoal: patientDetails.patientGoal ?? patientProfile.patientGoal,
-          // patientPreferences: {
-          //   theme:
-          //     patientDetails.theme ?? patientProfile.patientPreferences.theme,
-          //   sendAutomatedFeedback:
-          //     patientDetails.sendAutomatedFeedback ??
-          //     patientProfile.patientPreferences.sendAutomatedFeedback,
-          //   recallFrequency: {
-          //     quantity:
-          //       patientDetails.recallFrequency?.reminderEvery.quantity ??
-          //       patientProfile.patientPreferences.recallFrequency.quantity,
-          //     unit:
-          //       patientDetails.recallFrequency?.reminderEvery.unit ??
-          //       patientProfile.patientPreferences.recallFrequency.unit,
-          //     end:
-          //       patientDetails.recallFrequency?.reminderEnds ??
-          //       patientProfile.patientPreferences.recallFrequency.end,
-          //   },
-          // },
           avatar: patientDetails.avatar ?? patientProfile.avatar,
         },
         { where: { userId: patientId }, transaction: t },

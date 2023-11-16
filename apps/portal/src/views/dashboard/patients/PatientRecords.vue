@@ -1,10 +1,5 @@
 <template>
-  <v-main v-if="isProfileLoading" align="center">
-    <v-container>
-      <v-progress-circular indeterminate></v-progress-circular>
-    </v-container>
-  </v-main>
-  <v-main v-else class="wrapper">
+  <v-main class="wrapper">
     <v-container>
       <v-row>
         <v-breadcrumbs :items="breadcrumbItems">
@@ -27,6 +22,10 @@
       <v-row class="mt-6">
         <v-col cols="12" md="3">
           <DetailsAndNavCard class="mx-sm-0 mx-auto mb-10" />
+          <ModuleSelectList
+            v-if="route.path.includes('patient-recalls')"
+            @update="handleModuleUpdate"
+          />
         </v-col>
         <v-col cols="12" md="9" class="px-16">
           <router-view />
@@ -37,19 +36,19 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { defineComponent, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/stores/auth'
-import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
 import DetailsAndNavCard from '@/components/patients/DetailsAndNavCard.vue'
+import ModuleSelectList from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
+import { useRoute, useRouter } from 'vue-router'
 
 // const { t } = useI18n<i18nOptions>()
 
-const authStore = useAuthStore()
-const { user, isProfileLoading } = storeToRefs(authStore)
+const router = useRouter()
+const route = useRoute()
+console.log(route.path)
 
 const breadcrumbItems = ref([
   {
@@ -63,35 +62,17 @@ const breadcrumbItems = ref([
     href: '/dashboard/patient-records',
   },
 ])
-const profileFormValues = ref<DieticianProfileValues>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  emailAddress: '',
-  mobileNumber: '',
-  businessNumber: '',
-  businessAddress: '',
-  shortBio: '',
-  avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-})
 
-watch(user, newUser => {
-  profileFormValues.value = {
-    firstName: newUser?.dieticianProfile.firstName ?? '',
-    middleName: newUser?.dieticianProfile.middleName ?? '',
-    lastName: newUser?.dieticianProfile.lastName ?? '',
-    emailAddress: newUser?.email ?? '',
-    mobileNumber: newUser?.dieticianProfile.mobileNumber ?? '',
-    businessNumber: newUser?.dieticianProfile.businessNumber ?? '',
-    businessAddress: newUser?.dieticianProfile.businessAddress ?? '',
-    shortBio: newUser?.dieticianProfile.shortBio ?? '',
-    avatar: newUser?.dieticianProfile.avatar ?? null,
-    createdAt: newUser?.dieticianProfile.createdAt ?? new Date(),
-    updatedAt: newUser?.dieticianProfile.updatedAt ?? new Date(),
-  }
-})
+const component = ref()
+
+const handleModuleUpdate = (module: ReturnType<typeof defineComponent>) => {
+  const segments = route.path.split('/')
+  segments.pop()
+  const path = segments.join('/')
+
+  component.value = module
+  router.push(`${path}${module}`)
+}
 </script>
 
 <style scoped lang="scss">
@@ -113,28 +94,5 @@ watch(user, newUser => {
     rgba(255, 255, 255, 1) 100%
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
-.text {
-  max-width: 100%;
-  padding-bottom: 0.5rem;
-
-  &.heading {
-    color: #000;
-    font-family: Roboto;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
-  }
-
-  &.subheading {
-    color: #555;
-    font-family: Roboto;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 140%; /* 19.6px */
-    letter-spacing: 0.14px;
-  }
 }
 </style>

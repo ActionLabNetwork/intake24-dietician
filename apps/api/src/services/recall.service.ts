@@ -18,10 +18,7 @@ export const createRecallService = () => {
    */
   const getRecallById = async (
     id: string,
-  ): Promise<Result<IRecallExtended | null>> => {
-    logger.info('getRecallById', { id })
-    // return { ok: true, value: null } as const
-    console.log('Trying to find the recall by ID: ', id)
+  ): Promise<Result<IRecallExtended>> => {
     try {
       const recall = await Recall.findOne({ id: id })
       console.log({ recall })
@@ -30,11 +27,14 @@ export const createRecallService = () => {
           ok: true,
           value: recall as unknown as IRecallExtended,
         } as const
-      return { ok: true, value: null } as const
+      return {
+        ok: false,
+        error: new Error('Cannot get the recall by ID: ' + id),
+      }
     } catch (error) {
       return {
         ok: false,
-        error: new Error('Cannot create a recall entity: ', {}),
+        error: new Error('Cannot get the recall by ID: ' + id),
       }
     }
   }

@@ -1,55 +1,57 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div>
-    <div class="d-flex flex-row align-center pb-5">
-      <div class="pr-3">
-        <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
+  <v-card class="pa-4">
+    <div>
+      <div class="d-flex flex-row align-center pb-5">
+        <div class="pr-3">
+          <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
+        </div>
+        <div class="font-weight-bold text-h6">Meal Diary</div>
       </div>
-      <div class="font-weight-bold text-h6">Meal Diary</div>
-    </div>
-    <v-timeline side="end" align="start" density="compact">
-      <v-timeline-item
-        v-for="(recall, i) in recalls"
-        :key="i"
-        dot-color="orange"
-        size="small"
-        width="100%"
-      >
-        <v-card>
-          <v-card-title :class="['text-h6', `bg-primary`]">
-            Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
-          </v-card-title>
-          <v-card-text class="bg-white text--primary pt-4" width="100%">
-            <v-expansion-panels
-              v-for="meal in recall.meals"
-              :key="meal.id"
-              class="mt-5"
-              variant="inset"
-              color="#FFBE99"
-            >
-              <v-expansion-panel>
-                <v-expansion-panel-title color="#FFBE99">
-                  <div class="d-flex align-center">
-                    <v-icon icon="mdi-food-apple" start />
-                    <div class="font-weight-medium">
-                      {{ meal.name }} ({{
-                        getMealTime(meal.hours, meal.minutes)
-                      }})
+      <v-timeline side="end" align="start" density="compact">
+        <v-timeline-item
+          v-for="(recall, i) in recalls"
+          :key="i"
+          dot-color="orange"
+          size="small"
+          width="100%"
+        >
+          <v-card>
+            <v-card-title :class="['text-h6', `bg-primary`]">
+              Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
+            </v-card-title>
+            <v-card-text class="bg-white text--primary pt-4" width="100%">
+              <v-expansion-panels
+                v-for="meal in recall.meals"
+                :key="meal.id"
+                class="mt-5"
+                variant="inset"
+                color="#FFBE99"
+              >
+                <v-expansion-panel>
+                  <v-expansion-panel-title color="#FFBE99">
+                    <div class="d-flex align-center">
+                      <v-icon icon="mdi-food-apple" start />
+                      <div class="font-weight-medium">
+                        {{ meal.name }} ({{
+                          getMealTime(meal.hours, meal.minutes)
+                        }})
+                      </div>
                     </div>
-                  </div>
-                </v-expansion-panel-title>
-                <v-expansion-panel-text>
-                  <div class="pa-2">
-                    <div>Total exchanges: {{ meal.foods }}</div>
-                  </div>
-                </v-expansion-panel-text>
-              </v-expansion-panel>
-            </v-expansion-panels>
-          </v-card-text>
-        </v-card>
-      </v-timeline-item>
-    </v-timeline>
-  </div>
+                  </v-expansion-panel-title>
+                  <v-expansion-panel-text>
+                    <div class="pa-2">
+                      <div>Number of foods: {{ meal.foods }}</div>
+                    </div>
+                  </v-expansion-panel-text>
+                </v-expansion-panel>
+              </v-expansion-panels>
+            </v-card-text>
+          </v-card>
+        </v-timeline-item>
+      </v-timeline>
+    </div>
+  </v-card>
 </template>
 
 <script setup lang="ts">

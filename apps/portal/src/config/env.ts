@@ -54,12 +54,9 @@ if (!parsed.success) {
     '❌ Invalid environment variables:',
     JSON.stringify(parsed.error.format(), null, 4),
   )
-  // process.exit(1)
+  throw new Error('Invalid environment variables')
 }
 
-console.log({ parsed: parsed.data })
-
-console.log({ env: import.meta.env })
 const env = parsed.data
 
 export { env }

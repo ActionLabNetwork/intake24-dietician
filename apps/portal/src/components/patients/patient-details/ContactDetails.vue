@@ -368,7 +368,7 @@ const formConfigContact: Form<
         validateWithZod(contactDetailsSchemaContact.schema.emailAddress, value),
     ],
     handleUpdate: val => handleFieldUpdate('emailAddress', val),
-    suffixIcon: 'mdi-mail',
+    suffixIcon: props.mode === 'Edit' ? 'mdi-mail' : '',
     handleSuffixIconClick: () => {
       changeEmailDialog.value = true
     },
