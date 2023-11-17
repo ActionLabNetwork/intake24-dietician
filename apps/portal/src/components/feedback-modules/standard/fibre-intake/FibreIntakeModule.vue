@@ -19,10 +19,22 @@
         />
       </div>
     </div>
-    <div class="mt-6 total-energy-container">
-      Total energy: {{ totalEnergy.toLocaleString() }}kcal
-    </div>
-    <PieChartSection />
+    <v-row class="d-flex flex-column justify-space-between">
+      <v-col cols="12">
+        <PieChartSection />
+      </v-col>
+
+      <v-col cols="12" class="mt-4">
+        <FibreIntakeCard
+          v-for="(meal, key, index) in mealCards"
+          :key="key"
+          :label="meal.label"
+          :colors="getColours(colorPalette[index]!)"
+          :foods="meal.foods"
+          class="mb-2"
+        />
+      </v-col>
+    </v-row>
 
     <v-divider class="my-6" />
   </v-card>
@@ -32,17 +44,18 @@
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
-import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
-import Dinner from '@/assets/modules/energy-intake/dinner.svg'
-import Lunch from '@/assets/modules/energy-intake/lunch.svg'
-import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import { MealCardProps } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
+import FibreIntakeCard, {
+  FibreIntakeProps,
+} from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
-// import chroma from 'chroma-js'
+import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
+import {
+  CARBS_EXCHANGE_MULTIPLIER,
+  NUTRIENTS_CARBS_ID,
+} from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from './PieChartSection.vue'
 
@@ -51,18 +64,18 @@ const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
 
-// const getColours = (base: string) => {
-//   let _base = base ?? '#fff'
-//   return {
-//     backgroundColor: _base,
-//     valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
-//     valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
-//   }
-// }
+const getColours = (base: string) => {
+  let _base = base ?? '#fff'
+  return {
+    backgroundColor: _base,
+    valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
+    valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
+  }
+}
 
 const colorPalette = ref<string[]>([])
 
-const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+let mealCards = reactive<Record<string, Omit<FibreIntakeProps, 'colors'>>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
@@ -70,19 +83,11 @@ const allowedDates = computed(() => {
   return recallDates.value.map(date => date.startTime)
 })
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
-
 watch(
   () => recallQuery.data.value?.data,
   data => {
     // TODO: Improve typings, remove uses of any
-    const calculateFoodEnergy = (food: { nutrients: any[] }) => {
+    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
         (
           total: any,
@@ -90,45 +95,30 @@ watch(
         ) => {
           return (
             total +
-            (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
+            (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
               ? nutrient.amount
-              : 0)
+              : 0) *
+              CARBS_EXCHANGE_MULTIPLIER
           )
         },
         0,
       )
     }
 
-    const getImageSrc = (name: string) => {
-      const mealImages = {
-        breakfast: Breakfast,
-        lunch: Lunch,
-        dinner: Dinner,
-        evening: Dinner,
-        midSnacks: MidSnacks,
-      }
-
-      const mealName = (Object.keys(mealImages).find(meal =>
-        name.toLowerCase().includes(meal),
-      ) ?? 'midSnacks') as keyof typeof mealImages
-
-      return mealImages[mealName] || MidSnacks
-    }
-
-    const calculateMealEnergy = (meal: IRecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodEnergy(food)
+    const calculateMealCarbsExchange = (meal: IRecallMeal) => {
+      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+        return total + calculateFoodCarbsExchange(food)
       }, 0)
 
-      // TODO: src and colors may be mapped to specific meals for consistency
       mealCards[meal.name] = {
-        src: getImageSrc(meal.name),
         label: meal.name,
-        alt: meal.name,
-        value: Math.floor(mealEnergy),
+        foods: meal.foods.map(f => ({
+          name: f['englishName'],
+          value: Math.floor(calculateFoodCarbsExchange(f as any)),
+        })),
       }
 
-      return mealEnergy
+      return mealCarbsExchange
     }
 
     if (data?.ok && data.value) {
@@ -136,15 +126,27 @@ watch(
         data.value.meals.length + 1,
         data.value.meals.map(meal => meal.hours),
       )
+
+      mealCards = {}
       totalEnergy.value = Math.floor(
         data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealEnergy(meal)
+          return totalEnergy + calculateMealCarbsExchange(meal)
         }, 0),
       )
     }
   },
   { immediate: true },
 )
+
+watch(date, newDate => {
+  console.log({ newDate })
+  const recall = recallDates.value.find(d =>
+    moment(d.startTime).isSame(newDate, 'day'),
+  )
+
+  recallId.value = recall?.id ?? ''
+  recallQuery.refetch()
+})
 
 watch(
   () => recallsQuery.data.value?.data,
