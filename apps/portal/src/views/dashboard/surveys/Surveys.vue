@@ -37,8 +37,8 @@
       <div class="my-10"></div>
       <div>
         <HomeSummary :summary="summary" :summaryKeys="summaryKeys" />
-        <PatientList
-          :patients-data="patientsQuery.data.value?.data.data ?? []"
+        <SurveysList
+          :data="dataQuery.data.value?.data.ok === true ? dataQuery.data.value?.data.value : []"
         />
       </div>
     </v-container>
@@ -55,10 +55,10 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import HomeSummary from '@/components/common/HomeSummary.vue'
 import type { Summary, SummaryKeys } from '@/components/common/HomeSummary.vue'
-import PatientList from '@/components/patients/PatientList.vue'
-import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
+import SurveysList from '@/components/surveys/SurveysList.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
 const { t } = useI18n<i18nOptions>()
 const authStore = useAuthStore()
@@ -66,19 +66,18 @@ const { user, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
 
-const patientsQuery = usePatients()
+const dataQuery = useSurveys()
 
 const summary = computed((): Summary => {
-  const patients = patientsQuery.data.value?.data.data ?? []
+  const data = dataQuery.data.value?.data
+  if (data === undefined || !data.ok) return { total: 0, active: 0, archived: 0 }
+  console.log(data)
 
-  return patients.reduce(
-    (counts, patient) => {
+  return data.value.reduce(
+    (counts, survey) => {
       counts.total++
-      if (patient.isArchived) {
-        counts.archived++
-      } else {
-        counts.active++
-      }
+      counts.active++
+      console.log(survey)
       return counts
     },
     { total: 0, active: 0, archived: 0 },
