@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["esnext", "dom"],
-    "types": ["vuetify"],
+    "types": ["vuetify", "jest"],
     "module": "esnext",
     "paths": {
       "@intake24-dietician/portal/*": ["src/*"],

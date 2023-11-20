@@ -1,14 +1,11 @@
 <template>
   <div class="v-row justify-space-between">
-    <v-col cols="2">{{ label }}</v-col>
+    <v-col cols="2" class="pr-6">{{ label }}</v-col>
     <v-col
       cols="10"
       class="wrapper d-flex flex-column mx-auto"
       :style="[wrapperStyle, { background: colors.backgroundColor }]"
     >
-      <div class="font-weight-medium d-flex align-center pa-2">
-        <div>{{ label }}</div>
-      </div>
       <ul>
         <li
           v-for="food in props.foods"
@@ -75,16 +72,10 @@ const wrapperStyle = computed(() => ({
   }
 }
 
-.line-text {
-  position: absolute;
-  left: -50px; /* Adjust as needed */
-  top: 50%; /* Center vertically */
-  transform: translateY(-50%); /* Center vertically */
-}
-
 .energy-value {
   border-radius: 8px;
   padding: 1rem;
+  line-height: 0.5ch;
 
   &::before {
     content: '• ';

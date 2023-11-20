@@ -19,12 +19,12 @@
         />
       </div>
     </div>
-    <v-row class="d-flex flex-column justify-space-between">
-      <v-col cols="12">
-        <PieChartSection />
+    <v-row v-if="mealCards" class="mt-4">
+      <v-col cols="12" lg="5">
+        <PieChartSection :meals="mealCards" :colors="colorPalette" />
       </v-col>
 
-      <v-col cols="12" class="mt-4">
+      <v-col cols="12" lg="7" class="pr-6">
         <FibreIntakeCard
           v-for="(meal, key, index) in mealCards"
           :key="key"

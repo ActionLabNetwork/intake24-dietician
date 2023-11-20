@@ -1,24 +1,22 @@
 <template>
-  <div class="container">
-    <Pie :data="data" :options="options" />
-  </div>
+  <Pie :data="data" :options="options" />
 </template>
 
 <script setup lang="ts">
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'vue-chartjs'
 
-ChartJS.register(ArcElement, Tooltip, Legend)
+defineProps<{
+  data: {
+    labels: string[]
+    datasets: {
+      backgroundColor: string[]
+      data: number[]
+    }[]
+  }
+}>()
 
-const data = {
-  labels: ['VueJs', 'EmberJs', 'ReactJs', 'AngularJs'],
-  datasets: [
-    {
-      backgroundColor: ['#41B883', '#E46651', '#00D8FF', '#DD1B16'],
-      data: [40, 20, 80, 10],
-    },
-  ],
-}
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 const options = {
   responsive: true,
@@ -27,11 +25,3 @@ const options = {
   plugins: { legend: { display: false } },
 }
 </script>
-
-<style scoped lang="scss">
-.container {
-  position: relative;
-  height: 30vh;
-  width: 37vw;
-}
-</style>

@@ -7,6 +7,19 @@ import { MutateFunction } from '@tanstack/vue-query'
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 import { AxiosError } from 'axios'
 
+/**
+ * Custom hook for handling form logic.
+ * @template T - The type of the form values.
+ * @template TSubmit - The type of the form submission data.
+ * @param {Object} options - The options for the hook.
+ * @param {T} options.initialValues - The initial values for the form.
+ * @param {ZodType} options.schema - The schema for form validation.
+ * @param {ToastPluginApi} [options.$toast] - The toast plugin API for displaying notifications.
+ * @param {MutateFunction<unknown, AxiosError<ApiResponseWithError>, TSubmit, unknown>} options.mutationFn - The mutation function for submitting the form data.
+ * @param {Function} [options.onSuccess] - The callback function to be called on successful form submission.
+ * @param {Function} [options.onError] - The callback function to be called when an error occurs during form submission.
+ * @returns {Object} - An object containing the form values, form validation function, form update function, and form submission function.
+ */
 export const useForm = <T extends {}, TSubmit>({
   initialValues,
   schema,

@@ -36,6 +36,7 @@
     "@babel/eslint-parser": "^7.22.15",
     "@babel/types": "^7.22.17",
     "@types/chroma-js": "^2.4.3",
+    "@types/jest": "^29.5.8",
     "@types/node": "^18.17.15",
     "@types/webfontloader": "^1.6.35",
     "@typescript-eslint/eslint-plugin": "^6.4.0",

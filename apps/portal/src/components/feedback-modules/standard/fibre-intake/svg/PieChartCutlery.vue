@@ -2,11 +2,12 @@
   <div class="container">
     <div class="pie-chart"><slot></slot></div>
     <svg
-      width="680"
-      height="400"
+      width="800px"
+      height="400px"
       viewBox="0 0 487 331"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
+      class="svg-container"
     >
       <path
         d="M243.419 299.337C317.339 299.337 377.282 239.71 377.282 166.133C377.282 92.5557 317.339 32.9292 243.419 32.9292C169.5 32.9292 109.557 92.5557 109.557 166.133C109.557 239.71 169.5 299.337 243.419 299.337Z"
@@ -99,6 +100,9 @@
 </template>
 
 <style scoped lang="scss">
+.svg-container {
+  position: relative;
+}
 .container {
   display: flex;
   justify-content: center;
@@ -110,6 +114,9 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    width: 50%;
+    height: 75%;
+    z-index: 999;
   }
 }
 </style>
