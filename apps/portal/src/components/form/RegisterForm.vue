@@ -26,52 +26,20 @@
           class="d-flex flex-column justify-center"
           @submit.prevent="handleSubmit"
         >
-          <!-- Email -->
           <BaseInput
-            type="text"
-            :placeholder="t('register.form.email.placeholder')"
-            autocomplete="username"
-            name="email"
-            :rules="[emailValidator]"
-            :value="email"
-            @update="newVal => (email = newVal)"
-            >{{ t('register.form.email.label') }}
-          </BaseInput>
-          <!-- Password -->
-          <BaseInput
-            :type="passwordVisible ? 'text' : 'password'"
-            :placeholder="t('register.form.password.placeholder')"
-            autocomplete="new-password"
-            name="password"
-            :suffix-icon="
-              passwordVisible ? 'mdi-eye-outline' : 'mdi-eye-off-outline'
-            "
-            :handle-icon-click="() => (passwordVisible = !passwordVisible)"
-            :rules="[passwordValidator]"
-            :value="password"
-            @update="newVal => (password = newVal)"
+            v-for="(input, field) in formConfig"
+            :key="input.key"
+            v-model="formValues[field]"
+            :type="input.inputType"
+            :placeholder="input.placeholder"
+            :autocomplete="input.autocomplete"
+            :name="input.key"
+            :rules="input.rules"
+            :suffix-icon="input.suffixIcon"
+            :handle-icon-click="input.handleSuffixIconClick"
+            @update="newVal => (formValues[field] = newVal)"
           >
-            {{ t('register.form.password.label') }}
-          </BaseInput>
-          <!-- Confirm password -->
-          <BaseInput
-            :type="confirmPasswordVisible ? 'text' : 'password'"
-            :placeholder="t('register.form.confirmPassword.placeholder')"
-            autocomplete="new-password"
-            name="confirmPassword"
-            :rules="[
-              confirmPwd => confirmPasswordValidator(password, confirmPwd),
-            ]"
-            :value="confirmPassword"
-            :suffix-icon="
-              confirmPasswordVisible ? 'mdi-eye-outline' : 'mdi-eye-off-outline'
-            "
-            :handle-icon-click="
-              () => (confirmPasswordVisible = !confirmPasswordVisible)
-            "
-            @update="newVal => (confirmPassword = newVal)"
-          >
-            {{ t('register.form.confirmPassword.label') }}
+            {{ input.label }}
           </BaseInput>
           <!-- Create account button -->
           <v-btn
@@ -106,20 +74,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { Ref, computed, reactive, ref } from 'vue'
 
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { useRegister } from '@/mutations/useAuth'
-import {
-  emailValidator,
-  passwordValidator,
-  confirmPasswordValidator,
-} from '@/validators/auth'
+import { confirmPasswordValidator } from '@/validators/auth'
 
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import router from '@intake24-dietician/portal/router'
+import { useForm } from '@intake24-dietician/portal/composables/useForm'
+import {
+  LoginSchema,
+  RegisterSchema,
+} from '@intake24-dietician/portal/schema/auth'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
+import type { Form } from '@/types/form.types'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -130,33 +101,83 @@ const error = ref('')
 const errorAlert = ref(false)
 
 // Form fields
-const email = ref('')
-const password = ref('')
-const confirmPassword = ref('')
+const formValues = reactive({ email: '', password: '', confirmPassword: '' })
 
 const passwordVisible = ref(false)
 const confirmPasswordVisible = ref(false)
 
+const registerForm = useForm<
+  typeof formValues,
+  Omit<typeof formValues, 'confirmPassword'>
+>({
+  initialValues: formValues,
+  schema: RegisterSchema.zodSchema,
+  mutationFn: registerMutation.mutateAsync,
+  onSuccess: () => {
+    router.push('/dashboard/my-profile')
+  },
+  onError: () => {
+    error.value = 'Invalid credentials. Please try again with a different one'
+    errorAlert.value = true
+  },
+})
+
+const formConfig: Ref<Form<(typeof RegisterSchema.fields)[number]>> = ref({
+  email: {
+    type: 'input',
+    inputType: 'text',
+    placeholder: t('login.form.email.placeholder'),
+    label: t('login.form.email.label'),
+    autocomplete: 'username',
+    key: 'email',
+    rules: [(v: string) => validateWithZod(LoginSchema.schema.email, v)],
+  },
+  password: {
+    type: 'input',
+    inputType: computed(() => (passwordVisible.value ? 'text' : 'password')),
+    placeholder: t('login.form.password.placeholder'),
+    label: t('login.form.password.label'),
+    autocomplete: 'new-password',
+    key: 'password',
+    suffixIcon: computed(() =>
+      passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
+    ),
+    handleSuffixIconClick: () => {
+      console.log({ passwordVisible: passwordVisible.value })
+      passwordVisible.value = !passwordVisible.value
+    },
+    rules: [(v: string) => validateWithZod(RegisterSchema.schema.password, v)],
+  },
+  confirmPassword: {
+    type: 'input',
+    inputType: computed(() =>
+      confirmPasswordVisible.value ? 'text' : 'password',
+    ),
+    placeholder: t('register.form.confirmPassword.placeholder'),
+    label: t('register.form.confirmPassword.label'),
+    autocomplete: 'new-password',
+    key: 'confirmPassword',
+    suffixIcon: computed(() =>
+      confirmPasswordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
+    ),
+    handleSuffixIconClick: () => {
+      confirmPasswordVisible.value = !confirmPasswordVisible.value
+    },
+    rules: [
+      (confirmPwd: string) =>
+        confirmPasswordValidator(formValues.password, confirmPwd),
+    ],
+  },
+})
+
 const handleSubmit = () => {
-  const isFormValid = form.value
-  if (isFormValid) {
-    registerMutation.mutate(
-      {
-        email: email.value,
-        password: password.value,
-      },
-      {
-        onSuccess() {
-          router.push('/dashboard/my-profile')
-        },
-        onError() {
-          error.value =
-            'Invalid credentials. Please try again with a different one.'
-          errorAlert.value = true
-        },
-      },
-    )
-  }
+  registerForm.handleSubmit(
+    {
+      email: formValues.email,
+      password: formValues.password,
+    },
+    { email: formValues.email, password: formValues.password },
+  )
 }
 </script>
 

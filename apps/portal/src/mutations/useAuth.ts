@@ -17,13 +17,14 @@ axios.defaults.withCredentials = true
 export const useRegister = () => {
   const registerUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_REGISTER_URI}`
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ApiResponseWithError>,
-    AuthRequest
-  >({
-    mutationFn: async registerBody => axios.post(registerUri, registerBody),
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation<
+      AxiosResponse<AuthResponse>,
+      AxiosError<ApiResponseWithError>,
+      AuthRequest
+    >({
+      mutationFn: async registerBody => axios.post(registerUri, registerBody),
+    })
 
   return {
     data,
@@ -32,6 +33,7 @@ export const useRegister = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 
