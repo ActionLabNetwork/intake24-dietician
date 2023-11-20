@@ -12,16 +12,20 @@ export const useForm = <T extends {}, TSubmit>({
   schema,
   $toast,
   mutationFn,
+  onSuccess,
+  onError,
 }: {
   initialValues: T
   schema: ZodType
-  $toast: ToastPluginApi
+  $toast?: ToastPluginApi
   mutationFn: MutateFunction<
     unknown,
     AxiosError<ApiResponseWithError>,
     TSubmit,
     unknown
   >
+  onSuccess?: () => void
+  onError?: (err: string) => void
 }) => {
   const formValues = ref<T>(initialValues)
 
@@ -46,18 +50,23 @@ export const useForm = <T extends {}, TSubmit>({
       const result = schema.safeParse(validationData)
 
       if (!result.success) {
-        $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+        $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+        onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
         reject(new Error('Form validation failed'))
         return
       }
 
       mutationFn(submissionData, {
         onSuccess: () => {
-          $toast.success('Patient details updated')
+          $toast?.success('Patient details updated')
+          onSuccess?.()
           resolve()
         },
         onError: err => {
-          $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+          $toast?.error(
+            err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE,
+          )
+          onError?.(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
         },
       })
 

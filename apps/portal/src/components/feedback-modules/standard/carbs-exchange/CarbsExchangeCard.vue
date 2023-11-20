@@ -35,7 +35,6 @@
         <p>{{ food.name }}</p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
-            <!-- <v-img :src="Mascot" :width="35" aspect-ratio="16/9" /> -->
             <Mascot
               :fill="
                 chroma(colors.valueCardBgColor).darken(1).saturate(5).hex()

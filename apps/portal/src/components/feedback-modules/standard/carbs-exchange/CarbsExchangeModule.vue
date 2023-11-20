@@ -79,7 +79,7 @@ const getColours = (base: string) => {
   }
 }
 
-let mealCards = reactive<Record<string, CarbsExchangeProps>>({})
+let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
@@ -117,12 +117,6 @@ watch(
 
       mealCards[meal.name] = {
         label: meal.name,
-        // Setting defaults to white
-        colors: {
-          backgroundColor: '#fff',
-          valueCardBgColor: '#fff',
-          valueCardBorderColor: '#fff',
-        },
         foods: meal.foods.map(f => ({
           name: f['englishName'],
           value: Math.floor(calculateFoodCarbsExchange(f as any)),
@@ -150,7 +144,6 @@ watch(
 )
 
 watch(date, newDate => {
-  console.log({ newDate })
   const recall = recallDates.value.find(d =>
     moment(d.startTime).isSame(newDate, 'day'),
   )

@@ -38,18 +38,19 @@ export const useRegister = () => {
 export const useLogin = () => {
   const loginUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGIN_URI}`
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<
-      ApiResponseWithData<{
-        email: string
-        jti: string
-      }>
-    >,
-    AxiosError<ApiResponseWithError>,
-    AuthRequest
-  >({
-    mutationFn: loginBody => axios.post(loginUri, loginBody),
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation<
+      AxiosResponse<
+        ApiResponseWithData<{
+          email: string
+          jti: string
+        }>
+      >,
+      AxiosError<ApiResponseWithError>,
+      AuthRequest
+    >({
+      mutationFn: loginBody => axios.post(loginUri, loginBody),
+    })
 
   return {
     data,
@@ -58,20 +59,22 @@ export const useLogin = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 
 export const useForgotPassword = () => {
   const forgotPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_FORGOT_PASSWORD_URI}`
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ApiResponseWithError>,
-    { email: string }
-  >({
-    mutationFn: forgotPasswordBody =>
-      axios.post(forgotPasswordUri, forgotPasswordBody),
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation<
+      AxiosResponse<AuthResponse>,
+      AxiosError<ApiResponseWithError>,
+      { email: string }
+    >({
+      mutationFn: forgotPasswordBody =>
+        axios.post(forgotPasswordUri, forgotPasswordBody),
+    })
 
   return {
     data,
@@ -80,6 +83,7 @@ export const useForgotPassword = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 
