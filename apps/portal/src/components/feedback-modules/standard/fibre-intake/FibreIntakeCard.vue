@@ -1,12 +1,13 @@
 <template>
-  <div class="v-row justify-space-between">
-    <v-col cols="2" class="pr-6 d-flex align-center flex-wrap">
+  <v-row>
+    <v-col cols="12" md="3" class="pr-10 d-flex align-center flex-wrap">
       <div class="font-weight-medium">
         {{ label }}
       </div>
     </v-col>
     <v-col
-      cols="10"
+      cols="12"
+      md="9"
       class="wrapper d-flex flex-column mx-auto"
       :style="[wrapperStyle, { background: colors.backgroundColor }]"
     >
@@ -25,7 +26,7 @@
         </li>
       </ul>
     </v-col>
-  </div>
+  </v-row>
 </template>
 
 <script setup lang="ts">
@@ -81,7 +82,7 @@ const wrapperStyle = computed(() => ({
 .energy-value {
   border-radius: 8px;
   padding: 1rem;
-  line-height: 0.5ch;
+  line-height: 1;
 
   &::before {
     content: '• ';
@@ -102,5 +103,9 @@ const wrapperStyle = computed(() => ({
 
 .exchange-text {
   transform: translateY(25%);
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
 }
 </style>
