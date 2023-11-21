@@ -34,6 +34,8 @@ import chroma from 'chroma-js'
 
 export interface FibreIntakeProps {
   label: string
+  hours: number
+  minutes: number
   colors: {
     backgroundColor: string
     valueCardBgColor: string

@@ -20,7 +20,23 @@
       </div>
     </div>
     <div v-if="mealCards" class="mt-2">
-      <BaseTabs :tabs="tabs" align="center" :hide-slider="true"></BaseTabs>
+      <BaseTabs
+        :tabs="tabs"
+        :tabStyle="{
+          backgroundColor: '#aabcb1',
+          height: 'fit-content',
+          width: 'fit-content',
+          margin: '0 auto',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :activeTabStyle="{
+          backgroundColor: '#34a749',
+        }"
+        align="center"
+        :hide-slider="true"
+      ></BaseTabs>
     </div>
     <!-- <div v-if="mealCards" class="mt-4">
       <PieChartSection :meals="mealCards" :colors="colorPalette" />
@@ -39,12 +55,10 @@ import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import {
-  CARBS_EXCHANGE_MULTIPLIER,
-  NUTRIENTS_CARBS_ID,
-} from '@intake24-dietician/portal/constants/recall'
+import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from './PieChartSection.vue'
+import TimelineSection from './TimelineSection.vue'
 import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
 
 const recallId = ref('')
@@ -83,7 +97,7 @@ const tabs = ref([
   {
     name: 'Timeline',
     value: 1,
-    component: PieChartSection,
+    component: TimelineSection,
     props: {
       meals: mealCards,
       colors: colorPalette,
@@ -110,10 +124,9 @@ watch(
         ) => {
           return (
             total +
-            (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
+            (nutrient.nutrientType.id === NUTRIENTS_DIETARY_FIBRE_ID
               ? nutrient.amount
-              : 0) *
-              CARBS_EXCHANGE_MULTIPLIER
+              : 0)
           )
         },
         0,
@@ -127,6 +140,8 @@ watch(
 
       mealCards[meal.name] = {
         label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
         foods: meal.foods.map(f => ({
           name: f['englishName'],
           value: Math.floor(calculateFoodCarbsExchange(f as any)),

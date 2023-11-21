@@ -4,9 +4,14 @@
       v-model="activeTab"
       :align-tabs="align"
       :hide-slider="hideSlider ?? false"
-      selected-class="active-tab"
+      :style="tabStyle"
     >
-      <v-tab v-for="tab in tabs" :key="tab.name" :value="tab.value">
+      <v-tab
+        v-for="tab in tabs"
+        :key="tab.name"
+        :value="tab.value"
+        :style="activeTab === tab.value ? activeTabStyle : {}"
+      >
         <div class="d-flex text-none">
           <v-icon v-if="tab.icon" class="pr-2" :icon="tab.icon"></v-icon>
           <div>{{ tab.name }}</div>
@@ -41,6 +46,8 @@ const props = defineProps<{
   tabs: Tab[]
   align?: 'start' | 'center' | 'end'
   hideSlider?: boolean
+  tabStyle?: Record<string, string>
+  activeTabStyle?: Record<string, string>
 }>()
 
 watchEffect(() => {
@@ -49,17 +56,3 @@ watchEffect(() => {
 
 const activeTab = ref(0)
 </script>
-
-<style scoped lang="scss">
-::v-deep .v-tabs {
-  background-color: #aabcb1;
-  height: fit-content;
-  width: fit-content;
-  margin: 0 auto;
-  border-radius: 8px;
-  padding: 5px;
-}
-.active-tab {
-  background-color: #34a749;
-}
-</style>

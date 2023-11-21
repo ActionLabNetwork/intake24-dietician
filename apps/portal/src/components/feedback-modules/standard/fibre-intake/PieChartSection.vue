@@ -13,6 +13,8 @@
         :label="meal.label"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
+        :minutes="meal.minutes"
+        :hours="meal.hours"
         class="mb-2"
       />
     </v-col>
