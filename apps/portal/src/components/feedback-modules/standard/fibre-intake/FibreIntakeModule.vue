@@ -19,22 +19,12 @@
         />
       </div>
     </div>
-    <v-row v-if="mealCards" class="mt-4">
-      <v-col cols="12" lg="5">
-        <PieChartSection :meals="mealCards" :colors="colorPalette" />
-      </v-col>
-
-      <v-col cols="12" lg="7" class="pr-6">
-        <FibreIntakeCard
-          v-for="(meal, key, index) in mealCards"
-          :key="key"
-          :label="meal.label"
-          :colors="getColours(colorPalette[index]!)"
-          :foods="meal.foods"
-          class="mb-2"
-        />
-      </v-col>
-    </v-row>
+    <div v-if="mealCards" class="mt-2">
+      <BaseTabs :tabs="tabs" align="center" :hide-slider="true"></BaseTabs>
+    </div>
+    <!-- <div v-if="mealCards" class="mt-4">
+      <PieChartSection :meals="mealCards" :colors="colorPalette" />
+    </div> -->
 
     <v-divider class="my-6" />
   </v-card>
@@ -44,13 +34,10 @@
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
-import FibreIntakeCard, {
-  FibreIntakeProps,
-} from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
+import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import moment from 'moment'
-import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
@@ -58,20 +45,12 @@ import {
 } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from './PieChartSection.vue'
+import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
 
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalEnergy = ref(0)
-
-const getColours = (base: string) => {
-  let _base = base ?? '#fff'
-  return {
-    backgroundColor: _base,
-    valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
-    valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
-  }
-}
 
 const colorPalette = ref<string[]>([])
 
@@ -82,6 +61,42 @@ const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 const allowedDates = computed(() => {
   return recallDates.value.map(date => date.startTime)
 })
+
+const tabs = ref([
+  {
+    name: 'Pie chart',
+    value: 0,
+    component: PieChartSection,
+    props: {
+      meals: mealCards,
+      colors: colorPalette,
+    },
+    icon: 'mdi-chart-pie',
+    style: {
+      // Specify style
+      color: '#fff',
+      backgroundColor: '#34A749',
+      padding: '0.7rem',
+      borderRadius: '5px',
+    },
+  },
+  {
+    name: 'Timeline',
+    value: 1,
+    component: PieChartSection,
+    props: {
+      meals: mealCards,
+      colors: colorPalette,
+    },
+    icon: 'mdi-calendar-blank-outline',
+    style: {
+      color: '#fff',
+      backgroundColor: '#34A749',
+      padding: '10px',
+      borderRadius: '5px',
+    },
+  },
+])
 
 watch(
   () => recallQuery.data.value?.data,
@@ -127,7 +142,10 @@ watch(
         data.value.meals.map(meal => meal.hours),
       )
 
-      mealCards = {}
+      Object.keys(mealCards).forEach(key => {
+        delete mealCards[key]
+      })
+
       totalEnergy.value = Math.floor(
         data.value.meals.reduce((totalEnergy, meal) => {
           return totalEnergy + calculateMealCarbsExchange(meal)

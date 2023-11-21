@@ -1,6 +1,10 @@
 <template>
   <div class="v-row justify-space-between">
-    <v-col cols="2" class="pr-6">{{ label }}</v-col>
+    <v-col cols="2" class="pr-6 d-flex align-center flex-wrap">
+      <div class="font-weight-medium">
+        {{ label }}
+      </div>
+    </v-col>
     <v-col
       cols="10"
       class="wrapper d-flex flex-column mx-auto"
