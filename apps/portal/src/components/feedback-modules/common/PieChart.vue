@@ -21,7 +21,6 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 const options = {
   responsive: true,
   maintainAspectRatio: false,
-  onResize: console.log,
   plugins: { legend: { display: false } },
 }
 </script>

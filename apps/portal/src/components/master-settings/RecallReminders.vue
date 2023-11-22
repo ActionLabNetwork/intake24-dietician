@@ -218,9 +218,6 @@ onMounted(() => {
       },
       value: '',
       column: 2,
-      onUpdate: (value: string) => {
-        console.log({ value })
-      },
     },
     reminderMessage: {
       heading: { label: 'Default frequency reminder message' },

@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive } from 'vue'
+import { computed, ref, watch, reactive, markRaw } from 'vue'
 import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -80,7 +80,7 @@ const tabs = ref([
   {
     name: 'Pie chart',
     value: 0,
-    component: PieChartSection,
+    component: markRaw(PieChartSection),
     props: {
       meals: mealCards,
       colors: colorPalette,
@@ -97,7 +97,7 @@ const tabs = ref([
   {
     name: 'Timeline',
     value: 1,
-    component: TimelineSection,
+    component: markRaw(TimelineSection),
     props: {
       meals: mealCards,
       colors: colorPalette,
@@ -172,7 +172,6 @@ watch(
 )
 
 watch(date, newDate => {
-  console.log({ newDate })
   const recall = recallDates.value.find(d =>
     moment(d.startTime).isSame(newDate, 'day'),
   )

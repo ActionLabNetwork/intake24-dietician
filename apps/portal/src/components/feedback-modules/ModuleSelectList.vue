@@ -43,30 +43,8 @@
   </div>
 </template>
 
-<!-- <v-list-item
-                :key="element.value"
-                :title="element.title"
-                :subtitle="element.selected ? 'enabled' : 'disabled'"
-                :value="element.value"
-                :active="element.value === selectedModule"
-                rounded="xl"
-                class="ma-2"
-                @click="() => handleModuleSelect(element.title)"
-              >
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-drag"></v-icon>
-                </template>
-                <template v-slot:append>
-                  <v-switch
-                    v-model:model-value="element.selected"
-                    class="d-flex align-center justify-center"
-                    color="success"
-                  ></v-switch>
-                </template>
-              </v-list-item> -->
-
 <script setup lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
+import { defineComponent, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 
@@ -98,6 +76,7 @@ const items = ref([
     to: '/energy-intake',
   },
   { title: 'Fibre intake', value: 4, selected: false, to: '/fibre-intake' },
+  { title: 'Water intake', value: 5, selected: false, to: '/water-intake' },
 ])
 
 const selectedModule = ref(1)
@@ -115,6 +94,4 @@ const handleModuleSelect = (title: string) => {
   selectedModule.value = item.value
   emit('update', item.to)
 }
-
-watch(selectedModule, newVal => console.log(newVal))
 </script>

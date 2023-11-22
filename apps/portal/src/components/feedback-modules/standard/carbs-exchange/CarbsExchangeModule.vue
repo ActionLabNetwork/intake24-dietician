@@ -41,8 +41,6 @@
         </div>
       </div>
     </div>
-
-    <v-divider class="my-6" />
   </v-card>
 </template>
 
@@ -182,7 +180,7 @@ watch(
   margin-top: 1rem;
   display: grid;
   grid-auto-rows: 1fr;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1rem;
 }
 </style>

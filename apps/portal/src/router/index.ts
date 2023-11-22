@@ -150,6 +150,14 @@ const routes = [
                     '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
                   ),
               },
+              {
+                path: 'water-intake',
+                name: 'Water Intake',
+                component: () =>
+                  import(
+                    '@/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+                  ),
+              },
             ],
           },
         ],

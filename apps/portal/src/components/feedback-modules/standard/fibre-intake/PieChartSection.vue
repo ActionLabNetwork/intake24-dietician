@@ -34,10 +34,7 @@ const props = defineProps<{
   colors: string[]
 }>()
 
-console.log({ props })
-
 const data = computed(() => {
-  console.log({ propMeal: props.meals })
   return {
     labels: Object.keys(props.meals),
     datasets: [

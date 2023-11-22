@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, ref, watchEffect } from 'vue'
+import { defineComponent, ref } from 'vue'
 
 interface Tab {
   name: string
@@ -42,17 +42,13 @@ interface Tab {
   style?: Record<string, string>
 }
 
-const props = defineProps<{
+defineProps<{
   tabs: Tab[]
   align?: 'start' | 'center' | 'end'
   hideSlider?: boolean
   tabStyle?: Record<string, string>
   activeTabStyle?: Record<string, string>
 }>()
-
-watchEffect(() => {
-  console.log('in tab props', props)
-})
 
 const activeTab = ref(0)
 </script>

@@ -20,7 +20,7 @@
           <div class="w-100">
             <div class="d-flex justify-space-between">
               <div>{{ food.name }}</div>
-              <div>{{ food.value }}</div>
+              <div class="font-weight-bold">{{ food.value }}g</div>
             </div>
           </div>
         </li>
@@ -30,7 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
+import { computed } from 'vue'
 import chroma from 'chroma-js'
 
 export interface FibreIntakeProps {
