@@ -78,7 +78,6 @@ const routes = [
           requiresAuth: true,
         },
       },
-      // TODO: Replace this with dynamic route once backend is done
       {
         path: 'my-patients/patient-records/:id',
         name: 'Patient records',
@@ -165,6 +164,60 @@ const routes = [
           requiresAuth: true,
         },
       },
+      {
+        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback',
+        name: 'Compose New Feedback',
+        component: () =>
+          import(
+            '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
+          ),
+        children: [
+          {
+            path: 'meal-diary',
+            name: 'Meal Diary',
+            component: () =>
+              import(
+                '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+              ),
+            meta: {
+              requiresAuth: true,
+            } as const,
+          },
+          {
+            path: 'energy-intake',
+            name: 'Energy Intake',
+            component: () =>
+              import(
+                '@/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+              ),
+          },
+          {
+            path: 'carbs-exchange',
+            name: 'Carbs Exchange',
+            component: () =>
+              import(
+                '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+              ),
+          },
+          {
+            path: 'fibre-intake',
+            name: 'Fibre Intake',
+            component: () =>
+              import(
+                '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+              ),
+          },
+          {
+            path: 'water-intake',
+            name: 'Water Intake',
+            component: () =>
+              import(
+                '@/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+              ),
+          },
+        ],
+      },
+
       {
         path: 'my-patients/add-patient',
         name: 'Add patient',

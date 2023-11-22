@@ -44,19 +44,27 @@
 </template>
 
 <script setup lang="ts">
-import { defineComponent, onMounted, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
+import type { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+
+interface Item {
+  title: string
+  value: number
+  selected: boolean
+  to: ModuleRoute
+}
 
 const emit = defineEmits<{
-  update: [value: ReturnType<typeof defineComponent>]
+  update: [value: ModuleRoute]
 }>()
 
 const route = useRoute()
 
 const drag = ref(false)
 
-const items = ref([
+const items = ref<Item[]>([
   {
     title: 'Meal diary',
     value: 1,
@@ -87,7 +95,7 @@ onMounted(() => {
     items.value.find(i => i.to.includes(currentRoute))?.value ?? 1
 })
 
-const handleModuleSelect = (title: string) => {
+const handleModuleSelect = (title: ModuleRoute) => {
   const item = items.value.find(i => i.title === title)
 
   if (!item) return
