@@ -119,7 +119,7 @@ const routes = [
                 name: 'Meal Diary',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
                 meta: {
                   requiresAuth: true,
@@ -130,7 +130,7 @@ const routes = [
                 name: 'Energy Intake',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
               {
@@ -138,7 +138,7 @@ const routes = [
                 name: 'Carbs Exchange',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
               {
@@ -146,7 +146,7 @@ const routes = [
                 name: 'Fibre Intake',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
               {
@@ -154,7 +154,7 @@ const routes = [
                 name: 'Water Intake',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
             ],
@@ -171,51 +171,6 @@ const routes = [
           import(
             '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
           ),
-        children: [
-          {
-            path: 'meal-diary',
-            name: 'Meal Diary',
-            component: () =>
-              import(
-                '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
-              ),
-            meta: {
-              requiresAuth: true,
-            } as const,
-          },
-          {
-            path: 'energy-intake',
-            name: 'Energy Intake',
-            component: () =>
-              import(
-                '@/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
-              ),
-          },
-          {
-            path: 'carbs-exchange',
-            name: 'Carbs Exchange',
-            component: () =>
-              import(
-                '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
-              ),
-          },
-          {
-            path: 'fibre-intake',
-            name: 'Fibre Intake',
-            component: () =>
-              import(
-                '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
-              ),
-          },
-          {
-            path: 'water-intake',
-            name: 'Water Intake',
-            component: () =>
-              import(
-                '@/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
-              ),
-          },
-        ],
       },
 
       {

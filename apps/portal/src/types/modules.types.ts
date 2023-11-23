@@ -1,3 +1,5 @@
+import type { Component } from 'vue'
+
 const moduleRoutes = [
   '/meal-diary',
   '/carbs-exchange',
@@ -7,3 +9,4 @@ const moduleRoutes = [
 ] as const
 
 export type ModuleRoute = (typeof moduleRoutes)[number]
+export type ComponentMapping = Record<ModuleRoute, Component>

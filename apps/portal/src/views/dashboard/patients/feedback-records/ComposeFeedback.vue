@@ -12,12 +12,14 @@
           Back to {{ patientName }} records
         </v-btn>
       </div>
-      <div class="mt-4">
+      <div v-if="recallsQuery.data.value?.data" class="mt-4">
         <ProfileAndFeedbackCard
           :id="paddedId"
           :avatar="avatar"
           :fullName="fullName"
-          @update:daterange="handleDateRangeUpdate"
+          :recall-dates="recallDates"
+          :initial-date="date"
+          @update:date="handleDateUpdate"
         />
       </div>
       <div class="mt-4">
@@ -28,6 +30,8 @@
           <v-col cols="9">
             <component
               :is="routeToModuleComponentMapping[component]"
+              :recalls-data="recallsData"
+              :recall-date="date"
             ></component>
           </v-col>
         </v-row>
@@ -37,7 +41,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -52,31 +56,41 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
-import type { ModuleRoute } from '@/types/modules.types'
+import type { ComponentMapping, ModuleRoute } from '@/types/modules.types'
+import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // const { t } = useI18n<i18nOptions>()
 
-interface ComponentMapping {
-  '/meal-diary': typeof MealDiaryModule
-  '/carbs-exchange': typeof CarbsExchangeModule
-  '/energy-intake': typeof EnergyIntakeModule
-  '/fibre-intake': typeof FibreIntakeModule
-  '/water-intake': typeof WaterIntakeModule
-}
-
 const route = useRoute()
-const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
 
+// Queries
+const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
+const recallsQuery = useRecallsByUserId(ref('4072'))
+
+// Refs
+const date = ref<Date>(new Date())
+const component = ref<ModuleRoute>('/meal-diary')
+
+// Computed properties
+const recallDates = computed(() => {
+  const data = recallsQuery.data.value?.data
+  if (data?.ok) {
+    return data.value.map(recall => ({
+      id: recall.id,
+      startTime: recall.startTime,
+      endTime: recall.endTime,
+    }))
+  }
+  return []
+})
 const patientQueryData = computed(() => {
   return patientQuery.data.value?.data.data
 })
-
 const paddedId = computed(() => {
   return ((route.params['id'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )
 })
-
 const patientName = computed(() => {
   const firstName = patientQueryData.value?.patientProfile?.firstName
 
@@ -85,22 +99,23 @@ const patientName = computed(() => {
   }
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
 })
-
 const fullName = computed(() => {
   const firstName = patientQueryData.value?.patientProfile?.firstName ?? ''
   const lastName = patientQueryData.value?.patientProfile?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
-
 const avatar = computed(() => {
   return (
     patientQuery.data.value?.data.data.patientProfile?.avatar ??
     getDefaultAvatar('')
   )
 })
-
-const component = ref<ModuleRoute>('/meal-diary')
+const recallsData = computed(() => {
+  return recallsQuery.data.value?.data.ok
+    ? recallsQuery.data.value?.data.value
+    : []
+})
 const routeToModuleComponentMapping: ComponentMapping = {
   '/meal-diary': MealDiaryModule,
   '/carbs-exchange': CarbsExchangeModule,
@@ -112,9 +127,20 @@ const handleModuleUpdate = (module: ModuleRoute) => {
   component.value = module
 }
 
-const handleDateRangeUpdate = (dateRange: [Date, Date]) => {
-  console.log(dateRange)
+const handleDateUpdate = (_date: Date) => {
+  date.value = _date
 }
+
+watch(
+  () => recallsQuery.data.value?.data,
+  data => {
+    if (data?.ok) {
+      // Default to latest recall date
+      date.value = recallDates.value.at(-1)?.startTime ?? new Date()
+    }
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

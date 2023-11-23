@@ -16,11 +16,12 @@
           text-input
           format="dd/MM/yyyy"
           :allowed-dates="allowedDates"
+          :disabled="!!props.recallDate"
         />
       </div>
     </div>
     <div class="mt-6 total-energy-container">
-      Total carb exchanges: {{ totalEnergy }}
+      Total carb exchanges: {{ totalCarbs }}
     </div>
     <div>
       <BaseProgressCircular v-if="recallQuery.isLoading.value" />
@@ -41,13 +42,18 @@
         </div>
       </div>
     </div>
+    <v-divider class="my-10"></v-divider>
+    <FeedbackTextArea />
   </v-card>
 </template>
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
+import {
+  IRecallExtended,
+  IRecallMeal,
+} from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch, reactive } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
@@ -62,11 +68,16 @@ import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
+import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 
+const props = defineProps<{
+  recallsData?: IRecallExtended[]
+  recallDate?: Date
+}>()
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)
 const recallsQuery = useRecallsByUserId(ref('4072'))
-const totalEnergy = ref(0)
+const totalCarbs = ref(0)
 
 const getColours = (base: string) => {
   let _base = base ?? '#fff'
@@ -85,6 +96,16 @@ const allowedDates = computed(() => {
   return recallDates.value.map(date => date.startTime)
 })
 const colorPalette = ref<string[]>([])
+
+watch(
+  props,
+  newProps => {
+    console.log({ newProps })
+    console.log({ props })
+    date.value = newProps.recallDate
+  },
+  { deep: true, immediate: true },
+)
 
 watch(
   () => recallQuery.data.value?.data,
@@ -131,9 +152,9 @@ watch(
       )
 
       mealCards = {}
-      totalEnergy.value = Math.floor(
-        data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealCarbsExchange(meal)
+      totalCarbs.value = Math.floor(
+        data.value.meals.reduce((totalCarbs, meal) => {
+          return totalCarbs + calculateMealCarbsExchange(meal)
         }, 0),
       )
     }

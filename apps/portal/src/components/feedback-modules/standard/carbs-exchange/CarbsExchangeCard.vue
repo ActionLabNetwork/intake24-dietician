@@ -8,12 +8,12 @@
     >
       <div>{{ label }}</div>
       <div
-        class="carb-counter text-center"
+        class="carb-counter"
         :style="{
           background: chroma(colors.backgroundColor).darken().saturate(4).hex(),
         }"
       >
-        <p class="exchange-text">{{ totalExchange }}</p>
+        {{ totalExchange }}
       </div>
     </div>
     <div
@@ -83,17 +83,13 @@ const totalExchange = computed(() => {
 }
 
 .carb-counter {
+  display: flex;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem 1rem;
   font-size: 1rem;
   font-weight: 800;
-}
-
-.exchange-text {
-  transform: translateY(25%);
 }
 </style>

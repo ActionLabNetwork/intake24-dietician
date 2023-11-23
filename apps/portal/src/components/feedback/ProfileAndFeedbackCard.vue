@@ -12,20 +12,20 @@
           </div>
         </div>
 
-        <!-- Date range -->
+        <!-- Date -->
         <div class="d-flex">
           <div class="d-flex align-center">
-            <div class="font-weight-medium">Date range:</div>
+            <div class="font-weight-medium">Date:</div>
             <VueDatePicker
               v-model="date"
               :teleport="true"
               :enable-time-picker="false"
+              :allowed-dates="allowedDates"
               text-input
               format="dd/MM/yyyy"
               class="ml-2"
-              range
               style="width: 100%"
-              @update:model-value="handleDateRangeUpdate"
+              @update:model-value="handleDateUpdate"
             />
           </div>
         </div>
@@ -62,13 +62,19 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 
-defineProps<{ id: string; fullName: string; avatar: string }>()
+const props = defineProps<{
+  id: string
+  fullName: string
+  avatar: string
+  recallDates: { id: string; startTime: Date; endTime: Date }[]
+  initialDate: Date
+}>()
 const emit = defineEmits<{
-  'update:daterange': [date: [Date, Date]]
+  'update:date': [date: Date]
 }>()
 
 interface SharedItem {
@@ -76,16 +82,18 @@ interface SharedItem {
   type: 'Tailored' | 'Auto'
 }
 
+const allowedDates = computed(() => {
+  return props.recallDates.map(date => date.startTime)
+})
+
 const date = ref()
 
-const handleDateRangeUpdate = (date: [Date, Date]) => {
-  emit('update:daterange', date)
+const handleDateUpdate = (date: Date) => {
+  emit('update:date', date)
 }
 
 onMounted(() => {
-  const startDate = new Date()
-  const endDate = new Date(new Date().setDate(startDate.getDate() + 7))
-  date.value = [startDate, endDate]
+  date.value = props.initialDate
 })
 
 const items = ref<SharedItem[]>([
@@ -103,5 +111,11 @@ const items = ref<SharedItem[]>([
   justify-content: space-between;
   width: 100%;
   gap: 4rem;
+}
+
+@media (max-width: 1440px) {
+  .flex-container {
+    justify-content: center;
+  }
 }
 </style>
