@@ -42,7 +42,10 @@
       </div>
     </div>
     <v-divider class="my-10"></v-divider>
-    <FeedbackTextArea @update:feedback="emit('update:feedback', $event)" />
+    <FeedbackTextArea
+      :feedback="feedback"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
@@ -73,6 +76,7 @@ import { nextTick } from 'vue'
 const props = defineProps<{
   recallsData?: IRecallExtended[]
   recallDate?: Date
+  feedback: string
 }>()
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
@@ -85,6 +89,12 @@ const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 const colorPalette = ref<string[]>([])
 let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
 
+// Computed properties
+const allowedDates = computed(() => {
+  return recallDates.value.map(date => date.startTime)
+})
+
+// Utility functions
 const getColours = (base: string) => {
   let _base = base ?? '#fff'
   return {
@@ -94,9 +104,36 @@ const getColours = (base: string) => {
   }
 }
 
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
+const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
+  return food.nutrients.reduce(
+    (total: any, nutrient: { nutrientType: { id: string }; amount: any }) => {
+      return (
+        total +
+        (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
+          ? nutrient.amount
+          : 0) *
+          CARBS_EXCHANGE_MULTIPLIER
+      )
+    },
+    0,
+  )
+}
+
+const calculateMealCarbsExchange = (meal: IRecallMeal) => {
+  const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+    return total + calculateFoodCarbsExchange(food)
+  }, 0)
+
+  mealCards[meal.name] = {
+    label: meal.name,
+    foods: meal.foods.map(f => ({
+      name: f['englishName'],
+      value: Math.floor(calculateFoodCarbsExchange(f as any)),
+    })),
+  }
+
+  return mealCarbsExchange
+}
 
 // Watchers
 watch(
@@ -111,40 +148,6 @@ watch(
   () => recallQuery.data.value?.data,
   data => {
     // TODO: Improve typings, remove uses of any
-    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: any,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          return (
-            total +
-            (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
-              ? nutrient.amount
-              : 0) *
-              CARBS_EXCHANGE_MULTIPLIER
-          )
-        },
-        0,
-      )
-    }
-
-    const calculateMealCarbsExchange = (meal: IRecallMeal) => {
-      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodCarbsExchange(food)
-      }, 0)
-
-      mealCards[meal.name] = {
-        label: meal.name,
-        foods: meal.foods.map(f => ({
-          name: f['englishName'],
-          value: Math.floor(calculateFoodCarbsExchange(f as any)),
-        })),
-      }
-
-      return mealCarbsExchange
-    }
-
     if (data?.ok && data.value) {
       colorPalette.value = generatePastelPalette(
         data.value.meals.length + 1,

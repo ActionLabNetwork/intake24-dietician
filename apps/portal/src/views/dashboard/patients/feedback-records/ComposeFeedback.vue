@@ -32,6 +32,7 @@
               :is="routeToModuleComponentMapping[component]"
               :recalls-data="recallsData"
               :recall-date="date"
+              :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
             ></component>
           </v-col>
@@ -72,6 +73,9 @@ const date = ref<Date>(new Date())
 const component = ref<ModuleRoute>('/carbs-exchange')
 
 // Computed properties
+const moduleFeedback = computed(() => {
+  return moduleFeedbacks.value[component.value]
+})
 const recallDates = computed(() => {
   const data = recallsQuery.data.value?.data
   if (data?.ok) {
