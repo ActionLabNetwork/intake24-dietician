@@ -154,7 +154,10 @@ watch(
         data.value.meals.map(meal => meal.hours),
       )
 
-      mealCards = {}
+      Object.keys(mealCards).forEach(key => {
+        delete mealCards[key]
+      })
+
       totalCarbs.value = Math.floor(
         data.value.meals.reduce((totalCarbs, meal) => {
           return totalCarbs + calculateMealCarbsExchange(meal)

@@ -2,8 +2,8 @@
   <div>
     <div class="font-weight-bold">
       Feedback
-      <v-row class="mt-1">
-        <v-col cols="11">
+      <v-row class="mt-1 justify-space-between">
+        <v-col cols="10">
           <v-textarea
             v-model="localFeedback"
             variant="solo-filled"
@@ -11,7 +11,7 @@
             @update:model-value="handleFeedbackUpdate"
           ></v-textarea>
         </v-col>
-        <v-col cols="1">
+        <v-col cols="2" class="px-1">
           <v-btn
             v-if="!isEditing"
             append-icon="mdi-pencil-outline"

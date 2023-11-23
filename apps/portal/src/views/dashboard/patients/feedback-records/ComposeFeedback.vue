@@ -71,7 +71,7 @@ const recallsQuery = useRecallsByUserId(ref('4072'))
 
 // Refs
 const date = ref<Date>(new Date())
-const component = ref<ModuleRoute>('/carbs-exchange')
+const component = ref<ModuleRoute>('/meal-diary')
 
 // Computed properties
 const moduleFeedback = computed(() => {
