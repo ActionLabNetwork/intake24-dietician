@@ -8,6 +8,7 @@
             v-model="feedback"
             variant="solo-filled"
             :readonly="!isEditing"
+            @update:model-value="handleFeedbackUpdate"
           ></v-textarea>
         </v-col>
         <v-col cols="1">
@@ -35,6 +36,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useDebounceFn } from '@vueuse/core'
+import { INPUT_DEBOUNCE_TIME } from '@intake24-dietician/portal/constants'
+
+const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const isEditing = ref(false)
 const feedback = ref('')
@@ -42,6 +47,11 @@ const feedback = ref('')
 const toggleEdit = () => {
   isEditing.value = !isEditing.value
 }
+
+const handleFeedbackUpdate = useDebounceFn((_feedback: string) => {
+  feedback.value = _feedback
+  emit('update:feedback', feedback.value)
+}, INPUT_DEBOUNCE_TIME)
 </script>
 
 <style scoped lang="scss">

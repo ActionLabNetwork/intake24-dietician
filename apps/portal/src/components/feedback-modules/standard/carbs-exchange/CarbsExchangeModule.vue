@@ -8,7 +8,7 @@
         <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
         <div class="ml-4 font-weight-medium">Carbs Exchange</div>
       </div>
-      <div>
+      <div v-if="!props.recallDate">
         <VueDatePicker
           v-model="date"
           :teleport="true"
@@ -16,7 +16,6 @@
           text-input
           format="dd/MM/yyyy"
           :allowed-dates="allowedDates"
-          :disabled="!!props.recallDate"
         />
       </div>
     </div>
@@ -43,13 +42,13 @@
       </div>
     </div>
     <v-divider class="my-10"></v-divider>
-    <FeedbackTextArea />
+    <FeedbackTextArea @update:feedback="emit('update:feedback', $event)" />
   </v-card>
 </template>
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
+import { useRecallById } from '@/queries/useRecall'
 import {
   IRecallExtended,
   IRecallMeal,
@@ -69,15 +68,22 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
+import { nextTick } from 'vue'
 
 const props = defineProps<{
   recallsData?: IRecallExtended[]
   recallDate?: Date
 }>()
+const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
+
+// Refs
 const recallId = ref('')
 const recallQuery = useRecallById(recallId)
-const recallsQuery = useRecallsByUserId(ref('4072'))
 const totalCarbs = ref(0)
+const date = ref<Date>()
+const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
+const colorPalette = ref<string[]>([])
+let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
 
 const getColours = (base: string) => {
   let _base = base ?? '#fff'
@@ -88,23 +94,17 @@ const getColours = (base: string) => {
   }
 }
 
-let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
-
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 const allowedDates = computed(() => {
   return recallDates.value.map(date => date.startTime)
 })
-const colorPalette = ref<string[]>([])
 
+// Watchers
 watch(
-  props,
-  newProps => {
-    console.log({ newProps })
-    console.log({ props })
-    date.value = newProps.recallDate
+  () => props.recallDate,
+  newRecallDate => {
+    date.value = newRecallDate
   },
-  { deep: true, immediate: true },
+  { immediate: true },
 )
 
 watch(
@@ -162,20 +162,11 @@ watch(
   { immediate: true },
 )
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
-
 watch(
-  () => recallsQuery.data.value?.data,
+  () => props.recallsData,
   data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
+    if (data) {
+      recallDates.value = data.map(recall => ({
         id: recall.id,
         startTime: recall.startTime,
         endTime: recall.endTime,
@@ -183,6 +174,22 @@ watch(
 
       // Default to latest recall date
       date.value = recallDates.value.at(-1)?.startTime
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  date,
+  async newDate => {
+    await nextTick()
+    const recall = recallDates.value.find(d =>
+      moment(d.startTime).isSame(newDate, 'day'),
+    )
+
+    if (recall) {
+      recallId.value = recall.id ?? ''
+      recallQuery.refetch()
     }
   },
   { immediate: true },

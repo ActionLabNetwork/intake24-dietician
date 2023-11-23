@@ -32,6 +32,7 @@
               :is="routeToModuleComponentMapping[component]"
               :recalls-data="recallsData"
               :recall-date="date"
+              @update:feedback="handleFeedbackUpdate"
             ></component>
           </v-col>
         </v-row>
@@ -68,7 +69,7 @@ const recallsQuery = useRecallsByUserId(ref('4072'))
 
 // Refs
 const date = ref<Date>(new Date())
-const component = ref<ModuleRoute>('/meal-diary')
+const component = ref<ModuleRoute>('/carbs-exchange')
 
 // Computed properties
 const recallDates = computed(() => {
@@ -123,6 +124,15 @@ const routeToModuleComponentMapping: ComponentMapping = {
   '/fibre-intake': FibreIntakeModule,
   '/water-intake': WaterIntakeModule,
 }
+
+const moduleFeedbacks = ref<Record<ModuleRoute, string>>({
+  '/meal-diary': '',
+  '/carbs-exchange': '',
+  '/energy-intake': '',
+  '/fibre-intake': '',
+  '/water-intake': '',
+})
+
 const handleModuleUpdate = (module: ModuleRoute) => {
   component.value = module
 }
@@ -130,6 +140,13 @@ const handleModuleUpdate = (module: ModuleRoute) => {
 const handleDateUpdate = (_date: Date) => {
   date.value = _date
 }
+
+const handleFeedbackUpdate = (feedback: string) => {
+  console.log({ feedback })
+  moduleFeedbacks.value[component.value] = feedback
+}
+
+watch(moduleFeedbacks, console.log, { deep: true })
 
 watch(
   () => recallsQuery.data.value?.data,
@@ -141,6 +158,11 @@ watch(
   },
   { immediate: true },
 )
+
+watch(date, newDate => {
+  console.log({ newDate: newDate })
+  console.log({ newDateType: typeof newDate })
+})
 </script>
 
 <style scoped lang="scss">
