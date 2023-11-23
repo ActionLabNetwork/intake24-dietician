@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <v-container>
+      {{ moduleFeedbacks }}
       <div>
         <v-btn
           prepend-icon="mdi-chevron-left"

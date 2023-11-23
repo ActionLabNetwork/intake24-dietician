@@ -8,67 +8,79 @@
         </div>
         <div class="font-weight-bold text-h6">Meal Diary</div>
       </div>
-      <v-timeline side="end" align="start" density="compact">
-        <v-timeline-item
-          v-for="(recall, i) in recalls"
-          :key="i"
-          dot-color="orange"
-          size="small"
-          width="100%"
-        >
-          <v-card>
-            <v-card-title :class="['text-h6', `bg-primary`]">
-              Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
-            </v-card-title>
-            <v-card-text class="bg-white text--primary pt-4" width="100%">
-              <v-expansion-panels
-                v-for="meal in recall.meals"
-                :key="meal.id"
-                class="mt-5"
-                variant="inset"
-                color="#FFBE99"
-              >
-                <v-expansion-panel>
-                  <v-expansion-panel-title color="#FFBE99">
-                    <div class="d-flex align-center">
-                      <v-icon icon="mdi-food-apple" start />
-                      <div class="font-weight-medium">
-                        {{ meal.name }} ({{
-                          getMealTime(meal.hours, meal.minutes)
-                        }})
+      <div class="timeline">
+        <v-timeline side="end" align="start" density="compact">
+          <v-timeline-item
+            v-for="(recall, i) in props.recallsData"
+            :key="i"
+            dot-color="orange"
+            size="small"
+            width="100%"
+          >
+            <v-card>
+              <v-card-title :class="['text-h6', `bg-primary`]">
+                Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
+              </v-card-title>
+              <v-card-text class="bg-white text--primary pt-4" width="100%">
+                <v-expansion-panels
+                  v-for="meal in recall.meals"
+                  :key="meal.id"
+                  class="mt-5"
+                  variant="inset"
+                  color="#FFBE99"
+                >
+                  <v-expansion-panel>
+                    <v-expansion-panel-title color="#FFBE99">
+                      <div class="d-flex align-center">
+                        <v-icon icon="mdi-food-apple" start />
+                        <div class="font-weight-medium">
+                          {{ meal.name }} ({{
+                            getMealTime(meal.hours, meal.minutes)
+                          }})
+                        </div>
                       </div>
-                    </div>
-                  </v-expansion-panel-title>
-                  <v-expansion-panel-text>
-                    <div class="pa-2">
-                      <div>Number of foods: {{ meal.foods }}</div>
-                    </div>
-                  </v-expansion-panel-text>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-card-text>
-          </v-card>
-        </v-timeline-item>
-      </v-timeline>
+                    </v-expansion-panel-title>
+                    <v-expansion-panel-text>
+                      <div class="pa-2">
+                        <div>Number of foods: {{ meal.foods }}</div>
+                      </div>
+                    </v-expansion-panel-text>
+                  </v-expansion-panel>
+                </v-expansion-panels>
+              </v-card-text>
+            </v-card>
+          </v-timeline-item>
+        </v-timeline>
+      </div>
     </div>
+    <v-divider class="my-10"></v-divider>
+    <FeedbackTextArea
+      :feedback="feedback"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { useRecallsByUserId } from '@/queries/useRecall'
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
 import moment from 'moment'
+import { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 
+const props = defineProps<{
+  recallsData?: IRecallExtended[]
+  recallDate?: Date
+  feedback: string
+}>()
+const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
+
+// Refs
 const recallId = ref('')
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const date = ref<Date>()
+const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 
-const recalls = computed(() => {
-  return recallsQuery.data.value?.data.ok
-    ? recallsQuery.data.value?.data.value
-    : null
-})
-
+// Utility functions
 const getMealTime = (hours: number, minutes: number) => {
   return (
     hours.toString().padStart(2, '0') +
@@ -77,14 +89,11 @@ const getMealTime = (hours: number, minutes: number) => {
   )
 }
 
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-
 watch(
-  () => recallsQuery.data.value?.data,
+  () => props.recallsData,
   data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
+    if (data) {
+      recallDates.value = data.map(recall => ({
         id: recall.id,
         startTime: recall.startTime,
         endTime: recall.endTime,
@@ -96,12 +105,16 @@ watch(
   },
 )
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-  recallId.value = recall?.id ?? ''
-})
+watch(
+  date,
+  newDate => {
+    const recall = recallDates.value.find(d =>
+      moment(d.startTime).isSame(newDate, 'day'),
+    )
+    recallId.value = recall?.id ?? ''
+  },
+  { immediate: true },
+)
 </script>
 <style scoped lang="scss">
 .total-energy-container {
@@ -110,6 +123,11 @@ watch(date, newDate => {
   background: rgba(241, 241, 241, 0.5);
   padding: 1rem;
   font-weight: 500;
+}
+
+.timeline {
+  max-height: 50vh;
+  overflow-y: scroll;
 }
 
 .grid-container {
