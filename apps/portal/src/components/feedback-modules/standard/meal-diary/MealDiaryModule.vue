@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="pa-4">
-    <p v-show="false">{{ recallQueryData }}</p>
+    <p v-show="false">{{ recallData }}</p>
     <div>
       <div class="d-flex align-center justify-space-between">
         <div class="d-flex flex-row align-center pb-5">
@@ -12,19 +12,20 @@
         </div>
         <div>
           <VueDatePicker
-            v-model="date"
+            v-if="!props.recallDate"
+            v-model="selectedDate"
             :teleport="true"
             :enable-time-picker="false"
             text-input
             format="dd/MM/yyyy"
-            :allowed-dates="allowedDates"
+            :allowed-dates="allowedStartDates"
           />
         </div>
       </div>
-      <div v-if="recallQueryData" class="timeline">
+      <div v-if="recallData" class="timeline">
         <v-timeline side="end" align="start" density="compact">
           <v-timeline-item
-            v-for="meal in recallQueryData.meals"
+            v-for="meal in recallData.meals"
             :key="meal.id"
             dot-color="orange"
             size="small"
@@ -70,15 +71,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
 import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
-import moment from 'moment'
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import { useRecallById } from '@intake24-dietician/portal/queries/useRecall'
 import VueDatePicker from '@vuepic/vue-datepicker'
-import { nextTick } from 'vue'
 import { convertTo12H, formatTime } from '@/utils/datetime'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import { watch } from 'vue'
 
 const props = defineProps<{
   recallsData?: IRecallExtended[]
@@ -87,61 +86,12 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
-// Refs
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
+const { selectedDate, allowedStartDates, recallData } = useRecallShared(props)
 
-// Computed properties
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
-
-const recallQueryData = computed(() => {
-  console.log(
-    recallQuery.data.value?.data.ok ? recallQuery.data.value?.data.value : null,
-  )
-  return recallQuery.data.value?.data.ok
-    ? recallQuery.data.value?.data.value
-    : null
-})
-
-// Watchers
 watch(
   () => props.recallDate,
   newRecallDate => {
-    date.value = newRecallDate
-  },
-  { immediate: true },
-)
-
-watch(
-  () => props.recallsData,
-  data => {
-    if (data) {
-      recallDates.value = data.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  date,
-  async newDate => {
-    await nextTick()
-    const recall = recallDates.value.find(d =>
-      moment(d.startTime).isSame(newDate, 'day'),
-    )
-    recallId.value = recall?.id ?? ''
-    recallQuery.refetch()
+    selectedDate.value = newRecallDate
   },
   { immediate: true },
 )

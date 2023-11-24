@@ -23,7 +23,7 @@
           @update:date="handleDateUpdate"
         />
       </div>
-      <div class="mt-4">
+      <div v-if="recallsQuery.data.value?.data" class="mt-4">
         <v-row>
           <v-col cols="3">
             <ModuleSelectList @update="handleModuleUpdate" />

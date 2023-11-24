@@ -1,44 +1,86 @@
 // useRecallShared.ts
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import moment from 'moment'
+import { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import { useRecallById } from '@/queries/useRecall'
 
-export default function useRecallShared<TProps extends { recallDate: Date }>(
-  props: TProps,
-  emit: (event: string, ...args: any[]) => void,
-) {
+interface Props {
+  recallsData?: IRecallExtended[] | undefined
+  recallDate?: Date | undefined
+  feedback: string
+}
+
+export default function useRecallShared({ recallsData, recallDate }: Props) {
+  // Refs
   const recallId = ref('')
-  const date = ref<Date>()
+  const recallQuery = useRecallById(recallId)
+  const selectedDate = ref<Date>()
   const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 
-  const allowedDates = computed(() => {
-    return recallDates.value.map(date => date.startTime)
+  // Computed
+  const allowedStartDates = computed(() =>
+    recallDates.value.map(date => date.startTime),
+  )
+
+  const recallData = computed(() => {
+    return recallQuery.data.value?.data.ok
+      ? recallQuery.data.value?.data.value
+      : null
   })
 
+  const updateRecallData = async (newDate: Date) => {
+    await nextTick()
+    const matchingRecall = recallDates.value.find(range =>
+      moment(range.startTime).isSame(newDate, 'day'),
+    )
+
+    if (matchingRecall) {
+      recallId.value = matchingRecall.id
+      recallQuery.refetch()
+    }
+  }
+
+  const initializeRecallDates = (recalls: IRecallExtended[]) => {
+    recallDates.value = recalls.map(({ id, startTime, endTime }) => ({
+      id,
+      startTime,
+      endTime,
+    }))
+    selectedDate.value = recallDates.value.at(-1)?.startTime
+  }
+
   watch(
-    () => props.recallDate,
+    () => recallDate,
     newRecallDate => {
-      date.value = newRecallDate
+      selectedDate.value = newRecallDate
     },
     { immediate: true },
   )
 
   watch(
-    date,
+    selectedDate,
     async newDate => {
-      const recall = recallDates.value.find(d =>
-        moment(d.startTime).isSame(newDate, 'day'),
-      )
-      recallId.value = recall?.id ?? ''
-      // Replace with the actual refetch method you have in your components
-      emit('refetch', recallId.value)
+      if (newDate) {
+        updateRecallData(newDate)
+      }
+    },
+    { immediate: true },
+  )
+
+  watch(
+    () => recallsData,
+    newRecallsData => {
+      if (newRecallsData) {
+        initializeRecallDates(newRecallsData)
+      }
     },
     { immediate: true },
   )
 
   return {
-    recallId,
-    date,
-    recallDates,
-    allowedDates,
+    selectedDate,
+    allowedStartDates,
+    recallQuery,
+    recallData,
   }
 }

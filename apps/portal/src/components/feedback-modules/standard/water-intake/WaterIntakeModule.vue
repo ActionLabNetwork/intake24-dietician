@@ -10,12 +10,13 @@
       </div>
       <div>
         <VueDatePicker
-          v-model="date"
+          v-if="!props.recallDate"
+          v-model="selectedDate"
           :teleport="true"
           :enable-time-picker="false"
           text-input
           format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
+          :allowed-dates="allowedStartDates"
         />
       </div>
     </div>
@@ -39,7 +40,6 @@
             <div class="ml-4">
               <p class="font-weight-bold">
                 Well done meeting your daily water intake.
-                {{ totalWaterIntake }}
               </p>
               <p class="font-weight-medium">
                 <span class="value-text" :style="textStyle">
@@ -67,17 +67,23 @@
         </div>
       </div>
     </div>
+    <v-divider class="my-10"></v-divider>
+    <FeedbackTextArea
+      :feedback="feedback"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
+import {
+  IRecallExtended,
+  IRecallMeal,
+} from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
 import {
   DAILY_WATER_AMOUNT,
   NUMBER_OF_GLASSES,
@@ -87,20 +93,23 @@ import Logo from '@/components/feedback-modules/standard/water-intake/svg/Logo.v
 import Mascot from '@/components/feedback-modules/standard/water-intake/svg/Mascot.vue'
 import MascotSad from '@/components/feedback-modules/standard/water-intake/svg/MascotSad.vue'
 // import MascotHalf from '@/components/feedback-modules/standard/water-intake/svg/MascotHalf.vue'
+import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import MascotWithBackground from '@/components/feedback-modules/standard/water-intake/svg/MascotWithBackground.vue'
 import chroma from 'chroma-js'
-// import { MealCardProps } from './MealCard.vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 
-const recallsQuery = useRecallsByUserId(ref('4072'))
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
+const props = defineProps<{
+  recallsData?: IRecallExtended[]
+  recallDate?: Date
+  feedback: string
+}>()
+const emit = defineEmits<{
+  'update:feedback': [feedback: string]
+}>()
+
+const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+
 const totalWaterIntake = ref(0)
-
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
 
 const actualToRecommendedProportion = computed(() => {
   return Math.floor(
@@ -118,13 +127,13 @@ const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
+watch(
+  () => props.recallDate,
+  newRecallDate => {
+    selectedDate.value = newRecallDate
+  },
+  { immediate: true },
+)
 
 watch(
   () => recallQuery.data.value?.data,
@@ -165,23 +174,6 @@ watch(
           return totalEnergy + calculateMealWaterContent(meal)
         }, 0),
       )
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  () => recallsQuery.data.value?.data,
-  data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
     }
   },
   { immediate: true },

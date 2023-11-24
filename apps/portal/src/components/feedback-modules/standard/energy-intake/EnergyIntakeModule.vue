@@ -11,12 +11,12 @@
       <div>
         <VueDatePicker
           v-if="!props.recallDate"
-          v-model="date"
+          v-model="selectedDate"
           :teleport="true"
           :enable-time-picker="false"
           text-input
           format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
+          :allowed-dates="allowedStartDates"
         />
       </div>
     </div>
@@ -55,12 +55,11 @@
 <script setup lang="ts">
 import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import { useRecallById } from '@/queries/useRecall'
 import {
   IRecallExtended,
   IRecallMeal,
 } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive, nextTick } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
@@ -70,11 +69,11 @@ import MealCard, {
 } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 
 const props = defineProps<{
   recallsData?: IRecallExtended[]
@@ -85,19 +84,12 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
+const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+
 // Refs
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
 const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-
-// Computed properties
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -158,20 +150,7 @@ const calculateMealEnergy = (meal: IRecallMeal) => {
 watch(
   () => props.recallDate,
   newRecallDate => {
-    date.value = newRecallDate
-  },
-  { immediate: true },
-)
-
-watch(
-  date,
-  async newDate => {
-    await nextTick()
-    const recall = recallDates.value.find(d =>
-      moment(d.startTime).isSame(newDate, 'day'),
-    )
-    recallId.value = recall?.id ?? ''
-    recallQuery.refetch()
+    selectedDate.value = newRecallDate
   },
   { immediate: true },
 )
@@ -192,23 +171,6 @@ watch(
       totalEnergy.value = data.value.meals.reduce((totalEnergy, meal) => {
         return totalEnergy + calculateMealEnergy(meal)
       }, 0)
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  () => props.recallsData,
-  data => {
-    if (data) {
-      recallDates.value = data.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
     }
   },
   { immediate: true },

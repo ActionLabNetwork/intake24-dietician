@@ -10,12 +10,12 @@
       </div>
       <div v-if="!props.recallDate">
         <VueDatePicker
-          v-model="date"
+          v-model="selectedDate"
           :teleport="true"
           :enable-time-picker="false"
           text-input
           format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
+          :allowed-dates="allowedStartDates"
         />
       </div>
     </div>
@@ -51,12 +51,11 @@
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
-import { useRecallById } from '@/queries/useRecall'
 import {
   IRecallExtended,
   IRecallMeal,
 } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
@@ -66,12 +65,11 @@ import CarbsExchangeCard, {
 } from '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import { nextTick } from 'vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 
 const props = defineProps<{
   recallsData?: IRecallExtended[]
@@ -80,19 +78,12 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
+const { selectedDate, recallQuery, allowedStartDates } = useRecallShared(props)
+
 // Refs
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
 const totalCarbs = ref(0)
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 const colorPalette = ref<string[]>([])
 let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
-
-// Computed properties
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -139,7 +130,7 @@ const calculateMealCarbsExchange = (meal: IRecallMeal) => {
 watch(
   () => props.recallDate,
   newRecallDate => {
-    date.value = newRecallDate
+    selectedDate.value = newRecallDate
   },
   { immediate: true },
 )
@@ -163,39 +154,6 @@ watch(
           return totalCarbs + calculateMealCarbsExchange(meal)
         }, 0),
       )
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  () => props.recallsData,
-  data => {
-    if (data) {
-      recallDates.value = data.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  date,
-  async newDate => {
-    await nextTick()
-    const recall = recallDates.value.find(d =>
-      moment(d.startTime).isSame(newDate, 'day'),
-    )
-
-    if (recall) {
-      recallId.value = recall.id ?? ''
-      recallQuery.refetch()
     }
   },
   { immediate: true },

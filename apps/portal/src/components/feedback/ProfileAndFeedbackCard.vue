@@ -44,11 +44,11 @@
         <!-- Action buttons -->
         <div>
           <v-btn
-            append-icon="mdi-eye-off-outline"
+            append-icon="mdi-eye-outline"
             class="text-capitalize"
             variant="text"
           >
-            Hide / Preview
+            Preview
           </v-btn>
           <v-btn class="text-none ml-8" color="#F1F1F1" flat>
             Save as draft

@@ -10,12 +10,12 @@
       </div>
       <div>
         <VueDatePicker
-          v-model="date"
+          v-model="selectedDate"
           :teleport="true"
           :enable-time-picker="false"
           text-input
           format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
+          :allowed-dates="allowedStartDates"
         />
       </div>
     </div>
@@ -38,43 +38,47 @@
         :hide-slider="true"
       ></BaseTabs>
     </div>
-    <!-- <div v-if="mealCards" class="mt-4">
-      <PieChartSection :meals="mealCards" :colors="colorPalette" />
-    </div> -->
-
-    <v-divider class="my-6" />
+    <v-divider class="my-10"></v-divider>
+    <FeedbackTextArea
+      :feedback="props.feedback"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive, markRaw } from 'vue'
+import {
+  IRecallExtended,
+  IRecallMeal,
+} from '@intake24-dietician/common/types/recall'
+import { ref, watch, reactive, markRaw } from 'vue'
 import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from './PieChartSection.vue'
 import TimelineSection from './TimelineSection.vue'
 import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const props = defineProps<{
+  recallsData?: IRecallExtended[]
+  recallDate?: Date
+  feedback: string
+}>()
+const emit = defineEmits<{
+  'update:feedback': [feedback: string]
+}>()
+
+const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+
 const totalEnergy = ref(0)
-
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<FibreIntakeProps, 'colors'>>>({})
-
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
 
 const tabs = ref([
   {
@@ -111,6 +115,14 @@ const tabs = ref([
     },
   },
 ])
+
+watch(
+  () => props.recallDate,
+  newRecallDate => {
+    selectedDate.value = newRecallDate
+  },
+  { immediate: true },
+)
 
 watch(
   () => recallQuery.data.value?.data,
@@ -166,32 +178,6 @@ watch(
           return totalEnergy + calculateMealCarbsExchange(meal)
         }, 0),
       )
-    }
-  },
-  { immediate: true },
-)
-
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
-
-watch(
-  () => recallsQuery.data.value?.data,
-  data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
     }
   },
   { immediate: true },
