@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="isProfileLoading" align="center">
+<v-main v-if="isProfileLoading" align="center">
     <v-container>
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>

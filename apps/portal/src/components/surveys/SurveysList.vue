@@ -8,7 +8,7 @@
       <v-text-field
         v-model="search"
         prepend-inner-icon="mdi-magnify"
-        label="Search patient..."
+        label="Search surveys..."
         variant="outlined"
         hide-details
         single-line
@@ -26,7 +26,7 @@
       class="elevation-1"
     >
       <template v-slot:headers="{ columns, isSorted, toggleSort, sortBy }">
-        <tr>
+        <tr class="table-header">
           <template v-for="column in columns" :key="column.key">
             <td>
               <div
@@ -226,12 +226,13 @@ watch(
 .table-header {
   cursor: pointer;
   color: #555555;
+  background-color: #FCFAF7;
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */
 }
 
 .v-data-table td {
-  padding: 1rem 2rem !important;
+  padding: 1rem 0.3rem !important;
 }
 </style>
