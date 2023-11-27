@@ -8,7 +8,7 @@
     >
       <div>{{ label }}</div>
       <div
-        class="carb-counter"
+        class="nutrient-counter"
         :style="{
           background: chroma(colors.backgroundColor).darken().saturate(4).hex(),
         }"
@@ -19,7 +19,7 @@
     <div
       v-for="food in props.foods"
       :key="food.name"
-      class="energy-value d-flex"
+      class="nutrient-value d-flex"
       :style="{
         border: `1px solid ${colors.valueCardBorderColor}`,
         background:
@@ -35,7 +35,8 @@
         <p>{{ food.name }}</p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
-            <Mascot
+            <component
+              :is="mascot"
               :fill="
                 chroma(colors.valueCardBgColor).darken(1).saturate(5).hex()
               "
@@ -48,11 +49,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
+import { computed, type Component } from 'vue'
 import chroma from 'chroma-js'
 
-export interface CarbsExchangeProps {
+export interface Props {
   label: string
   colors: {
     backgroundColor: string
@@ -63,9 +63,10 @@ export interface CarbsExchangeProps {
     name: string
     value: number
   }[]
+  mascot: Component
 }
 
-const props = defineProps<CarbsExchangeProps>()
+const props = defineProps<Props>()
 
 const totalExchange = computed(() => {
   return props.foods.reduce((acc, curr) => acc + curr.value, 0)
@@ -79,13 +80,13 @@ const totalExchange = computed(() => {
   height: 100%;
 }
 
-.energy-value {
+.nutrient-value {
   border-radius: 8px;
   margin-top: 1rem;
   padding: 1rem;
 }
 
-.carb-counter {
+.nutrient-counter {
   display: flex;
   border-radius: 50%;
   width: 60px;

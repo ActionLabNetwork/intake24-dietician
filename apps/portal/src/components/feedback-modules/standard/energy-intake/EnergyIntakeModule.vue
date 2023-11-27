@@ -1,31 +1,23 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
-        <div class="ml-4 font-weight-medium">Energy Intake</div>
-      </div>
-      <div>
-        <VueDatePicker
-          v-if="!props.recallDate"
-          v-model="selectedDate"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedStartDates"
-        />
-      </div>
-    </div>
-    <div class="mt-6 total-energy-container">
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Carbs Exchange"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
+    <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
-    </div>
+    </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
+        <!-- Loading state -->
         <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+        <!-- Error state -->
         <div v-if="recallQuery.isError.value" class="mt-10">
           <v-alert
             type="error"
@@ -33,6 +25,7 @@
             text="Please try again later."
           ></v-alert>
         </div>
+        <!-- Success state -->
         <div v-for="(meal, key, index) in mealCards" v-else :key="key">
           <MealCard
             :src="meal.src"
@@ -55,6 +48,8 @@
 <script setup lang="ts">
 import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import {
   IRecallExtended,
   IRecallMeal,
@@ -67,7 +62,6 @@ import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
 import MealCard, {
   MealCardProps,
 } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'

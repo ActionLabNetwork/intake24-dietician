@@ -31,6 +31,7 @@
                       v-model:model-value="element.selected"
                       class="d-flex align-center"
                       color="success"
+                      @update:model-value="emit('update:modules', items)"
                     ></v-switch>
                   </div>
                 </div>
@@ -49,7 +50,7 @@ import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import type { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
 
-interface Item {
+export interface ModuleItem {
   title: string
   value: number
   selected: boolean
@@ -58,13 +59,14 @@ interface Item {
 
 const emit = defineEmits<{
   update: [value: ModuleRoute]
+  'update:modules': [items: ModuleItem[]]
 }>()
 
 const route = useRoute()
 
 const drag = ref(false)
 
-const items = ref<Item[]>([
+const items = ref<ModuleItem[]>([
   {
     title: 'Meal diary',
     value: 1,

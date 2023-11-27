@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["esnext", "dom"],
-    "types": ["vuetify", "jest"],
+    "types": ["vuetify", "jest", "unplugin-vue-macros/macros-global"],
     "module": "esnext",
     "paths": {
       "@intake24-dietician/portal/*": ["src/*"],
@@ -20,6 +20,6 @@
     "src/**/*.tsx",
     "src/**/*.vue",
     "vite.config.ts"
-  ],
+, "src/components/feedback/feedback-builder/commit-counter.mjs"  ],
   "exclude": ["node_modules"]
 }

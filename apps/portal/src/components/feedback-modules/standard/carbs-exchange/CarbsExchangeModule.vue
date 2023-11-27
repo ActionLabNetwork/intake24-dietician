@@ -1,29 +1,22 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
-        <div class="ml-4 font-weight-medium">Carbs Exchange</div>
-      </div>
-      <div v-if="!props.recallDate">
-        <VueDatePicker
-          v-model="selectedDate"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedStartDates"
-        />
-      </div>
-    </div>
-    <div class="mt-6 total-energy-container">
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Carbs Exchange"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
+    <TotalNutrientsDisplay>
       Total carb exchanges: {{ totalCarbs }}
-    </div>
+    </TotalNutrientsDisplay>
     <div>
+      <!-- Loading state -->
       <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+      <!-- Error state -->
       <div v-if="recallQuery.isError.value" class="mt-10">
         <v-alert
           type="error"
@@ -31,12 +24,14 @@
           text="Please try again later."
         ></v-alert>
       </div>
+      <!-- Success state -->
       <div v-else class="grid-container">
         <div v-for="(meal, key, index) in mealCards" :key="key">
-          <CarbsExchangeCard
+          <DetailedCard
             :label="meal.label"
             :colors="getColours(colorPalette[index]!)"
             :foods="meal.foods"
+            :mascot="Mascot"
           />
         </div>
       </div>
@@ -44,6 +39,7 @@
     <v-divider class="my-10"></v-divider>
     <FeedbackTextArea
       :feedback="feedback"
+      :editable="feedbackEditable"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -51,6 +47,9 @@
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
+import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import DetailedCard from '../../card-styles/DetailedCard.vue'
 import {
   IRecallExtended,
   IRecallMeal,
@@ -60,22 +59,27 @@ import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
 } from '@/constants/recall'
-import CarbsExchangeCard, {
-  CarbsExchangeProps,
-} from '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import { CarbsExchangeProps } from '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 
-const props = defineProps<{
-  recallsData?: IRecallExtended[]
-  recallDate?: Date
-  feedback: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    recallsData?: IRecallExtended[]
+    recallDate?: Date
+    feedback: string
+    feedbackEditable: boolean
+  }>(),
+  {
+    feedbackEditable: true,
+  },
+)
+
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const { selectedDate, recallQuery, allowedStartDates } = useRecallShared(props)
@@ -160,14 +164,6 @@ watch(
 )
 </script>
 <style scoped lang="scss">
-.total-energy-container {
-  border-radius: 4px;
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
-  background: rgba(241, 241, 241, 0.5);
-  padding: 1rem;
-  font-weight: 500;
-}
-
 .grid-container {
   margin-top: 1rem;
   display: grid;

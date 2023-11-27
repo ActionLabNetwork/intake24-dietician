@@ -22,11 +22,20 @@
           :initial-date="date"
           @update:date="handleDateUpdate"
         />
+        <FeedbackPreview
+          v-if="selectedModules"
+          :recalls-data="selectedModules?.recallsData"
+          :recall-date="selectedModules?.recallDate"
+          :modules="selectedModules?.modules"
+        />
       </div>
       <div v-if="recallsQuery.data.value?.data" class="mt-4">
         <v-row>
           <v-col cols="3">
-            <ModuleSelectList @update="handleModuleUpdate" />
+            <ModuleSelectList
+              @update="handleModuleUpdate"
+              @update:modules="handleModulesUpdate"
+            />
           </v-col>
           <v-col cols="9">
             <component
@@ -35,7 +44,7 @@
               :recall-date="date"
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
-            ></component>
+            />
           </v-col>
         </v-row>
       </div>
@@ -44,7 +53,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { type Component, computed, ref, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -53,7 +62,9 @@ import { useRoute } from 'vue-router'
 import { usePatientById } from '@/queries/usePatients'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import ModuleSelectList from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
+import ModuleSelectList, {
+  ModuleItem,
+} from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
@@ -61,6 +72,7 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import type { ComponentMapping, ModuleRoute } from '@/types/modules.types'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
+import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 // const { t } = useI18n<i18nOptions>()
 
 const route = useRoute()
@@ -138,8 +150,32 @@ const moduleFeedbacks = ref<Record<ModuleRoute, string>>({
   '/water-intake': '',
 })
 
+const selectedModules = ref<
+  | {
+      recallsData: typeof recallsData
+      recallDate: typeof date
+      modules: { component: Component; feedback: string }[]
+    }
+  | undefined
+>(undefined)
+
 const handleModuleUpdate = (module: ModuleRoute) => {
   component.value = module
+}
+
+const handleModulesUpdate = (modules: ModuleItem[]) => {
+  selectedModules.value = {
+    recallsData: recallsData.value,
+    recallDate: date.value,
+    modules: modules
+      .filter(module => module.selected)
+      .map(module => {
+        const component = routeToModuleComponentMapping[module.to]
+        const feedback = moduleFeedbacks.value[module.to]
+
+        return { component, feedback }
+      }),
+  }
 }
 
 const handleDateUpdate = (_date: Date) => {

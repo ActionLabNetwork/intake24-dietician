@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="editable">
     <div class="font-weight-bold">
       Feedback
       <v-row class="mt-1 justify-space-between">
@@ -32,6 +32,10 @@
       </v-row>
     </div>
   </div>
+  <div v-else>
+    <div class="font-weight-bold">Feedback</div>
+    <div class="mt-1">{{ props.feedback }}</div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -39,9 +43,16 @@ import { ref, watch } from 'vue'
 import { useDebounceFn } from '@vueuse/core'
 import { INPUT_DEBOUNCE_TIME } from '@intake24-dietician/portal/constants'
 
-const props = defineProps<{
-  feedback: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    feedback: string
+    editable: boolean
+  }>(),
+  {
+    editable: true,
+  },
+)
+
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const isEditing = ref(false)
