@@ -52,7 +52,7 @@
 import { computed, type Component } from 'vue'
 import chroma from 'chroma-js'
 
-export interface Props {
+export interface DetailedCardProps {
   label: string
   colors: {
     backgroundColor: string
@@ -66,7 +66,7 @@ export interface Props {
   mascot: Component
 }
 
-const props = defineProps<Props>()
+const props = defineProps<DetailedCardProps>()
 
 const totalExchange = computed(() => {
   return props.foods.reduce((acc, curr) => acc + curr.value, 0)

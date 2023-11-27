@@ -20,7 +20,7 @@
             <v-btn variant="text" @click="dialog = false"> Close </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <div class="pl-14">
+        <div class="pl-16 ml-3">
           {{ props.modules.map(m => m.feedback) }}
           <div class="mt-10">
             <p class="text-h2 font-weight-medium">Hi Mira</p>
@@ -38,6 +38,8 @@
             :feedback="module.feedback"
             :recalls-data="recallsData"
             :recall-date="recallDate"
+            :feedback-editable="false"
+            flat
           ></component>
         </div>
       </v-card>

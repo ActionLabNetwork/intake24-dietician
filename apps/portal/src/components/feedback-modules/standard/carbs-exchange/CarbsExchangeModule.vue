@@ -49,7 +49,9 @@
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import DetailedCard from '../../card-styles/DetailedCard.vue'
+import DetailedCard, {
+  type DetailedCardProps,
+} from '../../card-styles/DetailedCard.vue'
 import {
   IRecallExtended,
   IRecallMeal,
@@ -59,7 +61,6 @@ import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
 } from '@/constants/recall'
-import { CarbsExchangeProps } from '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
@@ -87,7 +88,7 @@ const { selectedDate, recallQuery, allowedStartDates } = useRecallShared(props)
 // Refs
 const totalCarbs = ref(0)
 const colorPalette = ref<string[]>([])
-let mealCards = reactive<Record<string, Omit<CarbsExchangeProps, 'colors'>>>({})
+let mealCards = reactive<Record<string, Omit<DetailedCardProps, 'colors'>>>({})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -125,6 +126,7 @@ const calculateMealCarbsExchange = (meal: IRecallMeal) => {
       name: f['englishName'],
       value: Math.floor(calculateFoodCarbsExchange(f as any)),
     })),
+    mascot: Mascot,
   }
 
   return mealCarbsExchange
