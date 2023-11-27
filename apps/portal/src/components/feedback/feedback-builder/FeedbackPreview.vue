@@ -20,17 +20,16 @@
             <v-btn variant="text" @click="dialog = false"> Close </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <div class="pl-16 ml-3">
-          {{ props.modules.map(m => m.feedback) }}
+        <div class="pl-16 mt-16">
           <div class="mt-10">
-            <p class="text-h2 font-weight-medium">Hi Mira</p>
+            <p class="text-h2 font-weight-medium">Hi {{ patientName }}</p>
             <p class="w-50 mt-4">
               Great job on completing your recall. Below, you can find a quick
               feedback based on your recall data submitted on Aug 1, 2023
             </p>
           </div>
         </div>
-        <div v-if="modules && modules.length > 0" class="pa-14">
+        <div v-if="modules && modules.length > 0" class="mt-10">
           <component
             :is="module.component"
             v-for="(module, index) in modules"
@@ -39,7 +38,10 @@
             :recalls-data="recallsData"
             :recall-date="recallDate"
             :feedback-editable="false"
+            mode="preview"
             flat
+            style="background-color: #08401f"
+            class="pa-14"
           ></component>
         </div>
       </v-card>
@@ -52,6 +54,7 @@ import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { type Component, ref, computed, watchEffect } from 'vue'
 
 interface Props {
+  patientName: string
   recallsData: IRecallExtended[]
   recallDate: Date
   modules: { component: Component; feedback: string }[]

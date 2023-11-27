@@ -1,7 +1,11 @@
 <template>
   <div class="wrapper">
     <v-container>
-      {{ moduleFeedbacks }}
+      {{
+        Object.entries(routeToModuleComponentMapping).map(([k, v]) => ({
+          [k]: v.feedback,
+        }))
+      }}
       <div>
         <v-btn
           prepend-icon="mdi-chevron-left"
@@ -27,6 +31,7 @@
           :recalls-data="selectedModules?.recallsData"
           :recall-date="selectedModules?.recallDate"
           :modules="selectedModules?.modules"
+          :patient-name="fullName"
         />
       </div>
       <div v-if="recallsQuery.data.value?.data" class="mt-4">
@@ -39,7 +44,7 @@
           </v-col>
           <v-col cols="9">
             <component
-              :is="routeToModuleComponentMapping[component]"
+              :is="routeToModuleComponentMapping[component].component"
               :recalls-data="recallsData"
               :recall-date="date"
               :feedback="moduleFeedback"
@@ -53,7 +58,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type Component, computed, ref, watch } from 'vue'
+import { type Component, computed, ref, watch, reactive } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -87,7 +92,7 @@ const component = ref<ModuleRoute>('/meal-diary')
 
 // Computed properties
 const moduleFeedback = computed(() => {
-  return moduleFeedbacks.value[component.value]
+  return routeToModuleComponentMapping[component.value].feedback
 })
 const recallDates = computed(() => {
   const data = recallsQuery.data.value?.data
@@ -134,27 +139,19 @@ const recallsData = computed(() => {
     ? recallsQuery.data.value?.data.value
     : []
 })
-const routeToModuleComponentMapping: ComponentMapping = {
-  '/meal-diary': MealDiaryModule,
-  '/carbs-exchange': CarbsExchangeModule,
-  '/energy-intake': EnergyIntakeModule,
-  '/fibre-intake': FibreIntakeModule,
-  '/water-intake': WaterIntakeModule,
-}
-
-const moduleFeedbacks = ref<Record<ModuleRoute, string>>({
-  '/meal-diary': '',
-  '/carbs-exchange': '',
-  '/energy-intake': '',
-  '/fibre-intake': '',
-  '/water-intake': '',
+const routeToModuleComponentMapping: ComponentMapping = reactive({
+  '/meal-diary': { component: MealDiaryModule, feedback: '' },
+  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
+  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
+  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
+  '/water-intake': { component: WaterIntakeModule, feedback: '' },
 })
 
 const selectedModules = ref<
   | {
       recallsData: typeof recallsData
       recallDate: typeof date
-      modules: { component: Component; feedback: string }[]
+      modules: { key: ModuleRoute; component: Component; feedback: string }[]
     }
   | undefined
 >(undefined)
@@ -170,10 +167,11 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     modules: modules
       .filter(module => module.selected)
       .map(module => {
-        const component = routeToModuleComponentMapping[module.to]
-        const feedback = moduleFeedbacks.value[module.to]
+        const key = module.to
+        const component = routeToModuleComponentMapping[module.to].component
+        const feedback = routeToModuleComponentMapping[module.to].feedback
 
-        return { component, feedback }
+        return { key, component, feedback }
       }),
   }
 }
@@ -183,11 +181,13 @@ const handleDateUpdate = (_date: Date) => {
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
-  console.log({ feedback })
-  moduleFeedbacks.value[component.value] = feedback
-}
+  routeToModuleComponentMapping[component.value].feedback = feedback
 
-watch(moduleFeedbacks, console.log, { deep: true })
+  if (!selectedModules.value) return
+  selectedModules.value.modules.find(
+    module => module.key === component.value,
+  )!.feedback = feedback
+}
 
 watch(
   () => recallsQuery.data.value?.data,

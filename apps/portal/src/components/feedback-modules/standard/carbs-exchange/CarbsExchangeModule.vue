@@ -1,6 +1,7 @@
+<!-- eslint-disable vue/no-duplicate-attributes -->
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4">
+  <v-card class="pa-4" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle
       v-if="props.recallDate && selectedDate"
       :logo="Logo"
@@ -8,6 +9,7 @@
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
+      :class="{ 'text-white': mode === 'preview' }"
       @update:selected-date="selectedDate = $event"
     />
     <TotalNutrientsDisplay>
@@ -36,7 +38,12 @@
         </div>
       </div>
     </div>
-    <v-divider class="my-10"></v-divider>
+
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
     <FeedbackTextArea
       :feedback="feedback"
       :editable="feedbackEditable"
@@ -75,9 +82,11 @@ const props = withDefaults(
     recallDate?: Date
     feedback: string
     feedbackEditable: boolean
+    mode: 'preview' | 'edit'
   }>(),
   {
     feedbackEditable: true,
+    mode: 'edit',
   },
 )
 

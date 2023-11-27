@@ -21,7 +21,6 @@
       :key="food.name"
       class="nutrient-value d-flex"
       :style="{
-        border: `1px solid ${colors.valueCardBorderColor}`,
         background:
           food.value > 0
             ? colors.valueCardBgColor

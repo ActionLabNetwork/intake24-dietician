@@ -8,7 +8,7 @@
 .total-container {
   border-radius: 4px;
   border: 0.5px solid rgba(0, 0, 0, 0.25);
-  background: rgba(241, 241, 241, 0.5);
+  background: #f1f1f1;
   padding: 1rem;
   font-weight: 500;
 }
