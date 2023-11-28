@@ -1,4 +1,14 @@
+import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
+
+export interface FeedbackModulesProps {
+  recallsData?: IRecallExtended[]
+  recallDate?: Date
+  feedback: string
+  mode: 'preview' | 'edit'
+  mainBgColor: string
+  feedbackBgColor: string
+}
 
 const modules = [
   'meal-diary',

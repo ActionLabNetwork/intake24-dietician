@@ -5,7 +5,7 @@
   >
     <div class="d-flex align-center mb-5 mb-sm-0">
       <v-img :src="logo" :width="90" aspect-ratio="16/9"></v-img>
-      <div class="ml-4 font-weight-medium">Carbs Exchange</div>
+      <div class="ml-4 font-weight-medium">{{ title }}</div>
     </div>
     <div>
       <VueDatePicker

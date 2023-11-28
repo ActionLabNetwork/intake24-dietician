@@ -4,7 +4,7 @@
     <ModuleTitle
       v-if="props.recallDate && selectedDate"
       :logo="Logo"
-      title="Carbs Exchange"
+      title="Energy intake"
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
@@ -37,9 +37,16 @@
         </div>
       </div>
     </div>
-    <v-divider class="my-10"></v-divider>
+
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
     <FeedbackTextArea
-      :feedback="props.feedback"
+      :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bgColor="feedbackBgColor"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -50,10 +57,7 @@ import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import {
-  IRecallExtended,
-  IRecallMeal,
-} from '@intake24-dietician/common/types/recall'
+import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
@@ -68,12 +72,14 @@ import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const props = defineProps<{
-  recallsData?: IRecallExtended[]
-  recallDate?: Date
-  feedback: string
-}>()
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+})
+
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()

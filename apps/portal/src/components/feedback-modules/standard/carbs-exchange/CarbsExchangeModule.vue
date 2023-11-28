@@ -46,7 +46,7 @@
     <!-- Feedback -->
     <FeedbackTextArea
       :feedback="feedback"
-      :editable="feedbackEditable"
+      :editable="mode === 'edit'"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -59,10 +59,7 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
 } from '../../card-styles/DetailedCard.vue'
-import {
-  IRecallExtended,
-  IRecallMeal,
-} from '@intake24-dietician/common/types/recall'
+import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
@@ -75,20 +72,13 @@ import BaseProgressCircular from '@intake24-dietician/portal/components/common/B
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const props = withDefaults(
-  defineProps<{
-    recallsData?: IRecallExtended[]
-    recallDate?: Date
-    feedback: string
-    feedbackEditable: boolean
-    mode: 'preview' | 'edit'
-  }>(),
-  {
-    feedbackEditable: true,
-    mode: 'edit',
-  },
-)
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+})
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 

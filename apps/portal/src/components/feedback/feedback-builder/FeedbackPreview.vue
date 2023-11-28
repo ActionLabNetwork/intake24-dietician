@@ -37,11 +37,22 @@
             :feedback="module.feedback"
             :recalls-data="recallsData"
             :recall-date="recallDate"
-            :feedback-editable="false"
             mode="preview"
             flat
-            style="background-color: #08401f"
             class="pa-14"
+            :style="{
+              'background-color':
+                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                  .mainBackground,
+            }"
+            :mainBgColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                .mainBackground
+            "
+            :feedbackBgColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                .feedbackBackground
+            "
           ></component>
         </div>
       </v-card>
@@ -50,14 +61,16 @@
 </template>
 
 <script setup lang="ts">
+import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { type Component, ref, computed, watchEffect } from 'vue'
+import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
 
 interface Props {
   patientName: string
   recallsData: IRecallExtended[]
   recallDate: Date
-  modules: { component: Component; feedback: string }[]
+  modules: { key: ModuleRoute; component: Component; feedback: string }[]
 }
 
 const props = defineProps<Props>()

@@ -33,7 +33,11 @@
     </div>
   </div>
   <div v-else>
-    <v-card class="pa-4 d-flex align-center" elevation="2">
+    <v-card
+      class="pa-4 d-flex align-center"
+      elevation="2"
+      :style="{ 'background-color': bgColor }"
+    >
       <div class="mr-4">
         <v-avatar size="x-large" :image="avatar" />
       </div>
@@ -56,9 +60,11 @@ const props = withDefaults(
   defineProps<{
     feedback: string
     editable: boolean
+    bgColor: string
   }>(),
   {
     editable: true,
+    bgColor: '#fff',
   },
 )
 
