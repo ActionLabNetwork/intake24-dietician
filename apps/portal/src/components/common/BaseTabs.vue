@@ -1,6 +1,7 @@
 <template>
   <div>
     <v-tabs
+      v-show="showTabs"
       v-model="activeTab"
       :align-tabs="align"
       :hide-slider="hideSlider ?? false"
@@ -42,13 +43,17 @@ interface Tab {
   style?: Record<string, string>
 }
 
-defineProps<{
-  tabs: Tab[]
-  align?: 'start' | 'center' | 'end'
-  hideSlider?: boolean
-  tabStyle?: Record<string, string>
-  activeTabStyle?: Record<string, string>
-}>()
+withDefaults(
+  defineProps<{
+    tabs: Tab[]
+    align?: 'start' | 'center' | 'end'
+    hideSlider?: boolean
+    tabStyle?: Record<string, string>
+    activeTabStyle?: Record<string, string>
+    showTabs: boolean
+  }>(),
+  { showTabs: true },
+)
 
 const activeTab = ref(0)
 </script>

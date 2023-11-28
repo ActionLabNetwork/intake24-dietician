@@ -8,7 +8,7 @@
         <Logo />
         <div class="ml-4 font-weight-medium">Fibre Intake</div>
       </div>
-      <div>
+      <div v-if="!props.recallDate">
         <VueDatePicker
           v-model="selectedDate"
           :teleport="true"
@@ -36,21 +36,26 @@
         }"
         align="center"
         :hide-slider="true"
-      ></BaseTabs>
+        :show-tabs="mode === 'edit'"
+      />
     </div>
-    <v-divider class="my-10"></v-divider>
+
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
     <FeedbackTextArea
-      :feedback="props.feedback"
+      :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bgColor="feedbackBgColor"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import {
-  IRecallExtended,
-  IRecallMeal,
-} from '@intake24-dietician/common/types/recall'
+import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive, markRaw } from 'vue'
 import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
@@ -63,12 +68,13 @@ import TimelineSection from './TimelineSection.vue'
 import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const props = defineProps<{
-  recallsData?: IRecallExtended[]
-  recallDate?: Date
-  feedback: string
-}>()
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+})
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
