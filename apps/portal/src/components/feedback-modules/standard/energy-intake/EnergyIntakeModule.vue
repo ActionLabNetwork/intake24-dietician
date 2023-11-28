@@ -47,6 +47,7 @@
       :feedback="feedback"
       :editable="mode === 'edit'"
       :bgColor="feedbackBgColor"
+      :text-color="feedbackTextColor"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -78,6 +79,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
 })
 
 const emit = defineEmits<{

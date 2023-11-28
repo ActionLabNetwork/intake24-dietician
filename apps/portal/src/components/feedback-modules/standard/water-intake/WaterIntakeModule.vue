@@ -1,25 +1,15 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <Logo />
-        <div class="ml-4 font-weight-medium">Water Intake</div>
-      </div>
-      <div>
-        <VueDatePicker
-          v-if="!props.recallDate"
-          v-model="selectedDate"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedStartDates"
-        />
-      </div>
-    </div>
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Water intake"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
     <div>
       <BaseProgressCircular v-if="recallQuery.isLoading.value" />
       <div v-if="recallQuery.isError.value" class="mt-10">
@@ -30,10 +20,10 @@
         ></v-alert>
       </div>
       <div v-else>
-        <div class="mt-6 total-energy-container">
+        <TotalNutrientsDisplay>
           Based on your weight, recommended daily water intake is: 8 glasses /
           1.8 liters
-        </div>
+        </TotalNutrientsDisplay>
         <div class="d-flex justify-space-between align-center background mt-3">
           <div class="pa-2 d-flex align-center">
             <MascotWithBackground />
@@ -67,9 +57,17 @@
         </div>
       </div>
     </div>
-    <v-divider class="my-10"></v-divider>
+
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
     <FeedbackTextArea
       :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bg-color="feedbackBgColor"
+      :text-color="feedbackTextColor"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -77,12 +75,10 @@
 
 <script setup lang="ts">
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import {
-  IRecallExtended,
-  IRecallMeal,
-} from '@intake24-dietician/common/types/recall'
+import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import {
   DAILY_WATER_AMOUNT,
@@ -97,12 +93,14 @@ import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextA
 import MascotWithBackground from '@/components/feedback-modules/standard/water-intake/svg/MascotWithBackground.vue'
 import chroma from 'chroma-js'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const props = defineProps<{
-  recallsData?: IRecallExtended[]
-  recallDate?: Date
-  feedback: string
-}>()
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
+})
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
@@ -141,9 +139,6 @@ watch(
     // TODO: Improve typings, remove uses of any
 
     const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
-      // Mock water data for testing
-      // const randomNumber = Math.floor(Math.random() * 10) // Generates a random number from 0 to 500
-
       return food.nutrients.reduce(
         (
           total: number,
@@ -154,9 +149,9 @@ watch(
               ? nutrient.amount
               : 0
 
-          return total + amount + 2
+          return total + amount
         },
-        2,
+        0,
       )
     }
 
@@ -180,14 +175,6 @@ watch(
 )
 </script>
 <style scoped lang="scss">
-.total-energy-container {
-  border-radius: 4px;
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
-  background: rgba(241, 241, 241, 0.5);
-  padding: 1rem;
-  font-weight: 500;
-}
-
 .flex-container {
   display: flex;
   gap: 1.5rem;

@@ -194,7 +194,7 @@ const handleFeedbackUpdate = (feedback: string) => {
 
 const handlePreviewButtonClick = () => {
   if (!selectedModules.value || selectedModules.value.modules.length === 0) {
-    $toast.error('Please select at least one module to preview')
+    $toast.warning('Please select at least one module to preview')
     return
   }
   previewDialog.value = true

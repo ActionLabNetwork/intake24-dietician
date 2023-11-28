@@ -36,7 +36,7 @@
     <v-card
       class="pa-4 d-flex align-center"
       elevation="2"
-      :style="{ 'background-color': bgColor }"
+      :style="{ 'background-color': bgColor, color: textColor }"
     >
       <div class="mr-4">
         <v-avatar size="x-large" :image="avatar" />
@@ -61,10 +61,12 @@ const props = withDefaults(
     feedback: string
     editable: boolean
     bgColor: string
+    textColor: string
   }>(),
   {
     editable: true,
     bgColor: '#fff',
+    textColor: '#000',
   },
 )
 

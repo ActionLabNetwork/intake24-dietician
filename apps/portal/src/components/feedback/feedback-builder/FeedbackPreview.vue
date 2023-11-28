@@ -17,7 +17,7 @@
           </v-toolbar-items>
         </v-toolbar>
         <div class="text-wrapper">
-          <div class="mt-10">
+          <div class="mt-8">
             <p class="text-h2 font-weight-medium">Hi {{ patientName }}</p>
             <p class="w-50 mt-4">
               Great job on completing your recall. Below, you can find a quick
@@ -46,8 +46,12 @@
                 .mainBackground
             "
             :feedbackBgColor="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
-                .feedbackBackground
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
+                .background
+            "
+            :feedbackTextColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
+                .color
             "
           ></component>
         </div>

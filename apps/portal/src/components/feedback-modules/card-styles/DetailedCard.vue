@@ -31,7 +31,11 @@
       }"
     >
       <div>
-        <p>{{ food.name }} ({{ usePrecision(food.servingWeight, 2) }}g)</p>
+        <p>
+          {{ food.name }} ({{
+            usePrecision(parseFloat(food.servingWeight), 2)
+          }}g)
+        </p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
             <component

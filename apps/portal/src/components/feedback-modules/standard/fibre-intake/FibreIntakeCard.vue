@@ -19,7 +19,13 @@
         >
           <div class="w-100">
             <div class="d-flex justify-space-between">
-              <div>{{ food.name }}</div>
+              <div>
+                <p>
+                  {{ food.name }} ({{
+                    usePrecision(parseFloat(food.servingWeight), 2)
+                  }}g)
+                </p>
+              </div>
               <div class="font-weight-bold">{{ food.value }}g</div>
             </div>
           </div>
@@ -32,6 +38,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import chroma from 'chroma-js'
+import { usePrecision } from '@vueuse/math'
 
 export interface FibreIntakeProps {
   label: string
@@ -42,7 +49,11 @@ export interface FibreIntakeProps {
     valueCardBgColor: string
     valueCardBorderColor: string
   }
-  foods: any[]
+  foods: {
+    name: string
+    value: number
+    servingWeight: string
+  }[]
 }
 
 const props = defineProps<FibreIntakeProps>()

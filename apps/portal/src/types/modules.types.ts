@@ -8,6 +8,7 @@ export interface FeedbackModulesProps {
   mode: 'preview' | 'edit'
   mainBgColor: string
   feedbackBgColor: string
+  feedbackTextColor: string
 }
 
 const modules = [

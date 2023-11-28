@@ -1,24 +1,15 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <Logo />
-        <div class="ml-4 font-weight-medium">Fibre Intake</div>
-      </div>
-      <div v-if="!props.recallDate">
-        <VueDatePicker
-          v-model="selectedDate"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedStartDates"
-        />
-      </div>
-    </div>
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Fibre intake"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
     <div v-if="mealCards" class="mt-2">
       <BaseTabs
         :tabs="tabs"
@@ -49,6 +40,7 @@
       :feedback="feedback"
       :editable="mode === 'edit'"
       :bgColor="feedbackBgColor"
+      :text-color="feedbackTextColor"
       @update:feedback="emit('update:feedback', $event)"
     />
   </v-card>
@@ -56,9 +48,9 @@
 
 <script setup lang="ts">
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw } from 'vue'
 import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
@@ -74,6 +66,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -162,6 +155,9 @@ watch(
         minutes: meal.minutes,
         foods: meal.foods.map(f => ({
           name: f['englishName'],
+          servingWeight: f['portionSizes']?.find(
+            (item: { name: string }) => item.name === 'servingWeight',
+          )?.value,
           value: Math.floor(calculateFoodCarbsExchange(f as any)),
         })),
       }
