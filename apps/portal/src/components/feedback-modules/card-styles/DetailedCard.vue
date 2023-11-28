@@ -31,7 +31,7 @@
       }"
     >
       <div>
-        <p>{{ food.name }}</p>
+        <p>{{ food.name }} ({{ usePrecision(food.servingWeight, 2) }}g)</p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
             <component
@@ -50,6 +50,7 @@
 <script setup lang="ts">
 import { computed, type Component } from 'vue'
 import chroma from 'chroma-js'
+import { usePrecision } from '@vueuse/math'
 
 export interface DetailedCardProps {
   label: string
@@ -61,6 +62,7 @@ export interface DetailedCardProps {
   foods: {
     name: string
     value: number
+    servingWeight: string
   }[]
   mascot: Component
 }

@@ -154,9 +154,9 @@ watch(
               ? nutrient.amount
               : 0
 
-          return total + amount
+          return total + amount + 2
         },
-        0,
+        2,
       )
     }
 

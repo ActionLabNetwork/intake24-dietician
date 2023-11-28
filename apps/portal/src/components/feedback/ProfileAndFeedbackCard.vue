@@ -47,6 +47,7 @@
             append-icon="mdi-eye-outline"
             class="text-capitalize"
             variant="text"
+            @click="emit('click:preview')"
           >
             Preview
           </v-btn>
@@ -75,6 +76,7 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{
   'update:date': [date: Date]
+  'click:preview': []
 }>()
 
 interface SharedItem {

@@ -13,6 +13,7 @@
     "@tanstack/vue-query": "^4.35.2",
     "@vuepic/vue-datepicker": "^7.2.0",
     "@vueuse/core": "^10.4.1",
+    "@vueuse/math": "^10.6.1",
     "axios": "^1.5.0",
     "chart.js": "^4.4.0",
     "chroma-js": "^2.4.2",

@@ -1,7 +1,13 @@
 <!-- eslint-disable vue/no-duplicate-attributes -->
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4" :class="{ 'rounded-0': mode === 'preview' }">
+  <v-card
+    class="pa-4"
+    :class="{ 'rounded-0': mode === 'preview' }"
+    :style="{
+      'background-color': bgColor,
+    }"
+  >
     <ModuleTitle
       v-if="props.recallDate && selectedDate"
       :logo="Logo"
@@ -12,6 +18,7 @@
       :class="{ 'text-white': mode === 'preview' }"
       @update:selected-date="selectedDate = $event"
     />
+
     <TotalNutrientsDisplay>
       Total carb exchanges: {{ totalCarbs }}
     </TotalNutrientsDisplay>
@@ -123,6 +130,9 @@ const calculateMealCarbsExchange = (meal: IRecallMeal) => {
     label: meal.name,
     foods: meal.foods.map(f => ({
       name: f['englishName'],
+      servingWeight: f['portionSizes']?.find(
+        (item: { name: string }) => item.name === 'servingWeight',
+      )?.value,
       value: Math.floor(calculateFoodCarbsExchange(f as any)),
     })),
     mascot: Mascot,

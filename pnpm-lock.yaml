@@ -480,6 +480,9 @@ importers:
       '@vueuse/core':
         specifier: ^10.4.1
         version: 10.4.1(vue@3.3.4)
+      '@vueuse/math':
+        specifier: ^10.6.1
+        version: 10.6.1(vue@3.3.4)
       axios:
         specifier: ^1.5.0
         version: 1.5.0
@@ -3579,6 +3582,16 @@ packages:
       - vue
     dev: true
 
+  /@vueuse/math@10.6.1(vue@3.3.4):
+    resolution: {integrity: sha512-1/aGfewEw7QZDstnPSMFoN6OMWmsbYv3mQ26cGQTboOKdqrNzAWCIn9hoc92R7vvCbkAWJgaLVJRX5odpcXzyQ==}
+    dependencies:
+      '@vueuse/shared': 10.6.1(vue@3.3.4)
+      vue-demi: 0.14.6(vue@3.3.4)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
+
   /@vueuse/metadata@10.4.1:
     resolution: {integrity: sha512-2Sc8X+iVzeuMGHr6O2j4gv/zxvQGGOYETYXEc41h0iZXIRnRbJZGmY/QP8dvzqUelf8vg0p/yEA5VpCEu+WpZg==}
     dev: false
@@ -3604,6 +3617,15 @@ packages:
       - '@vue/composition-api'
       - vue
     dev: true
+
+  /@vueuse/shared@10.6.1(vue@3.3.4):
+    resolution: {integrity: sha512-TECVDTIedFlL0NUfHWncf3zF9Gc4VfdxfQc8JFwoVZQmxpONhLxFrlm0eHQeidHj4rdTPL3KXJa0TZCk1wnc5Q==}
+    dependencies:
+      vue-demi: 0.14.6(vue@3.3.4)
+    transitivePeerDependencies:
+      - '@vue/composition-api'
+      - vue
+    dev: false
 
   /@webassemblyjs/ast@1.11.6:
     resolution: {integrity: sha512-IN1xI7PwOvLPgjcf180gC1bqn3q/QaOCwYUahIOhbYUu8KA/3tw2RT/T0Gidi1l7Hhj5D/INhJxiICObqpMu4Q==}

@@ -1,26 +1,22 @@
 <template>
   <v-row justify="center">
     <v-dialog
-      v-model="dialog"
+      v-model="localDialog"
       fullscreen
       :scrim="false"
       transition="dialog-bottom-transition"
     >
-      <template v-slot:activator="{ props }">
-        <v-btn color="primary" dark v-bind="props"> Open Dialog </v-btn>
-        <slot name="button" v-bind="props"></slot>
-      </template>
       <v-card>
         <v-toolbar dark color="primary">
-          <v-btn icon dark @click="dialog = false">
+          <v-btn icon dark @click="emit('click:close')">
             <v-icon>mdi-close</v-icon>
           </v-btn>
           <v-toolbar-title>Feedback preview</v-toolbar-title>
           <v-toolbar-items>
-            <v-btn variant="text" @click="dialog = false"> Close </v-btn>
+            <v-btn variant="text" @click="emit('click:close')"> Close </v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <div class="pl-16 mt-16">
+        <div class="text-wrapper">
           <div class="mt-10">
             <p class="text-h2 font-weight-medium">Hi {{ patientName }}</p>
             <p class="w-50 mt-4">
@@ -39,7 +35,7 @@
             :recall-date="recallDate"
             mode="preview"
             flat
-            class="pa-14"
+            class="pa-16"
             :style="{
               'background-color':
                 FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
@@ -63,7 +59,7 @@
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
-import { type Component, ref, computed, watchEffect } from 'vue'
+import { type Component, computed } from 'vue'
 import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
 
 interface Props {
@@ -71,18 +67,23 @@ interface Props {
   recallsData: IRecallExtended[]
   recallDate: Date
   modules: { key: ModuleRoute; component: Component; feedback: string }[]
+  dialog: boolean
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  'click:close': []
+}>()
 
-const selectedModules = computed(() => {
-  return props.modules.length
-})
-
-watchEffect(() => {
-  console.log(selectedModules.value)
-  console.log({ props })
-})
-
-const dialog = ref(false)
+const localDialog = computed(() => props.dialog)
 </script>
+
+<style scoped lang="scss">
+.text-wrapper {
+  padding: 0 4.5rem;
+  margin-top: 5rem;
+}
+.wrapper {
+  padding: 0 10rem;
+}
+</style>
