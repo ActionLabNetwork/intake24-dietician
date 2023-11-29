@@ -35,7 +35,7 @@
   <div v-else>
     <v-card
       class="pa-4 d-flex align-center"
-      elevation="2"
+      flat
       :style="{ 'background-color': bgColor, color: textColor }"
     >
       <div class="mr-4">
