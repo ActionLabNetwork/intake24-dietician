@@ -31,6 +31,7 @@
                       v-model:model-value="element.selected"
                       class="d-flex align-center"
                       color="success"
+                      @update:model-value="emit('update:modules', items)"
                     ></v-switch>
                   </div>
                 </div>
@@ -43,42 +44,29 @@
   </div>
 </template>
 
-<!-- <v-list-item
-                :key="element.value"
-                :title="element.title"
-                :subtitle="element.selected ? 'enabled' : 'disabled'"
-                :value="element.value"
-                :active="element.value === selectedModule"
-                rounded="xl"
-                class="ma-2"
-                @click="() => handleModuleSelect(element.title)"
-              >
-                <template v-slot:prepend>
-                  <v-icon icon="mdi-drag"></v-icon>
-                </template>
-                <template v-slot:append>
-                  <v-switch
-                    v-model:model-value="element.selected"
-                    class="d-flex align-center justify-center"
-                    color="success"
-                  ></v-switch>
-                </template>
-              </v-list-item> -->
-
 <script setup lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
+import type { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+
+export interface ModuleItem {
+  title: string
+  value: number
+  selected: boolean
+  to: ModuleRoute
+}
 
 const emit = defineEmits<{
-  update: [value: ReturnType<typeof defineComponent>]
+  update: [value: ModuleRoute]
+  'update:modules': [items: ModuleItem[]]
 }>()
 
 const route = useRoute()
 
 const drag = ref(false)
 
-const items = ref([
+const items = ref<ModuleItem[]>([
   {
     title: 'Meal diary',
     value: 1,
@@ -98,6 +86,7 @@ const items = ref([
     to: '/energy-intake',
   },
   { title: 'Fibre intake', value: 4, selected: false, to: '/fibre-intake' },
+  { title: 'Water intake', value: 5, selected: false, to: '/water-intake' },
 ])
 
 const selectedModule = ref(1)
@@ -108,13 +97,11 @@ onMounted(() => {
     items.value.find(i => i.to.includes(currentRoute))?.value ?? 1
 })
 
-const handleModuleSelect = (title: string) => {
+const handleModuleSelect = (title: ModuleRoute) => {
   const item = items.value.find(i => i.title === title)
 
   if (!item) return
   selectedModule.value = item.value
   emit('update', item.to)
 }
-
-watch(selectedModule, newVal => console.log(newVal))
 </script>

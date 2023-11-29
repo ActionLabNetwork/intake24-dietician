@@ -1,127 +1,157 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4">
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+    <p v-show="false">{{ recallData }}</p>
     <div>
-      <div class="d-flex flex-row align-center pb-5">
-        <div class="pr-3">
-          <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
+      <div class="d-flex align-center justify-space-between">
+        <div class="d-flex flex-row align-center pb-5">
+          <div class="pr-3">
+            <v-img :src="Mascot" :width="90" aspect-ratio="16/9"></v-img>
+          </div>
+          <div class="font-weight-bold text-h6">Meal Diary</div>
         </div>
-        <div class="font-weight-bold text-h6">Meal Diary</div>
+        <div>
+          <VueDatePicker
+            v-if="!props.recallDate"
+            v-model="selectedDate"
+            :teleport="true"
+            :enable-time-picker="false"
+            text-input
+            format="dd/MM/yyyy"
+            :allowed-dates="allowedStartDates"
+          />
+        </div>
       </div>
-      <v-timeline side="end" align="start" density="compact">
-        <v-timeline-item
-          v-for="(recall, i) in recalls"
-          :key="i"
-          dot-color="orange"
-          size="small"
-          width="100%"
-        >
-          <v-card>
-            <v-card-title :class="['text-h6', `bg-primary`]">
-              Recall of {{ moment(recall.startTime).format('MMMM Do YYYY') }}
-            </v-card-title>
-            <v-card-text class="bg-white text--primary pt-4" width="100%">
-              <v-expansion-panels
-                v-for="meal in recall.meals"
-                :key="meal.id"
-                class="mt-5"
-                variant="inset"
-                color="#FFBE99"
-              >
-                <v-expansion-panel>
-                  <v-expansion-panel-title color="#FFBE99">
+      <div v-if="recallData" :style="timelineStyle" class="timeline">
+        <v-timeline side="end" align="start" density="compact">
+          <v-timeline-item
+            v-for="meal in recallData.meals"
+            :key="meal.id"
+            dot-color="orange"
+            size="small"
+            width="100%"
+            class="timeline-item"
+          >
+            <v-chip variant="flat">
+              {{ convertTo12H(formatTime(meal.hours, meal.minutes)) }}
+            </v-chip>
+            <v-expansion-panels
+              v-model="openPanels"
+              class="mt-5"
+              variant="inset"
+              color="#FFBE99"
+              :readonly="mode === 'preview'"
+            >
+              <v-expansion-panel>
+                <v-expansion-panel-title color="#FFBE99">
+                  <div>
                     <div class="d-flex align-center">
-                      <v-icon icon="mdi-food-apple" start />
-                      <div class="font-weight-medium">
-                        {{ meal.name }} ({{
-                          getMealTime(meal.hours, meal.minutes)
-                        }})
+                      <div class="font-weight-medium text-h6">
+                        <p>{{ meal.name }}</p>
                       </div>
                     </div>
-                  </v-expansion-panel-title>
-                  <v-expansion-panel-text>
-                    <div class="pa-2">
-                      <div>Number of foods: {{ meal.foods }}</div>
+                    <div class="mt-4">
+                      Number of foods: {{ meal.foods.length }}
                     </div>
-                  </v-expansion-panel-text>
-                </v-expansion-panel>
-              </v-expansion-panels>
-            </v-card-text>
-          </v-card>
-        </v-timeline-item>
-      </v-timeline>
+                  </div>
+                </v-expansion-panel-title>
+                <v-expansion-panel-text
+                  v-for="(food, i) in meal.foods"
+                  :key="i"
+                >
+                  <ul class="font-weight-medium ml-4">
+                    <li>
+                      {{ `${food['englishName']} (${getServingWeight(food)})` }}
+                    </li>
+                  </ul>
+                </v-expansion-panel-text>
+              </v-expansion-panel>
+            </v-expansion-panels>
+          </v-timeline-item>
+        </v-timeline>
+      </div>
     </div>
+
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
+    <FeedbackTextArea
+      :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bg-color="feedbackBgColor"
+      :text-color="feedbackTextColor"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import { useRecallsByUserId } from '@/queries/useRecall'
-import { ref, watch, computed } from 'vue'
 import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
-import moment from 'moment'
+import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import { convertTo12H, formatTime } from '@/utils/datetime'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import { CSSProperties, computed, ref, watch } from 'vue'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import { usePrecision } from '@vueuse/math'
 
-const recallId = ref('')
-const recallsQuery = useRecallsByUserId(ref('4072'))
-
-const recalls = computed(() => {
-  return recallsQuery.data.value?.data.ok
-    ? recallsQuery.data.value?.data.value
-    : null
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
 })
 
-const getMealTime = (hours: number, minutes: number) => {
-  return (
-    hours.toString().padStart(2, '0') +
-    ':' +
-    minutes.toString().padStart(2, '0')
-  )
-}
+const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
+const { selectedDate, allowedStartDates, recallData } = useRecallShared(props)
+
+const openPanels = ref<number[]>([])
+
+const getServingWeight = (food: { [x: string]: any[] }) => {
+  const servingWeight = usePrecision(
+    parseFloat(
+      food['portionSizes']?.find(
+        (item: { name: string }) => item.name === 'servingWeight',
+      )?.value,
+    ),
+    2,
+  ).value
+  return `${servingWeight}g`
+}
 
 watch(
-  () => recallsQuery.data.value?.data,
-  data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
+  () => props.mode,
+  newMode => {
+    if (newMode === 'preview' && recallData.value) {
+      openPanels.value = recallData.value.meals.map((_, index) => index)
+    } else {
+      openPanels.value = []
     }
   },
+  { immediate: true },
 )
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-  recallId.value = recall?.id ?? ''
+const timelineStyle = computed<CSSProperties>(() => {
+  return props.mode === 'preview'
+    ? { maxHeight: 'none', overflowY: 'scroll' }
+    : { maxHeight: '50vh', overflowY: 'scroll' }
 })
+
+watch(
+  () => props.recallDate,
+  newRecallDate => {
+    selectedDate.value = newRecallDate
+  },
+  { immediate: true },
+)
 </script>
+
 <style scoped lang="scss">
-.total-energy-container {
-  border-radius: 4px;
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
-  background: rgba(241, 241, 241, 0.5);
-  padding: 1rem;
-  font-weight: 500;
-}
-
-.grid-container {
-  margin-top: 1rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 1rem;
-}
-
-.grid-item {
-  background: #ddd;
-  padding: 1rem;
-  border-radius: 10px;
+.timeline-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 </style>

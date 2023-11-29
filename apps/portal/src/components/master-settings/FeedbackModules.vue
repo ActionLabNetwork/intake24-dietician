@@ -74,7 +74,11 @@
               </div>
             </v-col>
             <v-spacer />
-            <v-col cols="12" :sm="smColOptions(fieldConfig.column)" class="self-end">
+            <v-col
+              cols="12"
+              :sm="smColOptions(fieldConfig.column)"
+              class="self-end"
+            >
               <div
                 v-if="fieldConfig.element === 'input'"
                 class="survey-id-input"
@@ -241,9 +245,6 @@ onMounted(() => {
       },
       value: '',
       column: 2,
-      onUpdate: (value: string) => {
-        console.log({ value })
-      },
     },
     themeSelector: {
       heading: { label: 'Select a theme relevant for your patients' },

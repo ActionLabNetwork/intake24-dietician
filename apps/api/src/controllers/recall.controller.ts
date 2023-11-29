@@ -5,9 +5,6 @@ import {
   Path,
   Post,
   Request,
-  //   Post,
-  //   Put,
-  //   Query,
   Route,
   Security,
   SuccessResponse,
@@ -16,8 +13,8 @@ import {
 import type { Request as ExRequest } from 'express'
 import type { IRecallApiService } from '@intake24-dietician/common/types/api'
 import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
-import { container } from '../ioc/container'
-import { createRecallService } from '../services/recall.service'
+import { container } from '@/ioc/container'
+import { createRecallService } from '@/services/recall.service'
 
 /**
  * Controller for handling recall related requests.

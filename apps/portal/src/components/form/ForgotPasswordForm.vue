@@ -5,7 +5,7 @@
       class="wrapper py-15 px-16 d-flex flex-column"
     >
       <div class="pb-16">
-        <v-img max-width="10rem" src="@/assets/logo.svg" />
+        <v-img class="pb-16" max-width="10rem" src="@/assets/logo.svg" />
       </div>
       <div>
         <h1>{{ t('forgotPassword.title') }}</h1>
@@ -85,6 +85,8 @@ import { useForgotPassword } from '@/mutations/useAuth'
 
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import { useForm } from '@intake24-dietician/portal/composables/useForm'
+import { ForgotPasswordSchema } from '@intake24-dietician/portal/schema/auth'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -98,24 +100,25 @@ const errorAlert = ref(false)
 // Form fields
 const email = ref('')
 
+const forgotPasswordForm = useForm<string, { email: string }>({
+  initialValues: '',
+  schema: ForgotPasswordSchema.zodSchema,
+  $toast: undefined,
+  mutationFn: forgotPasswordMutation.mutateAsync,
+  onSuccess: () => {
+    successAlert.value = true
+  },
+  onError: () => {
+    error.value = 'Invalid email. Please try again'
+    errorAlert.value = true
+  },
+})
+
 const handleSubmit = () => {
-  const isFormValid = form.value
-  if (isFormValid) {
-    forgotPasswordMutation.mutate(
-      {
-        email: email.value,
-      },
-      {
-        onSuccess() {
-          successAlert.value = true
-        },
-        onError() {
-          error.value = 'Invalid email. Please try again'
-          errorAlert.value = true
-        },
-      },
-    )
-  }
+  forgotPasswordForm.handleSubmit(
+    { email: email.value },
+    { email: email.value },
+  )
 }
 </script>
 

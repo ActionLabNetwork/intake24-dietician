@@ -12,6 +12,8 @@ import {
   Tags,
 } from 'tsoa'
 import type express from 'express'
+import { match } from 'ts-pattern'
+
 import type {
   AuthRequest,
   AuthResponse,
@@ -20,10 +22,9 @@ import type {
   Token,
 } from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { createAuthService } from '../services/auth.service'
-import { container } from '../ioc/container'
+import { createAuthService } from '@/services/auth.service'
+import { container } from '@/ioc/container'
 import { hash } from '@intake24-dietician/common/utils/index'
-import { match } from 'ts-pattern'
 
 @Route('auth')
 @Tags('Authentication')

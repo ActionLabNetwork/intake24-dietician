@@ -1,7 +1,8 @@
 import path from 'path'
 import pino from 'pino'
-import { env } from '../config/env'
 import type TimeFn from 'pino'
+
+import { env } from '@/config/env'
 
 const baseLogger = pino({
   enabled: !env.LOGGER_DISABLED,

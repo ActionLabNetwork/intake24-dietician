@@ -12,12 +12,13 @@ export const useRecallById = (recallId: Ref<string>) => {
     AxiosError<ApiResponseWithError>,
     AxiosResponse<Result<IRecallExtended | null>>
   >({
-    queryKey: ['recallId', recallId],
+    queryKey: ['recallId', recallId.value],
     queryFn: async () => {
       const uri = `${env.VITE_AUTH_API_HOST}${env.VITE_API_RECALL}/${recallId.value}`
       return await axios.get(uri)
     },
     enabled: !!recallId.value,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
   })
 
   return {

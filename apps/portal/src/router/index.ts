@@ -78,7 +78,6 @@ const routes = [
           requiresAuth: true,
         },
       },
-      // TODO: Replace this with dynamic route once backend is done
       {
         path: 'my-patients/patient-records/:id',
         name: 'Patient records',
@@ -120,7 +119,7 @@ const routes = [
                 name: 'Meal Diary',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
                 meta: {
                   requiresAuth: true,
@@ -131,7 +130,7 @@ const routes = [
                 name: 'Energy Intake',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
               {
@@ -139,7 +138,7 @@ const routes = [
                 name: 'Carbs Exchange',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
               {
@@ -147,7 +146,15 @@ const routes = [
                 name: 'Fibre Intake',
                 component: () =>
                   import(
-                    '@/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                  ),
+              },
+              {
+                path: 'water-intake',
+                name: 'Water Intake',
+                component: () =>
+                  import(
+                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
                   ),
               },
             ],
@@ -156,6 +163,20 @@ const routes = [
         meta: {
           requiresAuth: true,
         },
+      },
+      {
+        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback',
+        name: 'Compose New Feedback',
+        component: () =>
+          import(
+            '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
+          ),
+      },
+      {
+        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback/preview',
+        name: 'Preview feedback',
+        component: () =>
+          import('@/components/feedback/feedback-builder/FeedbackPreview.vue'),
       },
       {
         path: 'my-patients/add-patient',

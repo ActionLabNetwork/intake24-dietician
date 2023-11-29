@@ -5,7 +5,7 @@
     </div>
     <v-text-field
       flat
-      :type="type"
+      :type="type ?? 'text'"
       :placeholder="placeholder"
       :autocomplete="autocomplete"
       variant="solo-filled"
@@ -26,8 +26,11 @@
 </template>
 
 <script setup lang="ts">
+import { INPUT_DEBOUNCE_TIME } from '@intake24-dietician/portal/constants'
+import { useDebounceFn } from '@vueuse/core'
+
 defineProps<{
-  type: HTMLInputElement['type']
+  type?: HTMLInputElement['type']
   placeholder?: string
   autocomplete?: HTMLInputElement['autocomplete']
   suffix?: string
@@ -42,9 +45,9 @@ defineProps<{
   handleOuterIconClick?: () => void
 }>()
 const emit = defineEmits<{ update: [value: string] }>()
-const updateValue = (e: InputEvent) => {
+const updateValue = useDebounceFn((e: InputEvent) => {
   emit('update', (e.target as HTMLInputElement).value)
-}
+}, INPUT_DEBOUNCE_TIME)
 </script>
 
 <style scoped>

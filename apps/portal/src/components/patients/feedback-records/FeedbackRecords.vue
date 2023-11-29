@@ -3,7 +3,12 @@
     <v-col class="pt-0">
       <div class="d-flex flex-column flex-sm-row justify-space-between">
         <p class="title mb-3 mb-sm-0">Feedback records</p>
-        <v-btn append-icon="mdi-plus" color="primary" class="text-none">
+        <v-btn
+          append-icon="mdi-plus"
+          color="primary"
+          class="text-none"
+          :to="`${route.fullPath}/compose-feedback`"
+        >
           Compose new feedback
         </v-btn>
       </div>
@@ -18,7 +23,10 @@
 <script setup lang="ts">
 import DraftItemList from '@/components/patients/feedback-records/DraftItemList.vue'
 import SharedItemList from './SharedItemList.vue'
+import { useRoute } from 'vue-router'
 // import DraftItem from './DraftItem.vue'
+
+const route = useRoute()
 </script>
 
 <style scoped lang="scss">

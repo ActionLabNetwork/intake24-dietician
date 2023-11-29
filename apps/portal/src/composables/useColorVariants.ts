@@ -1,7 +1,11 @@
-// useColorVariants.js
 import { ref } from 'vue'
 import chroma from 'chroma-js'
 
+/**
+ * Returns an object containing color variants based on a base color.
+ * @param baseColor The base color to generate variants from. Default is '#00DF59'.
+ * @returns An object containing color variants.
+ */
 export default function useColorVariants(baseColor = '#00DF59') {
   const colorVariants = chroma
     .scale(['black', baseColor, 'white'])

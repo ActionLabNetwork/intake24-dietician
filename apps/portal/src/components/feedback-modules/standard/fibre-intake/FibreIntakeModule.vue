@@ -1,110 +1,133 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <Logo />
-        <div class="ml-4 font-weight-medium">Fibre Intake</div>
-      </div>
-      <div>
-        <VueDatePicker
-          v-model="date"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
-        />
-      </div>
-    </div>
-    <div class="mt-6 total-energy-container">
-      Total energy: {{ totalEnergy.toLocaleString() }}kcal
-    </div>
-    <div>
-      <div class="grid-container">
-        <BaseProgressCircular v-if="recallQuery.isLoading.value" />
-        <div v-if="recallQuery.isError.value" class="mt-10">
-          <v-alert
-            type="error"
-            title="Error fetching recall data"
-            text="Please try again later."
-          ></v-alert>
-        </div>
-        <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-          <MealCard
-            :src="meal.src"
-            :label="meal.label"
-            :alt="meal.alt"
-            :colors="getColours(colorPalette[index]!)"
-            :value="meal.value"
-          />
-        </div>
-      </div>
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Fibre intake"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
+    <div v-if="mealCards" class="mt-2">
+      <BaseTabs
+        :tabs="tabs"
+        :tabStyle="{
+          backgroundColor: '#aabcb1',
+          height: 'fit-content',
+          width: 'fit-content',
+          margin: '0 auto',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :activeTabStyle="{
+          backgroundColor: '#34a749',
+        }"
+        align="center"
+        :hide-slider="true"
+        :show-tabs="mode === 'edit'"
+      />
     </div>
 
-    <v-divider class="my-6" />
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
+    <FeedbackTextArea
+      :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bgColor="feedbackBgColor"
+      :text-color="feedbackTextColor"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive } from 'vue'
-import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
-import Dinner from '@/assets/modules/energy-intake/dinner.svg'
-import Lunch from '@/assets/modules/energy-intake/lunch.svg'
-import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, {
-  MealCardProps,
-} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import { ref, watch, reactive, markRaw } from 'vue'
+import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
-import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
+import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
+import PieChartSection from './PieChartSection.vue'
+import TimelineSection from './TimelineSection.vue'
+import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
+})
+const emit = defineEmits<{
+  'update:feedback': [feedback: string]
+}>()
+
+const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+
 const totalEnergy = ref(0)
-
-const getColours = (base: string) => {
-  let _base = base ?? '#fff'
-  return {
-    backgroundColor: _base,
-    valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
-    valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
-  }
-}
-
 const colorPalette = ref<string[]>([])
 
-const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+let mealCards = reactive<Record<string, Omit<FibreIntakeProps, 'colors'>>>({})
 
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
+const tabs = ref([
+  {
+    name: 'Pie chart',
+    value: 0,
+    component: markRaw(PieChartSection),
+    props: {
+      meals: mealCards,
+      colors: colorPalette,
+    },
+    icon: 'mdi-chart-pie',
+    style: {
+      // Specify style
+      color: '#fff',
+      backgroundColor: '#34A749',
+      padding: '0.7rem',
+      borderRadius: '5px',
+    },
+  },
+  {
+    name: 'Timeline',
+    value: 1,
+    component: markRaw(TimelineSection),
+    props: {
+      meals: mealCards,
+      colors: colorPalette,
+    },
+    icon: 'mdi-calendar-blank-outline',
+    style: {
+      color: '#fff',
+      backgroundColor: '#34A749',
+      padding: '10px',
+      borderRadius: '5px',
+    },
+  },
+])
 
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
-  )
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
+watch(
+  () => props.recallDate,
+  newRecallDate => {
+    selectedDate.value = newRecallDate
+  },
+  { immediate: true },
+)
 
 watch(
   () => recallQuery.data.value?.data,
   data => {
     // TODO: Improve typings, remove uses of any
-    const calculateFoodEnergy = (food: { nutrients: any[] }) => {
+    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
         (
           total: any,
@@ -112,7 +135,7 @@ watch(
         ) => {
           return (
             total +
-            (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
+            (nutrient.nutrientType.id === NUTRIENTS_DIETARY_FIBRE_ID
               ? nutrient.amount
               : 0)
           )
@@ -121,36 +144,25 @@ watch(
       )
     }
 
-    const getImageSrc = (name: string) => {
-      const mealImages = {
-        breakfast: Breakfast,
-        lunch: Lunch,
-        dinner: Dinner,
-        evening: Dinner,
-        midSnacks: MidSnacks,
-      }
-
-      const mealName = (Object.keys(mealImages).find(meal =>
-        name.toLowerCase().includes(meal),
-      ) ?? 'midSnacks') as keyof typeof mealImages
-
-      return mealImages[mealName] || MidSnacks
-    }
-
-    const calculateMealEnergy = (meal: IRecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodEnergy(food)
+    const calculateMealCarbsExchange = (meal: IRecallMeal) => {
+      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+        return total + calculateFoodCarbsExchange(food)
       }, 0)
 
-      // TODO: src and colors may be mapped to specific meals for consistency
       mealCards[meal.name] = {
-        src: getImageSrc(meal.name),
         label: meal.name,
-        alt: meal.name,
-        value: Math.floor(mealEnergy),
+        hours: meal.hours,
+        minutes: meal.minutes,
+        foods: meal.foods.map(f => ({
+          name: f['englishName'],
+          servingWeight: f['portionSizes']?.find(
+            (item: { name: string }) => item.name === 'servingWeight',
+          )?.value,
+          value: Math.floor(calculateFoodCarbsExchange(f as any)),
+        })),
       }
 
-      return mealEnergy
+      return mealCarbsExchange
     }
 
     if (data?.ok && data.value) {
@@ -158,28 +170,16 @@ watch(
         data.value.meals.length + 1,
         data.value.meals.map(meal => meal.hours),
       )
+
+      Object.keys(mealCards).forEach(key => {
+        delete mealCards[key]
+      })
+
       totalEnergy.value = Math.floor(
         data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealEnergy(meal)
+          return totalEnergy + calculateMealCarbsExchange(meal)
         }, 0),
       )
-    }
-  },
-  { immediate: true },
-)
-
-watch(
-  () => recallsQuery.data.value?.data,
-  data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
-
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
     }
   },
   { immediate: true },

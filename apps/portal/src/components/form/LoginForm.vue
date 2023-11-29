@@ -26,33 +26,20 @@
           class="d-flex flex-column justify-center"
           @submit.prevent="handleSubmit"
         >
-          <!-- Email -->
           <BaseInput
-            type="text"
-            :placeholder="t('login.form.email.placeholder')"
-            autocomplete="username"
-            name="email"
-            :rules="[emailValidator]"
-            :value="email"
-            @update="newVal => (email = newVal)"
+            v-for="(input, field) in formConfig"
+            :key="input.key"
+            :value="formValues[field]"
+            :type="input.inputType"
+            :placeholder="input.placeholder"
+            :autocomplete="input.autocomplete"
+            :name="input.key"
+            :rules="input.rules"
+            :suffix-icon="input.suffixIcon"
+            :handle-icon-click="input.handleSuffixIconClick"
+            @update="newVal => (formValues[field] = newVal)"
           >
-            {{ t('login.form.email.label') }}
-          </BaseInput>
-          <!-- Password -->
-          <BaseInput
-            :type="passwordVisible ? 'text' : 'password'"
-            :placeholder="t('login.form.password.placeholder')"
-            autocomplete="new-password"
-            name="password"
-            :suffix-icon="
-              passwordVisible ? 'mdi-eye-outline' : 'mdi-eye-off-outline'
-            "
-            :handle-icon-click="() => (passwordVisible = !passwordVisible)"
-            :rules="[passwordValidator]"
-            :value="password"
-            @update="newVal => (password = newVal)"
-          >
-            {{ t('login.form.password.label') }}
+            {{ input.label }}
           </BaseInput>
           <div
             class="d-flex flex-column flex-lg-row align-center justify-space-between"
@@ -76,7 +63,10 @@
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form || loginMutation.isLoading.value"
+            :disabled="
+              !loginForm.isFormValid(formValues) ||
+              loginMutation.isLoading.value
+            "
             :loading="loginMutation.isLoading.value"
           >
             {{ t('login.form.login') }}
@@ -96,23 +86,27 @@
       </div>
     </div>
     <div v-else class="pl-16">
-      <h1>Welcome</h1>
+      <BaseProgressCircular />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { Ref, computed, reactive, ref } from 'vue'
 
 import BaseInput from '@/components/form/BaseInput.vue'
 
-import { emailValidator, passwordValidator } from '@/validators/auth'
 import { useLogin } from '@/mutations/useAuth'
 
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 
 import router from '@/router'
+import { useForm } from '@intake24-dietician/portal/composables/useForm'
+import { LoginSchema } from '@intake24-dietician/portal/schema/auth'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
+import type { Form } from '@/types/form.types'
+import BaseProgressCircular from '../common/BaseProgressCircular.vue'
 
 // Stores
 
@@ -128,30 +122,52 @@ const error = ref('')
 const errorAlert = ref(false)
 
 // Form fields
-const email = ref('')
-const password = ref('')
+const formValues = reactive({ email: '', password: '' })
 const passwordVisible = ref(false)
+
+const loginForm = useForm<typeof formValues, typeof formValues>({
+  initialValues: formValues,
+  schema: LoginSchema.zodSchema,
+  mutationFn: loginMutation.mutateAsync,
+  onSuccess: () => {
+    router.push('/dashboard/my-profile')
+  },
+  onError: () => {
+    error.value = 'Invalid credentials. Please try again'
+    errorAlert.value = true
+  },
+})
+
+const formConfig: Ref<Form<(typeof LoginSchema.fields)[number]>> = ref({
+  email: {
+    type: 'input',
+    inputType: 'text',
+    placeholder: t('login.form.email.placeholder'),
+    label: t('login.form.email.label'),
+    autocomplete: 'username',
+    key: 'email',
+    rules: [(v: string) => validateWithZod(LoginSchema.schema.email, v)],
+  },
+  password: {
+    type: 'input',
+    inputType: computed(() => (passwordVisible.value ? 'text' : 'password')),
+    placeholder: t('login.form.password.placeholder'),
+    label: t('login.form.password.label'),
+    autocomplete: 'new-password',
+    key: 'password',
+    suffixIcon: computed(() =>
+      passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
+    ),
+    handleSuffixIconClick: () => {
+      passwordVisible.value = !passwordVisible.value
+    },
+    rules: [(v: string) => validateWithZod(LoginSchema.schema.password, v)],
+  },
+})
 
 // Functions
 const handleSubmit = () => {
-  const isFormValid = form.value
-  if (isFormValid) {
-    loginMutation.mutate(
-      {
-        email: email.value,
-        password: password.value,
-      },
-      {
-        onSuccess() {
-          router.push('/dashboard/my-profile')
-        },
-        onError() {
-          error.value = 'Invalid credentials. Please try again'
-          errorAlert.value = true
-        },
-      },
-    )
-  }
+  loginForm.handleSubmit(formValues, formValues)
 }
 </script>
 

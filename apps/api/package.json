@@ -20,6 +20,7 @@
     "test:integration": "jest ./__tests__/integration/index.test.ts --runInBand --testMatch **/__tests__/integration/**/*.test.ts",
     "test:integration:coverage": "pnpm test:integration --coverage",
     "test:integration:watch": "pnpm test:integration --watch",
+    "barrels": "barrelsby --config .barrelsby.json",
     "cli:user-management": "DOTENV_CONFIG_PATH=.env.development ts-node -r dotenv/config -r tsconfig-paths/register src/cli/user-management.ts"
   },
   "keywords": [],
@@ -73,6 +74,7 @@
     "@types/nodemailer": "^6.4.11",
     "@types/supertest": "^2.0.13",
     "@types/swagger-ui-express": "^4.1.4",
+    "barrelsby": "^2.8.1",
     "body-parser": "^1.20.2",
     "concurrently": "^8.2.1",
     "dotenv-webpack": "^8.0.1",

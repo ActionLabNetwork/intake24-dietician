@@ -1,30 +1,23 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4">
-    <div
-      class="d-flex flex-column flex-sm-row justify-space-between align-center"
-    >
-      <div class="d-flex align-center mb-5 mb-sm-0">
-        <v-img :src="Logo" :width="90" aspect-ratio="16/9"></v-img>
-        <div class="ml-4 font-weight-medium">Energy Intake</div>
-      </div>
-      <div>
-        <VueDatePicker
-          v-model="date"
-          :teleport="true"
-          :enable-time-picker="false"
-          text-input
-          format="dd/MM/yyyy"
-          :allowed-dates="allowedDates"
-        />
-      </div>
-    </div>
-    <div class="mt-6 total-energy-container">
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+    <ModuleTitle
+      v-if="props.recallDate && selectedDate"
+      :logo="Logo"
+      title="Energy intake"
+      :recallDate="props.recallDate"
+      :allowedStartDates="allowedStartDates"
+      :selectedDate="selectedDate"
+      @update:selected-date="selectedDate = $event"
+    />
+    <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
-    </div>
+    </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
+        <!-- Loading state -->
         <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+        <!-- Error state -->
         <div v-if="recallQuery.isError.value" class="mt-10">
           <v-alert
             type="error"
@@ -32,6 +25,7 @@
             text="Please try again later."
           ></v-alert>
         </div>
+        <!-- Success state -->
         <div v-for="(meal, key, index) in mealCards" v-else :key="key">
           <MealCard
             :src="meal.src"
@@ -44,16 +38,28 @@
       </div>
     </div>
 
-    <v-divider class="my-6" />
+    <!-- Spacer -->
+    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+    <div v-else class="my-6"></div>
+
+    <!-- Feedback -->
+    <FeedbackTextArea
+      :feedback="feedback"
+      :editable="mode === 'edit'"
+      :bgColor="feedbackBgColor"
+      :text-color="feedbackTextColor"
+      @update:feedback="emit('update:feedback', $event)"
+    />
   </v-card>
 </template>
 
 <script setup lang="ts">
 import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import { useRecallById, useRecallsByUserId } from '@/queries/useRecall'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
-import { computed, ref, watch, reactive } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
@@ -61,19 +67,33 @@ import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
 import MealCard, {
   MealCardProps,
 } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import moment from 'moment'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
-// import { MealCardProps } from './MealCard.vue'
+import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
+import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
-const recallId = ref('')
-const recallQuery = useRecallById(recallId)
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+  mode: 'edit',
+  mainBgColor: '#fff',
+  feedbackBgColor: '#fff',
+  feedbackTextColor: '#000',
+})
+
+const emit = defineEmits<{
+  'update:feedback': [feedback: string]
+}>()
+
+const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+
+// Refs
 const totalEnergy = ref(0)
+const colorPalette = ref<string[]>([])
+const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
+// Utility functions
 const getColours = (base: string) => {
   let _base = base ?? '#fff'
   return {
@@ -83,104 +103,76 @@ const getColours = (base: string) => {
   }
 }
 
-const colorPalette = ref<string[]>([])
-
-const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
-
-const date = ref<Date>()
-const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
-const allowedDates = computed(() => {
-  return recallDates.value.map(date => date.startTime)
-})
-
-watch(date, newDate => {
-  const recall = recallDates.value.find(d =>
-    moment(d.startTime).isSame(newDate, 'day'),
+const calculateFoodEnergy = (food: { nutrients: any[] }) => {
+  return food.nutrients.reduce(
+    (total: any, nutrient: { nutrientType: { id: string }; amount: any }) => {
+      return (
+        total +
+        (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
+          ? nutrient.amount
+          : 0)
+      )
+    },
+    0,
   )
-  recallId.value = recall?.id ?? ''
-  recallQuery.refetch()
-})
+}
+
+const getImageSrc = (name: string) => {
+  const mealImages = {
+    breakfast: Breakfast,
+    lunch: Lunch,
+    dinner: Dinner,
+    evening: Dinner,
+    midSnacks: MidSnacks,
+  }
+
+  const mealName = (Object.keys(mealImages).find(meal =>
+    name.toLowerCase().includes(meal),
+  ) ?? 'midSnacks') as keyof typeof mealImages
+
+  return mealImages[mealName] || MidSnacks
+}
+
+const calculateMealEnergy = (meal: IRecallMeal) => {
+  const mealEnergy = meal.foods.reduce((total: any, food: any) => {
+    return total + Math.floor(calculateFoodEnergy(food))
+  }, 0)
+
+  // TODO: src and colors may be mapped to specific meals for consistency
+  mealCards[meal.name] = {
+    src: getImageSrc(meal.name),
+    label: meal.name,
+    alt: meal.name,
+    value: Math.floor(mealEnergy),
+  }
+
+  return mealEnergy
+}
 
 watch(
-  () => recallQuery.data.value?.data,
-  data => {
-    // TODO: Improve typings, remove uses of any
-    const calculateFoodEnergy = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: any,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          return (
-            total +
-            (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
-              ? nutrient.amount
-              : 0)
-          )
-        },
-        0,
-      )
-    }
-
-    const getImageSrc = (name: string) => {
-      const mealImages = {
-        breakfast: Breakfast,
-        lunch: Lunch,
-        dinner: Dinner,
-        evening: Dinner,
-        midSnacks: MidSnacks,
-      }
-
-      const mealName = (Object.keys(mealImages).find(meal =>
-        name.toLowerCase().includes(meal),
-      ) ?? 'midSnacks') as keyof typeof mealImages
-
-      return mealImages[mealName] || MidSnacks
-    }
-
-    const calculateMealEnergy = (meal: IRecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodEnergy(food)
-      }, 0)
-
-      // TODO: src and colors may be mapped to specific meals for consistency
-      mealCards[meal.name] = {
-        src: getImageSrc(meal.name),
-        label: meal.name,
-        alt: meal.name,
-        value: Math.floor(mealEnergy),
-      }
-
-      return mealEnergy
-    }
-
-    if (data?.ok && data.value) {
-      colorPalette.value = generatePastelPalette(
-        data.value.meals.length + 1,
-        data.value.meals.map(meal => meal.hours),
-      )
-      totalEnergy.value = Math.floor(
-        data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealEnergy(meal)
-        }, 0),
-      )
-    }
+  () => props.recallDate,
+  newRecallDate => {
+    selectedDate.value = newRecallDate
   },
   { immediate: true },
 )
 
 watch(
-  () => recallsQuery.data.value?.data,
+  () => recallQuery.data.value?.data,
   data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
+    // TODO: Improve typings, remove uses of any
+    if (data?.ok && data.value) {
+      Object.keys(mealCards).forEach(key => {
+        delete mealCards[key]
+      })
 
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
+      colorPalette.value = generatePastelPalette(
+        data.value.meals.length + 1,
+        data.value.meals.map(meal => meal.hours),
+      )
+      totalEnergy.value = data.value.meals.reduce((totalEnergy, meal) => {
+        return totalEnergy + calculateMealEnergy(meal)
+      }, 0)
     }
   },
   { immediate: true },

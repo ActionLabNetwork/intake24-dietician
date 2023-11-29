@@ -8,20 +8,19 @@
     >
       <div>{{ label }}</div>
       <div
-        class="carb-counter text-center"
+        class="nutrient-counter"
         :style="{
           background: chroma(colors.backgroundColor).darken().saturate(4).hex(),
         }"
       >
-        <p class="exchange-text">{{ totalExchange }}</p>
+        {{ totalExchange }}
       </div>
     </div>
     <div
       v-for="food in props.foods"
       :key="food.name"
-      class="energy-value d-flex"
+      class="nutrient-value d-flex"
       :style="{
-        border: `1px solid ${colors.valueCardBorderColor}`,
         background:
           food.value > 0
             ? colors.valueCardBgColor
@@ -32,11 +31,15 @@
       }"
     >
       <div>
-        <p>{{ food.name }}</p>
+        <p>
+          {{ food.name }} ({{
+            usePrecision(parseFloat(food.servingWeight), 2)
+          }}g)
+        </p>
         <div class="d-flex justify-between flex-wrap">
           <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
-            <!-- <v-img :src="Mascot" :width="35" aspect-ratio="16/9" /> -->
-            <Mascot
+            <component
+              :is="mascot"
               :fill="
                 chroma(colors.valueCardBgColor).darken(1).saturate(5).hex()
               "
@@ -49,21 +52,26 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineProps } from 'vue'
-import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
+import { computed, type Component } from 'vue'
 import chroma from 'chroma-js'
+import { usePrecision } from '@vueuse/math'
 
-export interface CarbsExchangeProps {
+export interface DetailedCardProps {
   label: string
   colors: {
     backgroundColor: string
     valueCardBgColor: string
     valueCardBorderColor: string
   }
-  foods: any[]
+  foods: {
+    name: string
+    value: number
+    servingWeight: string
+  }[]
+  mascot: Component
 }
 
-const props = defineProps<CarbsExchangeProps>()
+const props = defineProps<DetailedCardProps>()
 
 const totalExchange = computed(() => {
   return props.foods.reduce((acc, curr) => acc + curr.value, 0)
@@ -77,24 +85,20 @@ const totalExchange = computed(() => {
   height: 100%;
 }
 
-.energy-value {
+.nutrient-value {
   border-radius: 8px;
   margin-top: 1rem;
   padding: 1rem;
 }
 
-.carb-counter {
+.nutrient-counter {
+  display: flex;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   justify-content: center;
   align-items: center;
-  padding: 0.5rem 1rem;
   font-size: 1rem;
   font-weight: 800;
-}
-
-.exchange-text {
-  transform: translateY(25%);
 }
 </style>
