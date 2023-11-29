@@ -36,7 +36,7 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" />
+        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" :addButtonLink="addButtonLink" />
         <SurveysList
           :data="dataQuery.data.value?.data.ok === true ? dataQuery.data.value?.data.value : []"
         />
@@ -67,6 +67,8 @@ const { user, isProfileLoading } = storeToRefs(authStore)
 const welcomeAlert = ref(true)
 
 const dataQuery = useSurveys()
+
+const addButtonLink = '/dashboard/my-surveys/add-survey'
 
 const summary = computed((): Summary => {
   const data = dataQuery.data.value?.data

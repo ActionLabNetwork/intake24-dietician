@@ -9,9 +9,11 @@ import {
   UpdatedAt,
   DataType,
   PrimaryKey,
+  AutoIncrement
 } from 'sequelize-typescript'
 import User from '../auth/user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
+import SurveyPreferences from './survey-preference.model'
 
 export interface SurveyAttributes {
   id: number
@@ -20,6 +22,7 @@ export interface SurveyAttributes {
   alias: string
   name: string
   recallSubmissionUrl: string
+  surveyPreferenceId: number
   owner: User
   ownerId: number
 }
@@ -32,6 +35,7 @@ interface SurveyCreationAttributes {
 @Table(getTableConfig(Survey.name, 'surveys'))
 class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
   @PrimaryKey
+  @AutoIncrement
   @Column({
     allowNull: false,
     autoIncrement: true,
@@ -75,6 +79,21 @@ class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
   })
   public declare recallSubmissionUrl: string
 
+  @ForeignKey(() => SurveyPreferences)
+  @Default(null)
+  @Column({
+    allowNull: true,
+    type: DataType.BIGINT,
+  })
+  public declare surveyPreferenceId: number
+
+  @Default(false)
+  @Column({
+    allowNull: false,
+    type: DataType.BOOLEAN,
+  })
+  public declare status: boolean
+
   @Default(DataType.NOW)
   @Column
   @CreatedAt
@@ -91,6 +110,9 @@ class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
 
   @BelongsTo(() => User)
   public declare owner: User
+
+  @BelongsTo(() => SurveyPreferences)
+  public declare surveyPreference: SurveyPreferences
 }
 
 export default Survey

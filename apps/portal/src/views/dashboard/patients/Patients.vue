@@ -36,7 +36,7 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" />
+        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" :addButtonLink="addButtonLink" />
         <PatientList
           :patients-data="patientsQuery.data.value?.data.data ?? []"
         />
@@ -68,6 +68,8 @@ const { user, isProfileLoading } = storeToRefs(authStore)
 const welcomeAlert = ref(true)
 
 const patientsQuery = usePatients()
+
+const addButtonLink = '/dashboard/my-patients/add-patient'
 
 const summary = computed((): Summary => {
   const patients = patientsQuery.data.value?.data.data ?? []

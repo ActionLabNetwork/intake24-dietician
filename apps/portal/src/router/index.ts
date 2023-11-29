@@ -197,6 +197,15 @@ const routes = [
         },
       },
       {
+        path: 'my-surveys/add-survey',
+        name: 'Add Survey',
+        component: () => import('@/views/dashboard/surveys/AddSurvey.vue'),
+
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'master-settings',
         name: 'Master Settings',
         component: () => import('@/views/dashboard/MasterSettings.vue'),

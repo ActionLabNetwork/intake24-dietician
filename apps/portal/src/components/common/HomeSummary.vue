@@ -22,7 +22,7 @@
         color="primary"
         class="text-capitalize"
         append-icon="mdi-plus"
-        to="/dashboard/my-patients/add-patient"
+        :to="addButtonLink"
       >
         {{ t('surveys.summary.addNew') }} {{ summaryKeys.entrySingular }}
       </v-btn>
@@ -45,7 +45,7 @@ export interface SummaryKeys {
   entrySingular: string
 }
 
-defineProps<{ summary: Summary, summaryKeys: SummaryKeys }>()
+defineProps<{ summary: Summary, summaryKeys: SummaryKeys, addButtonLink: string }>()
 const { t } = useI18n<i18nOptions>()
 </script>
 

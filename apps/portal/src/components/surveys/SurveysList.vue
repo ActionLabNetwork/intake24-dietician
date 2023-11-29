@@ -63,16 +63,16 @@
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>
-          <!-- <td>
+          <td>
             <v-btn
               color="primary"
               class="text-capitalize"
               min-width="50%"
-              :to="`/dashboard/my-patients/patient-records/${item.raw.id}/feedback-records`"
+              :to="`/dashboard/my-survey/survey-details/${item.raw.id}`"
             >
               View
             </v-btn>
-          </td> -->
+          </td>
           <td>{{ item.raw.alias }}</td>
           <td>
             <div class="d-flex flex-column align-center">
@@ -136,7 +136,7 @@ type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 const props = defineProps<{
   data: (SurveyDTO)[]
 }>()
-const headerTitles = ['Name', 'Alias', 'Recall Submission Url'] as const
+const headerTitles = ['Name', 'Survey Details', 'Alias', 'Recall Submission Url', 'Status'] as const
 
 interface SurveyTableHeaders {
   title: (typeof headerTitles)[number]
@@ -171,6 +171,12 @@ const headers = ref<SurveyTableHeaders[]>([
     sortable: false,
   },
   {
+    title: 'Survey Details',
+    align: 'start',
+    key: 'details',
+    sortable: false,
+  },
+  {
     title: 'Alias',
     align: 'start',
     key: 'alias',
@@ -181,6 +187,12 @@ const headers = ref<SurveyTableHeaders[]>([
     align: 'center',
     key: 'recallSubmissionUrl',
     sortable: false,
+  },
+  {
+    title: 'Status',
+    align: 'center',
+    key: 'status',
+    sortable: true,
   },
 ])
 
@@ -210,8 +222,10 @@ watch(
         return {
           id: survey.id,
           name: survey.name,
+          surveyDetails: undefined,
           alias: survey.alias,
           recallSubmissionUrl: survey.recallSubmissionUrl ?? '',
+          status: survey.status ? 'Active' : 'Inactive',
         }
       }) ?? []
   },
