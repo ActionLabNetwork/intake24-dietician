@@ -44,12 +44,12 @@
         <!-- Action buttons -->
         <div>
           <v-btn
-            append-icon="mdi-eye-outline"
+            :append-icon="previewing ? 'mdi-pencil-outline' : 'mdi-eye-outline'"
             class="text-capitalize"
             variant="text"
             @click="emit('click:preview')"
           >
-            Preview
+            {{ previewing ? 'Edit' : 'Preview' }}
           </v-btn>
           <v-btn class="text-none ml-8" color="#F1F1F1" flat>
             Save as draft
@@ -73,6 +73,7 @@ const props = defineProps<{
   avatar: string
   recallDates: { id: string; startTime: Date; endTime: Date }[]
   initialDate: Date
+  previewing: boolean
 }>()
 const emit = defineEmits<{
   'update:date': [date: Date]

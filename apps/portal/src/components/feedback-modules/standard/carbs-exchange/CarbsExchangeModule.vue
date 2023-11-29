@@ -1,7 +1,6 @@
-<!-- eslint-disable vue/no-duplicate-attributes -->
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4" :class="{ 'rounded-0': mode === 'preview' }">
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
       v-if="props.recallDate && selectedDate"
       :logo="Logo"

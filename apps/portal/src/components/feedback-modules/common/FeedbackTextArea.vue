@@ -39,7 +39,7 @@
       :style="{ 'background-color': bgColor, color: textColor }"
     >
       <div class="mr-4">
-        <v-avatar size="x-large" :image="avatar" />
+        <v-avatar size="x-large" :image="avatar" class="d-block" />
       </div>
       <div>
         <div class="font-weight-bold">{{ fullName }}</div>

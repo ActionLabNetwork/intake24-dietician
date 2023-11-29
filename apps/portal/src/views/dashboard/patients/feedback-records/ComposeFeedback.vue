@@ -19,33 +19,16 @@
           :fullName="fullName"
           :recall-dates="recallDates"
           :initial-date="date"
+          :previewing="previewing"
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
-        <!-- <FeedbackPreview
-          v-if="selectedModules"
-          :recalls-data="selectedModules?.recallsData"
-          :recall-date="selectedModules?.recallDate"
-          :modules="selectedModules?.modules"
-          :patient-name="fullName"
-          :dialog="previewDialog"
-          class="mt-0"
-          @click:close="() => (previewDialog = false)"
-        /> -->
       </div>
-      <div v-show="previewing" class="mt-5">
-        <FeedbackPreview
-          v-if="selectedModules"
-          :recalls-data="selectedModules?.recallsData"
-          :recall-date="selectedModules?.recallDate"
-          :modules="selectedModules?.modules"
-          :patient-name="fullName"
-          :dialog="previewDialog"
-          class="mt-0"
-          @click:close="() => (previewDialog = false)"
-        />
-      </div>
-      <div v-show="recallsQuery.data.value?.data && !previewing" class="mt-4">
+      <div
+        v-if="recallsQuery.data.value?.data"
+        v-show="!previewing"
+        class="mt-4"
+      >
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
@@ -65,6 +48,18 @@
         </v-row>
       </div>
     </v-container>
+  </div>
+  <div v-show="previewing" class="mt-5">
+    <FeedbackPreview
+      v-if="selectedModules"
+      :recalls-data="selectedModules?.recallsData"
+      :recall-date="selectedModules?.recallDate"
+      :modules="selectedModules?.modules"
+      :patient-name="fullName"
+      :dialog="previewDialog"
+      class="mt-0"
+      @click:close="() => (previewDialog = false)"
+    />
   </div>
 </template>
 
@@ -98,6 +93,7 @@ const route = useRoute()
 const $toast = useToast()
 
 // Queries
+console.log(route.params['id']?.toString() ?? '')
 const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
 const recallsQuery = useRecallsByUserId(ref('4072'))
 
@@ -225,11 +221,6 @@ watch(
   },
   { immediate: true },
 )
-
-watch(date, newDate => {
-  console.log({ newDate: newDate })
-  console.log({ newDateType: typeof newDate })
-})
 </script>
 
 <style scoped lang="scss">
@@ -263,11 +254,7 @@ watch(date, newDate => {
   margin: 0;
 }
 
-@page :right {
+@page:right {
   margin: 0;
-}
-
-@page :top {
-  margin: 5cm;
 }
 </style>

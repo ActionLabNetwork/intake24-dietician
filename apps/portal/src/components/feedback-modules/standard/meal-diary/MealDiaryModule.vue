@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-4': true }">
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <p v-show="false">{{ recallData }}</p>
     <div>
       <div class="d-flex align-center justify-space-between">
@@ -60,7 +60,9 @@
                   :key="i"
                 >
                   <ul class="font-weight-medium ml-4">
-                    <li>{{ food['englishName'] }}</li>
+                    <li>
+                      {{ `${food['englishName']} (${getServingWeight(food)})` }}
+                    </li>
                   </ul>
                 </v-expansion-panel-text>
               </v-expansion-panel>
@@ -93,6 +95,7 @@ import { convertTo12H, formatTime } from '@/utils/datetime'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { CSSProperties, computed, ref, watch } from 'vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import { usePrecision } from '@vueuse/math'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -106,6 +109,18 @@ const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 const { selectedDate, allowedStartDates, recallData } = useRecallShared(props)
 
 const openPanels = ref<number[]>([])
+
+const getServingWeight = (food: { [x: string]: any[] }) => {
+  const servingWeight = usePrecision(
+    parseFloat(
+      food['portionSizes']?.find(
+        (item: { name: string }) => item.name === 'servingWeight',
+      )?.value,
+    ),
+    2,
+  ).value
+  return `${servingWeight}g`
+}
 
 watch(
   () => props.mode,
