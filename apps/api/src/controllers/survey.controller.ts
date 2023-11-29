@@ -8,8 +8,8 @@ import {
 } from 'tsoa'
 // import type { Request as ExRequest } from 'express'
 import type { ISurveyApiService, IQueryParams } from '@intake24-dietician/common/types/api'
-import { container } from '../ioc/container'
-import { createSurveyService } from '../services/survey.service'
+import { container } from '@/ioc/container'
+import { createSurveyService } from '@/services/survey.service'
 
 @Route('survey')
 @Tags('Survey')

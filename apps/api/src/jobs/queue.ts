@@ -1,6 +1,6 @@
 import { Queue, Worker } from 'bullmq'
-import { deleteExpiredTokens } from './scheduled/deleteExpiredTokens'
-import { env } from '../config/env'
+import { deleteExpiredTokens } from '@/jobs/scheduled/deleteExpiredTokens'
+import { env } from '@/config/env'
 
 const connectionOptions = {
   connection: {

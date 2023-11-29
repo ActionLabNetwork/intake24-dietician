@@ -1,16 +1,17 @@
-import type * as express from 'express'
+
 // import * as jwt from 'jsonwebtoken'
-import { env } from '../config/env'
+import { env } from '@/config/env'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import type { Result } from '@intake24-dietician/common/types/utils'
-import type { JwtPayload } from 'jsonwebtoken'
-import { createJwtTokenService } from '../services/token.service'
-import { match } from 'ts-pattern'
+import { createJwtTokenService } from '@/services/token.service'
 import type {
   SurveyAttributes,
   TTokenType,
 } from '@intake24-dietician/common/types/auth'
 
+import type * as express from 'express'
+import type { JwtPayload } from 'jsonwebtoken'
+import { match } from 'ts-pattern'
 
 const tokenService = createJwtTokenService()
 

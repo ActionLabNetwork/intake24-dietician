@@ -1,0 +1,5 @@
+{
+  "directory": ["./src/services"],
+  "exclude": [],
+  "delete": true
+}

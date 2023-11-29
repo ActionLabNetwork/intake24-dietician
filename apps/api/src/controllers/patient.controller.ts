@@ -11,18 +11,19 @@ import {
   Put,
   Delete,
 } from 'tsoa'
+import { match } from 'ts-pattern'
+import type express from 'express'
+import crypto from 'crypto'
+
 import type {
   IAuthService,
   PatientProfileValues,
 } from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { createAuthService } from '../services/auth.service'
-import { createUserService } from '../services/user.service'
-import { container } from '../ioc/container'
-import { match } from 'ts-pattern'
+import { createAuthService, createUserService } from '@/services'
+import { container } from '@/ioc/container'
 import type { IUserService } from '@intake24-dietician/common/types/api'
-import type express from 'express'
-import crypto from 'crypto'
+
 
 @Route('patients')
 @Tags('Patients')
