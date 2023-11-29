@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="pa-4">
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-4': true }">
     <p v-show="false">{{ recallData }}</p>
     <div>
       <div class="d-flex align-center justify-space-between">
@@ -30,6 +30,7 @@
             dot-color="orange"
             size="small"
             width="100%"
+            class="timeline-item"
           >
             <v-chip variant="flat">
               {{ convertTo12H(formatTime(meal.hours, meal.minutes)) }}
@@ -120,7 +121,7 @@ watch(
 
 const timelineStyle = computed<CSSProperties>(() => {
   return props.mode === 'preview'
-    ? { maxHeight: 'none', overflowY: 'visible' }
+    ? { maxHeight: 'none', overflowY: 'scroll' }
     : { maxHeight: '50vh', overflowY: 'scroll' }
 })
 
@@ -132,3 +133,10 @@ watch(
   { immediate: true },
 )
 </script>
+
+<style scoped lang="scss">
+.timeline-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+</style>

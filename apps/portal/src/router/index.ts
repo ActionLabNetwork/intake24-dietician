@@ -172,7 +172,12 @@ const routes = [
             '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
           ),
       },
-
+      {
+        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback/preview',
+        name: 'Preview feedback',
+        component: () =>
+          import('@/components/feedback/feedback-builder/FeedbackPreview.vue'),
+      },
       {
         path: 'my-patients/add-patient',
         name: 'Add patient',

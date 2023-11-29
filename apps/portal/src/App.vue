@@ -26,3 +26,10 @@ watch(
   { immediate: true },
 )
 </script>
+
+<style>
+body {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+</style>

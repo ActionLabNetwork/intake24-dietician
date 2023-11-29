@@ -71,7 +71,6 @@ export const useForm = <T extends {}, TSubmit>({
 
       mutationFn(submissionData, {
         onSuccess: () => {
-          $toast?.success('Patient details updated')
           onSuccess?.()
           resolve()
         },

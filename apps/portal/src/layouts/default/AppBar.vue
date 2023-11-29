@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar :elevation="2" flat>
+  <v-app-bar :elevation="2" flat class="app-bar">
     <v-app-bar-title>
       <div class="d-flex">
         <v-img max-width="10rem" src="@/assets/logo.svg" class="ml-16" />
@@ -67,6 +67,12 @@ const drawer = ref(false)
     .router-link-active {
       color: $primary;
     }
+  }
+}
+
+@media print {
+  .app-bar {
+    display: none;
   }
 }
 </style>

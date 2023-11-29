@@ -1,6 +1,6 @@
 import { createI18n, useI18n } from 'vue-i18n'
 import messages from './portal'
-import { MessageSchema } from './portal'
+import type { MessageSchema } from './portal'
 
 export const languages = [
   { name: 'English', code: 'en', flag: '🇦🇺' },

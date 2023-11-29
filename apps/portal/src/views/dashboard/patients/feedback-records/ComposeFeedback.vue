@@ -1,7 +1,7 @@
 <template>
   <div class="wrapper">
     <v-container>
-      <div>
+      <div class="d-print-none">
         <v-btn
           prepend-icon="mdi-chevron-left"
           flat
@@ -12,7 +12,7 @@
           Back to {{ patientName }} records
         </v-btn>
       </div>
-      <div v-if="recallsQuery.data.value?.data" class="mt-4">
+      <div v-if="recallsQuery.data.value?.data" class="d-print-none mt-4">
         <ProfileAndFeedbackCard
           :id="paddedId"
           :avatar="avatar"
@@ -22,6 +22,18 @@
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
+        <!-- <FeedbackPreview
+          v-if="selectedModules"
+          :recalls-data="selectedModules?.recallsData"
+          :recall-date="selectedModules?.recallDate"
+          :modules="selectedModules?.modules"
+          :patient-name="fullName"
+          :dialog="previewDialog"
+          class="mt-0"
+          @click:close="() => (previewDialog = false)"
+        /> -->
+      </div>
+      <div v-show="previewing" class="mt-5">
         <FeedbackPreview
           v-if="selectedModules"
           :recalls-data="selectedModules?.recallsData"
@@ -33,7 +45,7 @@
           @click:close="() => (previewDialog = false)"
         />
       </div>
-      <div v-if="recallsQuery.data.value?.data" class="mt-4">
+      <div v-show="recallsQuery.data.value?.data && !previewing" class="mt-4">
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
@@ -76,8 +88,9 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import type { ComponentMapping, ModuleRoute } from '@/types/modules.types'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
-import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
+// import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
+import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 // const { t } = useI18n<i18nOptions>()
 
 // Composables
@@ -92,6 +105,7 @@ const recallsQuery = useRecallsByUserId(ref('4072'))
 const date = ref<Date>(new Date())
 const component = ref<ModuleRoute>('/meal-diary')
 const previewDialog = ref<boolean>(false)
+const previewing = ref<boolean>(false)
 
 // Computed properties
 const moduleFeedback = computed(() => {
@@ -198,6 +212,7 @@ const handlePreviewButtonClick = () => {
     return
   }
   previewDialog.value = true
+  previewing.value = !previewing.value
 }
 
 watch(
@@ -236,5 +251,23 @@ watch(date, newDate => {
     rgba(255, 255, 255, 1) 100%
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
+}
+
+@media print {
+  .wrapper {
+    background: white;
+  }
+}
+
+@page :left {
+  margin: 0;
+}
+
+@page :right {
+  margin: 0;
+}
+
+@page :top {
+  margin: 5cm;
 }
 </style>

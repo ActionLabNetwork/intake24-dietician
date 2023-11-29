@@ -171,7 +171,7 @@ watch(
   { immediate: true },
 )
 </script>
-<style scoped lang="scss">
+<style scoped>
 .grid-container {
   margin-top: 1rem;
   display: grid;
