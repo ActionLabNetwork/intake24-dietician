@@ -49,7 +49,7 @@
       </div>
     </v-container>
   </div>
-  <div v-show="previewing" class="mt-5">
+  <div v-show="previewing">
     <FeedbackPreview
       v-if="selectedModules"
       :recalls-data="selectedModules?.recallsData"
@@ -254,7 +254,11 @@ watch(
   margin: 0;
 }
 
-@page:right {
+@page :right {
+  margin: 0;
+}
+
+@page :top {
   margin: 0;
 }
 </style>
