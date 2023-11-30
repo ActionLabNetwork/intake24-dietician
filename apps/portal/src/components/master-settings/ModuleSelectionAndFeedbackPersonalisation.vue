@@ -47,7 +47,7 @@
 
         <!-- Preview -->
         <div class="ma-4">
-          <EnergyIntakeModule />
+          <!-- <EnergyIntakeModule /> -->
         </div>
 
         <!-- Feedback Personalisation -->
@@ -69,7 +69,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import EnergyIntakeModule from '../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+// import EnergyIntakeModule from '../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import draggable from 'vuedraggable'
 
 const drag = ref(false)

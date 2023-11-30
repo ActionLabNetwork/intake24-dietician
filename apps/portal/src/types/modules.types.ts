@@ -27,7 +27,9 @@ const moduleRoutes = createRoutes(modules)
 
 export type Module = (typeof modules)[number]
 export type ModuleRoute = (typeof moduleRoutes)[number]
-export type ComponentMapping = Record<
+export type ComponentMapping = Record<ModuleRoute, Component>
+
+export type ComponentMappingWithFeedback = Record<
   ModuleRoute,
   { component: Component; feedback: string }
 >

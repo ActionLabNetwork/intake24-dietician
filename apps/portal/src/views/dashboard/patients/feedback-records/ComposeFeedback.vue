@@ -81,7 +81,7 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
-import type { ComponentMapping, ModuleRoute } from '@/types/modules.types'
+import type { ComponentMappingWithFeedback, ModuleRoute } from '@/types/modules.types'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
@@ -151,7 +151,7 @@ const recallsData = computed(() => {
     ? recallsQuery.data.value?.data.value
     : []
 })
-const routeToModuleComponentMapping: ComponentMapping = reactive({
+const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
   '/meal-diary': { component: MealDiaryModule, feedback: '' },
   '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
