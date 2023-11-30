@@ -6,8 +6,8 @@
     <v-text-field
       flat
       :type="type ?? 'text'"
-      :placeholder="placeholder"
-      :autocomplete="autocomplete"
+      :placeholder="placeholder ?? ''"
+      :autocomplete="autocomplete ?? 'off'"
       variant="solo-filled"
       density="comfortable"
       :append-inner-icon="suffixIcon"
@@ -15,11 +15,11 @@
       :name="name"
       :model-value="value"
       :rules="rules"
-      :readonly="readonly"
+      :readonly="readonly ?? false"
       :suffix="suffix"
       @input="updateValue"
-      @click:append-inner="handleIconClick"
-      @click:append="handleOuterIconClick"
+      @click:append-inner="handleIconClick ?? (() => {})"
+      @click:append="handleOuterIconClick ?? (() => {})"
     >
     </v-text-field>
   </div>

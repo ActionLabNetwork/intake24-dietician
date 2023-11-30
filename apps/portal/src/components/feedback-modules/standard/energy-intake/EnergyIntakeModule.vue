@@ -27,7 +27,7 @@
         </div>
         <!-- Success state -->
         <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-          <MealCard
+          <SummarizedCard
             :src="meal.src"
             :label="meal.label"
             :alt="meal.alt"
@@ -64,9 +64,7 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, {
-  MealCardProps,
-} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
+import type { MealCardProps } from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
@@ -74,6 +72,7 @@ import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import SummarizedCard from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
