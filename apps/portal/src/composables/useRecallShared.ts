@@ -28,6 +28,7 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
       : null
   })
 
+  // Methods
   const updateRecallData = async (newDate: Date) => {
     await nextTick()
     const matchingRecall = recallDates.value.find(range =>
@@ -49,6 +50,7 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
     selectedDate.value = recallDates.value.at(-1)?.startTime
   }
 
+  // Watchers
   watch(
     () => recallDate,
     newRecallDate => {

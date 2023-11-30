@@ -1,4 +1,5 @@
 <template>
+  <!-- Language selection dropdown -->
   <v-select
     label="Language"
     :items="_languages"
@@ -16,14 +17,18 @@ import { storeToRefs } from 'pinia'
 const i18nStore = useI18nStore()
 const { systemLocale } = storeToRefs(i18nStore)
 
+// List of languages for the dropdown
 const _languages = ref(
   languages.map(lang => ({
     title: `${lang.name} (${lang.code.toLocaleUpperCase()}) ${lang.flag}`,
     value: lang.code,
   })),
 )
+
+// Selected language value
 const selectedLanguage = ref(systemLocale.value)
 
+// Watch for changes in the selected language and update the system locale
 watch(selectedLanguage, newVal => {
   systemLocale.value = newVal
 })

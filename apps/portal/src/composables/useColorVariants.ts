@@ -1,3 +1,14 @@
+// colorVariants is an array of colors generated from the base color using Chroma.js.
+// Refs are reactive, so they will update when the base color changes.
+
+// Returns an object containing color variants based on a base color.
+// The base color defaults to '#00DF59' if not provided.
+
+// Usage:
+// const { colors } = useColorVariants('#00DF59')
+// colors.value.base // '#00DF59'
+// colors.value.lighter // '#9de2a1'
+
 import { ref } from 'vue'
 import chroma from 'chroma-js'
 
