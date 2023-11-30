@@ -26,7 +26,21 @@ export const createSurveyService = () => {
     }
   }
 
+  const getSurveysByOwnerId = async (ownerId: number): Promise< Result <SurveyAttributes[]| null | Error >> => {
+    try {
+      const surveys = await Survey.findAll({ where : { ownerId }, attributes: ['id', 'name', 'alias', 'intake24SurveyId', 'recallSubmissionUrl'] })
+      console.log('getSurveysByOwnerId: ', surveys.length)
+      if (surveys !== null) return { ok: true, value: surveys } as const
+      return { ok: true, value: null } as const
+    } 
+    catch (error) {
+      console.log(error);
+      return { ok: false, error:  new Error('Error retriving Survey data') } as const
+    }
+  }
+
   return {
     getSurveySecretByAlias,
+    getSurveysByOwnerId,
   }
 }

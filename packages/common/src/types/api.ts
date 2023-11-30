@@ -56,6 +56,9 @@ export interface ISurveyApiService {
   getSurveySecretByAlias: (
     id: string,
   ) => Promise<Result<SurveyAttributes | null | Error>>
+  getSurveysByOwnerId: (
+    ownerId: number,
+  ) => Promise<Result<SurveyAttributes[] | null | Error>>
 }
 
 export interface IQueryParams {

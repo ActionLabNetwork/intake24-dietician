@@ -1,5 +1,5 @@
 <template>
-  <v-main v-if="isProfileLoading" align="center">
+<v-main v-if="isProfileLoading" align="center">
     <v-container>
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>
@@ -13,10 +13,10 @@
           >
             <div>
               <h1 class="text heading">
-                {{ t('patients.disclaimerNotrifications.title', { username: user?.dieticianProfile.firstName}) }}
+                {{ t('surveys.disclaimerNotrifications.title', { username: user?.dieticianProfile.firstName}) }}
               </h1>
               <h3 class="text subheading">
-                {{ t('patients.disclaimerNotrifications.subtitle', {newSurveysNumber: 3, newNotificationsNumber: 1}) }}
+                {{ t('surveys.disclaimerNotrifications.subtitle', {newSurveysNumber: 3, templatesNumber: 1}) }}
               </h3>
             </div>
             <div>
@@ -27,7 +27,7 @@
                 density="comfortable"
                 @click="welcomeAlert = false"
               >
-              {{t('patients.disclaimerNotrifications.dismiss')}}
+                {{t('surveys.disclaimerNotrifications.dismiss')}}
               </v-btn>
             </div>
           </div>
@@ -37,8 +37,8 @@
       <div class="my-10"></div>
       <div>
         <HomeSummary :summary="summary" :summaryKeys="summaryKeys" :addButtonLink="addButtonLink" />
-        <PatientList
-          :patients-data="patientsQuery.data.value?.data.data ?? []"
+        <SurveysList
+          :data="dataQuery.data.value?.data.ok === true ? dataQuery.data.value?.data.value : []"
         />
       </div>
     </v-container>
@@ -55,33 +55,31 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import HomeSummary from '@/components/common/HomeSummary.vue'
 import type { Summary, SummaryKeys } from '@/components/common/HomeSummary.vue'
-import PatientList from '@/components/patients/PatientList.vue'
-import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
+import SurveysList from '@/components/surveys/SurveysList.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
 const { t } = useI18n<i18nOptions>()
-
 const authStore = useAuthStore()
 const { user, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
 
-const patientsQuery = usePatients()
+const dataQuery = useSurveys()
 
-const addButtonLink = '/dashboard/my-patients/add-patient'
+const addButtonLink = '/dashboard/my-surveys/add-survey'
 
 const summary = computed((): Summary => {
-  const patients = patientsQuery.data.value?.data.data ?? []
+  const data = dataQuery.data.value?.data
+  if (data === undefined || !data.ok) return { total: 0, active: 0, archived: 0 }
+  console.log(data)
 
-  return patients.reduce(
-    (counts, patient) => {
+  return data.value.reduce(
+    (counts, survey) => {
       counts.total++
-      if (patient.isArchived) {
-        counts.archived++
-      } else {
-        counts.active++
-      }
+      counts.active++
+      console.log(survey)
       return counts
     },
     { total: 0, active: 0, archived: 0 },
@@ -90,8 +88,8 @@ const summary = computed((): Summary => {
 
 const summaryKeys = computed((): SummaryKeys => {
   return {
-    entry: t('patients.entry'),
-    entrySingular: t('patients.entrySingular'),
+    entry: t('surveys.entry'),
+    entrySingular: t('surveys.entrySingular'),
   }
 })
 </script>

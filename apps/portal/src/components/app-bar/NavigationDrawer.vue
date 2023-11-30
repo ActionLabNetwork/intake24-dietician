@@ -81,14 +81,19 @@ const navItems = [
     to: '/dashboard/my-patients',
   },
   {
-    title: 'Master settings',
-    value: 'masterSettings',
-    to: '/dashboard/master-settings',
+    title: 'My surveys',
+    value: 'mySurveys',
+    to: '/dashboard/my-surveys',
   },
   {
     title: 'My Profile',
     value: 'myProfile',
     to: '/dashboard/my-profile',
+  },
+  {
+    title: 'Master settings',
+    value: 'masterSettings',
+    to: '/dashboard/master-settings',
   },
 ]
 
