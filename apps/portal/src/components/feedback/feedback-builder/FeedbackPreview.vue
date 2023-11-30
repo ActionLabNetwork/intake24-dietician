@@ -24,7 +24,7 @@
                 class="text-none"
                 color="secondary"
                 flat
-                @click="exportToPdf"
+                @click="exportContentToPdf"
               >
                 Export to PDF
               </v-btn>
@@ -67,7 +67,7 @@ import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
 import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
-import html2pdf from 'html2pdf.js'
+import { usePdfExport } from '@/composables/usePdfExport'
 
 interface Props {
   patientName: string
@@ -78,23 +78,11 @@ interface Props {
 }
 
 defineProps<Props>()
+const { exportToPdf } = usePdfExport()
 
-const exportToPdf = () => {
+const exportContentToPdf = () => {
   const element = document.querySelector('#print-content') as HTMLElement
-  const opt = {
-    margin: 0,
-    filename: 'feedback.pdf',
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2 },
-    jsPDF: {
-      unit: 'in',
-      format: 'a2',
-      orientation: 'portrait',
-      compress: true,
-      encryption: { userPassword: 'i24-d' },
-    },
-  }
-  html2pdf().set(opt).from(element).save()
+  exportToPdf(element, 'feedback.pdf')
 }
 </script>
 

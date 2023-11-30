@@ -48,7 +48,6 @@ import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
-console.log(route.path)
 
 const breadcrumbItems = ref([
   {

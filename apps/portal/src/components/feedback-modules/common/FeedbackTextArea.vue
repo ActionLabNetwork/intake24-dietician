@@ -98,7 +98,6 @@ const handleFeedbackUpdate = useDebounceFn((_feedback: string) => {
 watch(
   () => props.feedback,
   newFeedback => {
-    console.log({ newFeedback })
     localFeedback.value = newFeedback
   },
   { immediate: true },
