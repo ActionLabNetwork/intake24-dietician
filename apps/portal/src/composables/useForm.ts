@@ -57,7 +57,6 @@ export const useForm = <T extends {}, TSubmit>({
     validationData: Partial<TSubmit>,
     submissionData: TSubmit,
   ): Promise<void> => {
-    console.log({ validationData, submissionData })
     return new Promise((resolve, reject) => {
       // Validate with zod
       const result = schema.safeParse(validationData)

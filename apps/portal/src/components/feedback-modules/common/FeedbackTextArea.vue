@@ -35,7 +35,7 @@
   <div v-else>
     <v-card
       class="pa-4 d-flex align-center"
-      elevation="2"
+      flat
       :style="{ 'background-color': bgColor, color: textColor }"
     >
       <div class="mr-4">
@@ -98,7 +98,6 @@ const handleFeedbackUpdate = useDebounceFn((_feedback: string) => {
 watch(
   () => props.feedback,
   newFeedback => {
-    console.log({ newFeedback })
     localFeedback.value = newFeedback
   },
   { immediate: true },

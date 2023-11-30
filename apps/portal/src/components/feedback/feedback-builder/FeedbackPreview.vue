@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div justify="center">
+  <div id="print-content" justify="center">
     <v-card flat>
       <div v-if="modules && modules.length > 0">
         <div
@@ -8,13 +8,26 @@
           :key="index"
           :class="{ 'page-break': index > 1 }"
         >
-          <div v-if="index === 0" class="text-wrapper">
+          <div
+            v-if="index === 0"
+            class="text-wrapper d-flex align-center justify-space-between flex-wrap"
+          >
             <div class="">
               <p class="text-h3 font-weight-medium">Hi {{ patientName }}</p>
               <p class="w-50 mt-4">
                 Great job on completing your recall. Below, you can find a quick
                 feedback based on your recall data submitted on Aug 1, 2023
               </p>
+            </div>
+            <div class="mt-5 d-print-none">
+              <v-btn
+                class="text-none"
+                color="secondary"
+                flat
+                @click="exportContentToPdf"
+              >
+                Export to PDF
+              </v-btn>
             </div>
           </div>
           <component
@@ -23,6 +36,7 @@
             :recalls-data="recallsData"
             :recall-date="recallDate"
             mode="preview"
+            class="mt-10"
             flat
             :style="{
               'background-color':
@@ -53,6 +67,7 @@ import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
 import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import { usePdfExport } from '@/composables/usePdfExport'
 
 interface Props {
   patientName: string
@@ -63,6 +78,12 @@ interface Props {
 }
 
 defineProps<Props>()
+const { exportToPdf } = usePdfExport()
+
+const exportContentToPdf = () => {
+  const element = document.querySelector('#print-content') as HTMLElement
+  exportToPdf(element, 'feedback.pdf')
+}
 </script>
 
 <style scoped lang="scss">

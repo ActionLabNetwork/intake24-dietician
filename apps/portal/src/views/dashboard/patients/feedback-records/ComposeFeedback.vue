@@ -93,7 +93,6 @@ const route = useRoute()
 const $toast = useToast()
 
 // Queries
-console.log(route.params['id']?.toString() ?? '')
 const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
 const recallsQuery = useRecallsByUserId(ref('4072'))
 

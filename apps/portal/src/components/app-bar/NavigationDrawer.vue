@@ -1,3 +1,27 @@
+/**
+ * Component: NavigationDrawer
+ *
+ * The NavigationDrawer component represents a side navigation drawer that displays a list of navigation items and user information.
+ *
+ * Props:
+ * - drawer: A boolean value indicating whether the drawer is open or closed.
+ *
+ * Events:
+ * - change: Emitted when the drawer state is changed. The new state is passed as an argument.
+ *
+ * Slots:
+ * - None
+ *
+ * Dependencies:
+ * - BasePreferences: A component that displays user preferences.
+ * - useLogout: A mutation function for logging out the user.
+ * - router: The Vue Router instance.
+ * - useProfile: A query function for retrieving user profile information.
+ * - useQueryClient: A function for accessing the Vue Query Client instance.
+ * - getInitials: A utility function for getting user initials.
+ * - getFullName: A utility function for getting user full name.
+ * - getDefaultAvatar: A utility function for getting the default avatar.
+ */
 <template>
   <v-navigation-drawer
     v-model="_drawer"
@@ -38,8 +62,7 @@ import { useLogout } from '@/mutations/useAuth'
 import router from '@/router'
 import { useProfile } from '@/queries/useAuth'
 import { useQueryClient } from '@tanstack/vue-query'
-import { getInitials, getFullName } from '@/utils/profile'
-import { getDefaultAvatar } from '@/utils/profile'
+import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
 const props = defineProps<{ drawer: boolean }>()
 const emit = defineEmits<{ change: [val: boolean] }>()
