@@ -6,15 +6,18 @@
 
         <ul v-if="mdAndUp" class="nav-items">
           <li>
-            <router-link to="/dashboard/my-patients">My patients</router-link>
+            <router-link to="/dashboard/my-patients">{{ t('appBar.my_patients') }}</router-link>
+          </li>
+          <li>
+            <router-link to="/dashboard/my-surveys">{{ t('appBar.my_surveys') }}</router-link>
+          </li>
+          <li>
+            <router-link to="/dashboard/my-profile">{{ t('appBar.my_profile') }}</router-link>
           </li>
           <li>
             <router-link to="/dashboard/master-settings">
-              Master settings
+              {{ t('appBar.master_settings') }}
             </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/my-profile">My profile</router-link>
           </li>
         </ul>
       </div>
@@ -41,6 +44,10 @@ import BaseAvatar from '@/components/common/BaseAvatar.vue'
 import NavigationDrawer from '@/components/app-bar/NavigationDrawer.vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+
+const { t } = useI18n<i18nOptions>()
 
 const { mdAndUp } = useDisplay()
 const drawer = ref(false)
