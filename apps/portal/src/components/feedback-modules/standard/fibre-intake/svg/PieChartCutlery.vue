@@ -3,8 +3,8 @@
     <div class="inner-container">
       <div class="pie-chart"><slot></slot></div>
       <svg
-        width="800px"
-        height="400px"
+        :width="xlAndUp ? '600px' : '400px'"
+        height="500px"
         viewBox="0 0 487 331"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -100,6 +100,12 @@
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import { useDisplay } from 'vuetify/lib/framework.mjs'
+
+const { xlAndUp } = useDisplay()
+</script>
 
 <style scoped lang="scss">
 .svg-container {

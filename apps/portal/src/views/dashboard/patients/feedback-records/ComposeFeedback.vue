@@ -7,7 +7,7 @@
           flat
           class="text-none px-0 mt-10"
           variant="text"
-          to="/dashboard/my-patients"
+          :to="route.path.split('/').slice(0, -1).join('/')"
         >
           Back to {{ patientName }} records
         </v-btn>
@@ -81,7 +81,10 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
-import type { ComponentMappingWithFeedback, ModuleRoute } from '@/types/modules.types'
+import type {
+  ComponentMappingWithFeedback,
+  ModuleRoute,
+} from '@/types/modules.types'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
