@@ -14,14 +14,13 @@
     </div>
     <div>
       <VueDatePicker
-        v-if="!props.recallDate"
         v-model="localSelectedDate"
         :teleport="true"
         :enable-time-picker="false"
         text-input
         format="dd/MM/yyyy"
         :allowed-dates="allowedStartDates"
-        @update:model-value="emit('update:selectedDate', $event)"
+        @update:model-value="handleDateUpdate"
       />
     </div>
   </div>
@@ -45,4 +44,9 @@ const emit = defineEmits<{
 }>()
 
 const localSelectedDate = computed(() => props.selectedDate)
+
+const handleDateUpdate = (d: Date) => {
+  if (!d) return
+  emit('update:selectedDate', d)
+}
 </script>

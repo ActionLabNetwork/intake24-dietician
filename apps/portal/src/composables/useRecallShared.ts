@@ -11,6 +11,7 @@ interface Props {
 }
 
 export default function useRecallShared({ recallsData, recallDate }: Props) {
+  console.log({ recallDate })
   // Refs
   const recallId = ref('')
   const recallQuery = useRecallById(recallId)
@@ -34,6 +35,8 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
     const matchingRecall = recallDates.value.find(range =>
       moment(range.startTime).isSame(newDate, 'day'),
     )
+
+    console.log({ recallDates, matchingRecall })
 
     if (matchingRecall) {
       recallId.value = matchingRecall.id
