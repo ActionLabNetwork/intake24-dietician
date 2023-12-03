@@ -4,6 +4,7 @@
       :is="component"
       :recalls-data="recallsData"
       :recall-date="date"
+      mode="view"
     />
   </div>
 </template>

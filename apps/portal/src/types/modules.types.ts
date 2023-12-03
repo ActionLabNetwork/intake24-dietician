@@ -5,7 +5,7 @@ export interface FeedbackModulesProps {
   recallsData?: IRecallExtended[]
   recallDate?: Date
   feedback: string
-  mode: 'preview' | 'edit'
+  mode: 'preview' | 'edit' | 'view'
   mainBgColor: string
   feedbackBgColor: string
   feedbackTextColor: string

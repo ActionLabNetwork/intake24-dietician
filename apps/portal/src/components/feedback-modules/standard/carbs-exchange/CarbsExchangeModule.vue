@@ -8,6 +8,7 @@
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
+      :show-datepicker="mode === 'view'"
       :class="{ 'text-white': mode === 'preview' }"
       @update:selected-date="selectedDate = $event"
     />
@@ -39,18 +40,20 @@
       </div>
     </div>
 
-    <!-- Spacer -->
-    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
-    <div v-else class="my-6"></div>
+    <div v-if="mode !== 'view'">
+      <!-- Spacer -->
+      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <div v-else class="my-6"></div>
 
-    <!-- Feedback -->
-    <FeedbackTextArea
-      :feedback="feedback"
-      :editable="mode === 'edit'"
-      :bgColor="feedbackBgColor"
-      :text-color="feedbackTextColor"
-      @update:feedback="emit('update:feedback', $event)"
-    />
+      <!-- Feedback -->
+      <FeedbackTextArea
+        :feedback="feedback"
+        :editable="mode === 'edit'"
+        :bgColor="feedbackBgColor"
+        :text-color="feedbackTextColor"
+        @update:feedback="emit('update:feedback', $event)"
+      />
+    </div>
   </v-card>
 </template>
 

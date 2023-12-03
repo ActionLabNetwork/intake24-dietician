@@ -8,6 +8,7 @@
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
+      :show-datepicker="mode === 'view'"
       @update:selected-date="selectedDate = $event"
     />
     <div v-if="recallData" :style="timelineStyle" class="timeline">
@@ -56,18 +57,20 @@
       </v-timeline>
     </div>
 
-    <!-- Spacer -->
-    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
-    <div v-else class="my-6"></div>
+    <div v-if="mode !== 'view'">
+      <!-- Spacer -->
+      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <div v-else class="my-6"></div>
 
-    <!-- Feedback -->
-    <FeedbackTextArea
-      :feedback="feedback"
-      :editable="mode === 'edit'"
-      :bg-color="feedbackBgColor"
-      :text-color="feedbackTextColor"
-      @update:feedback="emit('update:feedback', $event)"
-    />
+      <!-- Feedback -->
+      <FeedbackTextArea
+        :feedback="feedback"
+        :editable="mode === 'edit'"
+        :bg-color="feedbackBgColor"
+        :text-color="feedbackTextColor"
+        @update:feedback="emit('update:feedback', $event)"
+      />
+    </div>
   </v-card>
 </template>
 
