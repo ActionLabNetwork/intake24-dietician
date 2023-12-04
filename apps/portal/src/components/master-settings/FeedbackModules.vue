@@ -258,7 +258,7 @@ onMounted(() => {
         hideLabel: true,
       },
       value: theme,
-      column: 2,
+      column: 1,
       onUpdate: (newTheme: Theme) => {
         formConfig['themeSelector']!.value = newTheme
         handleVisualThemeUpdate(newTheme)

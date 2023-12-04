@@ -2,7 +2,7 @@ export const surveys = {
   entry: 'surveys',
   entrySingular: 'survey',
   summary: {
-    title: 'Surveys summury',
+    title: 'Surveys summary',
     number: ' Total number of',
     addNew: 'Add New',
     active: 'Active:',

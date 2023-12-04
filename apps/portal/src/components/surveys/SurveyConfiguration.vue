@@ -29,14 +29,15 @@
           <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
             <div v-if="config.type === 'input'">
               <BaseInput
-                :type="config.inputType ?? 'text'"
+                :type="config.inputType"
                 :name="config.key"
-                :rules="config.rules ?? []"
-                :autocomplete="config.autocomplete ?? 'off'"
+                :rules="config.rules"
+                :autocomplete="config.autocomplete"
                 :value="formValues[fieldName]"
-                :suffix-icon="config.suffixIcon ?? ''"
-                :handle-icon-click="config.handleSuffixIconClick ?? (() => {})"
+                :suffix-icon="config.suffixIcon"
+                :handle-icon-click="config.handleSuffixIconClick"
                 :class="config.class"
+                :required="config.required"
                 @update="config.handleUpdate"
               >
                 <span class="input-label">
@@ -57,9 +58,7 @@
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
 import { ref } from 'vue'
-import { useDebounceFn } from '@vueuse/core'
 import type { Form } from '../profile/types'
-import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
@@ -86,15 +85,17 @@ const { t } = useI18n<i18nOptions>()
 const { mdAndUp } = useDisplay()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<SurveyConfigursationFormValues>({ ...props.defaultState })
+const formValues = ref<SurveyConfigursationFormValues>({
+  ...props.defaultState,
+})
 
-const handleFieldUpdate = useDebounceFn(
-  (fieldName: keyof SurveyConfigursationFormValues, newVal: string) => {
-    formValues.value[fieldName] = newVal
-    emit('update', { ...formValues.value })
-  },
-  INPUT_DEBOUNCE_TIME,
-)
+const handleFieldUpdate = (
+  fieldName: keyof SurveyConfigursationFormValues,
+  newVal: string,
+) => {
+  formValues.value[fieldName] = newVal
+  emit('update', { ...formValues.value })
+}
 
 const formSurveyConfig: Form<
   (typeof SurveyConfigurstionSchemaDetails.fields)[number]

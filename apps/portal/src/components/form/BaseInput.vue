@@ -5,6 +5,7 @@
     </div>
     <v-text-field
       flat
+      :required="required ?? false"
       :type="type ?? 'text'"
       :placeholder="placeholder ?? ''"
       :autocomplete="autocomplete ?? 'off'"
@@ -14,7 +15,7 @@
       :append-icon="suffixIconOuter"
       :name="name"
       :model-value="value"
-      :rules="rules"
+      :rules="rules ?? []"
       :readonly="readonly ?? false"
       :suffix="suffix"
       @input="updateValue"
@@ -41,6 +42,7 @@ defineProps<{
   rules?: ((value: string) => boolean | string)[]
   readonly?: boolean
   labelClass?: string
+  required?: boolean
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()

@@ -86,7 +86,6 @@ const routes = [
           requiresAuth: true,
         },
       },
-      // TODO: Replace this with dynamic route once backend is done
       {
         path: 'my-patients/patient-records/:id',
         name: 'Patient records',
@@ -201,6 +200,35 @@ const routes = [
         name: 'Add Survey',
         component: () => import('@/views/dashboard/surveys/AddSurvey.vue'),
 
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
+        path: 'my-surveys/survey-details/:id',
+        name: 'Survey Details',
+        component: () => import('@/views/dashboard/surveys/SurveyDetails.vue'),
+        children: [
+          {
+            path: 'master-settings',
+            name: 'Survey Master Settings',
+            component: () => import('@/views/dashboard/MasterSettings.vue'),
+            meta: {
+              requiresAuth: true,
+            },
+          },
+          {
+            path: 'survey-details',
+            name: 'Survey Details',
+            component: () =>
+              import(
+                '@/components/patients/patient-details/PatientDetails.vue'
+              ),
+            meta: {
+              requiresAuth: true,
+            } as const,
+          },
+        ],
         meta: {
           requiresAuth: true,
         },

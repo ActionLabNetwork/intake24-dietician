@@ -10,7 +10,8 @@
     "node": ">=16"
   },
   "scripts": {
-    "seed": "cd ./src && pnpx sequelize-cli db:seed:all"
+    "seed": "cd ./src && pnpx sequelize-cli db:seed:all",
+    "migrate": "cd ./src && pnpx sequelize-cli db:migrate"
   },
   "dependencies": {
     "dotenv": "^16.3.1",
