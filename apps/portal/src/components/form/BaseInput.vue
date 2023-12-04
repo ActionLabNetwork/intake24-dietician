@@ -5,21 +5,22 @@
     </div>
     <v-text-field
       flat
+      :required="required ?? false"
       :type="type ?? 'text'"
-      :placeholder="placeholder"
-      :autocomplete="autocomplete"
+      :placeholder="placeholder ?? ''"
+      :autocomplete="autocomplete ?? 'off'"
       variant="solo-filled"
       density="comfortable"
       :append-inner-icon="suffixIcon"
       :append-icon="suffixIconOuter"
       :name="name"
       :model-value="value"
-      :rules="rules"
-      :readonly="readonly"
+      :rules="rules ?? []"
+      :readonly="readonly ?? false"
       :suffix="suffix"
       @input="updateValue"
-      @click:append-inner="handleIconClick"
-      @click:append="handleOuterIconClick"
+      @click:append-inner="handleIconClick ?? (() => {})"
+      @click:append="handleOuterIconClick ?? (() => {})"
     >
     </v-text-field>
   </div>
@@ -41,6 +42,7 @@ defineProps<{
   rules?: ((value: string) => boolean | string)[]
   readonly?: boolean
   labelClass?: string
+  required?: boolean
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()

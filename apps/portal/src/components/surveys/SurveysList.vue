@@ -68,7 +68,7 @@
               color="primary"
               class="text-capitalize"
               min-width="50%"
-              :to="`/dashboard/my-survey/survey-details/${item.raw.id}`"
+              :to="`/dashboard/my-surveys/survey-details/${item.raw.id}/master-settings`"
             >
               View
             </v-btn>
@@ -134,9 +134,15 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
-  data: (SurveyDTO)[]
+  data: SurveyDTO[]
 }>()
-const headerTitles = ['Name', 'Survey Details', 'Alias', 'Recall Submission Url', 'Status'] as const
+const headerTitles = [
+  'Name',
+  'Survey Details',
+  'Alias',
+  'Recall Submission Url',
+  'Status',
+] as const
 
 interface SurveyTableHeaders {
   title: (typeof headerTitles)[number]
@@ -218,7 +224,7 @@ watch(
   newSurvey => {
     // TODO: Update reminder related fields once implemented
     surveys.value =
-    newSurvey.map(survey => {
+      newSurvey.map(survey => {
         return {
           id: survey.id,
           name: survey.name,
@@ -240,7 +246,7 @@ watch(
 .table-header {
   cursor: pointer;
   color: #555555;
-  background-color: #FCFAF7;
+  background-color: #fcfaf7;
   -webkit-user-select: none; /* Safari */
   -ms-user-select: none; /* IE 10 and IE 11 */
   user-select: none; /* Standard syntax */

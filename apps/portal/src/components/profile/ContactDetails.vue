@@ -17,13 +17,13 @@
               class="mb-5"
             />
             <BaseInput
-              :type="fieldConfig.inputType ?? 'text'"
+              :type="fieldConfig.inputType"
               :name="fieldName"
               :value="formValues[fieldName]"
               :suffix-icon="fieldConfig.suffixIcon"
               :handle-icon-click="fieldConfig.handleSuffixIconClick"
               :rules="fieldConfig.rules"
-              :readonly="fieldConfig.readonly || false"
+              :readonly="fieldConfig.readonly"
               @update="newVal => handleFieldUpdate(fieldName, newVal)"
             >
               <span class="input-label">
@@ -108,8 +108,6 @@ import BaseInput from '@/components/form/BaseInput.vue'
 import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
-import { useDebounceFn } from '@vueuse/core'
-import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form, Layout } from './types'
@@ -158,13 +156,13 @@ const verificationToken = ref('')
 const showVerificationTokenField = ref(false)
 const errorMsg = ref('')
 
-const handleFieldUpdate = useDebounceFn(
-  (fieldName: keyof ContactDetailsFormValues, newVal: string) => {
-    formValues.value[fieldName] = newVal
-    emit('update', { ...formValues.value })
-  },
-  INPUT_DEBOUNCE_TIME,
-)
+const handleFieldUpdate = (
+  fieldName: keyof ContactDetailsFormValues,
+  newVal: string,
+) => {
+  formValues.value[fieldName] = newVal
+  emit('update', { ...formValues.value })
+}
 
 const handleSendVerificationToken = () => {
   generateTokenMutation.mutate(

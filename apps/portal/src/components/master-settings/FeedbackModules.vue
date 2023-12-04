@@ -99,6 +99,7 @@
                   :is="fieldConfig.component"
                   v-bind="fieldConfig.props"
                   :value="fieldConfig.value"
+                  :class="fieldConfig.componentClass"
                   @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
                 />
               </div>
@@ -154,6 +155,7 @@ interface FormFieldConfig<TVal, TProps = Record<string, unknown>> {
     class?: CSSClass
   }
   component?: ReturnType<typeof defineComponent>
+  componentClass?: CSSClass
   element?: string
   props?: TProps
   value?: TVal
@@ -221,29 +223,12 @@ const handleSubmit = async (): Promise<void> => {
 let formConfig: FormConfig
 onMounted(() => {
   formConfig = {
-    countryAndVisualThemeSelection: {
+    visualThemeSelection: {
       heading: {
-        label: 'Country and visual theme selection',
-        class: 'text heading',
+        label: 'Visual theme selection',
+        class: 'text section-heading',
       },
       class: 'text section-heading',
-      column: 2,
-    },
-    surveyIdInput: {
-      heading: {
-        label:
-          'Enter the survey ID linked with guideline specific to your country of practice provided to you by your admin',
-      },
-      subheading: {
-        label:
-          'Selected country is linked with the food base & dietary guidelines which will be used for patient recall & feedback provision.',
-      },
-      element: 'input',
-      props: {
-        type: 'text',
-        required: true,
-      },
-      value: '',
       column: 2,
     },
     themeSelector: {
@@ -253,19 +238,23 @@ onMounted(() => {
           'Select a theme that is relevant for your patients in general. You can change the theme specific to a patient from patient information page.',
       },
       component: VisualThemeSelector,
+      componentClass: 'ml-5',
       props: {
         defaultState: theme.value,
         hideLabel: true,
       },
       value: theme,
-      column: 2,
+      column: 1,
       onUpdate: (newTheme: Theme) => {
         formConfig['themeSelector']!.value = newTheme
         handleVisualThemeUpdate(newTheme)
       },
     },
     sendAutomatedFeedback: {
-      heading: { label: 'Send patient automated feedback after every recall' },
+      heading: {
+        label: 'Send patient automated feedback after every recall',
+        class: 'text section-heading',
+      },
       subheading: {
         label:
           'Every time a patient completes their recall, an automated feedback based on their recall data and pre-defined feedbacks will be shared with them on their email address',
@@ -284,7 +273,10 @@ onMounted(() => {
     },
     // TODO: Add modules component
     moduleSelectionAndFeedbackPersonalisation: {
-      heading: { label: 'Module selection and feedback personalisation' },
+      heading: {
+        label: 'Module selection and feedback personalisation',
+        class: 'text section-heading',
+      },
       component: ModuleSelectionAndFeedbackPersonalisation,
       column: 1,
     },

@@ -1,27 +1,10 @@
 <template>
   <v-row class="ml-2">
-    <v-col cols="3">
-      <v-card>
-        <v-list>
-          <draggable
-            v-model="items"
-            item-key="title"
-            @start="drag = true"
-            @end="drag = false"
-          >
-            <template #item="{ element }">
-              <div>
-                <v-checkbox
-                  v-model="selectedModules"
-                  :label="element.title"
-                  :value="element.value"
-                  color="primary"
-                ></v-checkbox>
-              </div>
-            </template>
-          </draggable>
-        </v-list>
-      </v-card>
+    <v-col cols="4">
+      <ModuleSelectList
+        @update="handleModuleChange"
+        @update:modules="console.log"
+      />
     </v-col>
     <v-col cols="0" width="100%">
       <!-- TODO: Replace this with the individual modules -->
@@ -47,7 +30,7 @@
 
         <!-- Preview -->
         <div class="ma-4">
-          <EnergyIntakeModule />
+          <!-- <EnergyIntakeModule /> -->
         </div>
 
         <!-- Feedback Personalisation -->
@@ -68,60 +51,14 @@
 </template>
 
 <script setup lang="ts">
+import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import ModuleSelectList from '../feedback-modules/ModuleSelectList.vue'
 import { ref } from 'vue'
-import EnergyIntakeModule from '../feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
-import draggable from 'vuedraggable'
 
-const drag = ref(false)
-
-const items = ref([
-  {
-    title: 'Alcohol Intake',
-    value: 1,
-  },
-  {
-    title: 'Carbs Intake',
-    value: 2,
-  },
-  {
-    title: 'Fibre Intake',
-    value: 3,
-  },
-  {
-    title: 'Energy Intake',
-    value: 4,
-  },
-  {
-    title: 'Fruit Intake',
-    value: 5,
-  },
-  {
-    title: 'Meal Intake',
-    value: 6,
-  },
-  {
-    title: 'Protein Intake',
-    value: 7,
-  },
-  {
-    title: 'Fibre Intake',
-    value: 8,
-  },
-  {
-    title: 'Simple & complex carbs',
-    value: 9,
-  },
-  {
-    title: 'Sodium intake',
-    value: 10,
-  },
-  {
-    title: 'Vegetable intake',
-    value: 11,
-  },
-])
-
-const selectedModules = ref([])
+const selectedModule = ref<ModuleRoute>()
+const handleModuleChange = (module: ModuleRoute) => {
+  selectedModule.value = module
+}
 </script>
 
 <style scoped lang="scss">

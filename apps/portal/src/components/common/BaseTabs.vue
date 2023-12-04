@@ -50,7 +50,7 @@ withDefaults(
     hideSlider?: boolean
     tabStyle?: Record<string, string>
     activeTabStyle?: Record<string, string>
-    showTabs: boolean
+    showTabs?: boolean
   }>(),
   { showTabs: true },
 )

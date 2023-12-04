@@ -1,36 +1,37 @@
 <template>
-    <v-main class="wrapper">
-        <v-container>
-            <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
-                <template v-slot:divider>
-                    <v-icon icon="mdi-chevron-right"></v-icon>
-                </template>
-            </v-breadcrumbs>
-            <v-btn
-                prepend-icon="mdi-chevron-left"
-                flat
-                class="text-none px-0 mt-10"
-                variant="text"
-                to="/dashboard/my-surveys"
-            >
-                {{ t('surveys.backToSurveyList') }}
-            </v-btn>
-            <SurveyConfiguration 
-            :default-state="surveyConfigFormValues"
-            mode="Add"
-            @update="handleSurveyConfigUpdate"
-            />
-        </v-container>
-    </v-main>
+  <v-main class="wrapper">
+    <v-container>
+      <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
+        <template v-slot:divider>
+          <v-icon icon="mdi-chevron-right"></v-icon>
+        </template>
+      </v-breadcrumbs>
+      <v-btn
+        prepend-icon="mdi-chevron-left"
+        flat
+        class="text-none px-0 mt-10"
+        variant="text"
+        to="/dashboard/my-surveys"
+      >
+        {{ t('surveys.backToSurveyList') }}
+      </v-btn>
+      <SurveyConfiguration
+        :default-state="surveyConfigFormValues"
+        mode="Add"
+        @update="handleSurveyConfigUpdate"
+      />
+    </v-container>
+  </v-main>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import SurveyConfiguration, { SurveyConfigursationFormValues } from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue';
+import SurveyConfiguration, {
+  SurveyConfigursationFormValues,
+} from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-
 
 const { t } = useI18n<i18nOptions>()
 
@@ -48,15 +49,14 @@ const breadcrumbItems = ref([
 ])
 
 const surveyConfigFormValues = ref({
-    name: '',
-    alias: '',
-    status:'inactive',
+  name: '',
+  alias: '',
+  status: 'inactive',
 })
 
 const handleSurveyConfigUpdate = (values: SurveyConfigursationFormValues) => {
-    surveyConfigFormValues.value = values
+  surveyConfigFormValues.value = values
 }
-
 </script>
 
 <style scoped lang="scss">

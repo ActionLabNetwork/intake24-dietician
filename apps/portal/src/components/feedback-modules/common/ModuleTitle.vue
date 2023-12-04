@@ -12,16 +12,15 @@
       />
       <div class="ml-4 font-weight-medium">{{ title }}</div>
     </div>
-    <div>
+    <div v-if="showDatepicker">
       <VueDatePicker
-        v-if="!props.recallDate"
         v-model="localSelectedDate"
         :teleport="true"
         :enable-time-picker="false"
         text-input
         format="dd/MM/yyyy"
         :allowed-dates="allowedStartDates"
-        @update:model-value="emit('update:selectedDate', $event)"
+        @update:model-value="handleDateUpdate"
       />
     </div>
   </div>
@@ -32,17 +31,26 @@ import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { computed, type Component } from 'vue'
 
-const props = defineProps<{
-  logo: string | Component
-  title: string
-  recallDate: Date
-  allowedStartDates: Date[]
-  selectedDate: Date
-}>()
+const props = withDefaults(
+  defineProps<{
+    logo: string | Component
+    title: string
+    recallDate: Date
+    allowedStartDates: Date[]
+    selectedDate: Date
+    showDatepicker: boolean
+  }>(),
+  { showDatepicker: false },
+)
 
 const emit = defineEmits<{
   'update:selectedDate': [date: Date]
 }>()
 
 const localSelectedDate = computed(() => props.selectedDate)
+
+const handleDateUpdate = (d: Date) => {
+  if (!d) return
+  emit('update:selectedDate', d)
+}
 </script>

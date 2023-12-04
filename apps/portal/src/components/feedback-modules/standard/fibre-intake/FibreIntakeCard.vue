@@ -72,9 +72,6 @@ const wrapperStyle = computed(() => ({
   padding: 1rem;
   border-radius: 10px;
   height: 100%;
-}
-
-.wrapper {
   position: relative;
   width: 90%;
 

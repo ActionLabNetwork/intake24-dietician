@@ -24,7 +24,7 @@
 <script setup lang="ts">
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
 
-export interface MealCardProps {
+export interface SummarizedCardProps {
   src: string
   label: string
   alt: string
@@ -36,7 +36,7 @@ export interface MealCardProps {
   }
 }
 
-const props = defineProps<MealCardProps>()
+const props = defineProps<SummarizedCardProps>()
 </script>
 
 <style scoped>

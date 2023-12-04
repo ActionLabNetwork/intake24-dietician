@@ -90,9 +90,6 @@ const exportContentToPdf = () => {
 .text-wrapper {
   padding: 4.5rem 4.5rem;
 }
-.wrapper {
-  padding: 0 10rem;
-}
 
 .page-break {
   page-break-inside: avoid;

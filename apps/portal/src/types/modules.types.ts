@@ -5,7 +5,7 @@ export interface FeedbackModulesProps {
   recallsData?: IRecallExtended[]
   recallDate?: Date
   feedback: string
-  mode: 'preview' | 'edit'
+  mode: 'preview' | 'edit' | 'view'
   mainBgColor: string
   feedbackBgColor: string
   feedbackTextColor: string
@@ -27,7 +27,9 @@ const moduleRoutes = createRoutes(modules)
 
 export type Module = (typeof modules)[number]
 export type ModuleRoute = (typeof moduleRoutes)[number]
-export type ComponentMapping = Record<
+export type ComponentMapping = Record<ModuleRoute, Component>
+
+export type ComponentMappingWithFeedback = Record<
   ModuleRoute,
   { component: Component; feedback: string }
 >

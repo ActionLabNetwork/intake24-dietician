@@ -8,6 +8,7 @@
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
+      :show-datepicker="mode === 'view'"
       @update:selected-date="selectedDate = $event"
     />
     <TotalNutrientsDisplay>
@@ -27,7 +28,7 @@
         </div>
         <!-- Success state -->
         <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-          <MealCard
+          <SummarizedCard
             :src="meal.src"
             :label="meal.label"
             :alt="meal.alt"
@@ -38,18 +39,20 @@
       </div>
     </div>
 
-    <!-- Spacer -->
-    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
-    <div v-else class="my-6"></div>
+    <div v-if="mode !== 'view'">
+      <!-- Spacer -->
+      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <div v-else class="my-6"></div>
 
-    <!-- Feedback -->
-    <FeedbackTextArea
-      :feedback="feedback"
-      :editable="mode === 'edit'"
-      :bgColor="feedbackBgColor"
-      :text-color="feedbackTextColor"
-      @update:feedback="emit('update:feedback', $event)"
-    />
+      <!-- Feedback -->
+      <FeedbackTextArea
+        :feedback="feedback"
+        :editable="mode === 'edit'"
+        :bgColor="feedbackBgColor"
+        :text-color="feedbackTextColor"
+        @update:feedback="emit('update:feedback', $event)"
+      />
+    </div>
   </v-card>
 </template>
 
@@ -64,9 +67,6 @@ import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import MealCard, {
-  MealCardProps,
-} from '@/components/feedback-modules/standard/energy-intake/MealCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
@@ -74,6 +74,9 @@ import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import SummarizedCard, {
+  type SummarizedCardProps,
+} from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -91,7 +94,9 @@ const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
 // Refs
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
-const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
+  {},
+)
 
 // Utility functions
 const getColours = (base: string) => {

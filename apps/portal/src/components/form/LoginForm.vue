@@ -94,7 +94,7 @@
 <script lang="ts" setup>
 import { Ref, computed, reactive, ref } from 'vue'
 
-import BaseInput from '@/components/form/BaseInput.vue'
+import BaseInput from '@intake24-dietician/portal/components/form/BaseInput.vue'
 
 import { useLogin } from '@/mutations/useAuth'
 

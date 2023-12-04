@@ -5,18 +5,9 @@
         <v-img max-width="10rem" src="@/assets/logo.svg" class="ml-16" />
 
         <ul v-if="mdAndUp" class="nav-items">
-          <li>
-            <router-link to="/dashboard/my-patients">{{ t('appBar.my_patients') }}</router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/my-surveys">{{ t('appBar.my_surveys') }}</router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/my-profile">{{ t('appBar.my_profile') }}</router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard/master-settings">
-              {{ t('appBar.master_settings') }}
+          <li v-for="item in navItems" :key="item.key">
+            <router-link :to="item.to">
+              {{ item.label }}
             </router-link>
           </li>
         </ul>
@@ -51,6 +42,24 @@ const { t } = useI18n<i18nOptions>()
 
 const { mdAndUp } = useDisplay()
 const drawer = ref(false)
+
+const navItems = [
+  {
+    key: 'my-patients',
+    label: t('appBar.my_patients'),
+    to: '/dashboard/my-patients',
+  },
+  {
+    key: 'my-surveys',
+    label: t('appBar.my_surveys'),
+    to: '/dashboard/my-surveys',
+  },
+  {
+    key: 'my-profile',
+    label: t('appBar.my_profile'),
+    to: '/dashboard/my-profile',
+  },
+]
 </script>
 <style scoped lang="scss">
 .nav-items {

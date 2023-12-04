@@ -1,6 +1,6 @@
 <template>
   <v-row>
-    <v-col class="pt-0">
+    <v-col class="pt-1">
       <div class="d-flex flex-column flex-sm-row justify-space-between">
         <p class="title mb-3 mb-sm-0">Feedback records</p>
         <v-btn

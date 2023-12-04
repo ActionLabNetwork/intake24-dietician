@@ -2,7 +2,7 @@ export const patients = {
   entry: 'patients',
   entrySingular: 'patient',
   summary: {
-    title: 'Patients summury',
+    title: 'Patients summary',
     number: ' Total number of',
     addNew: 'Add New',
     active: 'Active:',

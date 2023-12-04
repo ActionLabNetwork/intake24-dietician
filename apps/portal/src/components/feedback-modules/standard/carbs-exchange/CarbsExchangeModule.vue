@@ -8,6 +8,7 @@
       :recallDate="props.recallDate"
       :allowedStartDates="allowedStartDates"
       :selectedDate="selectedDate"
+      :show-datepicker="mode === 'view'"
       :class="{ 'text-white': mode === 'preview' }"
       @update:selected-date="selectedDate = $event"
     />
@@ -39,18 +40,20 @@
       </div>
     </div>
 
-    <!-- Spacer -->
-    <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
-    <div v-else class="my-6"></div>
+    <div v-if="mode !== 'view'">
+      <!-- Spacer -->
+      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <div v-else class="my-6"></div>
 
-    <!-- Feedback -->
-    <FeedbackTextArea
-      :feedback="feedback"
-      :editable="mode === 'edit'"
-      :bgColor="feedbackBgColor"
-      :text-color="feedbackTextColor"
-      @update:feedback="emit('update:feedback', $event)"
-    />
+      <!-- Feedback -->
+      <FeedbackTextArea
+        :feedback="feedback"
+        :editable="mode === 'edit'"
+        :bgColor="feedbackBgColor"
+        :text-color="feedbackTextColor"
+        @update:feedback="emit('update:feedback', $event)"
+      />
+    </div>
   </v-card>
 </template>
 
@@ -60,7 +63,7 @@ import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Ma
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
-} from '../../card-styles/DetailedCard.vue'
+} from '@/components/feedback-modules/card-styles/DetailedCard.vue'
 import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive } from 'vue'
 import {
@@ -73,7 +76,7 @@ import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
-import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
+import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {

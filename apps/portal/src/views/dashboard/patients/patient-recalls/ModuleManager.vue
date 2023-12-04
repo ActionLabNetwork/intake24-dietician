@@ -1,5 +1,12 @@
 <template>
-  <component :is="component" :recalls-data="recallsData" />
+  <div v-if="recallsData && recallsData.length > 0">
+    <component
+      :is="component"
+      :recalls-data="recallsData"
+      :recall-date="date"
+      mode="view"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -25,6 +32,7 @@ const routeToModuleComponentMapping: ComponentMapping = {
 }
 
 const route = useRoute()
+const date = ref(new Date())
 const modulePath = computed<ModuleRoute>(
   () => `/${route.path.split('/').at(-1)}` as ModuleRoute,
 )
@@ -37,10 +45,33 @@ const recallsData = computed(() =>
   recallsQuery.data.value?.data.ok ? recallsQuery.data.value?.data.value : [],
 )
 
+const recallDates = computed(() => {
+  const data = recallsQuery.data.value?.data
+  if (data?.ok) {
+    return data.value.map(recall => ({
+      id: recall.id,
+      startTime: recall.startTime,
+      endTime: recall.endTime,
+    }))
+  }
+  return []
+})
+
 watch(
   modulePath,
   newPath => {
     component.value = routeToModuleComponentMapping[newPath]
+  },
+  { immediate: true },
+)
+
+watch(
+  () => recallsQuery.data.value?.data,
+  data => {
+    if (data?.ok) {
+      // Default to latest recall date
+      date.value = recallDates.value.at(-1)?.startTime ?? new Date()
+    }
   },
   { immediate: true },
 )

@@ -6,7 +6,7 @@ import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto.ts'
 import type { Result } from '@intake24-dietician/common/types/utils'
 
 export const useSurveys = () => {
-  const sessionUri = `${env.VITE_AUTH_API_HOST}/survey/owner/me`
+  const uri = `${env.VITE_AUTH_API_HOST}/survey/owner/me`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
@@ -15,7 +15,7 @@ export const useSurveys = () => {
   >({
     queryKey: ['surveys'],
     queryFn: () => {
-      return axios.get(sessionUri)
+      return axios.get(uri)
     },
   })
 
