@@ -12,7 +12,6 @@ import FeedbackModules from '@intake24-dietician/portal/components/master-settin
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
 import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
 
-console.log('HEllo')
 const tabs = [
   { name: 'Feedback modules', value: 0, component: FeedbackModules },
   { name: 'Recall reminders', value: 1, component: RecallReminders },

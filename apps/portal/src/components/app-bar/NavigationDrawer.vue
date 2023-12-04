@@ -66,11 +66,6 @@ const navItems = [
     value: 'myProfile',
     to: '/dashboard/my-profile',
   },
-  {
-    title: 'Master settings',
-    value: 'masterSettings',
-    to: '/dashboard/master-settings',
-  },
 ]
 
 const _drawer = ref(false)
