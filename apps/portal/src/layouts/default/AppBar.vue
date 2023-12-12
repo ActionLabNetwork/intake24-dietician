@@ -1,9 +1,9 @@
 <template>
   <v-app-bar :elevation="2" flat class="app-bar">
     <v-app-bar-title>
-      <div class="d-flex">
+      <div class="d-flex align-center">
         <v-img max-width="10rem" src="@/assets/logo.svg" class="ml-16" />
-
+        <WorkspaceMenu class="ml-14" />
         <ul v-if="mdAndUp" class="nav-items">
           <li v-for="item in navItems" :key="item.key">
             <router-link :to="item.to">
@@ -37,6 +37,7 @@ import { useDisplay } from 'vuetify/lib/framework.mjs'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import WorkspaceMenu from '@intake24-dietician/portal/components/app-bar/WorkspaceMenu.vue'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -44,6 +45,7 @@ const { mdAndUp } = useDisplay()
 const drawer = ref(false)
 
 const navItems = [
+  { key: 'workspace', label: 'Workspace', to: '/dashboard/workspace' },
   {
     key: 'my-patients',
     label: t('appBar.my_patients'),
