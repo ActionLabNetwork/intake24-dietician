@@ -21,7 +21,7 @@ const getTheSecret = async (
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
     const response = await fetch(
-      `${env.API_EXTERNAL_HOST}:${env.API_PORT}/surveys/integration/` +
+      `${env.API_EXTERNAL_HOST}:${env.API_EXTERNAL_PORT}/surveys/integration/` +
         surveyID +
         `?scope=api_integration`,
       {
@@ -162,7 +162,6 @@ export async function expressAuthentication(
     scopes ? scopes[0] : null,
     intake24SurveyId,
   )
-
 
   if (!secret) secret = env.JWT_SECRET
   if (secret === null)
