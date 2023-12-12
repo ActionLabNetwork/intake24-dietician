@@ -1,4 +1,4 @@
-import type { TypeOf} from 'zod';
+import type { TypeOf } from 'zod'
 import { z } from 'zod'
 import { createEnv } from '@t3-oss/env-core'
 
@@ -15,7 +15,7 @@ export const env = createEnv({
     PORTAL_APP_PORT: withDevDefault(z.string(), '3001'),
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
     JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
-    JWT_SECRET: withDevDefault(z.string(), 'SECRET_JWT_KEY_HERE'),
+    JWT_SECRET: withDevDefault(z.string(), 'super_secret_jwt'),
     JWT_API_INTEGRATION_ISSUER: withDevDefault(z.string(), 'intake24'),
     MAILTRAP_HOST: withDevDefault(z.string(), 'sandbox.smtp.mailtrap.io'),
     MAILTRAP_PORT: withDevDefault(

@@ -89,6 +89,7 @@ import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
+
 // const { t } = useI18n<i18nOptions>()
 
 // Composables
@@ -97,7 +98,10 @@ const $toast = useToast()
 
 // Queries
 const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const recallsQuery = useRecallsByUserId(
+  ref(`dietician:survey_id:${route.params['id']}`),
+)
+// const recallsQuery = useRecallsByUserId(ref('4072'))
 
 // Refs
 const date = ref<Date>(new Date())

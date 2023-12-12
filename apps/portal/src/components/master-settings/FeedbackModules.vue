@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div>
     <v-container>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -28,7 +28,6 @@
             <v-btn
               color="primary text-none"
               class="mt-3 mt-sm-0"
-              :disabled="!isFormValid"
               type="submit"
               @click.prevent="handleSubmit"
             >
@@ -39,6 +38,7 @@
       </div>
 
       <v-divider class="my-10" />
+
       <div>
         <v-form ref="form">
           <v-row
@@ -79,22 +79,7 @@
               :sm="smColOptions(fieldConfig.column)"
               class="self-end"
             >
-              <div
-                v-if="fieldConfig.element === 'input'"
-                class="survey-id-input"
-              >
-                <BaseInput
-                  type="text"
-                  v-bind="fieldConfig.props"
-                  :value="fieldConfig.value"
-                  placeholder="--- --- --- ---"
-                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
-                >
-                  Intake24 Survey ID
-                  <span class="text-primary">(required)</span>
-                </BaseInput>
-              </div>
-              <div v-else>
+              <div>
                 <component
                   :is="fieldConfig.component"
                   v-bind="fieldConfig.props"
@@ -105,23 +90,6 @@
               </div>
             </v-col>
           </v-row>
-          <div class="mt-10">
-            <p class="font-weight-medium">Review and save changes</p>
-            <div class="text subheading">
-              You have made changes to the master module setup. Review and
-              confirm the changes before you proceed with adding patients or
-              reviewing recall feedback
-            </div>
-            <v-btn
-              color="primary"
-              class="text-none mt-4"
-              type="submit"
-              :disabled="!isFormValid"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
         </v-form>
       </div>
     </v-container>
@@ -129,19 +97,38 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, ref, toRefs, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import { Theme } from '@intake24-dietician/common/types/theme'
-import { PatientSchema } from '@/schema/patient'
 import { useToast } from 'vue-toast-notification'
-import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
-import BaseInput from '@/components/form/BaseInput.vue'
-import ModuleSelectionAndFeedbackPersonalisation from './ModuleSelectionAndFeedbackPersonalisation.vue'
+import ModuleSelectionAndFeedbackPersonalisation, {
+  FeedbackMapping,
+} from './ModuleSelectionAndFeedbackPersonalisation.vue'
+import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities/survey.dto'
+import { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
 // const { t } = useI18n<i18nOptions>()
+
+export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
+  feedbackModules: (FeedbackModuleDTO & {
+    name: string
+    isActive: boolean
+    feedbackAboveRecommendedLevel: string
+    feedbackBelowRecommendedLevel: string
+  })[]
+}
+
+const props = defineProps<{
+  defaultState: SurveyPreferenceFeedbackModules
+  submit: () => Promise<void>
+}>()
+
+const emit = defineEmits<{
+  update: [value: SurveyPreferenceFeedbackModules]
+}>()
 
 type CSSClass = string | string[] | object
 
@@ -168,56 +155,101 @@ interface FormConfig {
   [key: string]: FormFieldConfig<any, any>
 }
 
+type ModuleName =
+  | 'Meal diary'
+  | 'Carbs exchange'
+  | 'Energy intake'
+  | 'Fibre intake'
+  | 'Water intake'
+
+const findFeedbackModel = (name: ModuleName) => {
+  return props.defaultState.feedbackModules.find(module => module.name === name)
+}
+
+const createFeedbackEntry = (key: ModuleName) => {
+  const feedbackModel = findFeedbackModel(key)
+
+  if (!feedbackModel) {
+    $toast.error('Failed to load feedback modules')
+    return {
+      id: 0,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    }
+  }
+
+  return {
+    id: feedbackModel.id,
+    feedbackBelow: feedbackModel.feedbackBelowRecommendedLevel,
+    feedbackAbove: feedbackModel.feedbackAboveRecommendedLevel,
+    isActive: feedbackModel.isActive,
+  }
+}
+
 const $toast = useToast()
 
-const form = ref()
+const feedbackModuleSetup = ref<SurveyPreferenceFeedbackModules>(
+  toRefs(props).defaultState.value,
+)
 
-const theme = ref<Theme>('Classic')
-const sendAutomatedFeedback = ref<boolean>(false)
-
-const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
-
-const aggregatedData = computed(() => ({
-  theme: theme.value,
-  sendAutomatedFeedback: sendAutomatedFeedback.value,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}))
-
-const isFormValid = computed(() => {
-  return PatientSchema.safeParse(aggregatedData.value).success
+const theme = ref<Theme>(toRefs(props).defaultState.value.theme as Theme)
+const sendAutomatedFeedback = ref<boolean>(
+  toRefs(props).defaultState.value.sendAutomatedFeedback,
+)
+const feedbackMapping = ref<FeedbackMapping>({
+  '/meal-diary': createFeedbackEntry('Meal diary'),
+  '/carbs-exchange': createFeedbackEntry('Carbs exchange'),
+  '/energy-intake': createFeedbackEntry('Energy intake'),
+  '/fibre-intake': createFeedbackEntry('Fibre intake'),
+  '/water-intake': createFeedbackEntry('Water intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {
+  feedbackModuleSetup.value = {
+    ...feedbackModuleSetup.value,
+    theme: _theme,
+  }
   theme.value = _theme
 }
 
-const handleSendAutomatedFeedback = (value: boolean) => {
-  sendAutomatedFeedback.value = value
+const handleSendAutomatedFeedback = (automatedFeedback: boolean) => {
+  feedbackModuleSetup.value = {
+    ...feedbackModuleSetup.value,
+    sendAutomatedFeedback: automatedFeedback,
+  }
+  sendAutomatedFeedback.value = automatedFeedback
+}
+
+const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
+  const updatedFeedbackModules = Object.values(feedbackMapping).reduce(
+    (acc, updatedModule) => {
+      const feedbackModule = feedbackModuleSetup.value.feedbackModules.find(
+        module => module.id === updatedModule.id,
+      )
+
+      if (feedbackModule) {
+        acc.push({
+          ...feedbackModule,
+          isActive: updatedModule.isActive,
+          feedbackAboveRecommendedLevel: updatedModule.feedbackAbove,
+          feedbackBelowRecommendedLevel: updatedModule.feedbackBelow,
+        })
+      }
+
+      return acc
+    },
+    [] as typeof feedbackModuleSetup.value.feedbackModules,
+  )
+
+  feedbackModuleSetup.value = {
+    ...feedbackModuleSetup.value,
+    feedbackModules: updatedFeedbackModules,
+  }
 }
 
 const handleSubmit = async (): Promise<void> => {
-  await form.value.validate()
-
-  return new Promise((resolve, reject) => {
-    // Validate with zod
-    const result = PatientSchema.safeParse(aggregatedData.value)
-
-    if (!result.success) {
-      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    // Validate with Vuetify
-    const errors = form.value.errors
-    if (errors.length > 0) {
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    resolve()
-  })
+  await props.submit()
 }
 
 let formConfig: FormConfig
@@ -246,7 +278,6 @@ onMounted(() => {
       value: theme,
       column: 1,
       onUpdate: (newTheme: Theme) => {
-        formConfig['themeSelector']!.value = newTheme
         handleVisualThemeUpdate(newTheme)
       },
     },
@@ -267,7 +298,6 @@ onMounted(() => {
       value: sendAutomatedFeedback,
       column: 2,
       onUpdate: (isEnabled: boolean) => {
-        formConfig['automatedFeedbackToggle']!.value = isEnabled
         handleSendAutomatedFeedback(isEnabled)
       },
     },
@@ -279,31 +309,23 @@ onMounted(() => {
       },
       component: ModuleSelectionAndFeedbackPersonalisation,
       column: 1,
+      props: {
+        defaultState: feedbackMapping.value,
+      },
+      onUpdate: handleFeedbackModulesUpdate,
     },
   }
 })
+
+watch(feedbackModuleSetup, formData => {
+  emit('update', formData)
+})
+
+// Helpers
+const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

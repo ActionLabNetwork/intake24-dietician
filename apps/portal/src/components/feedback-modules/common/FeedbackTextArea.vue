@@ -1,7 +1,7 @@
 <template>
   <div v-if="props.editable">
-    <div class="font-weight-bold">
-      Feedback
+    <div class="font-weight-medium">
+      {{ textAreaLabel }}
       <v-row class="mt-1 justify-space-between">
         <v-col cols="10">
           <v-textarea
@@ -62,11 +62,13 @@ const props = withDefaults(
     editable: boolean
     bgColor: string
     textColor: string
+    textAreaLabel?: string
   }>(),
   {
     editable: true,
     bgColor: '#fff',
     textColor: '#000',
+    textAreaLabel: 'Feedback',
   },
 )
 

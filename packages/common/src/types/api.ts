@@ -1,10 +1,20 @@
-import type { PatientProfileValues, SurveyAttributes } from './auth'
-import type { IRecallExtended } from './recall'
-import type { Result } from './utils'
+import type {
+  PatientProfileValues,
+  SurveyAttributes,
+} from '@intake24-dietician/common/types/auth'
+import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import type { Result } from '@intake24-dietician/common/types/utils'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
+import type {
+  SurveyDTO,
+  SurveyPreferencesDTO,
+} from '@intake24-dietician/common/entities/survey.dto'
+import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import type { SurveyPreference } from '@intake24-dietician/common/types/survey'
 
 export interface ApiResponseWithData<T> {
   data: T
@@ -59,6 +69,24 @@ export interface ISurveyApiService {
   getSurveysByOwnerId: (
     ownerId: number,
   ) => Promise<Result<SurveyAttributes[] | null | Error>>
+  getSurveyById: (id: SurveyDTO['id']) => Promise<
+    Result<
+      SurveyDTO & {
+        surveyPreference: SurveyPreferencesDTO & {
+          feedbackModules: (FeedbackModuleDTO & {
+            isActive: boolean
+            feedbackAboveRecommendedLevel: string
+            feedbackBelowRecommendedLevel: string
+          })[]
+        } & { recallFrequency: RecallFrequencyDTO }
+      }
+    >
+  >
+  createSurvey: (surveyData: Omit<SurveyDTO, 'id'>) => Promise<Result<boolean>>
+  updateSurveyPreferences: (
+    userId: UserDTO['id'],
+    data: SurveyPreference,
+  ) => Promise<Result<boolean>>
 }
 
 export interface IQueryParams {

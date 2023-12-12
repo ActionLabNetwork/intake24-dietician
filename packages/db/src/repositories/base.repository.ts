@@ -46,6 +46,7 @@ export const createBaseRepository = <
       ...(include ? { include } : {}),
       ...(paranoid !== undefined ? { paranoid } : {}),
     })
+    console.log({ foundModel })
     return foundModel?.get({ plain: true })
   }
 

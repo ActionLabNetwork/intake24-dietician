@@ -19,8 +19,8 @@
       :readonly="readonly ?? false"
       :suffix="suffix"
       @input="updateValue"
-      @click:append-inner="handleIconClick ?? (() => {})"
-      @click:append="handleOuterIconClick ?? (() => {})"
+      @click:append-inner="handleIconClick"
+      @click:append="handleOuterIconClick"
     >
     </v-text-field>
   </div>

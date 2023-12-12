@@ -26,6 +26,7 @@ export interface IRecall {
 export interface IRecallExtended extends IRecall {
   dietionSurveyId: string
   addedToRecallDb: Date
+  username: string
 }
 
 export interface IRecallUser {

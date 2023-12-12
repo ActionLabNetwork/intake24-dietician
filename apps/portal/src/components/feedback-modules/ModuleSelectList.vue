@@ -49,6 +49,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
 import type { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 
 export interface ModuleItem {
   title: string
@@ -56,6 +57,8 @@ export interface ModuleItem {
   selected: boolean
   to: ModuleRoute
 }
+
+const props = defineProps<{ defaultState?: FeedbackMapping }>()
 
 const emit = defineEmits<{
   update: [value: ModuleRoute]
@@ -95,6 +98,10 @@ onMounted(() => {
   const currentRoute = route.path.split('/').pop() ?? ''
   selectedModule.value =
     items.value.find(i => i.to.includes(currentRoute))?.value ?? 1
+
+  if (props.defaultState) {
+    mapPropsToRef()
+  }
 })
 
 const handleModuleSelect = (title: ModuleRoute) => {
@@ -103,5 +110,13 @@ const handleModuleSelect = (title: ModuleRoute) => {
   if (!item) return
   selectedModule.value = item.value
   emit('update', item.to)
+}
+
+// Helpers
+const mapPropsToRef = () => {
+  items.value.forEach(item => {
+    const defaultStateItem = props.defaultState?.[item.to]
+    item.selected = defaultStateItem?.isActive ?? false
+  })
 }
 </script>

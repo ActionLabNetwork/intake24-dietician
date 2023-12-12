@@ -73,13 +73,11 @@ const addButtonLink = '/dashboard/my-surveys/add-survey'
 const summary = computed((): Summary => {
   const data = dataQuery.data.value?.data
   if (data === undefined || !data.ok) return { total: 0, active: 0, archived: 0 }
-  console.log(data)
 
   return data.value.reduce(
-    (counts, survey) => {
+    (counts) => {
       counts.total++
       counts.active++
-      console.log(survey)
       return counts
     },
     { total: 0, active: 0, archived: 0 },

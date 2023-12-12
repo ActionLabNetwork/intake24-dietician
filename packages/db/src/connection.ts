@@ -35,7 +35,7 @@ const connectMongo = async () => {
 const connectPostgres = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync({ force: false })
+    await sequelize.sync({ alter: true, force: false })
     console.log('✅ Connected to Database')
   } catch (error) {
     console.error('❌ Unable to connect to database:', error)

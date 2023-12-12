@@ -53,6 +53,7 @@ export class RecallController extends Controller {
   @SuccessResponse('201', 'Created')
   @Post('{requestSurveyId}')
   @Security('jwt', ['api_integration'])
+  // TODO: extract username find logic to middleware
   public async createRecall(
     @Request() request: ExRequest,
     @Path() requestSurveyId: string,
@@ -82,7 +83,23 @@ export class RecallController extends Controller {
       survey: requestBody.survey,
       customFields: requestBody.customFields,
       addedToRecallDb: new Date(),
+      username:
+        requestBody.user.aliases.find(
+          (alias: any) => alias.surveyId === requestBody.surveyId,
+        ).username || 'None',
     }
+
+    // TODO: Create a record in recall_feedback_link table
+
     return this.recallService.createRecall(recallTOBeSaved as IRecallExtended)
   }
+
+  // public async customMiddleware(
+  //   req: ExRequest,
+  //   res: ExpResponse,
+  //   next: NextFunction,
+  // ) {
+  //   req.
+  //   next()
+  // }
 }

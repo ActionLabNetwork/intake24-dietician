@@ -10,8 +10,10 @@
             name="recallFrequency"
             :value="reminderConditions.reminderEvery.quantity.toString()"
             @update="
-              newVal =>
-                (reminderConditions.reminderEvery.quantity = Number(newVal))
+              newVal => {
+                reminderConditions.reminderEvery.quantity = Number(newVal)
+                $emit('update', reminderConditions)
+              }
             "
           >
             Remind every <span class="text-primary">(required)</span>
@@ -25,7 +27,10 @@
             :model-value="reminderConditions.reminderEvery.unit"
             density="comfortable"
             @update:model-value="
-              newVal => (reminderConditions.reminderEvery.unit = newVal)
+              newVal => {
+                reminderConditions.reminderEvery.unit = newVal
+                $emit('update', reminderConditions)
+              }
             "
           ></v-select>
         </div>

@@ -12,11 +12,19 @@ export const SurveyConfigurstionSchema = z.object({
   alias: z.string(),
 })
 
-export const SurveyConfigurstionSchemaDetails = createFormSchema(
-  ['name', 'status', 'alias'] as const,
+export const SurveyConfigurationSchemaDetails = createFormSchema(
+  [
+    'name',
+    'intake24SurveyId',
+    'intake24Secret',
+    'alias',
+    'recallSubmissionUrl',
+  ] as const,
   {
     name: z.string().min(1, 'Name is required'),
-    status: z.string(),
-    alias: z.string(),
+    intake24SurveyId: z.string().min(1, 'Intake24 Survey Id is required'),
+    intake24Secret: z.string().min(1, 'Intake24 Secret is required'),
+    alias: z.string().min(1, 'Alias is required'),
+    recallSubmissionUrl: z.string().min(1, 'Recall Submission Url is required'),
   },
 )

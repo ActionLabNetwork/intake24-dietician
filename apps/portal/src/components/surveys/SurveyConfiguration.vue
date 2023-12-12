@@ -7,7 +7,7 @@
           {{ t('surveys.addNewSurvey.subtitle') }}
         </h3>
       </div>
-      <div>
+      <div class="mt-5">
         <v-btn
           color="primary text-none"
           class="mt-3 mt-sm-0"
@@ -62,35 +62,37 @@ import type { Form } from '../profile/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-import { SurveyConfigurstionSchemaDetails } from '@intake24-dietician/portal/schema/survey'
+import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 // import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
-export interface SurveyConfigursationFormValues {
+export interface SurveyConfigurationFormValues {
   name: string
-  status: string
+  intake24SurveyId: string
+  intake24Secret: string
   alias: string
+  recallSubmissionUrl: string
 }
 
 const props = defineProps<{
-  defaultState: SurveyConfigursationFormValues
-  handleSubmit?: () => Promise<void>
+  defaultState: SurveyConfigurationFormValues
+  handleSubmit?: () => Promise<unknown>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
-  update: [value: SurveyConfigursationFormValues]
+  update: [value: SurveyConfigurationFormValues]
 }>()
 
 const { t } = useI18n<i18nOptions>()
 const { mdAndUp } = useDisplay()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<SurveyConfigursationFormValues>({
+const formValues = ref<SurveyConfigurationFormValues>({
   ...props.defaultState,
 })
 
 const handleFieldUpdate = (
-  fieldName: keyof SurveyConfigursationFormValues,
+  fieldName: keyof SurveyConfigurationFormValues,
   newVal: string,
 ) => {
   formValues.value[fieldName] = newVal
@@ -98,7 +100,7 @@ const handleFieldUpdate = (
 }
 
 const formSurveyConfig: Form<
-  (typeof SurveyConfigurstionSchemaDetails.fields)[number]
+  (typeof SurveyConfigurationSchemaDetails.fields)[number]
 > = {
   name: {
     key: 'name',
@@ -109,38 +111,83 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurstionSchemaDetails.schema.name, value),
+        validateWithZod(SurveyConfigurationSchemaDetails.schema.name, value),
     ],
     handleUpdate: val => handleFieldUpdate('name', val),
   },
-  status: {
-    key: 'status',
-    label: t('surveys.addNewSurvey.surveyDetails.status'),
-    required: false,
+  intake24SurveyId: {
+    key: 'intake24SurveyId',
+    label: 'Intake24 Survey ID',
+    required: true,
+    labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurstionSchemaDetails.schema.status, value),
+        validateWithZod(
+          SurveyConfigurationSchemaDetails.schema.intake24SurveyId,
+          value,
+        ),
     ],
-    handleUpdate: val => handleFieldUpdate('status', val),
+    handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
+  },
+  intake24Secret: {
+    key: 'intake24Secret',
+    label: 'Intake24 Secret',
+    required: true,
+    labelSuffix: ' (required)',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(
+          SurveyConfigurationSchemaDetails.schema.intake24Secret,
+          value,
+        ),
+    ],
+    handleUpdate: val => handleFieldUpdate('intake24Secret', val),
   },
   alias: {
     key: 'alias',
     label: t('surveys.addNewSurvey.surveyDetails.alias'),
-    required: false,
+    required: true,
+    labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurstionSchemaDetails.schema.alias, value),
+        validateWithZod(SurveyConfigurationSchemaDetails.schema.alias, value),
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
+  },
+  recallSubmissionUrl: {
+    key: 'recallSubmissionUrl',
+    label: 'Recall Submission URL',
+    required: true,
+    labelSuffix: ' (required)',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(
+          SurveyConfigurationSchemaDetails.schema.recallSubmissionUrl,
+          value,
+        ),
+    ],
+    handleUpdate: val => handleFieldUpdate('recallSubmissionUrl', val),
   },
 }
 </script>
 
 <style scoped lang="scss">
+.input-label {
+  color: #555555;
+
+  &.suffix {
+    color: #ee672d;
+  }
+}
+
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

@@ -1,4 +1,3 @@
-
 // import * as jwt from 'jsonwebtoken'
 import { env } from '@/config/env'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
@@ -22,7 +21,7 @@ const getTheSecret = async (
 ) => {
   if (scope !== undefined && scope === 'api_integration') {
     const response = await fetch(
-      `${env.API_EXTERNAL_HOST}/survey/` +
+      `${env.API_EXTERNAL_HOST}:${env.API_PORT}/surveys/integration/` +
         surveyID +
         `?scope=api_integration`,
       {
@@ -143,18 +142,19 @@ export async function expressAuthentication(
   const surveyID = request.params['requestSurveyId'] as string
   let tokenType: TTokenType = 'access-token'
   let accessToken = request.cookies['accessToken']
-  let intake24SurveyId;
-  if (scopes !==undefined && scopes[0] === 'api_integration'){
+  let intake24SurveyId
+  if (scopes !== undefined && scopes[0] === 'api_integration') {
     intake24SurveyId = request.body.survey.slug as string
-    if (!intake24SurveyId) return new Promise(reject => {
-      reject(
-        generateErrorResponse(
-          '422',
-          'Unprocessable Entity',
-          'No enough data received for the recall',
-        ),
-      )
-    })
+    if (!intake24SurveyId)
+      return new Promise(reject => {
+        reject(
+          generateErrorResponse(
+            '422',
+            'Unprocessable Entity',
+            'No enough data received for the recall',
+          ),
+        )
+      })
   }
 
   let secret = await getTheSecret(
@@ -162,6 +162,7 @@ export async function expressAuthentication(
     scopes ? scopes[0] : null,
     intake24SurveyId,
   )
+
 
   if (!secret) secret = env.JWT_SECRET
   if (secret === null)

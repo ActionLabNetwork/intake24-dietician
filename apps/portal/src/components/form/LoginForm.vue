@@ -159,6 +159,7 @@ const formConfig: Ref<Form<(typeof LoginSchema.fields)[number]>> = ref({
       passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
     ),
     handleSuffixIconClick: () => {
+      console.log('CLICKED')
       passwordVisible.value = !passwordVisible.value
     },
     rules: [(v: string) => validateWithZod(LoginSchema.schema.password, v)],

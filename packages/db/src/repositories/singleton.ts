@@ -16,6 +16,8 @@ const repositoryCache: RepositoryCache = {
   baseTokenRepository: null,
   basePatientPreferencesRepository: null,
   baseRecallFrequencyRepository: null,
+  baseSurveyRepository: null,
+  baseSurveyPreferencesRepository: null,
 }
 
 const getBaseRepository = <K extends RepositoryCreatorKeys>(name: K) => {
@@ -39,4 +41,7 @@ export const baseRepositories = {
     getBaseRepository('basePatientPreferencesRepository'),
   baseRecallFrequencyRepository: () =>
     getBaseRepository('baseRecallFrequencyRepository'),
+  baseSurveyRepository: () => getBaseRepository('baseSurveyRepository'),
+  baseSurveyPreferencesRepository: () =>
+    getBaseRepository('baseSurveyPreferencesRepository'),
 }

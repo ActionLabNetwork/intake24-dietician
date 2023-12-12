@@ -1,17 +1,29 @@
-// import type { Result } from '@intake24-dietician/common/types/utils'
-// import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-// import { Op } from '@intake24-dietician/db/connection'
-// import { toInt } from 'radash'
-// import { z } from 'zod'
-
 import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
 import Survey from '@intake24-dietician/db/models/api/survey.model'
 import type { Result } from '@intake24-dietician/common/types/utils'
+import type {
+  SurveyDTO,
+  SurveyPreferencesDTO,
+} from '@intake24-dietician/common/entities/survey.dto'
+import { createSurveyRepository } from '@intake24-dietician/db/repositories/survey.repository'
+import type { ISurveyApiService } from '@intake24-dietician/common/types/api'
 
-// import { createLogger } from '../middleware/logger'
+import { createLogger } from '../middleware/logger'
+import { getErrorMessage } from '@intake24-dietician/common/utils/error'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import type { SurveyPreference } from '@intake24-dietician/common/types/survey'
+import SurveyPreferencesFeedbackModule from '@intake24-dietician/db/models/api/feedback-modules/survey-preferences-feedback-module.model'
+import SurveyPreferences from '@intake24-dietician/db/models/api/survey-preference.model'
+import { sequelize } from '@intake24-dietician/db/connection'
+import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
 
-export const createSurveyService = () => {
-  // Get the recall by id
+export const createSurveyService = (): ISurveyApiService => {
+  const surveyRepository = createSurveyRepository()
+  const logger = createLogger('SurveyService')
+
+  // Get the recall by ids
   const getSurveySecretByAlias = async (
     id: string,
   ): Promise<Result<SurveyAttributes | null | Error>> => {
@@ -58,8 +70,127 @@ export const createSurveyService = () => {
     }
   }
 
+  const getSurveyById = async (
+    id: SurveyDTO['id'],
+  ): Promise<
+    Result<
+      SurveyDTO & {
+        surveyPreference: SurveyPreferencesDTO & {
+          feedbackModules: (FeedbackModuleDTO & {
+            isActive: boolean
+            feedbackAboveRecommendedLevel: string
+            feedbackBelowRecommendedLevel: string
+          })[]
+        } & { recallFrequency: RecallFrequencyDTO }
+      }
+    >
+  > => {
+    try {
+      const survey = await surveyRepository.findOneWithPreferences(id)
+
+      if (!survey) {
+        logger.error('Survey not found')
+        return {
+          ok: false,
+          error: new Error('Survey not found'),
+        } as const
+      }
+
+      logger.info('Survey found', survey)
+      return { ok: true, value: survey } as const
+    } catch (error) {
+      console.error({ error })
+      logger.error('Failed to get survey', getErrorMessage(error))
+      return {
+        ok: false,
+        error: new Error('Failed to get survey'),
+      } as const
+    }
+  }
+
+  const createSurvey = async (
+    surveyData: Omit<SurveyDTO, 'id'>,
+  ): Promise<Result<boolean>> => {
+    try {
+      const survey = await surveyRepository.createOne(surveyData)
+      logger.info('Survey created', survey)
+
+      return { ok: true, value: true } as const
+    } catch (error) {
+      logger.error('Failed to create survey', error)
+
+      return {
+        ok: false,
+        error: new Error('Failed to create survey'),
+      } as const
+    }
+  }
+
+  const updateSurveyPreferences = async (
+    userId: UserDTO['id'],
+    data: SurveyPreference,
+  ): Promise<Result<boolean>> => {
+    try {
+      console.log({ userId, data, dataFM: data.feedbackModules })
+
+      sequelize.transaction(async transaction => {
+        const surveyPreferences = await SurveyPreferences.findByPk(data.id, {
+          transaction,
+        })
+
+        if (!surveyPreferences) {
+          logger.error('Survey preferences not found')
+          throw new Error('Survey preferences not found')
+        }
+
+        // Update the base survey preferences
+        const { theme, sendAutomatedFeedback, notifyEmail, notifySms } = data
+        await surveyPreferences.update(
+          {
+            theme,
+            sendAutomatedFeedback,
+            notifyEmail,
+            notifySms,
+          },
+          { transaction },
+        )
+
+        // Update the feedback modules preferences
+        data.feedbackModules.forEach(async clientFeedbackModule => {
+          const dbFeedbackModule =
+            await SurveyPreferencesFeedbackModule.findOne({
+              where: {
+                surveyPreferencesId: data.id,
+                feedbackModuleId: clientFeedbackModule.id,
+              },
+              transaction,
+            })
+
+          if (dbFeedbackModule) {
+            await dbFeedbackModule.update(
+              { ...clientFeedbackModule },
+              { transaction },
+            )
+          }
+        })
+
+        // Update the recall frequency preferences
+        await RecallFrequency.update(data.recallFrequency, {
+          where: { surveyPreferencesId: data.id },
+        })
+      })
+
+      return { ok: true, value: true } as const
+    } catch (error) {
+      return { ok: false, error: new Error(getErrorMessage(error)) } as const
+    }
+  }
+
   return {
     getSurveySecretByAlias,
     getSurveysByOwnerId,
+    getSurveyById,
+    createSurvey,
+    updateSurveyPreferences,
   }
 }

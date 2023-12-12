@@ -16,6 +16,13 @@ import type { PatientProfileDTO } from '@intake24-dietician/common/entities/pati
 import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import Survey from '@intake24-dietician/db/models/api/survey.model'
+import type {
+  SurveyPreferencesDTO} from '@intake24-dietician/common/entities/survey.dto';
+import type {
+  SurveyDTO,
+} from '@intake24-dietician/common/entities/survey.dto'
+import SurveyPreferences from '../models/api/survey-preference.model'
 
 const createBaseUserRepository = () =>
   createBaseRepository<UserDTO, Pick<UserDTO, 'email' | 'password'>, User>(User)
@@ -76,6 +83,16 @@ const createRecallFrequencyRepository = () =>
     RecallFrequency
   >(RecallFrequency)
 
+const createBaseSurveyRepository = () =>
+  createBaseRepository<SurveyDTO, Omit<SurveyDTO, 'id'>, Survey>(Survey)
+
+const createBaseSurveyPreferencesRepository = () =>
+  createBaseRepository<
+    SurveyPreferencesDTO,
+    Pick<SurveyPreferencesDTO, 'surveyId'>,
+    SurveyPreferences
+  >(SurveyPreferences)
+
 export const baseRepositoryCreators = {
   baseUserRepository: createBaseUserRepository,
   baseDieticianProfileRepository: createBaseDieticianProfileRepository,
@@ -85,4 +102,6 @@ export const baseRepositoryCreators = {
   baseTokenRepository: createBaseTokenRepository,
   basePatientPreferencesRepository: createBasePatientPreferencesRepository,
   baseRecallFrequencyRepository: createRecallFrequencyRepository,
+  baseSurveyRepository: createBaseSurveyRepository,
+  baseSurveyPreferencesRepository: createBaseSurveyPreferencesRepository,
 } as const

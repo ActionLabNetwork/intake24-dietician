@@ -59,6 +59,10 @@ export const createUserRepository = (): IUserRepository => {
         { transaction: t },
       )
 
+      if (!user) {
+        throw new Error('Could not create user')
+      }
+
       // Create dietician profile
       await baseDieticianProfileRepository.createOne(
         { userId: user.id },
@@ -208,6 +212,10 @@ export const createUserRepository = (): IUserRepository => {
           { transaction: t },
         )
 
+        if (!user) {
+          throw new Error('Could not create user')
+        }
+
         // Create patient profile
         const patientProfile = await basePatientProfileRepository.createOne(
           {
@@ -245,6 +253,10 @@ export const createUserRepository = (): IUserRepository => {
           //   { transaction: t },
           // )
 
+          if (!patientProfile) {
+            throw new Error('Could not create patient profile')
+          }
+
           const patientPreferences =
             await basePatientPreferencesRepository.createOne(
               {
@@ -269,7 +281,6 @@ export const createUserRepository = (): IUserRepository => {
                 unit: patientDetails.patientPreferences.recallFrequency.unit,
                 end: patientDetails.patientPreferences.recallFrequency.end,
                 reminderMessage: '',
-                patientPreferencesId: patientPreferences.id,
               },
               { transaction: t },
             )
@@ -405,7 +416,7 @@ export const createUserRepository = (): IUserRepository => {
       const patientPreferences = patientProfile.dataValues.patientPreferences
 
       if (patientPreferences) {
-        const updatedPP = await PatientPreferences.update(
+        await PatientPreferences.update(
           {
             theme:
               patientDetails.theme ?? patientProfile.patientPreferences.theme,
@@ -420,13 +431,11 @@ export const createUserRepository = (): IUserRepository => {
           },
         )
 
-        console.log({ updatedPP: updatedPP[1][0]?.dataValues })
-
         // Update recall frequency
         const recallFrequency = patientPreferences.dataValues.recallFrequency
 
         if (recallFrequency) {
-          const updatedRF = await RecallFrequency.update(
+          await RecallFrequency.update(
             {
               quantity:
                 patientDetails.recallFrequency?.reminderEvery.quantity ??
@@ -444,8 +453,6 @@ export const createUserRepository = (): IUserRepository => {
               returning: true,
             },
           )
-
-          console.log({ updatedRF: updatedRF[1][0]?.dataValues })
         }
       }
 

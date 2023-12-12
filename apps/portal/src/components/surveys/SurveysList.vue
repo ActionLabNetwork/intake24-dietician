@@ -59,7 +59,6 @@
         <tr class="text-center">
           <td class="text-left">
             <div class="d-flex align-center">
-              <!-- <v-avatar :image="getDefaultAvatar(item.raw.name)" /> -->
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>
@@ -77,40 +76,8 @@
           <td>
             <div class="d-flex flex-column align-center">
               {{ item.raw.recallSubmissionUrl }}
-              <!-- <v-chip
-                variant="outlined"
-                :color="
-                  item.raw.lastFeedbackSent.type === 'Tailored'
-                    ? 'success'
-                    : 'warning'
-                "
-                class="mt-2"
-                :text="item.raw.lastFeedbackSent.type"
-              >
-              </v-chip> -->
             </div>
           </td>
-          <!-- <td>
-            <v-chip
-              variant="flat"
-              :color="
-                item.raw.patientStatus === 'Active' ? 'success' : 'neutral'
-              "
-              :text="item.raw.patientStatus"
-            >
-            </v-chip>
-            <span v-show="false">{{ item.raw.patientStatus }}</span>
-          </td> -->
-          <!-- <td>
-            <div
-              class="d-flex flex-column flex-xl-row align-baseline justify-center"
-            >
-              {{ item.raw.lastReminderSent }}
-              <span class="mt-2 ml-0 ml-xl-4">
-                <v-btn class="text-capitalize" color="accent"> Remind </v-btn>
-              </span>
-            </div>
-          </td> -->
         </tr>
       </template>
     </v-data-table>
@@ -121,10 +88,7 @@
 import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
-// import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-// import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
-import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto.ts'
-// import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
+import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -141,7 +105,6 @@ const headerTitles = [
   'Survey Details',
   'Alias',
   'Recall Submission Url',
-  'Status',
 ] as const
 
 interface SurveyTableHeaders {
@@ -194,29 +157,9 @@ const headers = ref<SurveyTableHeaders[]>([
     key: 'recallSubmissionUrl',
     sortable: false,
   },
-  {
-    title: 'Status',
-    align: 'center',
-    key: 'status',
-    sortable: true,
-  },
 ])
 
 const search = ref('')
-
-// function randomDate(start: Date, end: Date) {
-//   return new Date(
-//     start.getTime() + Math.random() * (end.getTime() - start.getTime()),
-//   )
-// }
-
-// const getRandomDate = () =>
-//   randomDate(new Date(2012, 0, 1), new Date()).toLocaleString('en-US', {
-//     month: 'short',
-//     day: 'numeric',
-//     year: 'numeric',
-//   })
-
 const surveys = ref<SpecificSurveyTableColumns[]>([])
 
 watch(
@@ -231,7 +174,6 @@ watch(
           surveyDetails: undefined,
           alias: survey.alias,
           recallSubmissionUrl: survey.recallSubmissionUrl ?? '',
-          status: survey.status ? 'Active' : 'Inactive',
         }
       }) ?? []
   },

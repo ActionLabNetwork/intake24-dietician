@@ -185,6 +185,11 @@ export const createUserService = (): IUserService => {
   const createRole = async (name: string): Promise<Result<RoleDTO>> => {
     try {
       const role = await roleRepository.createOne({ name })
+
+      if (!role) {
+        return { ok: false, error: new Error('Role not created') } as const
+      }
+
       return { ok: true, value: role } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
@@ -219,6 +224,13 @@ export const createUserService = (): IUserService => {
         userId: userId,
         roleId: role.id!,
       })
+
+      if (!userRole) {
+        return {
+          ok: false,
+          error: new Error('Failed to assign role to user'),
+        } as const
+      }
 
       return { ok: true, value: userRole } as const
     } catch (error) {

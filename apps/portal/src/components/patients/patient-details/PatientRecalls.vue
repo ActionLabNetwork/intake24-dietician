@@ -9,9 +9,16 @@
 import { useRecallsByUserId } from '@/queries/useRecall'
 import { ref, watch } from 'vue'
 import moment from 'moment'
+import { useRoute } from 'vue-router'
+
+const route = useRoute()
+console.log({ p: route.params })
 
 const recallId = ref('')
-const recallsQuery = useRecallsByUserId(ref('4072'))
+// const recallsQuery = useRecallsByUserId(ref('4072'))
+const recallsQuery = useRecallsByUserId(
+  ref(`dietician:survey_id:${route.params['id']}`),
+)
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
