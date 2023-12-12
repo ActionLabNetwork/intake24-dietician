@@ -96,13 +96,11 @@
 </template>
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
-import { useDebounceFn } from '@vueuse/core'
 
 import { useDisplay } from 'vuetify'
 
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
-import { INPUT_DEBOUNCE_TIME } from '@/constants'
 import { ref } from 'vue'
 import { Gender, genders } from '@/schema/patient'
 
@@ -136,20 +134,20 @@ const { mdAndUp } = useDisplay()
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
 
-const handleFieldUpdate = useDebounceFn(
-  (fieldName: keyof PersonalDetailsFormValues, newVal: string) => {
-    const numericValue = Number(newVal)
+const handleFieldUpdate = (
+  fieldName: keyof PersonalDetailsFormValues,
+  newVal: string,
+) => {
+  const numericValue = Number(newVal)
 
-    if (isNumericField(fieldName)) {
-      formValues.value[fieldName] = numericValue
-      emit('update', { ...formValues.value })
-    } else {
-      formValues.value[fieldName] = newVal as (typeof genders)[number]
-      emit('update', { ...formValues.value })
-    }
-  },
-  INPUT_DEBOUNCE_TIME,
-)
+  if (isNumericField(fieldName)) {
+    formValues.value[fieldName] = numericValue
+    emit('update', { ...formValues.value })
+  } else {
+    formValues.value[fieldName] = newVal as (typeof genders)[number]
+    emit('update', { ...formValues.value })
+  }
+}
 </script>
 <style scoped lang="scss">
 .avatar {
