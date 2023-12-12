@@ -82,7 +82,7 @@ export interface IAuthService {
   forgotPassword: (email: string) => Promise<Result<string>>
   resetPassword: (token: string, password: string) => Promise<Result<string>>
   refreshAccessToken: (refreshToken: string) => Promise<Result<UserWithToken>>
-  getUser: (jti: string) => Promise<Result<UserAttributes | null>>
+  getUser: (accessToken: string) => Promise<Result<UserAttributes | null>>
   validateJwt: (
     accessToken: string,
     refreshToken: string,

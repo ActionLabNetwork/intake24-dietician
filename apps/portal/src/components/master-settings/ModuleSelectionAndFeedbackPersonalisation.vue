@@ -1,49 +1,59 @@
 <template>
   <v-row class="ml-2">
-    <v-col cols="4">
+    <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
+        :default-state="defaultState"
         @update="handleModuleChange"
-        @update:modules="console.log"
+        @update:modules="handleModulesChange"
       />
     </v-col>
-    <v-col cols="0" width="100%">
-      <!-- TODO: Replace this with the individual modules -->
-      <v-card class="mx-auto" min-height="50rem">
-        <!-- <v-row align="center">
-          <v-col cols="6">
-            <div class="pt-5 pl-5">
-              <div class="font-weight-medium">Fibre intake</div>
-              <div class="subheading font-weight-medium">
-                This module provides with an overview the how much fibres (in
-                grams) was consumed by the patient for each meal in timeline and
-                pie-chart formats.
-              </div>
-            </div>
-          </v-col>
-          <v-spacer />
-          <v-col cols="2">
-            <div>
-              <v-switch inset color="success" label="Use this module" />
-            </div>
-          </v-col>
-        </v-row> -->
-
+    <v-col cols="8" md="8" lg="9" width="100%">
+      <v-card class="mx-auto">
+        <!-- TODO: Figure out how to add preview (e.g. Using test data) -->
         <!-- Preview -->
         <div class="ma-4">
-          <!-- <EnergyIntakeModule /> -->
+          <!-- <component
+            :is="routeToModuleComponentMapping[component].component"
+            :recalls-data="recallsData"
+            :recall-date="date"
+            :feedback="moduleFeedback"
+          /> -->
         </div>
 
         <!-- Feedback Personalisation -->
         <div>
-          <div class="text feedback-heading">Customise this feedback</div>
-          <div class="text feedback-subheading mt-4">
-            Feedback for below recommended level
-            <v-textarea class="mt-3"></v-textarea>
+          <div class="text feedback-heading">
+            Customise this feedback ({{
+              selectedModule.slice(1).replace(/-/g, ' ')
+            }})
           </div>
-          <div class="text feedback-subheading">
-            Feedback for meeting or above recommended level
-            <v-textarea class="mt-3"></v-textarea>
-          </div>
+          <!-- Feedback for below recommended level -->
+          <FeedbackTextArea
+            class="pl-4 pt-4"
+            text-area-label="Feedback for below recommended level"
+            :feedback="
+              routeToModuleComponentMapping[selectedModule].feedbackBelow
+            "
+            editable
+            @update:feedback="
+              routeToModuleComponentMapping[selectedModule].feedbackBelow =
+                $event
+            "
+          />
+
+          <!-- Feedback for above recommended level -->
+          <FeedbackTextArea
+            class="pl-4 pt-4"
+            text-area-label="Feedback for above recommended level"
+            :feedback="
+              routeToModuleComponentMapping[selectedModule].feedbackAbove
+            "
+            editable
+            @update:feedback="
+              routeToModuleComponentMapping[selectedModule].feedbackAbove =
+                $event
+            "
+          />
         </div>
       </v-card>
     </v-col>
@@ -51,14 +61,121 @@
 </template>
 
 <script setup lang="ts">
-import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
-import ModuleSelectList from '../feedback-modules/ModuleSelectList.vue'
-import { ref } from 'vue'
+import {
+  ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
+  ModuleRoute,
+} from '@intake24-dietician/portal/types/modules.types'
+import ModuleSelectList, {
+  ModuleItem,
+} from '../feedback-modules/ModuleSelectList.vue'
+import { reactive, ref, watch } from 'vue'
+import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
 
-const selectedModule = ref<ModuleRoute>()
+export type FeedbackMapping = {
+  [K in keyof typeof routeToModuleComponentMapping]: {
+    id: number
+    feedbackBelow: (typeof routeToModuleComponentMapping)[K]['feedbackBelow']
+    feedbackAbove: (typeof routeToModuleComponentMapping)[K]['feedbackAbove']
+    isActive: boolean
+  }
+}
+
+const props = defineProps<{ defaultState: FeedbackMapping }>()
+
+const emit = defineEmits<{
+  update: [presetModulesFeedbacks: FeedbackMapping]
+}>()
+
+const selectedModule = ref<ModuleRoute>('/meal-diary')
+// const component = ref<ModuleRoute>('/meal-diary')
+
+// TODO: Figure out a way to show preview of the modules. Maybe use a test data for sample?
+const routeToModuleComponentMapping: ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =
+  reactive({
+    '/meal-diary': {
+      component: MealDiaryModule,
+      id: 0,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    '/carbs-exchange': {
+      id: 0,
+      component: CarbsExchangeModule,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    '/energy-intake': {
+      id: 0,
+      component: EnergyIntakeModule,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    '/fibre-intake': {
+      id: 0,
+      component: FibreIntakeModule,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    '/water-intake': {
+      id: 0,
+      component: WaterIntakeModule,
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+  })
+
 const handleModuleChange = (module: ModuleRoute) => {
   selectedModule.value = module
+  console.log({ module })
 }
+
+const handleModulesChange = (modules: ModuleItem[]) => {
+  console.log({ modules })
+  modules.forEach(module => {
+    routeToModuleComponentMapping[module.to].isActive = module.selected
+  })
+}
+
+watch(routeToModuleComponentMapping, newFeedbacks => {
+  const feedbackMapping = Object.fromEntries(
+    Object.entries(newFeedbacks).map(([key, value]) => [
+      key,
+      {
+        id: value.id,
+        feedbackBelow: value.feedbackBelow,
+        feedbackAbove: value.feedbackAbove,
+        isActive: value.isActive,
+      },
+    ]),
+  ) as FeedbackMapping
+  emit('update', feedbackMapping)
+})
+
+watch(
+  () => props.defaultState,
+  newDefaultState => {
+    Object.entries(newDefaultState).forEach(([key, value]) => {
+      const routeKey = key as keyof typeof routeToModuleComponentMapping
+      routeToModuleComponentMapping[routeKey].id = value.id
+      routeToModuleComponentMapping[routeKey].feedbackBelow =
+        value.feedbackBelow
+      routeToModuleComponentMapping[routeKey].feedbackAbove =
+        value.feedbackAbove
+      routeToModuleComponentMapping[routeKey].isActive = value.isActive
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

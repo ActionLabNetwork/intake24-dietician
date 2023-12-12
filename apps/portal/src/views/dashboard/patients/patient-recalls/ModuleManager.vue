@@ -40,7 +40,11 @@ const component = shallowRef<Component>(
   Object.values(routeToModuleComponentMapping)[0] ?? MealDiaryModule,
 )
 
-const recallsQuery = useRecallsByUserId(ref('4072'))
+const recallsQuery = useRecallsByUserId(
+  ref(`dietician:survey_id:${route.params['id']}`),
+)
+// const recallsQuery = useRecallsByUserId(ref('4072'))
+
 const recallsData = computed(() =>
   recallsQuery.data.value?.data.ok ? recallsQuery.data.value?.data.value : [],
 )

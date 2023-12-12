@@ -26,8 +26,8 @@ interface DraftItem {
 }
 
 const items = ref<DraftItem[]>([
-  { created: 'Real-Time', modified: 'mdi-clock' },
-  { created: 'Audience', modified: 'mdi-account' },
+  { created: new Date().toDateString(), modified: new Date().toDateString() },
+  { created: 'Audience', modified: new Date().toDateString() },
   { created: 'Conversions', modified: 'mdi-flag' },
 ])
 </script>

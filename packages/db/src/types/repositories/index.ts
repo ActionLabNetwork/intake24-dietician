@@ -15,7 +15,12 @@ import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/di
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
-
+import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import type {
+  SurveyDTO,
+  SurveyPreferencesDTO,
+} from '@intake24-dietician/common/entities/survey.dto'
+import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 
 export interface IEntity {
   [key: string]: any
@@ -28,7 +33,7 @@ export interface IBaseRepository<
   createOne: (
     data: TCreationAttributes,
     options?: { transaction?: any; include?: any },
-  ) => Promise<TAttributes>
+  ) => Promise<TAttributes | undefined>
   findOne: (
     params: Partial<TAttributes>,
     options?: { transaction?: any; include?: any; paranoid?: boolean },
@@ -95,3 +100,23 @@ export type IDieticianProfileRepository = IBaseRepository<
 >
 
 export type IRoleRepository = IBaseRepository<RoleDTO, Pick<RoleDTO, 'name'>>
+export interface ISurveyRepository
+  extends IBaseRepository<SurveyDTO, Omit<SurveyDTO, 'id'>> {
+  findOneWithPreferences: (id: SurveyDTO['id']) => Promise<
+    | (SurveyDTO & {
+        surveyPreference: SurveyPreferencesDTO & {
+          feedbackModules: (FeedbackModuleDTO & {
+            isActive: boolean
+            feedbackAboveRecommendedLevel: string
+            feedbackBelowRecommendedLevel: string
+          })[]
+        } & { recallFrequency: RecallFrequencyDTO }
+      })
+    | null
+  >
+}
+
+export type ISurveyPreferencesRepository = IBaseRepository<
+  SurveyPreferencesDTO,
+  Pick<SurveyPreferencesDTO, 'surveyId'>
+>

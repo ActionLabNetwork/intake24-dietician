@@ -55,7 +55,6 @@ watch(
 <style scoped lang="scss">
 .subheading {
   color: #555;
-  font-family: Roboto;
   font-size: 14px;
   font-style: normal;
   font-weight: 400;

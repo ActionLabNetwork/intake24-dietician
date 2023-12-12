@@ -6,6 +6,7 @@ const int24recallSchema = new Schema({
   id: { type: String, required: true, unique: true },
   surveyId: { type: String, required: true },
   userId: { type: String, required: true },
+  username: { type: String, required: true, default: 'None' },
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
   submissionTime: { type: Date, required: true },

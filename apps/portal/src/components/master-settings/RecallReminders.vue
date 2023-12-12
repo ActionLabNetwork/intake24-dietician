@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div>
     <v-container>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -11,30 +11,6 @@
             complete and share recall data with you. The frequency can be
             personalised within patient information page.
           </h3>
-        </div>
-        <div class="alert-text">
-          <div>
-            <div class="d-flex align-center">
-              <div>
-                <v-icon icon="mdi-alert-outline" size="large" start />
-              </div>
-              <div class="font-weight-medium">
-                There are changes made in master module setup, review and
-                confirm changes before proceeding!
-              </div>
-            </div>
-          </div>
-          <div class="align-self-center">
-            <v-btn
-              color="primary text-none"
-              class="mt-3 mt-sm-0"
-              :disabled="!isFormValid"
-              type="submit"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
         </div>
       </div>
 
@@ -84,6 +60,7 @@
                 class="survey-id-input"
               >
                 <v-textarea
+                  v-model="debouncedFrequencyReminderMessage"
                   variant="solo-filled"
                   label="Write something here..."
                 ></v-textarea>
@@ -98,23 +75,6 @@
               </div>
             </v-col>
           </v-row>
-          <div class="mt-10">
-            <p class="font-weight-medium">Review and save changes</p>
-            <div class="text subheading">
-              You have made changes to the master module setup. Review and
-              confirm the changes before you proceed with adding patients or
-              reviewing recall feedback
-            </div>
-            <v-btn
-              color="primary"
-              class="text-none mt-4"
-              type="submit"
-              :disabled="!isFormValid"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
         </v-form>
       </div>
     </v-container>
@@ -122,15 +82,23 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import {
+  computed,
+  defineComponent,
+  onMounted,
+  reactive,
+  ref,
+  toRefs,
+  watch,
+} from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { Theme } from '@intake24-dietician/common/types/theme'
-import { PatientSchema } from '@/schema/patient'
-import { useToast } from 'vue-toast-notification'
-import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
+import { INPUT_DEBOUNCE_TIME } from '@/constants/index'
+import { useDebounceFn } from '@vueuse/core'
 import UpdateRecallFrequency from '../patients/patient-details/UpdateRecallFrequency.vue'
+import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 // const { t } = useI18n<i18nOptions>()
 
 type CSSClass = string | string[] | object
@@ -157,51 +125,37 @@ interface FormConfig {
   [key: string]: FormFieldConfig<any, any>
 }
 
-const $toast = useToast()
+const props = defineProps<{
+  defaultState: RecallFrequencyDTO
+}>()
+
+const emit = defineEmits<{
+  update: [value: RecallFrequencyDTO]
+}>()
 
 const form = ref()
+const frequencyReminderMessage = ref(
+  toRefs(props).defaultState.value.reminderMessage,
+)
+// eslint-disable-next-line vue/no-setup-props-destructure
+const recallReminder = ref<ReminderConditions>({
+  reminderEvery: {
+    quantity: props.defaultState.quantity,
+    unit: props.defaultState.unit,
+  },
+  reminderEnds: props.defaultState.end,
+})
 
-const theme = ref<Theme>('Classic')
-const sendAutomatedFeedback = ref<boolean>(false)
+const debouncedFrequencyReminderMessage = computed({
+  get: () => frequencyReminderMessage.value,
+  set: useDebounceFn((newReminderMessage: string) => {
+    frequencyReminderMessage.value = newReminderMessage
+  }, INPUT_DEBOUNCE_TIME),
+})
 
 const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
 
-const aggregatedData = computed(() => ({
-  theme: theme.value,
-  sendAutomatedFeedback: sendAutomatedFeedback.value,
-  createdAt: new Date(),
-  updatedAt: new Date(),
-}))
-
-const isFormValid = computed(() => {
-  return PatientSchema.safeParse(aggregatedData.value).success
-})
-
-const handleSubmit = async (): Promise<void> => {
-  await form.value.validate()
-
-  return new Promise((resolve, reject) => {
-    // Validate with zod
-    const result = PatientSchema.safeParse(aggregatedData.value)
-
-    if (!result.success) {
-      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    // Validate with Vuetify
-    const errors = form.value.errors
-    if (errors.length > 0) {
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    resolve()
-  })
-}
-
-let formConfig: FormConfig
+let formConfig: FormConfig = reactive({})
 onMounted(() => {
   formConfig = {
     recallReminder: {
@@ -214,10 +168,20 @@ onMounted(() => {
       },
       component: UpdateRecallFrequency,
       props: {
+        defaultState: recallReminder.value,
         hideLabel: true,
       },
-      value: '',
+      value: undefined,
       column: 2,
+      onUpdate: (newRecallReminder: ReminderConditions) => {
+        recallReminder.value = newRecallReminder
+        emit('update', {
+          reminderMessage: frequencyReminderMessage.value,
+          quantity: recallReminder.value.reminderEvery.quantity,
+          unit: recallReminder.value.reminderEvery.unit,
+          end: recallReminder.value.reminderEnds,
+        })
+      },
     },
     reminderMessage: {
       heading: { label: 'Default frequency reminder message' },
@@ -227,34 +191,34 @@ onMounted(() => {
       },
       element: 'textarea',
       column: 2,
-      onUpdate: (newReminderMessage: string) => {
-        formConfig['reminderMessage']!.value = newReminderMessage
-      },
+      value: undefined,
     },
   }
 })
+
+const aggregatedData = computed(() => ({
+  recallReminder: recallReminder.value,
+  frequencyReminderMessage: frequencyReminderMessage.value,
+}))
+
+watch(
+  aggregatedData,
+  newAggregatedData => {
+    const { recallReminder, frequencyReminderMessage } = newAggregatedData
+    const formData: RecallFrequencyDTO = {
+      reminderMessage: frequencyReminderMessage,
+      quantity: recallReminder.reminderEvery.quantity,
+      unit: recallReminder.reminderEvery.unit,
+      end: recallReminder.reminderEnds,
+    }
+
+    emit('update', formData)
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

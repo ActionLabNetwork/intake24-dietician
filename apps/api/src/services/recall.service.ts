@@ -49,7 +49,7 @@ export const createRecallService = () => {
   ): Promise<Result<IRecallExtended[]>> => {
     try {
       const recalls = await Recall.find()
-        .where('userId')
+        .where('username')
         .equals(userId)
         .sort({ startTime: 1 })
 

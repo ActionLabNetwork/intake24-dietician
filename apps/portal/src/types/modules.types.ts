@@ -1,5 +1,6 @@
 import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
+import { modules, moduleRoutes } from '@intake24-dietician/common/types/modules'
 
 export interface FeedbackModulesProps {
   recallsData?: IRecallExtended[]
@@ -11,20 +12,6 @@ export interface FeedbackModulesProps {
   feedbackTextColor: string
 }
 
-const modules = [
-  'meal-diary',
-  'carbs-exchange',
-  'energy-intake',
-  'fibre-intake',
-  'water-intake',
-] as const
-
-const createRoutes = <T extends ReadonlyArray<string>>(
-  modules: T,
-): { [K in keyof T]: `/${T[K]}` } => modules.map(module => `/${module}`) as any
-
-const moduleRoutes = createRoutes(modules)
-
 export type Module = (typeof modules)[number]
 export type ModuleRoute = (typeof moduleRoutes)[number]
 export type ComponentMapping = Record<ModuleRoute, Component>
@@ -32,4 +19,15 @@ export type ComponentMapping = Record<ModuleRoute, Component>
 export type ComponentMappingWithFeedback = Record<
   ModuleRoute,
   { component: Component; feedback: string }
+>
+
+export type ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels = Record<
+  ModuleRoute,
+  {
+    component: Component
+    id: number
+    feedbackAbove: string
+    feedbackBelow: string
+    isActive: boolean
+  }
 >

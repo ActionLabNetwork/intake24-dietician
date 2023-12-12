@@ -18,6 +18,7 @@
       <SurveyConfiguration
         :default-state="surveyConfigFormValues"
         mode="Add"
+        :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
       />
     </v-container>
@@ -28,12 +29,21 @@
 import { ref } from 'vue'
 
 import SurveyConfiguration, {
-  SurveyConfigursationFormValues,
+  SurveyConfigurationFormValues,
 } from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
+import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
+import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
+import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-sugar.css'
+import router from '@intake24-dietician/portal/router'
 
+const $toast = useToast()
 const { t } = useI18n<i18nOptions>()
+
+const addSurveyMutation = useAddSurvey()
 
 const breadcrumbItems = ref([
   {
@@ -48,14 +58,42 @@ const breadcrumbItems = ref([
   },
 ])
 
-const surveyConfigFormValues = ref({
+const surveyConfigFormValues = ref<SurveyConfigurationFormValues>({
   name: '',
+  intake24SurveyId: '',
+  intake24Secret: '',
   alias: '',
-  status: 'inactive',
+  recallSubmissionUrl: '',
 })
 
-const handleSurveyConfigUpdate = (values: SurveyConfigursationFormValues) => {
+const handleSurveyConfigUpdate = (values: SurveyConfigurationFormValues) => {
   surveyConfigFormValues.value = values
+}
+
+const handleSubmit = async () => {
+  return new Promise((resolve, reject) => {
+    // Validate with zod
+    const result = SurveyConfigurationSchemaDetails.zodSchema.safeParse(
+      surveyConfigFormValues.value,
+    )
+
+    if (!result.success) {
+      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      reject(new Error('Form validation failed'))
+      return
+    }
+
+    addSurveyMutation.mutate(surveyConfigFormValues.value, {
+      onSuccess: () => {
+        $toast.success('Survey added to records')
+        resolve('Survey added to records')
+        router.push('/dashboard/my-surveys')
+      },
+      onError: err => {
+        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+      },
+    })
+  })
 }
 </script>
 
@@ -85,7 +123,6 @@ const handleSurveyConfigUpdate = (values: SurveyConfigursationFormValues) => {
 
   &.heading {
     color: #000;
-    font-family: Roboto;
     font-size: 24px;
     font-style: normal;
     font-weight: 600;
@@ -94,7 +131,6 @@ const handleSurveyConfigUpdate = (values: SurveyConfigursationFormValues) => {
 
   &.subheading {
     color: #555;
-    font-family: Roboto;
     font-size: 14px;
     font-style: normal;
     font-weight: 400;

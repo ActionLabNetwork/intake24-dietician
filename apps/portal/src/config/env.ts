@@ -46,6 +46,7 @@ const schema = z.object({
     '/patients/{userId}/restore',
   ),
   VITE_API_RECALL: withDevDefault(z.string(), '/recall'),
+  VITE_API_SURVEY: withDevDefault(z.string(), '/surveys'),
 })
 
 const parsed = schema.safeParse(import.meta.env)

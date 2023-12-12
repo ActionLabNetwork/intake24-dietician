@@ -113,18 +113,34 @@
               </span>
             </div>
           </td>
+          <td class="align-center">
+            <v-btn
+              icon="mdi-content-copy"
+              size="medium"
+              variant="plain"
+              @click="generateSurveyLink(item.raw.id)"
+            />
+            {{ item.raw.surveyURL }}
+          </td>
         </tr>
       </template>
     </v-data-table>
   </div>
+
+  <v-snackbar v-model="snackbar" color="success">
+    URL is copied to clipboard
+  </v-snackbar>
 </template>
 
 <script setup lang="ts">
+import * as jose from 'jose'
 import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+// import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
+// import { computed } from 'vue'
 // import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
@@ -145,6 +161,7 @@ const headerTitles = [
   'Last feedback sent',
   'Patient status',
   'Last reminder sent',
+  'Survey URL',
 ] as const
 
 interface PatientTableHeaders {
@@ -169,6 +186,7 @@ interface KeyValueTypes {
   }
   patientStatus: 'Active' | 'Archived'
   lastReminderSent: string
+  surveyURL: null
 }
 
 type SpecificPatientTableColumns = {
@@ -210,7 +228,34 @@ const headers = ref<PatientTableHeaders[]>([
     key: 'lastReminderSent',
     sortable: true,
   },
+  {
+    title: 'Survey URL',
+    align: 'center',
+    key: 'surveyLink',
+    sortable: false,
+  },
 ])
+
+// const recallsQuery = useRecallsByUserId(ref('4072'))
+// const latestRecallsByPatient = computed(() => {
+//   const latestRecall =
+//     recallsQuery.data.value?.data.ok &&
+//     recallsQuery.data.value?.data.value
+//       .map(recall => recall.endTime)
+//       .toSorted()
+//       .at(-1)
+
+//   if (latestRecall) {
+//     const date = new Date(latestRecall)
+//     return date.toLocaleDateString('en-AU', {
+//       day: 'numeric',
+//       month: 'short',
+//       year: 'numeric',
+//     })
+//   }
+
+//   return undefined
+// })
 
 const search = ref('')
 
@@ -221,13 +266,37 @@ const randomDate = (start: Date, end: Date) => {
 }
 
 const getRandomDate = () =>
-  randomDate(new Date(2012, 0, 1), new Date()).toLocaleString('en-US', {
+  randomDate(new Date(2012, 0, 1), new Date()).toLocaleString('en-AU', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
 
 const patients = ref<SpecificPatientTableColumns[]>([])
+
+const snackbar = ref(false)
+
+const generateSurveyLink = async (userId: number) => {
+  const externalUsername = `dietician:survey_id:${userId}`
+  const secret = 'super_secret_jwt'
+  const payload = {
+    username: externalUsername,
+    password: 'super_secret_password',
+    redirectUrl: 'https://google.com',
+  }
+  const token = await new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('2h')
+    .sign(new TextEncoder().encode(secret))
+  const url = `https://survey.intake24.dev/demo/create-user/${token}`
+  try {
+    await navigator.clipboard.writeText(url)
+    snackbar.value = true
+  } catch (err) {
+    console.error('Failed to copy URL: ', err)
+  }
+}
 
 watch(
   () => props.patientsData,
@@ -248,11 +317,22 @@ watch(
           },
           patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: getRandomDate(),
+          surveyURL: null,
         }
       }) ?? []
   },
   { immediate: true },
 )
+
+// watch(
+//   () => recallsQuery.data.value?.data,
+//   () => {
+//     patients.value = patients.value.map(patient => ({
+//       ...patient,
+//       lastRecall: latestRecallsByPatient.value ?? 'N/A',
+//     }))
+//   },
+// )
 </script>
 <style scoped lang="scss">
 .table-header {

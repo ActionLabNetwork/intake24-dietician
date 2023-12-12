@@ -20,14 +20,10 @@
         </v-btn>
       </v-row>
       <v-row class="mt-6">
-        <v-col cols="12" md="3">
-          <NavCard class="mx-sm-0 mx-auto mb-10" />
-          <ModuleSelectList
-            v-if="route.path.includes('patient-recalls')"
-            @update="handleModuleUpdate"
-          />
-        </v-col>
-        <v-col cols="12" md="9">
+        <!-- <v-col cols="12" md="3"> -->
+        <!-- <NavCard class="mx-sm-0 mx-auto mb-10" /> -->
+        <!-- </v-col> -->
+        <v-col cols="12" md="12">
           <router-view />
         </v-col>
       </v-row>
@@ -36,42 +32,41 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, ref } from 'vue'
+import { ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import NavCard from '@/components/surveys/NavCard.vue'
-import ModuleSelectList from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
-import { useRoute, useRouter } from 'vue-router'
+// import NavCard from '@/components/surveys/NavCard.vue'
+// import { useRoute } from 'vue-router'
 
 // const { t } = useI18n<i18nOptions>()
 
-const router = useRouter()
-const route = useRoute()
+// const router = useRouter()
+// const route = useRoute()
 
 const breadcrumbItems = ref([
   {
-    title: 'My Patients',
+    title: 'My Surveys',
     disabled: false,
-    href: '/dashboard/my-patients',
+    href: '/dashboard/my-surveys',
   },
   {
-    title: 'Patient records',
+    title: 'Survey settings',
     disabled: true,
-    href: '/dashboard/patient-records',
+    href: '',
   },
 ])
 
-const component = ref()
+// const component = ref()
 
-const handleModuleUpdate = (module: ReturnType<typeof defineComponent>) => {
-  const segments = route.path.split('/')
-  segments.pop()
-  const path = segments.join('/')
+// const handleModuleUpdate = (module: ReturnType<typeof defineComponent>) => {
+//   const segments = route.path.split('/')
+//   segments.pop()
+//   const path = segments.join('/')
 
-  component.value = module
-  router.push(`${path}${module}`)
-}
+//   component.value = module
+//   router.push(`${path}${module}`)
+// }
 </script>
 
 <style scoped lang="scss">
