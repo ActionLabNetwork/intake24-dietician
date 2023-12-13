@@ -59,22 +59,12 @@ export class SurveyController extends Controller {
   public async getSurveys(
     @Request() request: express.Request,
   ): Promise<unknown> {
-    // this.logger.info('getSurveyByOwnerId inside: ', { ownerId })
-
-    // if (ownerId.length === 0 && Number.isNaN(parseInt(ownerId, 10))) {
-    //   return { ok: true, value: 'No Data avaiable for this Id' }
-    // }
-
     const { accessToken } = request.cookies
     const decoded = this.authService.verifyJwtToken(accessToken)
 
     return match(decoded)
       .with({ ok: true }, async result => {
         const { userId } = result.value.decoded as { userId: number }
-
-        // if (ownerId !== 'me' && userId !== parseInt(ownerId, 10)) {
-        //   return { ok: false, error: new Error('Not Authorized') }
-        // }
         return this.surveyService.getSurveysByOwnerId(userId)
       })
       .with({ ok: false }, async result => {
@@ -152,7 +142,7 @@ export class SurveyController extends Controller {
   @Post('/')
   @Security('jwt')
   public async createSurvey(
-    @Body() data: Omit<WithoutIDAndTimestampsSimple<SurveyDTO>, 'ownerId'>,
+    @Body() data: Omit<WithoutIDAndTimestampsSimple<SurveyDTO>, 'dieticianId'>,
     @Request() request: express.Request,
   ): Promise<boolean> {
     const { accessToken } = request.cookies
@@ -168,9 +158,11 @@ export class SurveyController extends Controller {
           return false
         }
 
+        const dataWithDieticianId = { ...data, dieticianId: result.value.id }
+
         const newSurvey = await this.surveyService.createSurvey(
           result.value.id,
-          data,
+          dataWithDieticianId,
         )
 
         return newSurvey.ok

@@ -14,6 +14,7 @@ export interface SurveyDTO {
   intake24Secret: string
   alias: string
   recallSubmissionUrl: string
+  dieticianId: number
   createdAt?: Date
   updatedAt?: Date
 }

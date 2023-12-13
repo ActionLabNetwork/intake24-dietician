@@ -14,10 +14,30 @@ import SurveyPreferencesFeedbackModule from '../models/api/feedback-modules/surv
 import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
 import RecallFrequency from '../models/api/recall-frequency.model'
 import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import { createSurveyPreferencesRepository } from './survey-preference.repository'
+import { sequelize } from '../connection'
 
 export const createSurveyRepository = (): ISurveyRepository => {
-  const { baseSurveyRepository } = {
+  const { baseSurveyRepository, surveyPreferencesRepository } = {
     baseSurveyRepository: baseRepositories.baseSurveyRepository(),
+    surveyPreferencesRepository: createSurveyPreferencesRepository(),
+  }
+
+  const createOne = async (survey: Omit<SurveyDTO, 'id'>) => {
+    try {
+      return await sequelize.transaction(async transaction => {
+        const newSurvey = await Survey.create(survey, { transaction })
+        await surveyPreferencesRepository.createOne(
+          { surveyId: newSurvey.id },
+          { transaction },
+        )
+
+        return newSurvey
+      })
+    } catch (error) {
+      console.error({ error })
+      throw error
+    }
   }
 
   const findOneWithPreferences = async (
@@ -79,5 +99,5 @@ export const createSurveyRepository = (): ISurveyRepository => {
     return retVal
   }
 
-  return { ...baseSurveyRepository, findOneWithPreferences }
+  return { ...baseSurveyRepository, createOne, findOneWithPreferences }
 }

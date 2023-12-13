@@ -6,49 +6,55 @@
           Workspace <v-icon class="ml-2" icon="mdi-chevron-down" />
         </v-btn>
       </template>
+
       <v-card class="my-menu pa-2">
-        <v-list style="overflow: hidden">
-          <v-list-subheader>Current Workspace</v-list-subheader>
-          <v-list-item loading="!currentWorkspace">
-            <template v-if="currentWorkspace" v-slot:prepend>
-              <v-avatar :color="currentWorkspace.avatarColor">
-                <span class="text-h5">
-                  {{ currentWorkspace.name[0]?.toLocaleUpperCase() }}
-                </span>
-              </v-avatar>
-            </template>
-            <div v-if="currentWorkspace">
-              <div class="font-weight-medium text-black">
-                {{ currentWorkspace.name }}
+        <div v-if="workspaces.length === 0" class="pa-2">
+          <p class="text-center text-body-1">No workspaces...</p>
+        </div>
+        <div v-else>
+          <v-list style="overflow: hidden">
+            <v-list-subheader>Current Workspace</v-list-subheader>
+            <v-list-item loading="!currentWorkspace">
+              <template v-if="currentWorkspace" v-slot:prepend>
+                <v-avatar :color="currentWorkspace.avatarColor">
+                  <span class="text-h5">
+                    {{ currentWorkspace.name[0]?.toLocaleUpperCase() }}
+                  </span>
+                </v-avatar>
+              </template>
+              <div v-if="currentWorkspace">
+                <div class="font-weight-medium text-black">
+                  {{ currentWorkspace.name }}
+                </div>
+                <div>ID: {{ currentWorkspace.id }}</div>
               </div>
-              <div>ID: {{ currentWorkspace.id }}</div>
-            </div>
-          </v-list-item>
-        </v-list>
-        <v-list>
-          <v-list-subheader>Other Workspaces</v-list-subheader>
-          <v-list-item
-            v-for="(workspace, i) in otherWorkspaces"
-            :key="i"
-            :value="workspace"
-            variant="plain"
-            @click="currentWorkspace = workspace"
-          >
-            <template v-slot:prepend>
-              <v-avatar :color="workspace.avatarColor">
-                <span class="text-h5">
-                  {{ workspace.name[0]?.toLocaleUpperCase() }}
-                </span>
-              </v-avatar>
-            </template>
-            <div>
-              <div class="font-weight-medium text-black">
-                {{ workspace.name }}
+            </v-list-item>
+          </v-list>
+          <v-list v-if="workspaces.length > 1">
+            <v-list-subheader>Other Workspaces</v-list-subheader>
+            <v-list-item
+              v-for="(workspace, i) in otherWorkspaces"
+              :key="i"
+              :value="workspace"
+              variant="plain"
+              @click="currentWorkspace = workspace"
+            >
+              <template v-slot:prepend>
+                <v-avatar :color="workspace.avatarColor">
+                  <span class="text-h5">
+                    {{ workspace.name[0]?.toLocaleUpperCase() }}
+                  </span>
+                </v-avatar>
+              </template>
+              <div>
+                <div class="font-weight-medium text-black">
+                  {{ workspace.name }}
+                </div>
+                <div>ID: {{ workspace.id }}</div>
               </div>
-              <div>ID: {{ workspace.id }}</div>
-            </div>
-          </v-list-item>
-        </v-list>
+            </v-list-item>
+          </v-list>
+        </div>
         <div class="pa-3">
           <v-btn
             width="100%"

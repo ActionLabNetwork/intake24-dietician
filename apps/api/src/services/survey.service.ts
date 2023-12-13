@@ -24,6 +24,8 @@ export const createSurveyService = (): ISurveyApiService => {
   const surveyRepository = createSurveyRepository()
   const logger = createLogger('SurveyService')
 
+
+
   // Get the recall by ids
   const getSurveySecretByAlias = async (
     id: string,

@@ -19,8 +19,8 @@ export const createSurveyPreferencesRepository =
     ) => {
       const { transaction } = options
 
-       // Create the default recall frequency table
-       const recallFrequency = await RecallFrequency.create(
+      // Create the default recall frequency table
+      const recallFrequency = await RecallFrequency.create(
         {
           quantity: 5,
           unit: 'days',
@@ -30,13 +30,15 @@ export const createSurveyPreferencesRepository =
         { transaction },
       )
 
-      const newSurveyPreferences =
-        await SurveyPreferences.create({
+      const newSurveyPreferences = await SurveyPreferences.create(
+        {
           ...surveyPreferencesData,
           recallFrequencyId: recallFrequency.id,
-        }, {
+        },
+        {
           transaction,
-        })
+        },
+      )
 
       const feedbackModules = await FeedbackModule.findAll()
 

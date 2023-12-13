@@ -11,7 +11,7 @@ import type { Result } from '@intake24-dietician/common/types/utils'
 import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 
 export const useSurveys = () => {
-  const uri = `${env.VITE_AUTH_API_HOST}/surveys/owner/me`
+  const uri = `${env.VITE_AUTH_API_HOST}/surveys`
 
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
