@@ -110,13 +110,13 @@ export const createAuthService = (
     Result<(UserAttributes & { token: TokenType; jti: string }) | null>
   > => {
     try {
-      const getUser = async (): Promise<UserDTO | null> => {
-        const user = (await userRepository.findOne({ email })) ?? null
+      const getUser = async (): Promise<User | null> => {
+        const user = await User.findOne({ where: { email } })
         return user
       }
 
       const verifyPassword = async (
-        user: UserDTO,
+        user: User,
       ): Promise<Result<boolean>> => {
         const result = await hashingService.verify(user.password, password)
         return result
@@ -323,36 +323,20 @@ export const createAuthService = (
   }
 
   const updateProfile = async (
+    userId: number,
     details: DieticianProfileValues,
-    accessToken: string,
   ): Promise<Result<boolean>> => {
     try {
-      const decoded = verifyJwtToken(accessToken)
-      return match(decoded)
-        .with({ ok: true }, async result => {
-          const decoded = result.value.decoded
+      const updated = await userRepository.updateDietician(
+        userId,
+        details.emailAddress,
+        {
+          ...details,
+          userId,
+        } satisfies Partial<DieticianProfileDTO>,
+      )
 
-          if (decoded === null) {
-            return { ok: false, error: new Error('Invalid token') } as const
-          }
-
-          const updated = await userRepository.updateProfile(
-            details.emailAddress,
-            {
-              ...details,
-              userId: decoded['userId'],
-            } satisfies Partial<DieticianProfileDTO>,
-          )
-
-          return { ok: true, value: updated } as const
-        })
-        .with({ ok: false }, () => {
-          return {
-            ok: false,
-            error: new Error('updateProfile function failed'),
-          } as const
-        })
-        .exhaustive()
+      return { ok: true, value: updated } as const
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
@@ -551,7 +535,7 @@ export const createAuthService = (
   }
 
   const createPatient = async (
-    dieticianId: number,
+    surveyId: number,
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
@@ -590,7 +574,7 @@ export const createAuthService = (
           }
 
           return await userRepository.createPatient({
-            dieticianId,
+            surveyId,
             email,
             hashedPassword,
             patientDetails: patientDetailsDTO,
@@ -762,7 +746,6 @@ export const createAuthService = (
                 ),
               } as const
             }
-
             const user = await userRepository.findOne({ id: decoded['userId'] })
 
             if (!user) {

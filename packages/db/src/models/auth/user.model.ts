@@ -17,7 +17,6 @@ import {
 import Token from './token.model'
 import Role from './role.model'
 import UserRole from './user-role.model'
-import DieticianPatient from './dietician-patient.model'
 import DieticianProfile from './dietician-profile.model'
 import PatientProfile from './patient-profile.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
@@ -30,8 +29,6 @@ export interface UserAttributes {
   resetToken: Token[]
   deletionDate?: Date
   roles?: (Role & { UserRole: UserRole })[]
-  dieticians?: (User & { DieticianPatient: DieticianPatient })[]
-  patients?: (User & { DieticianPatient: DieticianPatient })[]
   dieticianProfile: DieticianProfile
   patientProfile: PatientProfile
 }
@@ -70,12 +67,6 @@ class User extends Model<UserAttributes, UserCreationAttributes> {
 
   @BelongsToMany(() => Role, () => UserRole, 'userId', 'roleId')
   public declare roles: (Role & { UserRole: UserRole })[]
-
-  @BelongsToMany(() => User, () => DieticianPatient, 'patientId', 'dieticianId')
-  public declare dieticians: (User & { DieticianPatient: DieticianPatient })[]
-
-  @BelongsToMany(() => User, () => DieticianPatient, 'dieticianId', 'patientId')
-  public declare patients: (User & { DieticianPatient: DieticianPatient })[]
 
   @HasOne(() => DieticianProfile)
   public declare dieticianProfile: DieticianProfile

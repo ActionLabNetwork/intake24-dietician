@@ -18,6 +18,7 @@ import SurveyPreferencesFeedbackModule from '@intake24-dietician/db/models/api/f
 import SurveyPreferences from '@intake24-dietician/db/models/api/survey-preference.model'
 import { sequelize } from '@intake24-dietician/db/connection'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 
 export const createSurveyService = (): ISurveyApiService => {
   const surveyRepository = createSurveyRepository()
@@ -47,9 +48,19 @@ export const createSurveyService = (): ISurveyApiService => {
   const getSurveysByOwnerId = async (
     ownerId: number,
   ): Promise<Result<SurveyAttributes[] | null | Error>> => {
+    const dietician = await DieticianProfile.findOne({
+      where: { userId: ownerId },
+    })
+    if (!dietician) {
+      return {
+        ok: false,
+        error: new Error('Dietician not found'),
+      }
+    }
+
     try {
       const surveys = await Survey.findAll({
-        where: { ownerId },
+        where: { dieticianId: dietician.id },
         attributes: [
           'id',
           'name',
@@ -109,10 +120,22 @@ export const createSurveyService = (): ISurveyApiService => {
   }
 
   const createSurvey = async (
+    userId: number,
     surveyData: Omit<SurveyDTO, 'id'>,
   ): Promise<Result<boolean>> => {
+    const dietician = await DieticianProfile.findOne({ where: { userId } })
+    if (!dietician) {
+      return {
+        ok: false,
+        error: new Error('User is not a dietician'),
+      }
+    }
+
     try {
-      const survey = await surveyRepository.createOne(surveyData)
+      const survey = await surveyRepository.createOne({
+        ...surveyData,
+        dieticianId: dietician.id,
+      })
       logger.info('Survey created', survey)
 
       return { ok: true, value: true } as const
@@ -176,7 +199,7 @@ export const createSurveyService = (): ISurveyApiService => {
 
         // Update the recall frequency preferences
         await RecallFrequency.update(data.recallFrequency, {
-          where: { surveyPreferencesId: data.id },
+          where: { id: surveyPreferences.recallFrequencyId },
         })
       })
 

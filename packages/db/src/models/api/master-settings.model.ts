@@ -5,7 +5,6 @@ import {
   Default,
   BelongsTo,
   ForeignKey,
-  HasOne,
   PrimaryKey,
   AutoIncrement,
 } from 'sequelize-typescript'
@@ -14,18 +13,15 @@ import RecallFrequency from './recall-frequency.model'
 import DieticianProfile from '../auth/dietician-profile.model'
 
 export interface MasterSettingsAttributes {
+  id: number
   theme: string
   sendAutomatedFeedback: boolean
-  recallFrequency: RecallFrequency
-
-  // TODO: Associate with modules
-}
-
-interface MasterSettingsCreationAttributes {
-  theme: string
-  sendAutomatedFeedback: boolean
+  recallFrequencyId: number
   recallFrequency: RecallFrequency
 }
+
+type MasterSettingsCreationAttributes = Omit<MasterSettingsAttributes , 'id' 
+| 'recallFrequency'>
 
 @Table(getTableConfig(MasterSettings.name, 'master_settings'))
 class MasterSettings extends Model<
@@ -37,6 +33,12 @@ class MasterSettings extends Model<
   @Column
   public declare id: number
 
+  @ForeignKey(() => RecallFrequency)
+  public declare recallFrequencyId: number
+
+  @BelongsTo(() => RecallFrequency)
+  public declare recallFrequency: RecallFrequency
+
   @Default('Classic')
   @Column
   public declare theme: string
@@ -44,9 +46,6 @@ class MasterSettings extends Model<
   @Default(false)
   @Column
   public declare sendAutomatedFeedback: boolean
-
-  @HasOne(() => RecallFrequency)
-  public declare recallFrequency: RecallFrequency
 
   @ForeignKey(() => DieticianProfile)
   @Column

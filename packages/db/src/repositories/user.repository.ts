@@ -1,6 +1,5 @@
 import type { IUserRepository } from '@intake24-dietician/db/types/repositories'
 import User from '@intake24-dietician/db/models/auth/user.model'
-import type { Transaction } from '@intake24-dietician/db/connection'
 import { sequelize } from '@intake24-dietician/db/connection'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
@@ -9,7 +8,6 @@ import {
   createUserDTO,
 } from '@intake24-dietician/common/entities/user.dto'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
-import DieticianPatient from '@intake24-dietician/db/models/auth/dietician-patient.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
@@ -19,29 +17,24 @@ import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { baseRepositories } from './singleton'
 import PatientProfile from '../models/auth/patient-profile.model'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+import Survey from '../models/api/survey.model'
 
 export const createUserRepository = (): IUserRepository => {
   // Base Repositories
   const {
     baseUserRepository,
     baseDieticianProfileRepository,
-    basePatientProfileRepository,
     baseRoleRepository,
     baseUserRoleRepository,
     baseTokenRepository,
-    basePatientPreferencesRepository,
     baseRecallFrequencyRepository,
   } = {
     baseUserRepository: baseRepositories.baseUserRepository(),
     baseDieticianProfileRepository:
       baseRepositories.baseDieticianProfileRepository(),
-    basePatientProfileRepository:
-      baseRepositories.basePatientProfileRepository(),
     baseRoleRepository: baseRepositories.baseRoleRepository(),
     baseUserRoleRepository: baseRepositories.baseUserRoleRepository(),
     baseTokenRepository: baseRepositories.baseTokenRepository(),
-    basePatientPreferencesRepository:
-      baseRepositories.basePatientPreferencesRepository(),
     baseRecallFrequencyRepository:
       baseRepositories.baseRecallFrequencyRepository(),
   }
@@ -89,7 +82,7 @@ export const createUserRepository = (): IUserRepository => {
       return user
     })
 
-    return createUserDTO(newUser)
+    return newUser
   }
 
   const resetPassword = async (
@@ -137,7 +130,8 @@ export const createUserRepository = (): IUserRepository => {
     }
   }
 
-  const updateProfile = async (
+  const updateDietician = async (
+    _userId: number, // TODO: remove this later
     email: string,
     details: Partial<DieticianProfileDTO>,
   ) => {
@@ -198,28 +192,30 @@ export const createUserRepository = (): IUserRepository => {
   }
 
   const createPatient = async (params: {
-    dieticianId: number
+    surveyId: number
     email: string
     hashedPassword: string
     patientDetails: Omit<PatientProfileDTO, 'id' | 'userId'>
   }): Promise<Result<UserDTO>> => {
-    const { dieticianId, email, hashedPassword, patientDetails } = params
+    const { surveyId, email, hashedPassword, patientDetails } = params
     try {
       return await sequelize.transaction(async t => {
+        const survey = await Survey.findByPk(surveyId, { transaction: t })
+        if (!survey) {
+          throw new Error('Survey not found')
+        }
+
         // Create user
-        const user = await baseUserRepository.createOne(
+        const user = await User.create(
           { email, password: hashedPassword },
           { transaction: t },
         )
 
-        if (!user) {
-          throw new Error('Could not create user')
-        }
-
         // Create patient profile
-        const patientProfile = await basePatientProfileRepository.createOne(
+        const patientProfile = await PatientProfile.create(
           {
             userId: user.id,
+            surveyId,
             firstName: patientDetails.firstName,
             middleName: patientDetails.middleName,
             lastName: patientDetails.lastName,
@@ -253,28 +249,8 @@ export const createUserRepository = (): IUserRepository => {
           //   { transaction: t },
           // )
 
-          if (!patientProfile) {
-            throw new Error('Could not create patient profile')
-          }
-
-          const patientPreferences =
-            await basePatientPreferencesRepository.createOne(
-              {
-                patientProfileId: patientProfile.id,
-                theme: patientDetails.patientPreferences?.theme,
-                sendAutomatedFeedback:
-                  patientDetails.patientPreferences?.sendAutomatedFeedback,
-              },
-              { transaction: t },
-            )
-
-          if (!patientPreferences) {
-            throw new Error('Could not create patient preferences')
-          }
-
-          // Create Recall Frequency
-          if (patientDetails.patientPreferences?.recallFrequency) {
-            await baseRecallFrequencyRepository.createOne(
+          const recallFrequencyId =
+            (await baseRecallFrequencyRepository.createOne(
               {
                 quantity:
                   patientDetails.patientPreferences.recallFrequency.quantity,
@@ -283,8 +259,24 @@ export const createUserRepository = (): IUserRepository => {
                 reminderMessage: '',
               },
               { transaction: t },
-            )
+            ))!.id! // TODO: fix this
+
+          const patientPreferences = await PatientPreferences.create(
+            {
+              recallFrequencyId,
+              patientProfileId: patientProfile.id,
+              theme: patientDetails.patientPreferences?.theme,
+              sendAutomatedFeedback:
+                patientDetails.patientPreferences?.sendAutomatedFeedback,
+            },
+            { transaction: t },
+          )
+
+          if (!patientPreferences) {
+            throw new Error('Could not create patient preferences')
           }
+
+          // Create Recall Frequency
         }
 
         // Assign patient role
@@ -312,17 +304,6 @@ export const createUserRepository = (): IUserRepository => {
           throw new Error('User not found')
         }
 
-        // Associate patient with dietician
-        const result = await assignPatientToDieticianById(
-          dieticianId,
-          userWithRole.id,
-          t,
-        )
-
-        if (!result.ok) {
-          throw result.error
-        }
-
         return {
           ok: true,
           value: createUserDTO(user),
@@ -338,215 +319,92 @@ export const createUserRepository = (): IUserRepository => {
   }
 
   const updatePatient = async (
-    dieticianId: number,
-    patientId: number,
+    dieticianUserId: number,
+    _patientId: number,  // Remove this later
     patientDetails: Partial<PatientProfileValues>,
   ): Promise<Result<number>> => {
     console.log('Updating patient...')
     // eslint-disable-next-line complexity
-    return await sequelize.transaction(async t => {
-      const dieticianWithPatient = await User.findByPk(dieticianId, {
+    return await sequelize.transaction(async transaction => {
+      // verify that the patient is related to the dietician
+
+      const patientProfile = await PatientProfile.findOne({
         include: [
           {
-            model: User,
-            as: 'patients',
-            through: { attributes: [] },
-            where: { id: patientId },
+            model: Survey,
+            attributes: [],
             include: [
               {
-                model: PatientProfile,
-                include: [
-                  { model: PatientPreferences, include: [RecallFrequency] },
-                ],
+                model: DieticianProfile,
               },
             ],
-            paranoid: false,
+          },
+          {
+            model: User,
+          },
+          {
+            model: PatientPreferences,
+            include: [RecallFrequency],
           },
         ],
       })
 
-      if (!dieticianWithPatient) {
-        return { ok: false, error: new Error('Dietician not found') } as const
-      }
-
-      if (dieticianWithPatient.patients.length === 0) {
-        return { ok: false, error: new Error('Patient not found') } as const
-      }
-
-      const patientProfile =
-        dieticianWithPatient.patients[0]?.dataValues.patientProfile
-
       if (!patientProfile) {
-        return {
-          ok: false,
-          error: new Error('Patient profile not found'),
-        } as const
+        throw new Error('Patient not found')
       }
 
-      const patientOfDietician = dieticianWithPatient.patients[0]
+      const dietitian = patientProfile.survey.dietician
+      if (dietitian.userId !== dieticianUserId) {
+        throw new Error("Dietician's userId does not match")
+      }
 
-      // Update email address if needed
-      await patientOfDietician?.update({
-        email:
-          patientDetails.emailAddress ?? patientOfDietician.dataValues.email,
-      })
+      const {
+        emailAddress,
+        theme,
+        sendAutomatedFeedback,
+        recallFrequency,
+        ...restDetails
+      } = patientDetails
 
-      // Update patient profile
-      const updatedCount = await PatientProfile.update(
-        {
-          firstName: patientDetails.firstName ?? patientProfile.firstName,
-          middleName: patientDetails.middleName ?? patientProfile.middleName,
-          lastName: patientDetails.lastName ?? patientProfile.lastName,
-          mobileNumber:
-            patientDetails.mobileNumber ?? patientProfile.mobileNumber,
-          address: patientDetails.address ?? patientProfile.address,
-          age: patientDetails.age ?? patientProfile.age,
-          gender: patientDetails.gender ?? patientProfile.gender,
-          height: patientDetails.height ?? patientProfile.height,
-          weight: patientDetails.weight ?? patientProfile.weight,
-          additionalNotes:
-            patientDetails.additionalNotes ?? patientProfile.additionalNotes,
-          patientGoal: patientDetails.patientGoal ?? patientProfile.patientGoal,
-          avatar: patientDetails.avatar ?? patientProfile.avatar,
-        },
-        { where: { userId: patientId }, transaction: t },
-      )
-
-      // Update patient preferences
-      const patientPreferences = patientProfile.dataValues.patientPreferences
-
-      if (patientPreferences) {
-        await PatientPreferences.update(
+      if (emailAddress) {
+        await patientProfile.user.update(
           {
-            theme:
-              patientDetails.theme ?? patientProfile.patientPreferences.theme,
-            sendAutomatedFeedback:
-              patientDetails.sendAutomatedFeedback ??
-              patientProfile.patientPreferences.sendAutomatedFeedback,
+            email: emailAddress,
           },
-          {
-            where: { id: patientPreferences.id },
-            transaction: t,
-            returning: true,
-          },
+          { transaction: transaction },
         )
-
-        // Update recall frequency
-        const recallFrequency = patientPreferences.dataValues.recallFrequency
-
-        if (recallFrequency) {
-          await RecallFrequency.update(
-            {
-              quantity:
-                patientDetails.recallFrequency?.reminderEvery.quantity ??
-                patientProfile.patientPreferences.recallFrequency.quantity,
-              unit:
-                patientDetails.recallFrequency?.reminderEvery.unit ??
-                patientProfile.patientPreferences.recallFrequency.unit,
-              end:
-                patientDetails.recallFrequency?.reminderEnds ??
-                patientProfile.patientPreferences.recallFrequency.end,
-            },
-            {
-              where: { id: recallFrequency.id },
-              transaction: t,
-              returning: true,
-            },
-          )
-        }
       }
+      await patientProfile.patientPreferences.update({
+        theme,
+        sendAutomatedFeedback,
+      })
+      if (recallFrequency) {
+        await patientProfile.patientPreferences.recallFrequency.update(
+          {
+            quantity: recallFrequency.reminderEvery.quantity,
+            unit: recallFrequency.reminderEvery.unit,
+            end: recallFrequency.reminderEnds,
+          },
+          { transaction },
+        )
+      }
+
+      await patientProfile.update(restDetails, { transaction: transaction })
 
       return {
         ok: true,
-        value: updatedCount[0],
-      } as const
+        value: 1,
+      }
     })
-  }
-
-  const assignPatientToDieticianById = async (
-    dieticianId: number,
-    patientId: number,
-    transaction?: Transaction,
-  ): Promise<Result<boolean>> => {
-    try {
-      const dietician = await baseUserRepository.findOne(
-        {
-          id: dieticianId,
-        },
-        { include: [Role, { model: User, as: 'patients' }], transaction },
-      )
-
-      if (!dietician) {
-        return {
-          ok: false,
-          error: new Error('Dietician account not found'),
-        } as const
-      }
-
-      const patient = await baseUserRepository.findOne(
-        {
-          id: patientId,
-        },
-        { include: [Role], transaction },
-      )
-
-      if (!patient) {
-        return {
-          ok: false,
-          error: new Error('Patient account not found'),
-        } as const
-      }
-
-      const dieticianHasDieticianRole = dietician?.roles?.some(
-        role => role.name === 'dietician',
-      )
-
-      const patientHasPatientRole = patient?.roles?.some(
-        role => role.name === 'patient',
-      )
-
-      if (!dieticianHasDieticianRole) {
-        return {
-          ok: false,
-          error: new Error('Dietician does not have the dietician role'),
-        } as const
-      }
-
-      if (!patientHasPatientRole) {
-        return {
-          ok: false,
-          error: new Error('Patient does not have the patient role'),
-        } as const
-      }
-
-      const dieticianPatient = await DieticianPatient.create(
-        {
-          dieticianId: dietician.id,
-          patientId: patient.id,
-        },
-        { ...(transaction ? { transaction } : {}) },
-      )
-
-      if (dieticianPatient) {
-        return { ok: true, value: true } as const
-      }
-      return {
-        ok: false,
-        error: new Error('Could not create dietician patient association'),
-      } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
   }
 
   return {
     ...baseUserRepository,
     createUser,
     resetPassword,
-    updateProfile,
+    updateDietician,
     updatePatient,
     uploadAvatar,
     createPatient,
-    assignPatientToDieticianById,
   }
 }

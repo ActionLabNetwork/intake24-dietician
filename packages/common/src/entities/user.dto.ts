@@ -16,7 +16,7 @@ export interface UserDTO {
   deletionDate?: Date
 }
 
-export const createUserDTO = (user: UserDTO | User) => {
+export const createUserDTO = (user: UserDTO | User): UserDTO => {
   return {
     id: user.id,
     email: user.email,

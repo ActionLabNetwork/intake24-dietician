@@ -1,5 +1,3 @@
-import type { UserDTO } from './user.dto'
-
 export interface SurveyPreferencesDTO {
   id: number
   theme: string
@@ -16,7 +14,6 @@ export interface SurveyDTO {
   intake24Secret: string
   alias: string
   recallSubmissionUrl: string
-  ownerId: UserDTO['id']
   createdAt?: Date
   updatedAt?: Date
 }

@@ -51,8 +51,9 @@ export interface IUserService {
     userId: number,
     roleName: string,
   ) => Promise<Result<UserRoleDTO>>
-  getPatientsOfDietician: (
-    dieticianId: number,
+  getPatientsOfSurvey: (
+    dieticianUserId: number,
+    surveyId: number,
   ) => Promise<Result<Partial<PatientProfileValues>[]>>
   validateNewEmailAvailability: (email: string) => Promise<Result<boolean>>
 }
@@ -82,7 +83,10 @@ export interface ISurveyApiService {
       }
     >
   >
-  createSurvey: (surveyData: Omit<SurveyDTO, 'id'>) => Promise<Result<boolean>>
+  createSurvey: (
+    userId: number,
+    surveyData: Omit<SurveyDTO, 'id'>,
+  ) => Promise<Result<boolean>>
   updateSurveyPreferences: (
     userId: UserDTO['id'],
     data: SurveyPreference,

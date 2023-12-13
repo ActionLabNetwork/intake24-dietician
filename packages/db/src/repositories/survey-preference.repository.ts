@@ -4,6 +4,7 @@ import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import FeedbackModule from '../models/api/feedback-modules/feedback-module.model'
 import SurveyPreferencesFeedbackModule from '../models/api/feedback-modules/survey-preferences-feedback-module.model'
 import RecallFrequency from '../models/api/recall-frequency.model'
+import SurveyPreferences from '../models/api/survey-preference.model'
 
 export const createSurveyPreferencesRepository =
   (): ISurveyPreferencesRepository => {
@@ -18,8 +19,22 @@ export const createSurveyPreferencesRepository =
     ) => {
       const { transaction } = options
 
+       // Create the default recall frequency table
+       const recallFrequency = await RecallFrequency.create(
+        {
+          quantity: 5,
+          unit: 'days',
+          end: { type: 'never' },
+          reminderMessage: '',
+        },
+        { transaction },
+      )
+
       const newSurveyPreferences =
-        await baseSurveyPreferencesRepository.createOne(surveyPreferencesData, {
+        await SurveyPreferences.create({
+          ...surveyPreferencesData,
+          recallFrequencyId: recallFrequency.id,
+        }, {
           transaction,
         })
 
@@ -38,18 +53,6 @@ export const createSurveyPreferencesRepository =
       await SurveyPreferencesFeedbackModule.bulkCreate(junctionTableRecords, {
         transaction,
       })
-
-      // Create the default recall frequency table
-      await RecallFrequency.create(
-        {
-          quantity: 5,
-          unit: 'days',
-          end: { type: 'never' },
-          reminderMessage: '',
-          surveyPreferencesId: newSurveyPreferences.id,
-        },
-        { transaction },
-      )
 
       return newSurveyPreferences
     }

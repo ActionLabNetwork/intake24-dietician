@@ -1,27 +1,27 @@
-import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
-import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
-import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
-import type { PatientPreferencesDTO } from '@intake24-dietician/common/entities/patient-preferences.dto'
+import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 import type { TokenDTO } from '@intake24-dietician/common/entities/token.dto'
-import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-import User from '@intake24-dietician/db/models/auth/user.model'
+import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
 import Role from '@intake24-dietician/db/models/auth/role.model'
-import { createBaseRepository } from '@intake24-dietician/db/repositories/base.repository'
 import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
+import User from '@intake24-dietician/db/models/auth/user.model'
+import { createBaseRepository } from '@intake24-dietician/db/repositories/base.repository'
 
-import Token from '@intake24-dietician/db/models/auth/token.model'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
-import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
-import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
-import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
-import Survey from '@intake24-dietician/db/models/api/survey.model'
 import type {
-  SurveyPreferencesDTO} from '@intake24-dietician/common/entities/survey.dto';
-import type {
-  SurveyDTO,
+  SurveyPreferencesDTO
 } from '@intake24-dietician/common/entities/survey.dto'
+import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
+import type { PatientPreferencesAttributes, PatientPreferencesCreationAttributes } from '@intake24-dietician/db/models/api/patient-preferences.model';
+import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
+import type { RecallFrequencyAttributes, RecallFrequencyCreationAttributes } from '@intake24-dietician/db/models/api/recall-frequency.model';
+import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import type { SurveyCreationAttributes } from '@intake24-dietician/db/models/api/survey.model';
+import Survey from '@intake24-dietician/db/models/api/survey.model'
+import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
+import Token from '@intake24-dietician/db/models/auth/token.model'
 import SurveyPreferences from '../models/api/survey-preference.model'
 
 const createBaseUserRepository = () =>
@@ -71,20 +71,20 @@ const createBaseTokenRepository = () =>
 
 const createBasePatientPreferencesRepository = () =>
   createBaseRepository<
-    PatientPreferencesDTO,
-    Omit<PatientPreferencesDTO, 'id'>,
+    PatientPreferencesAttributes,
+    PatientPreferencesCreationAttributes,
     PatientPreferences
   >(PatientPreferences)
 
 const createRecallFrequencyRepository = () =>
   createBaseRepository<
-    RecallFrequencyDTO,
-    Omit<RecallFrequencyDTO, 'id'>,
+    RecallFrequencyAttributes,
+    RecallFrequencyCreationAttributes,
     RecallFrequency
   >(RecallFrequency)
 
 const createBaseSurveyRepository = () =>
-  createBaseRepository<SurveyDTO, Omit<SurveyDTO, 'id'>, Survey>(Survey)
+  createBaseRepository<SurveyAttributes, Omit<SurveyCreationAttributes, 'id'>, Survey>(Survey)
 
 const createBaseSurveyPreferencesRepository = () =>
   createBaseRepository<

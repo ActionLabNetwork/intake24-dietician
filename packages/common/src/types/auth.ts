@@ -15,6 +15,10 @@ export interface UserAttributes {
   isVerified: boolean
 }
 
+export interface DieticianProfileAttributes {
+  userId: number
+}
+
 export interface SurveyAttributes {
   id: number
   intake24SurveyId: string
@@ -22,8 +26,8 @@ export interface SurveyAttributes {
   alias: string
   name: string
   recallSubmissionUrl: string
-  owner: UserAttributes
-  ownerId: number
+  dietician: DieticianProfileAttributes
+  dieticianId: number
 }
 
 export interface UserAttributesWithDieticianProfile extends UserAttributes {
@@ -74,7 +78,7 @@ export interface IAuthService {
     password: string,
   ) => Promise<Result<(UserWithToken & { jti: string }) | null>>
   createPatient: (
-    dieticianId: number,
+    surveyId: number,
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
@@ -89,8 +93,8 @@ export interface IAuthService {
   ) => Promise<Result<string>>
   logout: (accessToken: string) => Promise<Result<string>>
   updateProfile: (
+    userId: number,
     details: DieticianProfileValues,
-    accessToken: string,
   ) => Promise<Result<boolean>>
   generateUserTokenForPasswordlessAuth: (
     email: string,

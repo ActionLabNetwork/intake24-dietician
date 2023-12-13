@@ -1,19 +1,13 @@
+import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 import {
-  Table,
+  AutoIncrement,
   Column,
   DataType,
   Model,
-  ForeignKey,
-  BelongsTo,
   PrimaryKey,
-  AutoIncrement,
-  Unique,
+  Table
 } from 'sequelize-typescript'
-import { getTableConfig } from '@intake24-dietician/db/config/env'
-import PatientPreferences from './patient-preferences.model'
-import MasterSettings from './master-settings.model'
-import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
-import SurveyPreferences from './survey-preference.model'
 
 export interface RecallFrequencyAttributes {
   id: number
@@ -21,24 +15,23 @@ export interface RecallFrequencyAttributes {
   unit: ReminderConditions['reminderEvery']['unit']
   end: ReminderConditions['reminderEnds']
   reminderMessage: string
-  patientPreferencesId: number
-  surveyPreferencesId: number
 }
 
-interface RecallFrequencyCreationAttributes {
-  quantity: number
-  unit: ReminderConditions['reminderEvery']['unit']
-  end: ReminderConditions['reminderEnds']
-  reminderMessage: string
-  patientPreferencesId?: number
-  surveyPreferencesId?: number
-}
+export type RecallFrequencyCreationAttributes = Omit<
+  RecallFrequencyAttributes,
+  'id' 
+>
 
 @Table(getTableConfig(RecallFrequency.name, 'recall_frequencies'))
 class RecallFrequency extends Model<
   RecallFrequencyAttributes,
   RecallFrequencyCreationAttributes
 > {
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @Column
   public declare quantity: number
 
@@ -50,33 +43,6 @@ class RecallFrequency extends Model<
 
   @Column(DataType.TEXT)
   public declare reminderMessage: string
-
-  @PrimaryKey
-  @AutoIncrement
-  @Column
-  public declare id: number
-
-  @ForeignKey(() => PatientPreferences)
-  @Column({ allowNull: true })
-  public declare patientPreferencesId: number
-
-  @BelongsTo(() => PatientPreferences, 'patientPreferencesId')
-  public declare patientPreferences: PatientPreferences
-
-  @ForeignKey(() => SurveyPreferences)
-  @Unique
-  @Column
-  public declare surveyPreferencesId: number
-
-  @BelongsTo(() => SurveyPreferences, 'surveyPreferencesId')
-  public declare surveyPreferences: SurveyPreferences
-
-  @ForeignKey(() => MasterSettings)
-  @Column
-  public declare masterSettingsId: number
-
-  @BelongsTo(() => MasterSettings, 'masterSettingsId')
-  public declare masterSettings: MasterSettings
 }
 
 export default RecallFrequency

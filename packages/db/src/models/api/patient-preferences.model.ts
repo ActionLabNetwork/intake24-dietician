@@ -4,7 +4,6 @@ import {
   Column,
   Model,
   BelongsTo,
-  HasOne,
   PrimaryKey,
   AutoIncrement,
 } from 'sequelize-typescript'
@@ -14,17 +13,17 @@ import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.m
 
 export interface PatientPreferencesAttributes {
   id: number
+  recallFrequencyId: number
+  recallFrequency: RecallFrequency
   theme: string
   sendAutomatedFeedback: boolean
-  recallFrequency: RecallFrequency
   patientProfileId: number
 }
 
-interface PatientPreferencesCreationAttributes {
-  theme: string
-  sendAutomatedFeedback: boolean
-  patientProfileId: number
-}
+export type PatientPreferencesCreationAttributes = Omit<
+  PatientPreferencesAttributes,
+  'id' | 'recallFrequency'
+>
 
 @Table(getTableConfig(PatientPreferences.name, 'patient_preferences'))
 class PatientPreferences extends Model<
@@ -42,7 +41,10 @@ class PatientPreferences extends Model<
   @Column
   public declare sendAutomatedFeedback: boolean
 
-  @HasOne(() => RecallFrequency)
+  @ForeignKey(() => RecallFrequency)
+  public declare recallFrequencyId: number
+
+  @BelongsTo(() => RecallFrequency)
   public declare recallFrequency: RecallFrequency
 
   @ForeignKey(() => PatientProfile)

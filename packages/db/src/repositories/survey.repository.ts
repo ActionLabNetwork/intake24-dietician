@@ -6,8 +6,6 @@ import type {
 import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import type { SurveyAttributes } from '../models/api/survey.model'
 import Survey from '../models/api/survey.model'
-import { sequelize } from '../connection'
-import { createSurveyPreferencesRepository } from './survey-preference.repository'
 import type { SurveyPreferenceAttributes } from '../models/api/survey-preference.model'
 import SurveyPreferences from '../models/api/survey-preference.model'
 import type { FeedbackModuleAttributes } from '../models/api/feedback-modules/feedback-module.model'
@@ -18,26 +16,8 @@ import RecallFrequency from '../models/api/recall-frequency.model'
 import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 
 export const createSurveyRepository = (): ISurveyRepository => {
-  const { baseSurveyRepository, surveyPreferencesRepository } = {
+  const { baseSurveyRepository } = {
     baseSurveyRepository: baseRepositories.baseSurveyRepository(),
-    surveyPreferencesRepository: createSurveyPreferencesRepository(),
-  }
-
-  const createOne = async (survey: Omit<SurveyDTO, 'id'>) => {
-    try {
-      return await sequelize.transaction(async transaction => {
-        const newSurvey = await Survey.create(survey, { transaction })
-        await surveyPreferencesRepository.createOne(
-          { surveyId: newSurvey.id },
-          { transaction },
-        )
-
-        return newSurvey
-      })
-    } catch (error) {
-      console.error({ error })
-      return undefined
-    }
   }
 
   const findOneWithPreferences = async (
@@ -69,7 +49,7 @@ export const createSurveyRepository = (): ISurveyRepository => {
     })
 
     const recallFrequency = await RecallFrequency.findOne({
-      where: { surveyPreferencesId: survey.surveyPreference.id },
+      where: { id: survey.surveyPreference.recallFrequencyId },
     })
 
     if (!recallFrequency) {
@@ -99,5 +79,5 @@ export const createSurveyRepository = (): ISurveyRepository => {
     return retVal
   }
 
-  return { ...baseSurveyRepository, createOne, findOneWithPreferences }
+  return { ...baseSurveyRepository, findOneWithPreferences }
 }

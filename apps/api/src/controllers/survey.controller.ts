@@ -54,17 +54,16 @@ export class SurveyController extends Controller {
     this.logger = container.resolve('createLogger')(SurveyController.name)
   }
 
-  @Get('/owner/{ownerId}')
+  @Get('')
   @Security('jwt')
-  public async getSurveyByOwnerId(
+  public async getSurveys(
     @Request() request: express.Request,
-    @Path() ownerId: string,
   ): Promise<unknown> {
-    this.logger.info('getSurveyByOwnerId inside: ', { ownerId })
+    // this.logger.info('getSurveyByOwnerId inside: ', { ownerId })
 
-    if (ownerId.length === 0 && Number.isNaN(parseInt(ownerId, 10))) {
-      return { ok: true, value: 'No Data avaiable for this Id' }
-    }
+    // if (ownerId.length === 0 && Number.isNaN(parseInt(ownerId, 10))) {
+    //   return { ok: true, value: 'No Data avaiable for this Id' }
+    // }
 
     const { accessToken } = request.cookies
     const decoded = this.authService.verifyJwtToken(accessToken)
@@ -72,9 +71,10 @@ export class SurveyController extends Controller {
     return match(decoded)
       .with({ ok: true }, async result => {
         const { userId } = result.value.decoded as { userId: number }
-        if (ownerId !== 'me' && userId !== parseInt(ownerId, 10)) {
-          return { ok: false, error: new Error('Not Authorized') }
-        }
+
+        // if (ownerId !== 'me' && userId !== parseInt(ownerId, 10)) {
+        //   return { ok: false, error: new Error('Not Authorized') }
+        // }
         return this.surveyService.getSurveysByOwnerId(userId)
       })
       .with({ ok: false }, async result => {
@@ -168,10 +168,10 @@ export class SurveyController extends Controller {
           return false
         }
 
-        const newSurvey = await this.surveyService.createSurvey({
-          ...data,
-          ownerId: result.value.id,
-        })
+        const newSurvey = await this.surveyService.createSurvey(
+          result.value.id,
+          data,
+        )
 
         return newSurvey.ok
       })

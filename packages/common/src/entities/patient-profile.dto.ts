@@ -17,7 +17,7 @@ export interface PatientProfileDTO {
   additionalNotes: string
   patientGoal: string
   avatar: string | null
-  patientPreferences?: PatientPreferencesDTO
+  patientPreferences: PatientPreferencesDTO
   createdAt?: Date
   updatedAt?: Date
 }

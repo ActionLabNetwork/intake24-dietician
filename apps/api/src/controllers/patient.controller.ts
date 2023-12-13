@@ -23,6 +23,7 @@ import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import { createAuthService, createUserService } from '@/services'
 import { container } from '@/ioc/container'
 import type { IUserService } from '@intake24-dietician/common/types/api'
+import { z } from 'zod'
 
 
 @Route('patients')
@@ -52,9 +53,12 @@ export class PatientController extends Controller {
    * @returns {AuthResponse}
    * @memberof PatientController
    */
-  @Get('/')
+  @Get('survey/{surveyId}')
   @Security('jwt')
-  public async getPatients(@Request() request: express.Request) {
+  public async getPatientsOfSurvey(
+    @Path() surveyId: string,
+    @Request() request: express.Request,
+  ) {
     const { accessToken } = request.cookies
     const decoded = this.authService.verifyJwtToken(accessToken)
 
@@ -70,8 +74,9 @@ export class PatientController extends Controller {
           return this.generateExpiredTokenResponse()
         }
 
-        const patients = await this.userService.getPatientsOfDietician(
+        const patients = await this.userService.getPatientsOfSurvey(
           result.value.decoded['userId'],
+          Number(surveyId),
         )
 
         return match(patients)
@@ -139,14 +144,22 @@ export class PatientController extends Controller {
       .exhaustive()
   }
 
-  @Post('/')
+  @Post('/{surveyId}')
   @Security('jwt')
   public async addPatient(
     @Request() request: express.Request,
     @Body() data: PatientProfileValues,
+    @Path() surveyId: string,
   ) {
     const { accessToken } = request.cookies
     const decoded = this.authService.verifyJwtToken(accessToken)
+    console.log(`adding patient to survey ${surveyId}`)
+    const surveyIdResult = z.coerce.number().safeParse(surveyId)
+    if (surveyIdResult.success === false) {
+      console.log("Cannot parse survey ID")
+      return this.generateInternalServerErrorResponse()
+      // TODO: check survey belongs to user
+    }
 
     return match(decoded)
       .with({ ok: true }, async result => {
@@ -161,7 +174,7 @@ export class PatientController extends Controller {
         }
 
         const patient = await this.authService.createPatient(
-          result.value.decoded['userId'],
+          surveyIdResult.data,
           data.emailAddress,
           crypto.randomBytes(64).toString('hex'),
           data,

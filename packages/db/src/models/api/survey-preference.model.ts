@@ -1,24 +1,25 @@
+import { getTableConfig } from '@intake24-dietician/db/config/env'
 import {
-  Table,
-  Column,
-  Model,
-  Default,
   AutoIncrement,
   BelongsTo,
   BelongsToMany,
-  HasOne,
+  Column,
   DataType,
-  PrimaryKey,
+  Default,
   ForeignKey,
+  Model,
+  PrimaryKey,
+  Table
 } from 'sequelize-typescript'
-import { getTableConfig } from '@intake24-dietician/db/config/env'
-import Survey from './survey.model'
 import FeedbackModule from './feedback-modules/feedback-module.model'
 import SurveyPreferencesFeedbackModule from './feedback-modules/survey-preferences-feedback-module.model'
 import RecallFrequency from './recall-frequency.model'
+import Survey from './survey.model'
 
 export interface SurveyPreferenceAttributes {
   id: number
+  recallFrequencyId: number
+  recallFrequency: RecallFrequency
   theme: string
   sendAutomatedFeedback: boolean
   notifyEmail: boolean
@@ -26,11 +27,16 @@ export interface SurveyPreferenceAttributes {
   surveyId: number
 }
 
-interface SurveyPreferenceCreationAttributes {
-  theme?: string
-  sendAutomatedFeedback?: boolean
-  surveyId: number
-}
+type SurveyPreferenceCreationAttributes = Omit<
+  SurveyPreferenceAttributes,
+  | 'id'
+  | 'recallFrequency'
+  | 'notifyEmail'
+  | 'notifySms'
+  | 'survey'
+  | 'theme'
+  | 'sendAutomatedFeedback'
+>
 
 @Table(getTableConfig(SurveyPreferences.name, 'survey_preferences'))
 class SurveyPreferences extends Model<
@@ -75,7 +81,10 @@ class SurveyPreferences extends Model<
     SurveyPrefModules: SurveyPreferencesFeedbackModule
   })[]
 
-  @HasOne(() => RecallFrequency)
+  @ForeignKey(() => RecallFrequency)
+  public declare recallFrequencyId: number
+
+  @BelongsTo(() => RecallFrequency)
   public declare recallFrequency: RecallFrequency
 }
 

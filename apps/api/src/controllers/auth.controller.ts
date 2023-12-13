@@ -390,7 +390,6 @@ export class AuthController extends Controller {
   ) {
     try {
       const { accessToken } = request.cookies
-
       if (!accessToken) {
         this.setStatus(401)
         return generateErrorResponse(
@@ -399,10 +398,29 @@ export class AuthController extends Controller {
           'Invalid credentials',
         )
       }
+      
+      const verifyResult = this.authService.verifyJwtToken(accessToken)
+      if (!verifyResult.ok) {
+        this.setStatus(401)
+        return generateErrorResponse(
+          '401',
+          'Unauthorized',
+          'Invalid credentials',
+        )
+      }
+      const token = verifyResult.value.decoded
+      if (!token) {
+        return generateErrorResponse(
+          '401',
+          'Unauthorized',
+          'Invalid credentials',
+        )
+      }
+      // TODO: check for other things too
 
       const result = await this.authService.updateProfile(
+        token['userId'],
         details.dieticianProfile,
-        accessToken,
       )
 
       return match(result)

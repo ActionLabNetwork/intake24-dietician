@@ -20,6 +20,8 @@ import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/di
 import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
 import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
+import Survey from '@intake24-dietician/db/models/api/survey.model'
+import { createPatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export const createUserService = (): IUserService => {
@@ -238,67 +240,55 @@ export const createUserService = (): IUserService => {
     }
   }
 
-  const getPatientsOfDietician = async (
-    dieticianId: number,
+  const getPatientsOfSurvey = async (
+    dieticianUserId: number,
+    surveyId: number,
   ): Promise<Result<Partial<PatientProfileValues>[]>> => {
-    const user = await User.findByPk(dieticianId, {
+    const dietician = await DieticianProfile.findOne({
+      where: { userId: dieticianUserId },
       include: [
         {
-          model: User,
-          as: 'patients',
-          through: { attributes: [] },
-          include: [PatientProfile],
-          paranoid: false,
+          model: Survey,
+          include: [
+            {
+              model: PatientProfile,
+              include: [
+                User,
+                {
+                  model: PatientPreferences,
+                  include: [RecallFrequency],
+                },
+              ],
+            },
+          ],
+          where: {
+            id: surveyId,
+          },
         },
-        PatientProfile,
       ],
     })
-
-    if (user?.patients.length === 0) {
-      return { ok: false, error: new Error('No patients found') } as const
+    if (dietician === null) {
+      return { ok: false, error: new Error('Dietician not found') }
     }
-
-    const patientProfileValues =
-      user?.patients.map(f => {
-        const profileValues: Partial<PatientProfileValues> & {
-          id: number
-          isArchived: boolean
-        } = {
-          id: f.dataValues.id,
-          firstName: f.dataValues.patientProfile.dataValues.firstName,
-          middleName: f.dataValues.patientProfile.dataValues.middleName,
-          lastName: f.dataValues.patientProfile.dataValues.lastName,
-          mobileNumber: f.dataValues.patientProfile.dataValues.mobileNumber,
-          emailAddress: f.dataValues.email,
-          address: f.dataValues.patientProfile.dataValues.address,
-          avatar: f.dataValues.patientProfile.dataValues.avatar,
-          age: f.dataValues.patientProfile.dataValues.age,
-          gender: f.dataValues.patientProfile.dataValues.gender,
-          height: f.dataValues.patientProfile.dataValues.height,
-          weight: f.dataValues.patientProfile.dataValues.weight,
-          additionalNotes:
-            f.dataValues.patientProfile.dataValues.additionalNotes,
-          patientGoal: f.dataValues.patientProfile.dataValues.patientGoal,
-          // theme: f.dataValues.patientProfile.dataValues.theme as Theme,
-          // sendAutomatedFeedback:
-          //   f.dataValues.patientProfile.dataValues.sendAutomatedFeedback,
-          // recallFrequency: {
-          //   reminderEvery: {
-          //     quantity:
-          //       f.dataValues.patientProfile.dataValues.recallFrequencyQuantity,
-          //     unit: f.dataValues.patientProfile.dataValues
-          //       .recallFrequencyUnit as Unit,
-          //   },
-          //   reminderEnds:
-          //     f.dataValues.patientProfile.dataValues.recallFrequencyEnd,
-          // },
-          isArchived: !!f.dataValues.deletionDate,
-        }
-
-        return profileValues
-      }) ?? []
-
-    return { ok: true, value: patientProfileValues }
+    const survey = dietician.surveys[0]
+    if (survey === undefined) {
+      return { ok: false, error: new Error('Survey not found') }
+    }
+    const patients: PatientProfileValues[] = survey.patients.map(patient => ({
+      ...createPatientProfileDTO(patient),
+      emailAddress: patient.user.email,
+      sendAutomatedFeedback: patient.patientPreferences.sendAutomatedFeedback,
+      // ...patient.patientPreferences,
+      theme: patient.patientPreferences.theme as Theme, // TODO: make this a proper theme in database
+      recallFrequency: {
+        reminderEvery: {
+          quantity: patient.patientPreferences.recallFrequency.quantity,
+          unit: patient.patientPreferences.recallFrequency.unit as Unit,
+        },
+        reminderEnds: patient.patientPreferences.recallFrequency.end,
+      },
+    }))
+    return { ok: true, value: patients }
   }
 
   const validateNewEmailAvailability = async (
@@ -346,7 +336,7 @@ export const createUserService = (): IUserService => {
     createRole,
     deleteRole,
     assignRoleToUserById,
-    getPatientsOfDietician,
+    getPatientsOfSurvey,
     validateNewEmailAvailability,
   }
 }

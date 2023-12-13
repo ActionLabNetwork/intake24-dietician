@@ -8,6 +8,7 @@ import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { TokenDTO } from '@intake24-dietician/common/entities/token.dto'
 import type {
   PatientProfileValues,
+  SurveyAttributes,
   TokenActionType,
 } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
@@ -21,6 +22,7 @@ import type {
   SurveyPreferencesDTO,
 } from '@intake24-dietician/common/entities/survey.dto'
 import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import type { SurveyCreationAttributes } from '@intake24-dietician/db/models/api/survey.model'
 
 export interface IEntity {
   [key: string]: any
@@ -31,9 +33,9 @@ export interface IBaseRepository<
   TCreationAttributes extends IEntity,
 > {
   createOne: (
-    data: TCreationAttributes,
+    data: TCreationAttributes & Partial<TAttributes>,
     options?: { transaction?: any; include?: any },
-  ) => Promise<TAttributes | undefined>
+  ) => Promise<TAttributes>
   findOne: (
     params: Partial<TAttributes>,
     options?: { transaction?: any; include?: any; paranoid?: boolean },
@@ -61,7 +63,8 @@ export interface IUserRepository
     token: string,
     hashedPassword: string,
   ) => Promise<Result<string>>
-  updateProfile: (
+  updateDietician: (
+    userId: number,
     email: string,
     details: Partial<DieticianProfileDTO>,
   ) => Promise<boolean>
@@ -72,15 +75,11 @@ export interface IUserRepository
   ) => Promise<Result<number>>
   uploadAvatar: (userId: number, buffer: string) => Promise<boolean>
   createPatient: (params: {
-    dieticianId: number
+    surveyId: number
     email: string
     hashedPassword: string
     patientDetails: Omit<PatientProfileDTO, 'id' | 'userId'>
   }) => Promise<Result<UserDTO>>
-  assignPatientToDieticianById: (
-    dieticianId: number,
-    patientId: number,
-  ) => Promise<Result<boolean>>
 }
 
 export interface ITokenRepository {
@@ -101,7 +100,7 @@ export type IDieticianProfileRepository = IBaseRepository<
 
 export type IRoleRepository = IBaseRepository<RoleDTO, Pick<RoleDTO, 'name'>>
 export interface ISurveyRepository
-  extends IBaseRepository<SurveyDTO, Omit<SurveyDTO, 'id'>> {
+  extends IBaseRepository<SurveyAttributes, SurveyCreationAttributes> {
   findOneWithPreferences: (id: SurveyDTO['id']) => Promise<
     | (SurveyDTO & {
         surveyPreference: SurveyPreferencesDTO & {

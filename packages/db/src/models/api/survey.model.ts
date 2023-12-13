@@ -9,10 +9,12 @@ import {
   AutoIncrement,
   HasOne,
   AllowNull,
+  HasMany,
 } from 'sequelize-typescript'
-import User from '../auth/user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import SurveyPreferences from './survey-preference.model'
+import DieticianProfile from '../auth/dietician-profile.model'
+import PatientProfile from '../auth/patient-profile.model'
 
 export interface SurveyAttributes {
   id: number
@@ -21,11 +23,12 @@ export interface SurveyAttributes {
   alias: string
   name: string
   recallSubmissionUrl: string
-  owner: User
-  ownerId: number
+  patients: PatientProfile[]
+  dieticianId: number
+  dietician: DieticianProfile
 }
 
-type SurveyCreationAttributes = Omit<SurveyAttributes, 'id' | 'owner'>
+export type SurveyCreationAttributes = Omit<SurveyAttributes, 'id' | 'patients' | 'owner' | 'dietician'>
 
 @Table(getTableConfig(Survey.name, 'surveys'))
 class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
@@ -33,6 +36,17 @@ class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
   @AutoIncrement
   @Column(DataType.BIGINT)
   public declare id: number
+
+  @ForeignKey(() => DieticianProfile)
+  @AllowNull(false)
+  @Column
+  public declare dieticianId: number
+
+  @BelongsTo(() => DieticianProfile)
+  public declare dietician: DieticianProfile
+
+  @HasMany(() => PatientProfile)
+  public declare patients: PatientProfile[]
 
   @Column
   public declare intake24SurveyId: string
@@ -54,14 +68,6 @@ class Survey extends Model<SurveyAttributes, SurveyCreationAttributes> {
 
   @Column
   public declare status: boolean
-
-  @ForeignKey(() => User)
-  @AllowNull(false)
-  @Column
-  public declare ownerId: number
-
-  @BelongsTo(() => User)
-  public declare owner: User
 }
 
 export default Survey

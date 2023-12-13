@@ -7,10 +7,14 @@ import {
   Default,
   DataType,
   HasOne,
+  PrimaryKey,
+  AutoIncrement,
+  HasMany,
 } from 'sequelize-typescript'
 import User from './user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import MasterSettings from '../api/master-settings.model'
+import Survey from '../api/survey.model'
 
 export interface DieticianProfileAttributes {
   id: number
@@ -35,9 +39,23 @@ class DieticianProfile extends Model<
   DieticianProfileAttributes,
   DieticianProfileCreationAttributes
 > {
+  @PrimaryKey
+  @AutoIncrement
+  @Column
+  public declare id: number
+
   @ForeignKey(() => User)
   @Column
   public declare userId: number
+
+  @BelongsTo(() => User)
+  public declare user: User
+
+  @HasMany(() => Survey)
+  public declare surveys: Survey[]
+
+  @HasOne(() => MasterSettings)
+  public declare masterSettings: MasterSettings
 
   @Default('')
   @Column
@@ -67,14 +85,9 @@ class DieticianProfile extends Model<
   @Column
   public declare shortBio: string
 
+  @Default(null)
   @Column(DataType.TEXT)
   public declare avatar: string | null
-
-  @BelongsTo(() => User)
-  public declare user: User
-
-  @HasOne(() => MasterSettings)
-  public declare masterSettings: MasterSettings
 }
 
 export default DieticianProfile

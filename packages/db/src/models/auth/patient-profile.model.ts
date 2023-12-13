@@ -12,10 +12,14 @@ import {
 import User from './user.model'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import PatientPreferences from '../api/patient-preferences.model'
+import Survey from '../api/survey.model'
 
 export interface PatientProfileAttributes {
   id: number
   userId: number
+  user: User
+  surveyId: number
+  survey: Survey
   firstName: string
   middleName: string
   lastName: string
@@ -30,26 +34,12 @@ export interface PatientProfileAttributes {
   patientGoal: string
   patientPreferences: PatientPreferences
   avatar: string | null
-  user: User
 }
 
-interface PatientProfileCreationAttributes {
-  userId: number
-  firstName: string
-  middleName: string
-  lastName: string
-  mobileNumber: string
-  address: string
-  age: number
-  gender: string
-  height: number
-  weight: number
-  additionalDetails?: Record<string, unknown>
-  additionalNotes: string
-  patientGoal: string
-  // patientPreferences: PatientPreferences
-  avatar: string | null
-}
+type PatientProfileCreationAttributes = Omit<
+  PatientProfileAttributes,
+  'id' | 'user' | 'survey' | 'patientPreferences'
+>
 
 @Table(getTableConfig(PatientProfile.name, 'patient_profiles'))
 class PatientProfile extends Model<
@@ -64,6 +54,15 @@ class PatientProfile extends Model<
   @ForeignKey(() => User)
   @Column
   public declare userId: number
+
+  @BelongsTo(() => User)
+  public declare user: User
+
+  @ForeignKey(() => Survey)
+  public declare surveyId: number
+
+  @BelongsTo(() => Survey)
+  public declare survey: Survey
 
   @Column
   public declare firstName: string
@@ -106,9 +105,6 @@ class PatientProfile extends Model<
 
   @Column(DataType.TEXT)
   public declare avatar: string | null
-
-  @BelongsTo(() => User)
-  public declare user: User
 }
 
 export default PatientProfile

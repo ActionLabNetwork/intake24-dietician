@@ -6,7 +6,7 @@ export interface PatientPreferencesDTO {
   theme: string
   sendAutomatedFeedback: boolean
   patientProfileId?: number
-  recallFrequency?: RecallFrequencyDTO
+  recallFrequency: RecallFrequencyDTO
   createdAt?: Date
   updatedAt?: Date
 }
