@@ -4,13 +4,6 @@
       <div class="d-flex align-center">
         <v-img max-width="10rem" src="@/assets/logo.svg" class="ml-16" />
         <WorkspaceMenu class="ml-14" />
-        <ul v-if="mdAndUp" class="nav-items">
-          <li v-for="item in navItems" :key="item.key">
-            <router-link :to="item.to">
-              {{ item.label }}
-            </router-link>
-          </li>
-        </ul>
       </div>
     </v-app-bar-title>
     <template v-slot:append>
@@ -35,32 +28,10 @@ import BaseAvatar from '@/components/common/BaseAvatar.vue'
 import NavigationDrawer from '@/components/app-bar/NavigationDrawer.vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import type { i18nOptions } from '@intake24-dietician/i18n'
 import WorkspaceMenu from '@intake24-dietician/portal/components/app-bar/WorkspaceMenu.vue'
-
-const { t } = useI18n<i18nOptions>()
 
 const { mdAndUp } = useDisplay()
 const drawer = ref(false)
-
-const navItems = [
-  {
-    key: 'my-patients',
-    label: t('appBar.my_patients'),
-    to: '/dashboard/my-patients',
-  },
-  {
-    key: 'my-surveys',
-    label: t('appBar.my_surveys'),
-    to: '/dashboard/my-surveys',
-  },
-  {
-    key: 'my-profile',
-    label: t('appBar.my_profile'),
-    to: '/dashboard/my-profile',
-  },
-]
 </script>
 <style scoped lang="scss">
 .nav-items {
