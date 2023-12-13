@@ -76,7 +76,6 @@ const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()
 const { currentWorkspace } = storeToRefs(workspaceStore)
 
-// const currentWorkspace = ref<SurveyDTO & { avatarColor: string }>()
 const workspaces = ref<(SurveyDTO & { avatarColor: string })[]>([])
 const otherWorkspaces = computed(() =>
   workspaces.value.filter(
@@ -87,7 +86,7 @@ const otherWorkspaces = computed(() =>
 watch(
   () => surveysQuery.data.value,
   newSurveysQueryData => {
-    if (!newSurveysQueryData || !newSurveysQueryData.data.ok) return
+    if (!newSurveysQueryData?.data.ok) return
 
     const surveys = newSurveysQueryData.data.value
     const colors = generateDistinctColors(surveys.map(survey => survey.name))
