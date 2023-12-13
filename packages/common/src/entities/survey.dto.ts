@@ -5,6 +5,7 @@ export interface SurveyPreferencesDTO {
   notifyEmail: boolean
   notifySms: boolean
   surveyId: number
+  recallFrequencyId: number
 }
 
 export interface SurveyDTO {
