@@ -45,7 +45,6 @@ const { mdAndUp } = useDisplay()
 const drawer = ref(false)
 
 const navItems = [
-  { key: 'workspace', label: 'Workspace', to: '/dashboard/workspace' },
   {
     key: 'my-patients',
     label: t('appBar.my_patients'),

@@ -54,7 +54,7 @@ const breadcrumbItems = ref([
   {
     title: 'Add new Survey',
     disabled: true,
-    href: '/dashboard/my-patients/add-survey',
+    href: '/dashboard/my-surveys/add-survey',
   },
 ])
 
