@@ -32,6 +32,7 @@
             :key="i"
             :value="workspace"
             variant="plain"
+            @click="currentWorkspace = workspace"
           >
             <template v-slot:prepend>
               <v-avatar :color="workspace.avatarColor">
@@ -66,12 +67,16 @@
 <script setup lang="ts">
 import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
+import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
 import { computed, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 
 const surveysQuery = useSurveys()
+const workspaceStore = useWorkspaceStore()
+const { currentWorkspace } = storeToRefs(workspaceStore)
 
-const currentWorkspace = ref<SurveyDTO & { avatarColor: string }>()
+// const currentWorkspace = ref<SurveyDTO & { avatarColor: string }>()
 const workspaces = ref<(SurveyDTO & { avatarColor: string })[]>([])
 const otherWorkspaces = computed(() =>
   workspaces.value.filter(
