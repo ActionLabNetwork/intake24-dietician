@@ -33,7 +33,7 @@
     "vue-router": "^4.2.4",
     "vue-toast-notification": "^3.0",
     "vuedraggable": "^4.1.0",
-    "vuetify": "^3.4.7",
+    "vuetify": "3.3.13",
     "webfontloader": "^1.6.28",
     "zod": "^3.22.4"
   },

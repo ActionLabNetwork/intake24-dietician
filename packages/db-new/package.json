@@ -1,0 +1,28 @@
+{
+  "name": "@intake24-dietician/db-new",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Intake24 Dietician database layer",
+  "author": "",
+  "license": "ISC",
+  "main": "src/index.ts",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {},
+  "dependencies": {
+    "pg": "^8.11.3",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.3.17"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.6",
+    "@types/validator": "^13.11.1",
+    "typescript": "^5.1.6"
+  },
+  "bundledDependencies": [
+    "@intake24-dietician/api",
+    "@intake24-dietician/common",
+    "@intake24-dietician/i18n"
+  ]
+}

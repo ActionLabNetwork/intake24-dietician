@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@intake24-dietician/common/*": ["../common/src/*"],
+      "@intake24-dietician/db-new/*": ["src/*"],
+      "@intake24-dietician/*": ["../*/src"]
+    }
+  },
+  "include": ["src/**/*.ts", "__tests__/**/*.ts"],
+  "exclude": ["node_modules"]
+}
