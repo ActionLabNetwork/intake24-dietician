@@ -73,6 +73,11 @@ export const dieticians = pgTable('dietician', {
   ...timestampFields,
 })
 
+export const dieticianRelations = relations(dieticians, ({ one, many }) => ({
+  user: one(users),
+  surveys: many(surveys),
+}))
+
 export const patients = pgTable('patient', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')

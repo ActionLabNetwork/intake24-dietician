@@ -87,16 +87,19 @@ export const surveyPreferences = pgTable('survey_preferences', {
   ...commonPreferences,
 })
 
-export const surveyPreferencesRelations = relations(surveyPreferences, ({ one }) => ({
-  survey: one(surveys, {
-    fields: [surveyPreferences.surveyId],
-    references: [surveys.id],
+export const surveyPreferencesRelations = relations(
+  surveyPreferences,
+  ({ one }) => ({
+    survey: one(surveys, {
+      fields: [surveyPreferences.surveyId],
+      references: [surveys.id],
+    }),
+    recallFrequency: one(recallFrequencies, {
+      fields: [surveyPreferences.recallFrequencyId],
+      references: [recallFrequencies.id],
+    }),
   }),
-  recallFrequency: one(recallFrequencies, {
-    fields: [surveyPreferences.recallFrequencyId],
-    references: [recallFrequencies.id],
-  }),
-}))
+)
 
 // export const patientPreferences = pgTable('patient_preferences', {
 //   id: serial('id').primaryKey(),

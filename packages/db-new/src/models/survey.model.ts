@@ -3,6 +3,7 @@ import { timestampFields } from './model.common'
 import { dieticians, patients } from './user.model'
 import { relations } from 'drizzle-orm'
 import { surveyPreferences } from './preferences.model'
+import { recalls } from './recall.model'
 
 export const surveys = pgTable('survey', {
   id: serial('id').primaryKey(),
@@ -24,7 +25,8 @@ export const surveyRelations = relations(surveys, ({ one, many }) => ({
     references: [dieticians.id],
   }),
   patients: many(patients),
-  preference: one(surveyPreferences),
+  surveyPreference: one(surveyPreferences),
+  recalls: many(recalls),
 }))
 
 // export const recall = pgTable('recall', {
