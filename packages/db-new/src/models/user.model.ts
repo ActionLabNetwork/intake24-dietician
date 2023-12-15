@@ -11,6 +11,7 @@ import {
 import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
 import { tokens } from './token.model'
+import { surveys } from './survey.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
@@ -78,10 +79,9 @@ export const patients = pgTable('patient', {
     .references(() => users.id)
     .notNull()
     .unique(),
-  // surveyId: integer('survey_id')
-  //   .references(() => surveys.id)
-  //   .notNull()
-  //   .unique(),
+  surveyId: integer('survey_id')
+    .references(() => surveys.id)
+    .notNull(),
   // preferenceId: integer('preference_id').references(() => patientPreferences.id).unique(),
   ...names,
   mobileNumber: text('mobile_number'),
@@ -96,3 +96,18 @@ export const patients = pgTable('patient', {
   avatar: text('avatar'),
   ...timestampFields,
 })
+
+export const patientRelations = relations(patients, ({ one }) => ({
+  user: one(users, {
+    fields: [patients.userId],
+    references: [users.id],
+  }),
+  survey: one(surveys, {
+    fields: [patients.surveyId],
+    references: [surveys.id],
+  }),
+  // preference: one(patientPreferences, {
+  //   fields: [patients.preferenceId],
+  //   references: [patientPreferences.id],
+  // }),
+}))
