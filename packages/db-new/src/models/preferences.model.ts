@@ -9,6 +9,7 @@ import {
 import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
 import { surveys } from './survey.model'
+import { feedbackModules } from './feedback-module.model'
 
 export const units = ['days', 'weeks', 'months'] as const
 export const reminderEndsTypes = ['never', 'on', 'after'] as const
@@ -97,6 +98,40 @@ export const surveyPreferencesRelations = relations(
     recallFrequency: one(recallFrequencies, {
       fields: [surveyPreferences.recallFrequencyId],
       references: [recallFrequencies.id],
+    }),
+  }),
+)
+
+export const surveyPreferencesFeedbackModules = pgTable(
+  'survey_preferences_feedback_modules',
+  {
+    surveyPreferencesId: integer('survey_preferences_id')
+      .notNull()
+      .references(() => surveyPreferences.id),
+    feedbackModuleId: integer('feedback_module_id')
+      .notNull()
+      .references(() => feedbackModules.id),
+    isActive: boolean('is_active').default(true).notNull(),
+    feedbackBelowRecommendedLevel: text('feedback_below_recommended_level')
+      .default('')
+      .notNull(),
+    feedbackAboveRecommendedLevel: text('feedback_above_recommended_level')
+      .default('')
+      .notNull(),
+    ...timestampFields,
+  },
+)
+
+export const surveyPreferencesFeedbackModulesRelations = relations(
+  surveyPreferencesFeedbackModules,
+  ({ one }) => ({
+    surveyPreference: one(surveyPreferences, {
+      fields: [surveyPreferencesFeedbackModules.surveyPreferencesId],
+      references: [surveyPreferences.id],
+    }),
+    feedbackModule: one(feedbackModules, {
+      fields: [surveyPreferencesFeedbackModules.feedbackModuleId],
+      references: [feedbackModules.id],
     }),
   }),
 )
