@@ -8,7 +8,7 @@ import {
 } from '@intake24-dietician/common/entities/user.dto'
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
-import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import moment from 'moment'
 import type { Result } from '@intake24-dietician/common/types/utils'
@@ -22,12 +22,14 @@ import { singleton } from 'tsyringe'
 @singleton()
 export class UserRepository {
   // Base Repositories
-  private baseUserRepository = baseRepositories.baseUserRepository();
-  private baseDieticianProfileRepository = baseRepositories.baseDieticianProfileRepository();
-  private baseRoleRepository = baseRepositories.baseRoleRepository();
-  private baseUserRoleRepository = baseRepositories.baseUserRoleRepository();
-  private baseTokenRepository = baseRepositories.baseTokenRepository();
-  private baseRecallFrequencyRepository = baseRepositories.baseRecallFrequencyRepository();
+  private baseUserRepository = baseRepositories.baseUserRepository()
+  private baseDieticianProfileRepository =
+    baseRepositories.baseDieticianProfileRepository()
+  private baseRoleRepository = baseRepositories.baseRoleRepository()
+  private baseUserRoleRepository = baseRepositories.baseUserRoleRepository()
+  private baseTokenRepository = baseRepositories.baseTokenRepository()
+  private baseRecallFrequencyRepository =
+    baseRepositories.baseRecallFrequencyRepository()
 
   public createUser = async (
     email: string,
@@ -185,7 +187,7 @@ export class UserRepository {
     surveyId: number
     email: string
     hashedPassword: string
-    patientDetails: Omit<PatientProfileDTO, 'id' | 'userId'>
+    patientDetails: Omit<PatientFieldCreateDto, 'id' | 'userId'>
   }): Promise<Result<UserDTO>> => {
     const { surveyId, email, hashedPassword, patientDetails } = params
     try {
@@ -310,7 +312,7 @@ export class UserRepository {
 
   public updatePatient = async (
     dieticianUserId: number,
-    _patientId: number,  // Remove this later
+    _patientId: number, // Remove this later
     patientDetails: Partial<PatientProfileValues>,
   ): Promise<Result<number>> => {
     console.log('Updating patient...')

@@ -1,30 +1,41 @@
 import type User from '@intake24-dietician/db/models/auth/user.model'
-import type { RoleDTO } from './role.dto'
-import type { PatientProfileDTO } from './patient-profile.dto'
-import type { DieticianProfileDTO } from './dietician-profile.dto'
 
-export interface UserDTO {
-  id: number
-  email: string
-  password: string
-  isVerified: boolean
-  patientProfile?: PatientProfileDTO
-  dieticianProfile?: DieticianProfileDTO
-  roles?: RoleDTO[]
-  createdAt?: Date
-  updatedAt?: Date
-  deletionDate?: Date
-}
+import { z } from 'zod'
 
-export const createUserDTO = (user: UserDTO | User): UserDTO => {
+export const UserCreateDtoSchema = z.object({
+  firstName: z.string().optional(),
+  middleName: z.string().optional(),
+  lastName: z.string().optional(),
+  email: z.string().optional(),
+})
+export const UserDtoSchema = UserCreateDtoSchema.extend({
+  id: z.number(),
+})
+
+export type UserCreateDto = z.infer<typeof UserCreateDtoSchema>
+
+// export interface UserDTO {
+//   id: number
+//   email: string
+//   password: string
+//   isVerified: boolean
+//   patientProfile?: PatientFieldDTO
+//   dieticianProfile?: DieticianProfileDTO
+//   roles?: RoleDTO[]
+//   createdAt?: Date
+//   updatedAt?: Date
+//   deletionDate?: Date
+// }
+
+export const createUserDTO = (user: UserCreateDto | User): UserCreateDto => {
   return {
-    id: user.id,
+    // id: user.id,
     email: user.email,
-    password: user.password,
-    isVerified: user.isVerified,
-    roles: user.roles,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-    deletionDate: user.deletionDate,
+    // password: user.password,
+    // isVerified: user.isVerified,
+    // roles: user.roles,
+    // createdAt: user.createdAt,
+    // updatedAt: user.updatedAt,
+    // deletionDate: user.deletionDate,
   }
 }

@@ -9,7 +9,7 @@ import UserRole from '@intake24-dietician/db/models/auth/user-role.model'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { createBaseRepository } from '@intake24-dietician/db/repositories/base.repository'
 
-import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type {
   SurveyPreferencesDTO
 } from '@intake24-dietician/common/entities/survey.dto'
@@ -36,9 +36,9 @@ const createBaseDieticianProfileRepository = () =>
 
 const createBasePatientProfileRepository = () =>
   createBaseRepository<
-    PatientProfileDTO,
+    PatientFieldCreateDto,
     Pick<
-      PatientProfileDTO,
+      PatientFieldCreateDto,
       | 'userId'
       | 'firstName'
       | 'middleName'

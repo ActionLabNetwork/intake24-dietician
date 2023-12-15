@@ -1,26 +1,28 @@
 import type DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import { z } from 'zod'
 
-export interface DieticianProfileDTO {
-  id?: number
-  userId: number
-  firstName: string
-  middleName: string
-  lastName: string
-  mobileNumber: string
-  businessNumber: string
-  businessAddress: string
-  shortBio: string
-  avatar: string | null
-  createdAt?: Date
-  updatedAt?: Date
-}
+export const DieticianCreateDto = z.object({
+  // id: z.number().optional(),
+  // userId: z.number(),
+  firstName: z.string(),
+  middleName: z.string(),
+  lastName: z.string(),
+  mobileNumber: z.string(),
+  businessNumber: z.string(),
+  businessAddress: z.string(),
+  shortBio: z.string(),
+  avatar: z.string().nullable(),
+  // createdAt: z.coerce.date().optional(),
+  // updatedAt: z.coerce.date().optional(),
+})
+export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
 
 export const createDieticianProfileDTO = (
-  details: DieticianProfileDTO | DieticianProfile,
+  details: DieticianCreateDto | DieticianProfile,
 ) => {
   return {
-    id: details.id,
-    userId: details.userId,
+    // id: details.id,
+    // userId: details.userId,
     firstName: details.firstName,
     middleName: details.middleName,
     lastName: details.lastName,
@@ -29,7 +31,7 @@ export const createDieticianProfileDTO = (
     businessAddress: details.businessAddress,
     shortBio: details.shortBio,
     avatar: details.avatar,
-    createdAt: details.createdAt,
-    updatedAt: details.updatedAt,
+    // createdAt: details.createdAt,
+    // updatedAt: details.updatedAt,
   }
 }
