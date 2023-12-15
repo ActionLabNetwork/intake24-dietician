@@ -2,7 +2,7 @@ import { integer, pgTable, serial, text, boolean } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { dieticians, patients } from './user.model'
 import { relations } from 'drizzle-orm'
-// import { surveyPreferences } from './preferences.model'
+import { surveyPreferences } from './preferences.model'
 
 export const surveys = pgTable('survey', {
   id: serial('id').primaryKey(),
@@ -24,7 +24,7 @@ export const surveyRelations = relations(surveys, ({ one, many }) => ({
     references: [dieticians.id],
   }),
   patients: many(patients),
-  // preference: one(surveyPreferences),
+  preference: one(surveyPreferences),
 }))
 
 // export const recall = pgTable('recall', {
