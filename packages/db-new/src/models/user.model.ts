@@ -43,10 +43,12 @@ export const userRelations = relations(users, ({ one }) => ({
   dietician: one(dieticians, {
     fields: [users.id],
     references: [dieticians.userId],
+    relationName: 'user_dietician',
   }),
   patient: one(patients, {
     fields: [users.id],
     references: [patients.userId],
+    relationName: 'user_patient',
   }),
 }))
 
@@ -89,8 +91,3 @@ export const patients = pgTable('patient', {
   avatar: text('avatar'),
   ...timestampFields,
 })
-
-export const patientRelations = relations(users, ({ one }) => ({
-  user: one(users),
-  // survey: one(surveys),
-}))
