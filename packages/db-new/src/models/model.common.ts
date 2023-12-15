@@ -1,6 +1,10 @@
-import { date } from 'drizzle-orm/pg-core'
+import { timestamp } from 'drizzle-orm/pg-core'
 
 export const timestampFields = {
-  createdAt: date('created_at').default('now()').notNull(),
-  updatedAt: date('updated_at').default('now()').notNull(),
+  createdAt: timestamp('created_at', { precision: 6, withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp('updated_at', { precision: 6, withTimezone: true })
+    .defaultNow()
+    .notNull(),
 }

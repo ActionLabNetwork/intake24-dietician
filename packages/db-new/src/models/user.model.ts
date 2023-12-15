@@ -1,13 +1,29 @@
-import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  boolean,
+  timestamp,
+  pgEnum,
+  jsonb,
+} from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
-import { surveys } from './survey.model'
-import { patientPreferences } from './preferences.model'
+// import { surveys } from './survey.model'
+// import { patientPreferences } from './preferences.model'
+
+export const genderEnum = pgEnum('gender', [
+  'Male',
+  'Female',
+  'Non-binary',
+  'Prefer not to say',
+])
 
 const names = {
-  firstName: text('first_name').notNull(),
+  firstName: text('first_name'),
   middleName: text('middle_name'),
-  lastName: text('last_name').notNull(),
+  lastName: text('last_name'),
 }
 
 export const users = pgTable('user', {
@@ -15,37 +31,66 @@ export const users = pgTable('user', {
   ...names,
   ...timestampFields,
   email: text('email').unique().notNull(),
+  password: text('password').notNull(),
+  isVerified: boolean('is_verified').default(false).notNull(),
+  deletionDate: timestamp('deletion_date', {
+    precision: 6,
+    withTimezone: true,
+  }),
 })
 
 export const userRelations = relations(users, ({ one }) => ({
-    dietician: one(dieticians),
-    patient: one(patients),
+  dietician: one(dieticians, {
+    fields: [users.id],
+    references: [dieticians.userId],
+  }),
+  patient: one(patients, {
+    fields: [users.id],
+    references: [patients.userId],
+  }),
 }))
 
 export const dieticians = pgTable('dietician', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull().unique(),
-  ...timestampFields,
+  userId: integer('user_id')
+    .references(() => users.id)
+    .notNull()
+    .unique(),
   ...names,
+  mobileNumber: text('mobile_number'),
+  businessNumber: text('business_number'),
+  businessAddress: text('business_address'),
+  shortBio: text('short_bio'),
+  avatar: text('avatar'),
+  ...timestampFields,
 })
-
-export const dieticianRelations = relations(users, ({ one }) => ({
-  user: one(users),
-}))
 
 export const patients = pgTable('patient', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').references(() => users.id).notNull().unique(),
-  surveyId: integer('survey_id').references(() => surveys.id).notNull().unique(),
-  preferenceId: integer('preference_id').references(() => patientPreferences.id).unique(),
-  ...timestampFields,
+  userId: integer('user_id')
+    .references(() => users.id)
+    .notNull()
+    .unique(),
+  // surveyId: integer('survey_id')
+  //   .references(() => surveys.id)
+  //   .notNull()
+  //   .unique(),
+  // preferenceId: integer('preference_id').references(() => patientPreferences.id).unique(),
   ...names,
+  mobileNumber: text('mobile_number'),
+  address: text('address'),
+  age: integer('age'),
+  gender: genderEnum('gender'),
+  height: integer('height'),
+  weight: integer('weight'),
+  additionalDetails: jsonb('additional_details'),
+  additionalNotes: text('additional_notes'),
+  patientGoal: text('patient_goal'),
+  avatar: text('avatar'),
+  ...timestampFields,
 })
 
 export const patientRelations = relations(users, ({ one }) => ({
   user: one(users),
-  survey: one(surveys),
+  // survey: one(surveys),
 }))
-
-
-

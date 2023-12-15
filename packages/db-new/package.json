@@ -10,7 +10,9 @@
     "node": ">=16"
   },
   "scripts": {
-    "push": "drizzle-kit push:pg"
+    "push": "drizzle-kit push:pg",
+    "push:verbose": "drizzle-kit push:pg --verbose",
+    "studio": "drizzle-kit studio"
   },
   "dependencies": {
     "drizzle-orm": "^0.29.1",
