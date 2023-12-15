@@ -15,12 +15,15 @@ import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.
 import SurveyPreferences from '@intake24-dietician/db/models/api/survey-preference.model'
 import Survey from '@intake24-dietician/db/models/api/survey.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import type { SurveyRepository } from '@intake24-dietician/db/repositories/survey.repository'
 import { singleton } from 'tsyringe'
 import { createLogger } from '../middleware/logger'
 
 @singleton()
 export class SurveyService {
   private logger = createLogger('SurveyService')
+
+  public constructor(private surveyRepository: SurveyRepository) {}
 
   // Get the recall by ids
   public getSurveySecretByAlias = async (
