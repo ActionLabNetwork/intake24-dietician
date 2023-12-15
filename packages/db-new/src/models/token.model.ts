@@ -24,7 +24,7 @@ export const tokens = pgTable('token', {
     .notNull()
     .unique(),
   token: text('token').notNull().unique(),
-  tokenType: tokenTypeEnum('token_type').notNull(),
+  actionType: tokenTypeEnum('action_type').notNull(),
   expiresAt: timestamp('expires_at', { precision: 6, withTimezone: true }),
   isActive: boolean('is_active').default(true).notNull(),
   ...timestampFields,

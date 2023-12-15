@@ -1,10 +1,12 @@
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import moment from 'moment'
 import type { AppDatabase } from '../database'
 import { dieticians, patients, surveys, tokens, users } from '../models'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
 import type { UserCreateDto } from '@intake24-dietician/common/entities/user.dto'
+import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
+import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
 import { singleton } from 'tsyringe'
 
@@ -22,6 +24,14 @@ export class UserRepository {
         limit,
         offset,
       })
+      .execute()
+  }
+
+  public async verifyUser(id: number) {
+    return await this.drizzle
+      .update(users)
+      .set({ isVerified: true })
+      .where(eq(users.id, id))
       .execute()
   }
 
@@ -57,19 +67,23 @@ export class UserRepository {
       .execute()
   }
 
+  public async checkEmailExists(email: string) {
+    return !!(await this.getUserByEmail(email))
+  }
+
   public async resetPassword(token: string, hashedPassword: string) {
     await this.drizzle.transaction(async tx => {
       const tokenEntity = await tx.query.tokens
         .findFirst({
-          where: eq(tokens, token),
+          where: eq(tokens.token, token),
         })
         .execute()
 
       if (!tokenEntity) {
-        throw new Error('Token not found')
+        throw new NotFoundError('Token not found')
       }
       if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-        throw new Error('Token expired')
+        throw new UnauthorizedError('Token expired')
       }
       await tx
         .update(users)
@@ -114,13 +128,25 @@ export class UserRepository {
   public async getDieticianByEmail(email: string) {
     const user = await this.drizzle.query.users
       .findFirst({
-        where: eq(users.email, email),
+        where: and(eq(users.email, email), eq(users.role, 'Dietician')),
         with: {
           dietician: true,
         },
       })
       .execute()
     return user?.dietician
+  }
+
+  public async getDieticianById(id: number) {
+    const user = await this.drizzle.query.users
+      .findFirst({
+        where: and(eq(users.id, id), eq(users.role, 'Dietician')),
+        with: {
+          dietician: true,
+        },
+      })
+      .execute()
+    return user
   }
 
   public async createDieticianUser(email: string, hashedPassword: string) {
@@ -160,11 +186,16 @@ export class UserRepository {
   }
 
   public async uploadAvatar(userId: number, buffer: string) {
-    await this.drizzle
-      .update(users)
-      .set({ avatar: buffer })
-      .where(eq(users.id, userId))
-      .execute()
+    return (
+      (
+        await this.drizzle
+          .update(users)
+          .set({ avatar: buffer })
+          .where(eq(users.id, userId))
+          .returning()
+          .execute()
+      ).length > 0
+    )
   }
 
   public async getPatient(patientId: number) {
@@ -174,6 +205,21 @@ export class UserRepository {
         with: {
           user: true,
           survey: true,
+        },
+      })
+      .execute()
+  }
+
+  public async getPatientByUserIdAndEmail(userId: number, email: string) {
+    return await this.drizzle.query.users
+      .findFirst({
+        where: and(
+          eq(users.id, userId),
+          eq(users.email, email),
+          eq(users.role, 'Patient'),
+        ),
+        with: {
+          patient: true,
         },
       })
       .execute()

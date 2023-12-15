@@ -3,17 +3,16 @@ import 'reflect-metadata'
 
 import { app } from './app'
 import { env } from './config/env'
-// import {
-//   connectPostgres,
-//   connectRedis,
-//   connectMongo,
-// } from '@intake24-dietician/db/connection'
+import {
+  connectRedis,
+  connectMongo,
+} from '@intake24-dietician/db-new/connection'
 // import initJobs from './jobs/queue'
 
 const host = env.HOST
 const port = env.API_PORT || 3000
 
-Promise.all([])
+Promise.all([connectRedis(), connectMongo()])
   .then(async () => {
     // ;(async () => {
     //   await initJobs().catch(() => {})
