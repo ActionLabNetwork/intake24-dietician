@@ -17,4 +17,8 @@ export class AppDatabase {
 
     console.log('✅ Connected to Postgres via Drizzle ORM')
   }
+
+  public async close() {
+    await this.sqlClient.end()
+  }
 }
