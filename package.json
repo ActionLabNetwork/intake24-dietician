@@ -43,7 +43,8 @@
     "*.{ts,vue}": "eslint --fix"
   },
   "dependencies": {
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "@intake24-dietician/common": "*"
   },
   "devDependencies": {
     "@jest/types": "^29.6.3",

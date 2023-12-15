@@ -14,12 +14,18 @@
     "studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@intake24-dietician/common": "*",
     "drizzle-orm": "^0.29.1",
+    "moment": "^2.29.4",
     "postgres": "^3.4.3"
   },
   "devDependencies": {
     "drizzle-kit": "^0.20.6",
+    "tsyringe": "^4.8.0",
     "typescript": "^5.1.6"
+  },
+  "peerDependencies": {
+    "tsyringe": "^4.8.0"
   },
   "bundledDependencies": [
     "@intake24-dietician/api",
