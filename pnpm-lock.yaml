@@ -144,6 +144,9 @@ importers:
 
   apps/api:
     dependencies:
+      '@intake24-dietician/db-new':
+        specifier: '*'
+        version: link:../../packages/db-new
       '@t3-oss/env-core':
         specifier: ^0.6.1
         version: 0.6.1(zod@3.22.4)

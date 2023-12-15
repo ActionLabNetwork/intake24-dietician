@@ -27,6 +27,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@intake24-dietician/db-new": "*",
     "@t3-oss/env-core": "^0.6.1",
     "@tsoa/runtime": "^5.0.0",
     "argon2": "^0.31.1",
