@@ -19,11 +19,6 @@ export const app = express()
 const HOST = env.HOST || 'http://localhost'
 const PORT = env.PORTAL_APP_PORT || '3001'
 
-app.use(bodyParser.json({ limit: '50mb' }))
-app.use(cookieParser())
-app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
-  return res.send(swaggerUi.generateHTML(await import('../build/swagger.json')))
-})
 app.use(
   cors({
     origin: [`${HOST}:${PORT}`, `${env.PORTAL_APP_HOST}`],
@@ -33,6 +28,12 @@ app.use(
     credentials: true,
   }),
 )
+app.use(bodyParser.json({ limit: '50mb' }))
+app.use(cookieParser())
+app.use('/docs', swaggerUi.serve, async (_req: ExRequest, res: ExResponse) => {
+  return res.send(swaggerUi.generateHTML(await import('../build/swagger.json')))
+})
+
 app.use(multer().single('file'))
 // app.use(pino({ logger: createLogger() }))
 

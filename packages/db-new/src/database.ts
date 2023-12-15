@@ -4,8 +4,8 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import { getDBUrl } from './config/env'
 
 export class AppDatabase {
-  public declare sqlClient
   public declare drizzleClient
+  private declare sqlClient
 
   public constructor(connectionString = getDBUrl('intake24-dietician-db')) {
     this.sqlClient = postgres(connectionString)

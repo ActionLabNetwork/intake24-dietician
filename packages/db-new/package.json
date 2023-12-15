@@ -16,6 +16,7 @@
   "dependencies": {
     "@intake24-dietician/common": "*",
     "drizzle-orm": "^0.29.1",
+    "drizzle-zod": "^0.5.1",
     "moment": "^2.29.4",
     "postgres": "^3.4.3"
   },
