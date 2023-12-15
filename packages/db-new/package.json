@@ -11,7 +11,6 @@
   },
   "scripts": {
     "push": "drizzle-kit push:pg",
-    "push:verbose": "drizzle-kit push:pg --verbose",
     "studio": "drizzle-kit studio"
   },
   "dependencies": {

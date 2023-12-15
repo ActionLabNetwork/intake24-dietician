@@ -10,6 +10,7 @@ import {
 } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
+import { tokens } from './token.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
@@ -19,6 +20,8 @@ export const genderEnum = pgEnum('gender', [
   'Non-binary',
   'Prefer not to say',
 ])
+
+export const roleEnum = pgEnum('role', ['Dietician', 'Patient'])
 
 const names = {
   firstName: text('first_name'),
@@ -33,13 +36,14 @@ export const users = pgTable('user', {
   email: text('email').unique().notNull(),
   password: text('password').notNull(),
   isVerified: boolean('is_verified').default(false).notNull(),
+  role: roleEnum('role').notNull(),
   deletionDate: timestamp('deletion_date', {
     precision: 6,
     withTimezone: true,
   }),
 })
 
-export const userRelations = relations(users, ({ one }) => ({
+export const userRelations = relations(users, ({ one, many }) => ({
   dietician: one(dieticians, {
     fields: [users.id],
     references: [dieticians.userId],
@@ -50,6 +54,7 @@ export const userRelations = relations(users, ({ one }) => ({
     references: [patients.userId],
     relationName: 'user_patient',
   }),
+  token: many(tokens),
 }))
 
 export const dieticians = pgTable('dietician', {
