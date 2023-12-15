@@ -1,3 +1,6 @@
-// export * from "./preferences.model"
-// export * from "./survey.model"
+export * from "./preferences.model"
+export * from "./survey.model"
 export * from "./user.model"
+export * from "./token.model"
+export * from "./recall.model"
+export * from "./feedback-module.model"

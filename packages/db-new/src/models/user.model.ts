@@ -31,13 +31,15 @@ const names = {
   lastName: text('last_name'),
 }
 
-export const users = pgTable('user', {
+export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   ...names,
   ...timestampFields,
   email: text('email').unique().notNull(),
-  password: text('password').notNull(),
+  password: text('password'),
   isVerified: boolean('is_verified').default(false).notNull(),
+  // switch to https://stackoverflow.com/questions/76399047/how-to-represent-bytea-datatype-from-pg-inside-new-drizzle-orm?
+  avatar: text('avatar'),
   role: roleEnum('role').notNull(),
   deletionDate: timestamp('deletion_date', {
     precision: 6,
@@ -70,7 +72,6 @@ export const dieticians = pgTable('dietician', {
   businessNumber: text('business_number'),
   businessAddress: text('business_address'),
   shortBio: text('short_bio'),
-  avatar: text('avatar'),
   ...timestampFields,
 })
 
@@ -98,7 +99,6 @@ export const patients = pgTable('patient', {
   additionalDetails: jsonb('additional_details'),
   additionalNotes: text('additional_notes'),
   patientGoal: text('patient_goal'),
-  avatar: text('avatar'),
   ...timestampFields,
 })
 

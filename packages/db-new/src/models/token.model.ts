@@ -4,6 +4,7 @@ import {
   pgEnum,
   pgTable,
   serial,
+  text,
   timestamp,
 } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
@@ -22,6 +23,7 @@ export const tokens = pgTable('token', {
     .references(() => users.id)
     .notNull()
     .unique(),
+  token: text('token').notNull().unique(),
   tokenType: tokenTypeEnum('token_type').notNull(),
   expiresAt: timestamp('expires_at', { precision: 6, withTimezone: true }),
   isActive: boolean('is_active').default(true).notNull(),
