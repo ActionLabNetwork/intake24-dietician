@@ -10,6 +10,7 @@ import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
 import { surveys } from './survey.model'
 import { feedbackModules } from './feedback-module.model'
+import { patients } from './user.model'
 
 export const units = ['days', 'weeks', 'months'] as const
 export const reminderEndsTypes = ['never', 'on', 'after'] as const
@@ -63,6 +64,10 @@ export const recallFrequenciesRelations = relations(
     surveyPreference: one(surveyPreferences, {
       fields: [recallFrequencies.id],
       references: [surveyPreferences.recallFrequencyId],
+    }),
+    patientPreference: one(patientPreferences, {
+      fields: [recallFrequencies.id],
+      references: [patientPreferences.recallFrequencyId],
     }),
   }),
 )
@@ -136,7 +141,29 @@ export const surveyPreferencesFeedbackModulesRelations = relations(
   }),
 )
 
-// export const patientPreferences = pgTable('patient_preferences', {
-//   id: serial('id').primaryKey(),
-//   ...commonPreferences,
-// })
+export const patientPreferences = pgTable('patient_preferences', {
+  id: serial('id').primaryKey(),
+  patientId: integer('patient_id')
+    .notNull()
+    .unique()
+    .references(() => patients.id),
+  recallFrequencyId: integer('recall_frequency_id')
+    .notNull()
+    .unique()
+    .references(() => recallFrequencies.id),
+  ...commonPreferences,
+})
+
+export const patientPreferencesRelations = relations(
+  patientPreferences,
+  ({ one }) => ({
+    patient: one(patients, {
+      fields: [patientPreferences.patientId],
+      references: [patients.id],
+    }),
+    recallFrequency: one(recallFrequencies, {
+      fields: [patientPreferences.recallFrequencyId],
+      references: [recallFrequencies.id],
+    }),
+  }),
+)
