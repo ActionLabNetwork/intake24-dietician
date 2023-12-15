@@ -1,5 +1,5 @@
 import { singleton } from 'tsyringe'
-import { AppDatabase } from '../database'
+import type { AppDatabase } from '../database'
 import { surveys } from '../models'
 import { eq } from 'drizzle-orm'
 
@@ -20,5 +20,5 @@ export class SurveyRepository {
         },
       })
       .execute()
-  } 
+  }
 }

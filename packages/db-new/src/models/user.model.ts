@@ -31,7 +31,7 @@ const names = {
   lastName: text('last_name'),
 }
 
-export const users = pgTable('users', {
+export const users = pgTable('user', {
   id: serial('id').primaryKey(),
   ...names,
   ...timestampFields,

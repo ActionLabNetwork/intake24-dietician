@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { AppDatabase } from '../database'
+import type { AppDatabase } from '../database'
 import { tokens } from '../models'
 import { singleton } from 'tsyringe'
 import { eq } from 'drizzle-orm'

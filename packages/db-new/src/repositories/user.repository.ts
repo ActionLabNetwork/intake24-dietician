@@ -2,9 +2,9 @@ import { eq } from 'drizzle-orm'
 import moment from 'moment'
 import type { AppDatabase } from '../database'
 import { dieticians, patients, surveys, tokens, users } from '../models'
-import { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
-import { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
-import { UserCreateDto } from '@intake24-dietician/common/entities/user.dto'
+import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
+import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { UserCreateDto } from '@intake24-dietician/common/entities/user.dto'
 import assert from 'assert'
 import { singleton } from 'tsyringe'
 
@@ -182,7 +182,7 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    patientDetails: PatientFieldCreateDto,
+    // patientDetails: PatientFieldCreateDto,
   ) {
     await this.drizzle.transaction(async tx => {
       const [user] = await tx
