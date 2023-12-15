@@ -4,7 +4,6 @@ import type {
   SurveyDTO,
   SurveyPreferencesDTO,
 } from '@intake24-dietician/common/entities/survey.dto'
-import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
 import type { SurveyPreference } from '@intake24-dietician/common/types/survey'
 import type { Result } from '@intake24-dietician/common/types/utils'

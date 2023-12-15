@@ -1,24 +1,13 @@
-import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
-import { createPatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
-import type { RoleDTO } from '@intake24-dietician/common/entities/role.dto'
-import type { UserRoleDTO } from '@intake24-dietician/common/entities/user-role.dto'
-import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
-import type { Unit } from '@intake24-dietician/common/types/reminder'
-import type { Theme } from '@intake24-dietician/common/types/theme'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import { Op } from '@intake24-dietician/db/connection'
-import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
-import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
-import Survey from '@intake24-dietician/db/models/api/survey.model'
-import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
-import PatientProfile from '@intake24-dietician/db/models/auth/patient-profile.model'
-import User from '@intake24-dietician/db/models/auth/user.model'
+import {
+  SurveyRepository,
+  UserRepository,
+} from '@intake24-dietician/db-new/repositories'
 import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
-import type { UserRepository } from '@intake24-dietician/db/repositories/user.repository'
-import { toInt } from 'radash'
-import { z } from 'zod'
+import type { UserRepository as OldUserRepository } from '@intake24-dietician/db/repositories/user.repository'
 
 /* This is a lightweight service with minimal validation, meant to be used by the admin CLI */
 export class UserService {
@@ -28,115 +17,42 @@ export class UserService {
   private baseDieticianProfileRepository =
     baseRepositories.baseDieticianProfileRepository()
 
-  public constructor(private userRepository: UserRepository) {}
+  public constructor(
+    private oldUserRepository: OldUserRepository,
+    private userRepository: UserRepository,
+    private surveyRepository: SurveyRepository,
+  ) {}
 
-  public listUsers = async (
-    limit = 10,
-    offset = 0,
-  ): Promise<Result<UserDTO[]>> => {
-    try {
-      const users = await this.baseUserRepository.findMany({ limit, offset })
-      return { ok: true, value: users } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
+  public listUsers = async (limit = 10, offset = 0) => {
+    return await this.userRepository.listUsers(limit, offset)
   }
 
-  public getUserById = async (id: string): Promise<Result<UserDTO | null>> => {
-    try {
-      const user = (await this.baseUserRepository.findOne(
-        { id: Number(id) },
-        {
-          include: [
-            DieticianProfile,
-            {
-              model: PatientProfile,
-              include: [
-                { model: PatientPreferences, include: [RecallFrequency] },
-              ],
-            },
-          ],
-          paranoid: false,
-        },
-      )) as any // TEMPORARY
-
-      if (!user) {
-        return { ok: false, error: new Error('User not found') } as const
-      }
-
-      // Format patient profile
-      if (user.patientProfile) {
-        const formattedPatientProfile = {
-          ...user.patientProfile,
-          theme: user.patientProfile.patientPreferences?.theme as Theme,
-          emailAddress: user.email,
-          recallFrequency: {
-            reminderEvery: {
-              quantity:
-                user.patientProfile.patientPreferences?.recallFrequency
-                  ?.quantity,
-              unit: user.patientProfile.patientPreferences?.recallFrequency
-                ?.unit as Unit,
-            },
-            reminderEnds:
-              user.patientProfile.patientPreferences?.recallFrequency?.end,
-          },
-        }
-
-        user.patientProfile = {
-          ...user.patientProfile,
-          ...formattedPatientProfile,
-        }
-      }
-
-      return { ok: true, value: user } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
+  public async getPatientById(dieticianId: number, patientId: number) {
+    const isPatientDieticians = await this.userRepository.isPatientDieticians({
+      dieticianId,
+      patientId,
+    })
+    if (!isPatientDieticians) {
+      throw new UnauthorizedError('Patient does not belong to dietician')
     }
+    const patient = await this.userRepository.getPatient(patientId)
+    // this should never happen since it is already checked indirectly above, consider refactoring
+    if (!patient) {
+      throw new NotFoundError('Patient not found')
+    }
+    return patient
   }
 
-  public getUserByEmail = async (
-    email: string,
-  ): Promise<Result<UserDTO | null>> => {
-    try {
-      const isValidEmail = z.string().email().safeParse(email).success
-
-      if (!isValidEmail) {
-        return { ok: false, error: new Error('Invalid email') } as const
-      }
-      return {
-        ok: true,
-        value:
-          (await this.baseUserRepository.findOne(
-            { email },
-            { include: [DieticianProfile] },
-          )) ?? null,
-      } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
+  public async getDieticianByEmail(email: string) {
+    const dietician = await this.userRepository.getDieticianByEmail(email)
+    if (!dietician) {
+      throw new NotFoundError('Dietician not found')
     }
+    return dietician
   }
 
-  public updateProfile = async (
-    id: number,
-    details: Partial<DieticianProfileDTO>,
-  ): Promise<Result<DieticianProfileDTO | null>> => {
-    try {
-      const profile = await this.baseDieticianProfileRepository.findOne({
-        userId: id,
-      })
-
-      if (!profile) {
-        return { ok: false, error: new Error('Profile not found') } as const
-      }
-
-      const updatedProfile =
-        await this.baseDieticianProfileRepository.updateOne({ id }, details)
-      return { ok: true, value: updatedProfile ?? null } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
+  public getUserByEmail = async (email: string) =>
+    await this.userRepository.getDieticianByEmail(email)
 
   public updatePatient = async (
     dieticianId: number,
@@ -145,7 +61,7 @@ export class UserService {
   ): Promise<Result<number>> => {
     try {
       // eslint-disable-next-line complexity
-      return await this.userRepository.updatePatient(
+      return await this.oldUserRepository.updatePatient(
         dieticianId,
         patientId,
         patientDetails,
@@ -158,170 +74,29 @@ export class UserService {
     }
   }
 
-  public deleteUserByIdOrEmail = async (
-    idOrEmail: string,
-  ): Promise<Result<number>> => {
-    try {
-      const user = await User.destroy({
-        where: { [Op.or]: [{ id: toInt(idOrEmail) }, { email: idOrEmail }] },
-      })
-      return { ok: true, value: user } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
+  public deleteUser = async (id: number) =>
+    await this.userRepository.deleteUser(id)
 
-  public restoreDeletedUserByIdOrEmail = async (
-    idOrEmail: string,
-  ): Promise<Result<void>> => {
-    try {
-      const user = await User.restore({
-        where: { [Op.or]: [{ id: toInt(idOrEmail) }, { email: idOrEmail }] },
-      })
-      return { ok: true, value: user } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
-
-  public createRole = async (name: string): Promise<Result<RoleDTO>> => {
-    try {
-      const role = await this.baseRoleRepository.createOne({ name })
-
-      if (!role) {
-        return { ok: false, error: new Error('Role not created') } as const
-      }
-
-      return { ok: true, value: role } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
-
-  public deleteRole = async (name: string): Promise<Result<boolean>> => {
-    try {
-      const role = await this.baseRoleRepository.destroyOne({ name })
-      return { ok: true, value: role } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
-
-  public assignRoleToUserById = async (
-    userId: number,
-    roleName: string,
-  ): Promise<Result<UserRoleDTO>> => {
-    try {
-      const user = await this.baseUserRepository.findOne({ id: userId })
-      const role = await this.baseRoleRepository.findOne({ name: roleName })
-
-      if (!user) {
-        return { ok: false, error: new Error('User not found') } as const
-      }
-      if (!role) {
-        return { ok: false, error: new Error('Role not found') } as const
-      }
-
-      const userRole = await this.baseUserRoleRepository.createOne({
-        userId: userId,
-        roleId: role.id!,
-      })
-
-      if (!userRole) {
-        return {
-          ok: false,
-          error: new Error('Failed to assign role to user'),
-        } as const
-      }
-
-      return { ok: true, value: userRole } as const
-    } catch (error) {
-      return { ok: false, error: new Error(getErrorMessage(error)) } as const
-    }
-  }
+  public restoreUser = async (idOrEmail: number) =>
+    await this.userRepository.restoreUser(idOrEmail)
 
   public getPatientsOfSurvey = async (
-    dieticianUserId: number,
+    dieticianId: number,
     surveyId: number,
-  ): Promise<Result<Partial<PatientProfileValues>[]>> => {
-    const dietician = await DieticianProfile.findOne({
-      where: { userId: dieticianUserId },
-      include: [
-        {
-          model: Survey,
-          include: [
-            {
-              model: PatientProfile,
-              include: [
-                User,
-                {
-                  model: PatientPreferences,
-                  include: [RecallFrequency],
-                },
-              ],
-            },
-          ],
-          where: {
-            id: surveyId,
-          },
-        },
-      ],
-    })
-    if (dietician === null) {
-      return { ok: false, error: new Error('Dietician not found') }
+  ) => {
+    const survey = await this.surveyRepository.getSurveyWithPatients(surveyId)
+    if (!survey) {
+      throw new NotFoundError('Survey not found')
     }
-    const survey = dietician.surveys[0]
-    if (survey === undefined) {
-      return { ok: false, error: new Error('Survey not found') }
+    if (survey.dieticianId !== dieticianId) {
+      throw new UnauthorizedError("Survey doesn't belong to dietician") // TODO: better error
     }
-    const patients: PatientProfileValues[] = survey.patients.map(patient => ({
-      ...createPatientProfileDTO(patient),
-      emailAddress: patient.user.email,
-      sendAutomatedFeedback: patient.patientPreferences.sendAutomatedFeedback,
-      // ...patient.patientPreferences,
-      theme: patient.patientPreferences.theme as Theme, // TODO: make this a proper theme in database
-      recallFrequency: {
-        reminderEvery: {
-          quantity: patient.patientPreferences.recallFrequency.quantity,
-          unit: patient.patientPreferences.recallFrequency.unit as Unit,
-        },
-        reminderEnds: patient.patientPreferences.recallFrequency.end,
-      },
-    }))
-    return { ok: true, value: patients }
+    return survey.patients
   }
 
   public validateNewEmailAvailability = async (
     email: string,
-  ): Promise<Result<boolean>> => {
-    try {
-      const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await User.findOne({ where: { email } }))
-
-      if (!isValidEmail) {
-        return {
-          ok: false,
-          error: new Error(
-            'Invalid email address. Please try again with a different one.',
-          ),
-        }
-      }
-
-      if (emailExists) {
-        return {
-          ok: false,
-          error: new Error(
-            'An account with this email address already exists. Please try again with a different one.',
-          ),
-        }
-      }
-
-      return { ok: true, value: true }
-    } catch (error) {
-      return {
-        ok: false,
-        error: new Error('Failed to validate email.'),
-      }
-    }
+  ): Promise<boolean> => {
+    return (await this.userRepository.getUserByEmail(email)) === undefined
   }
 }

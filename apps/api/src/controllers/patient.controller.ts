@@ -253,7 +253,7 @@ export class PatientController extends Controller {
         }
 
         const patient =
-          await this.userService.restoreDeletedUserByIdOrEmail(userId)
+          await this.userService.restoreUser(userId)
 
         if (patient.ok) {
           this.logger.info('Successfully restored patient', userId)
@@ -290,7 +290,7 @@ export class PatientController extends Controller {
           return this.generateExpiredTokenResponse()
         }
 
-        const patient = await this.userService.deleteUserByIdOrEmail(userId)
+        const patient = await this.userService.deleteUser(userId)
 
         if (patient.ok) {
           this.logger.info('Successfully deleted patient', userId)
