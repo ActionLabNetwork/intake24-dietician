@@ -1,4 +1,3 @@
-import type { IUserRepository } from '@intake24-dietician/db/types/repositories'
 import User from '@intake24-dietician/db/models/auth/user.model'
 import { sequelize } from '@intake24-dietician/db/connection'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
@@ -18,33 +17,24 @@ import { baseRepositories } from './singleton'
 import PatientProfile from '../models/auth/patient-profile.model'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import Survey from '../models/api/survey.model'
+import { singleton } from 'tsyringe'
 
-export const createUserRepository = (): IUserRepository => {
+@singleton()
+export class UserRepository {
   // Base Repositories
-  const {
-    baseUserRepository,
-    baseDieticianProfileRepository,
-    baseRoleRepository,
-    baseUserRoleRepository,
-    baseTokenRepository,
-    baseRecallFrequencyRepository,
-  } = {
-    baseUserRepository: baseRepositories.baseUserRepository(),
-    baseDieticianProfileRepository:
-      baseRepositories.baseDieticianProfileRepository(),
-    baseRoleRepository: baseRepositories.baseRoleRepository(),
-    baseUserRoleRepository: baseRepositories.baseUserRoleRepository(),
-    baseTokenRepository: baseRepositories.baseTokenRepository(),
-    baseRecallFrequencyRepository:
-      baseRepositories.baseRecallFrequencyRepository(),
-  }
+  private baseUserRepository = baseRepositories.baseUserRepository();
+  private baseDieticianProfileRepository = baseRepositories.baseDieticianProfileRepository();
+  private baseRoleRepository = baseRepositories.baseRoleRepository();
+  private baseUserRoleRepository = baseRepositories.baseUserRoleRepository();
+  private baseTokenRepository = baseRepositories.baseTokenRepository();
+  private baseRecallFrequencyRepository = baseRepositories.baseRecallFrequencyRepository();
 
-  const createUser = async (
+  public createUser = async (
     email: string,
     hashedPassword: string,
   ): Promise<UserDTO | null> => {
     const newUser = await sequelize.transaction(async t => {
-      const user = await baseUserRepository.createOne(
+      const user = await this.baseUserRepository.createOne(
         {
           email,
           password: hashedPassword,
@@ -57,12 +47,12 @@ export const createUserRepository = (): IUserRepository => {
       }
 
       // Create dietician profile
-      await baseDieticianProfileRepository.createOne(
+      await this.baseDieticianProfileRepository.createOne(
         { userId: user.id },
         { transaction: t },
       )
 
-      const dieticianRole = await baseRoleRepository.findOne(
+      const dieticianRole = await this.baseRoleRepository.findOne(
         {
           name: 'dietician',
         },
@@ -70,7 +60,7 @@ export const createUserRepository = (): IUserRepository => {
       )
 
       if (dieticianRole) {
-        await baseUserRoleRepository.createOne(
+        await this.baseUserRoleRepository.createOne(
           {
             userId: user.id,
             roleId: dieticianRole.id!,
@@ -85,13 +75,13 @@ export const createUserRepository = (): IUserRepository => {
     return newUser
   }
 
-  const resetPassword = async (
+  public resetPassword = async (
     token: string,
     hashedPassword: string,
   ): Promise<Result<string>> => {
     try {
       return sequelize.transaction(async t => {
-        const tokenEntity = await baseTokenRepository.findOne(
+        const tokenEntity = await this.baseTokenRepository.findOne(
           { token },
           { transaction: t },
         )
@@ -104,7 +94,7 @@ export const createUserRepository = (): IUserRepository => {
           return { ok: false, error: new Error('Token has expired') } as const
         }
 
-        await baseUserRepository.updateOne(
+        await this.baseUserRepository.updateOne(
           { id: tokenEntity.userId },
           {
             password: hashedPassword,
@@ -112,7 +102,7 @@ export const createUserRepository = (): IUserRepository => {
           { transaction: t },
         )
 
-        await baseTokenRepository.destroyOne(
+        await this.baseTokenRepository.destroyOne(
           { id: tokenEntity.id },
           { transaction: t },
         )
@@ -130,13 +120,13 @@ export const createUserRepository = (): IUserRepository => {
     }
   }
 
-  const updateDietician = async (
+  public updateDietician = async (
     _userId: number, // TODO: remove this later
     email: string,
     details: Partial<DieticianProfileDTO>,
   ) => {
     const result = await sequelize.transaction(async t => {
-      const user = await baseUserRepository.findOne(
+      const user = await this.baseUserRepository.findOne(
         { id: details.userId },
         { transaction: t, include: [DieticianProfile] },
       )
@@ -145,13 +135,13 @@ export const createUserRepository = (): IUserRepository => {
         return { ok: false, error: new Error('User not found') } as const
       }
 
-      await baseUserRepository.updateOne(
+      await this.baseUserRepository.updateOne(
         { id: user.id },
         { email },
         { transaction: t },
       )
 
-      await baseDieticianProfileRepository.updateOne(
+      await this.baseDieticianProfileRepository.updateOne(
         { userId: user.id },
         details,
         { transaction: t },
@@ -163,13 +153,13 @@ export const createUserRepository = (): IUserRepository => {
     return result.ok
   }
 
-  const uploadAvatar = async (
+  public uploadAvatar = async (
     userId: number,
     buffer: string,
   ): Promise<boolean> => {
     try {
       return await sequelize.transaction(async t => {
-        const user = await baseUserRepository.findOne(
+        const user = await this.baseUserRepository.findOne(
           { id: userId },
           { transaction: t, include: [DieticianProfile] },
         )
@@ -178,7 +168,7 @@ export const createUserRepository = (): IUserRepository => {
           throw new Error('User not found')
         }
 
-        await baseDieticianProfileRepository.updateOne(
+        await this.baseDieticianProfileRepository.updateOne(
           { userId: user.id },
           { avatar: buffer },
           { transaction: t },
@@ -191,7 +181,7 @@ export const createUserRepository = (): IUserRepository => {
     }
   }
 
-  const createPatient = async (params: {
+  public createPatient = async (params: {
     surveyId: number
     email: string
     hashedPassword: string
@@ -250,7 +240,7 @@ export const createUserRepository = (): IUserRepository => {
           // )
 
           const recallFrequencyId =
-            (await baseRecallFrequencyRepository.createOne(
+            (await this.baseRecallFrequencyRepository.createOne(
               {
                 quantity:
                   patientDetails.patientPreferences.recallFrequency.quantity,
@@ -280,13 +270,13 @@ export const createUserRepository = (): IUserRepository => {
         }
 
         // Assign patient role
-        const patientRole = await baseRoleRepository.findOne(
+        const patientRole = await this.baseRoleRepository.findOne(
           { name: 'patient' },
           { transaction: t },
         )
 
         if (patientRole) {
-          await baseUserRoleRepository.createOne(
+          await this.baseUserRoleRepository.createOne(
             {
               userId: user.id,
               roleId: patientRole.id!,
@@ -295,7 +285,7 @@ export const createUserRepository = (): IUserRepository => {
           )
         }
 
-        const userWithRole = await baseUserRepository.findOne(
+        const userWithRole = await this.baseUserRepository.findOne(
           { id: user.id },
           { include: [Role], transaction: t },
         )
@@ -318,7 +308,7 @@ export const createUserRepository = (): IUserRepository => {
     }
   }
 
-  const updatePatient = async (
+  public updatePatient = async (
     dieticianUserId: number,
     _patientId: number,  // Remove this later
     patientDetails: Partial<PatientProfileValues>,
@@ -396,15 +386,5 @@ export const createUserRepository = (): IUserRepository => {
         value: 1,
       }
     })
-  }
-
-  return {
-    ...baseUserRepository,
-    createUser,
-    resetPassword,
-    updateDietician,
-    updatePatient,
-    uploadAvatar,
-    createPatient,
   }
 }

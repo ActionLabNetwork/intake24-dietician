@@ -1,15 +1,16 @@
-import * as argon2 from 'argon2'
-import type { IHashingService } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
+import * as argon2 from 'argon2'
+import { singleton } from 'tsyringe'
 
-export const createArgonHashingService = (): IHashingService => ({
-  async hash(password: string): Promise<string> {
+@singleton()
+export class HashingService  {
+  public async hash(password: string): Promise<string> {
     return await argon2.hash(password)
-  },
-  async randomHash(): Promise<string> {
+  }
+  public async randomHash(): Promise<string> {
     return await argon2.hash(Math.random().toString())
-  },
-  async verify(
+  }
+  public async verify(
     hashedPassword: string,
     password: string,
   ): Promise<Result<boolean>> {
@@ -19,5 +20,5 @@ export const createArgonHashingService = (): IHashingService => ({
     } catch (_) {
       return { ok: false, error: new Error('Failed to verify hash') }
     }
-  },
-})
+  }
+}

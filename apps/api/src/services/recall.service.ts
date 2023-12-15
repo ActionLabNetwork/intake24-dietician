@@ -1,22 +1,19 @@
-import type { Result } from '@intake24-dietician/common/types/utils'
-// import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-// import { Op } from '@intake24-dietician/db/connection'
-import { Recall } from '@intake24-dietician/db/models/api/int24-recall.recall-model'
-// import { toInt } from 'radash'
-// import { z } from 'zod'
-
-import { createLogger } from '../middleware/logger'
 import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import type { Result } from '@intake24-dietician/common/types/utils'
+import { Recall } from '@intake24-dietician/db/models/api/int24-recall.recall-model'
+import { singleton } from 'tsyringe'
+import { createLogger } from '../middleware/logger'
 
 const logger = createLogger('ApiLogger')
 
-export const createRecallService = () => {
+@singleton()
+export class RecallService {
   /**
    * Retrieves a recall by its ID.
    * @param id - The ID of the recall to retrieve.
    * @returns A Promise that resolves to a Result object containing either the retrieved recall or null if it doesn't exist, or an error if the retrieval fails.
    */
-  const getRecallById = async (
+  public getRecallById = async (
     id: string,
   ): Promise<Result<IRecallExtended>> => {
     try {
@@ -44,7 +41,7 @@ export const createRecallService = () => {
    * @param userId - The ID of the user for which to retrieve the recalls.
    * @returns A Promise that resolves to a Result object containing either the retrieved recalls or null if they don't exist, or an error if the retrieval fails.
    */
-  const getRecallsByUserId = async (
+  public getRecallsByUserId = async (
     userId: string,
   ): Promise<Result<IRecallExtended[]>> => {
     try {
@@ -89,7 +86,7 @@ export const createRecallService = () => {
    * @param newRecall - The new recall to create.
    * @returns A Promise that resolves to a Result object containing either the ID of the created recall or null if it doesn't exist, or an error if the creation fails.
    */
-  const createRecall = async (
+  public createRecall = async (
     newRecall: IRecallExtended,
   ): Promise<Result<string | null>> => {
     logger.info('createRecall')
@@ -107,11 +104,5 @@ export const createRecallService = () => {
         error: new Error('Cannot create a recall entity: ', {}),
       }
     }
-  }
-
-  return {
-    getRecallById,
-    getRecallsByUserId,
-    createRecall,
   }
 }

@@ -1,13 +1,14 @@
 import type { TokenActionType } from '@intake24-dietician/common/types/auth'
-import type { ITokenRepository } from '@intake24-dietician/db/types/repositories'
 import Token from '@intake24-dietician/db/models/auth/token.model'
 import {
   createTokenDTO,
   type TokenDTO,
 } from '@intake24-dietician/common/entities/token.dto'
+import { singleton } from 'tsyringe'
 
-export const createTokenRepository = (): ITokenRepository => {
-  const createToken = async (params: {
+@singleton()
+export class TokenRepository  {
+  public createToken = async (params: {
     userId: number
     token: string
     actionType: TokenActionType
@@ -16,7 +17,7 @@ export const createTokenRepository = (): ITokenRepository => {
     return createTokenDTO(await Token.create(params))
   }
 
-  const findOne = async (token: string): Promise<TokenDTO | null> => {
+  public findOne = async (token: string): Promise<TokenDTO | null> => {
     const _token = await Token.findOne({ where: { token } })
 
     if (!_token) {
@@ -25,10 +26,8 @@ export const createTokenRepository = (): ITokenRepository => {
     return createTokenDTO(_token)
   }
 
-  const destroyOne = async (token: string): Promise<boolean> => {
+  public destroyOne = async (token: string): Promise<boolean> => {
     const rowsAffected = await Token.destroy({ where: { token } })
     return rowsAffected > 0
   }
-
-  return { createToken, findOne, destroyOne }
 }

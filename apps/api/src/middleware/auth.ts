@@ -1,18 +1,15 @@
-// import * as jwt from 'jsonwebtoken'
 import { env } from '@/config/env'
-import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import type { Result } from '@intake24-dietician/common/types/utils'
-import { createJwtTokenService } from '@/services/token.service'
+import { TokenService } from '@/services/token.service'
 import type {
   SurveyAttributes,
   TTokenType,
 } from '@intake24-dietician/common/types/auth'
-
+import type { Result } from '@intake24-dietician/common/types/utils'
+import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
 import type * as express from 'express'
 import type { JwtPayload } from 'jsonwebtoken'
 import { match } from 'ts-pattern'
-
-const tokenService = createJwtTokenService()
+import { container } from 'tsyringe'
 
 const getTheSecret = async (
   surveyID: string,
@@ -72,6 +69,7 @@ const verifyJwtToken = (
   tokenType: TTokenType = 'access-token',
   secret: string = env.JWT_SECRET,
 ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
+  const tokenService = container.resolve(TokenService)
   const decoded = tokenService.verify(token, secret)
 
   return match(decoded)

@@ -1,12 +1,9 @@
-import type { IDieticianProfileRepository } from '@intake24-dietician/db/types/repositories'
+import { singleton } from 'tsyringe'
 import { baseRepositories } from './singleton'
 
-export const createDieticianProfileRepository =
-  (): IDieticianProfileRepository => {
-    const { baseDieticianProfileRepository } = {
-      baseDieticianProfileRepository:
-        baseRepositories.baseDieticianProfileRepository(),
-    }
 
-    return { ...baseDieticianProfileRepository }
-  }
+@singleton()
+export class DieticianProfileRepository {
+  private baseDieticianProfileRepository =
+    baseRepositories.baseDieticianProfileRepository()
+}

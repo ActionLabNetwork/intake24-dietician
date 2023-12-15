@@ -1,4 +1,3 @@
-import type { ISurveyRepository } from '@intake24-dietician/db/types/repositories'
 import type {
   SurveyDTO,
   SurveyPreferencesDTO,
@@ -14,20 +13,21 @@ import SurveyPreferencesFeedbackModule from '../models/api/feedback-modules/surv
 import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
 import RecallFrequency from '../models/api/recall-frequency.model'
 import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-import { createSurveyPreferencesRepository } from './survey-preference.repository'
+import type { SurveyPreferenceRepository } from './survey-preference.repository'
 import { sequelize } from '../connection'
+import { singleton } from 'tsyringe'
 
-export const createSurveyRepository = (): ISurveyRepository => {
-  const { baseSurveyRepository, surveyPreferencesRepository } = {
-    baseSurveyRepository: baseRepositories.baseSurveyRepository(),
-    surveyPreferencesRepository: createSurveyPreferencesRepository(),
-  }
+@singleton()
+export class SurveyRepository  {
+  private baseSurveyRepository = baseRepositories.baseSurveyRepository()
 
-  const createOne = async (survey: Omit<SurveyDTO, 'id'>) => {
+  public constructor(private surveyPreferencesRepository: SurveyPreferenceRepository) {}
+
+  public createOne = async (survey: Omit<SurveyDTO, 'id'>) => {
     try {
       return await sequelize.transaction(async transaction => {
         const newSurvey = await Survey.create(survey, { transaction })
-        await surveyPreferencesRepository.createOne(
+        await this.surveyPreferencesRepository.createOne(
           { surveyId: newSurvey.id },
           { transaction },
         )
@@ -40,7 +40,7 @@ export const createSurveyRepository = (): ISurveyRepository => {
     }
   }
 
-  const findOneWithPreferences = async (
+  public findOneWithPreferences = async (
     id: SurveyDTO['id'],
   ): Promise<
     | (SurveyDTO & {
@@ -98,6 +98,4 @@ export const createSurveyRepository = (): ISurveyRepository => {
     console.log({ retVal: retVal.surveyPreference.recallFrequency })
     return retVal
   }
-
-  return { ...baseSurveyRepository, createOne, findOneWithPreferences }
 }

@@ -1,58 +1,41 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Path,
-  Route,
-  Security,
-  Tags,
-  Request,
-  Body,
-  Put,
-  Queries,
-} from 'tsoa'
-import type express from 'express'
-import type { IAuthService } from '@intake24-dietician/common/types/auth'
-import type {
-  ApiResponseWithError,
-  IQueryParams,
-  ISurveyApiService,
-} from '@intake24-dietician/common/types/api'
-import { container } from '../ioc/container'
-import { createAuthService } from '../services/auth.service'
-import { createSurveyService } from '../services/survey.service'
-import { match } from 'ts-pattern'
+import { createLogger } from '@/middleware/logger'
+import { AuthService, SurveyService } from '@/services'
+import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 import type {
   SurveyDTO,
   SurveyPreferencesDTO,
 } from '@intake24-dietician/common/entities/survey.dto'
-import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
-import type { WithoutIDAndTimestampsSimple } from '@intake24-dietician/db/types/utils'
-import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import type {
+  ApiResponseWithError,
+  IQueryParams
+} from '@intake24-dietician/common/types/api'
 import type { SurveyPreference } from '@intake24-dietician/common/types/survey'
-import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import type { WithoutIDAndTimestampsSimple } from '@intake24-dietician/db/types/utils'
+import type express from 'express'
+import { match } from 'ts-pattern'
+import {
+  Body,
+  Controller,
+  Get,
+  Path,
+  Post,
+  Put,
+  Queries,
+  Request,
+  Route,
+  Security,
+  Tags,
+} from 'tsoa'
+import { container } from 'tsyringe'
 
 @Route('surveys')
 @Tags('Survey')
 export class SurveyController extends Controller {
-  private readonly logger
-  private readonly authService: IAuthService
-  private readonly surveyService: ISurveyApiService
-
-  public constructor() {
-    super()
-    this.authService = createAuthService(
-      container.resolve('hashingService'),
-      container.resolve('tokenService'),
-      container.resolve('emailService'),
-      container.resolve('userService'),
-      container.resolve('userRepository'),
-      container.resolve('tokenRepository'),
-    )
-    this.surveyService = createSurveyService()
-
-    this.logger = container.resolve('createLogger')(SurveyController.name)
-  }
+  private readonly logger = createLogger(SurveyController.name)
+  private readonly authService = container.resolve(AuthService)
+  private readonly surveyService = container.resolve(SurveyService)
 
   @Get('')
   @Security('jwt')

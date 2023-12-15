@@ -1,10 +1,7 @@
-import type { IRoleRepository } from '../types/repositories'
+import { singleton } from 'tsyringe'
 import { baseRepositories } from './singleton'
 
-export const createRoleRepository = (): IRoleRepository => {
-  const { baseRoleRepository } = {
-    baseRoleRepository: baseRepositories.baseRoleRepository(),
-  }
-
-  return { ...baseRoleRepository }
+@singleton()
+export class RoleRepository {
+  public baseRoleRepository = baseRepositories.baseRoleRepository()
 }

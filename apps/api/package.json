@@ -30,7 +30,6 @@
     "@t3-oss/env-core": "^0.6.1",
     "@tsoa/runtime": "^5.0.0",
     "argon2": "^0.31.1",
-    "awilix": "^8.0.1",
     "bullmq": "^4.12.4",
     "chai-http": "^4.4.0",
     "chalk": "^4.1.2",
@@ -58,6 +57,7 @@
     "swagger-ui-express": "^5.0.0",
     "ts-pattern": "^5.0.5",
     "tsoa": "^5.1.1",
+    "tsyringe": "^4.8.0",
     "zod": "^3.22.2"
   },
   "devDependencies": {

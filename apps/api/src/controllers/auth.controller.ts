@@ -1,3 +1,15 @@
+import { createLogger } from '@/middleware/logger'
+import { AuthService } from '@/services/auth.service'
+import type {
+  AuthRequest,
+  AuthResponse,
+  DieticianProfileValues,
+  Token,
+} from '@intake24-dietician/common/types/auth'
+import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
+import { hash } from '@intake24-dietician/common/utils/index'
+import type express from 'express'
+import { match } from 'ts-pattern'
 import {
   Body,
   Controller,
@@ -11,39 +23,18 @@ import {
   SuccessResponse,
   Tags,
 } from 'tsoa'
-import type express from 'express'
-import { match } from 'ts-pattern'
-
-import type {
-  AuthRequest,
-  AuthResponse,
-  DieticianProfileValues,
-  IAuthService,
-  Token,
-} from '@intake24-dietician/common/types/auth'
-import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { createAuthService } from '@/services/auth.service'
-import { container } from '@/ioc/container'
-import { hash } from '@intake24-dietician/common/utils/index'
+import { container } from 'tsyringe'
 
 @Route('auth')
 @Tags('Authentication')
 export class AuthController extends Controller {
   private readonly logger
-  private readonly authService: IAuthService
+  private readonly authService: AuthService
 
   public constructor() {
     super()
-    this.authService = createAuthService(
-      container.resolve('hashingService'),
-      container.resolve('tokenService'),
-      container.resolve('emailService'),
-      container.resolve('userService'),
-      container.resolve('userRepository'),
-      container.resolve('tokenRepository'),
-    )
-
-    this.logger = container.resolve('createLogger')(AuthController.name)
+    this.authService = container.resolve(AuthService)
+    this.logger = createLogger(AuthController.name)
   }
 
   /**
@@ -398,7 +389,7 @@ export class AuthController extends Controller {
           'Invalid credentials',
         )
       }
-      
+
       const verifyResult = this.authService.verifyJwtToken(accessToken)
       if (!verifyResult.ok) {
         this.setStatus(401)

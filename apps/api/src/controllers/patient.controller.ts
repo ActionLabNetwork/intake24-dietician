@@ -1,52 +1,36 @@
-import {
-  Controller,
-  Get,
-  Route,
-  Tags,
-  Request,
-  Security,
-  Post,
-  Body,
-  Path,
-  Put,
-  Delete,
-} from 'tsoa'
-import { match } from 'ts-pattern'
-import type express from 'express'
-import crypto from 'crypto'
-
+import { createLogger } from '@/middleware/logger'
+import { AuthService, UserService } from '@/services'
 import type {
-  IAuthService,
-  PatientProfileValues,
+  PatientProfileValues
 } from '@intake24-dietician/common/types/auth'
 import { generateErrorResponse } from '@intake24-dietician/common/utils/error'
-import { createAuthService, createUserService } from '@/services'
-import { container } from '@/ioc/container'
-import type { IUserService } from '@intake24-dietician/common/types/api'
+import crypto from 'crypto'
+import type express from 'express'
+import { match } from 'ts-pattern'
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Path,
+  Post,
+  Put,
+  Request,
+  Route,
+  Security,
+  Tags,
+} from 'tsoa'
+import { container } from 'tsyringe'
 import { z } from 'zod'
 
 
 @Route('patients')
 @Tags('Patients')
 export class PatientController extends Controller {
-  private readonly logger
-  private readonly authService: IAuthService
-  private readonly userService: IUserService
+  private readonly logger = createLogger(PatientController.name)
+  private readonly authService = container.resolve(AuthService)
+  private readonly userService = container.resolve(UserService)
 
-  public constructor() {
-    super()
-    this.authService = createAuthService(
-      container.resolve('hashingService'),
-      container.resolve('tokenService'),
-      container.resolve('emailService'),
-      container.resolve('userService'),
-      container.resolve('userRepository'),
-      container.resolve('tokenRepository'),
-    )
-    this.userService = createUserService()
-
-    this.logger = container.resolve('createLogger')(PatientController.name)
-  }
 
   /**
    * @summary Get all patients of a dietician

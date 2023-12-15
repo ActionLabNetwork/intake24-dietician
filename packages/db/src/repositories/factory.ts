@@ -13,7 +13,7 @@ import type { PatientProfileDTO } from '@intake24-dietician/common/entities/pati
 import type {
   SurveyPreferencesDTO
 } from '@intake24-dietician/common/entities/survey.dto'
-import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
+import type { SurveyAttributes, UserAttributes } from '@intake24-dietician/common/types/auth'
 import type { PatientPreferencesAttributes, PatientPreferencesCreationAttributes } from '@intake24-dietician/db/models/api/patient-preferences.model';
 import PatientPreferences from '@intake24-dietician/db/models/api/patient-preferences.model'
 import type { RecallFrequencyAttributes, RecallFrequencyCreationAttributes } from '@intake24-dietician/db/models/api/recall-frequency.model';
@@ -25,7 +25,7 @@ import Token from '@intake24-dietician/db/models/auth/token.model'
 import SurveyPreferences from '../models/api/survey-preference.model'
 
 const createBaseUserRepository = () =>
-  createBaseRepository<UserDTO, Pick<UserDTO, 'email' | 'password'>, User>(User)
+  createBaseRepository<UserAttributes, Pick<UserDTO, 'email' | 'password'>, User>(User)
 
 const createBaseDieticianProfileRepository = () =>
   createBaseRepository<

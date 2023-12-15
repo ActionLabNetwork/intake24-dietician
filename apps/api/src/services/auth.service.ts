@@ -6,64 +6,63 @@
  * @packageDocumentation
  */
 /* eslint-disable max-params */
-import User from '@intake24-dietician/db/models/auth/user.model'
-import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import { env } from '../config/env'
-import type {
-  IAuthService,
-  IHashingService,
-  ITokenService,
-  Token as TokenType,
-  TokenPayload,
-  IEmailService,
-  UserAttributes,
-  DieticianProfileValues,
-  TokenActionType,
-  PatientProfileValues,
-} from '@intake24-dietician/common/types/auth'
-import type {
-  ITokenRepository,
-  IUserRepository,
-} from '@intake24-dietician/db/types/repositories'
-import type { JwtPayload } from 'jsonwebtoken'
-import { z } from 'zod'
-import moment from 'moment'
-import crypto from 'crypto'
-import { redis } from '@intake24-dietician/db/connection'
-import { createLogger } from '../middleware/logger'
-import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
-import { match, P } from 'ts-pattern'
-import type { Result } from '@intake24-dietician/common/types/utils'
-import type { IUserService } from '@intake24-dietician/common/types/api'
-import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
 import type { DieticianProfileDTO } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileDTO } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import type {
+  DieticianProfileValues,
+  PatientProfileValues,
+  TokenActionType,
+  TokenPayload,
+  Token as TokenType,
+  UserAttributes,
+} from '@intake24-dietician/common/types/auth'
+import type { Result } from '@intake24-dietician/common/types/utils'
+import { getErrorMessage } from '@intake24-dietician/common/utils/error'
+import { redis } from '@intake24-dietician/db/connection'
+import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import User from '@intake24-dietician/db/models/auth/user.model'
+import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
+import type { TokenRepository } from '@intake24-dietician/db/repositories/token.repository'
+import type { UserRepository } from '@intake24-dietician/db/repositories/user.repository'
+import crypto from 'crypto'
+import type { JwtPayload } from 'jsonwebtoken'
+import moment from 'moment'
+import { P, match } from 'ts-pattern'
+import { singleton } from 'tsyringe'
+import { z } from 'zod'
+import { env } from '../config/env'
+import { createLogger } from '../middleware/logger'
+import type { HashingService } from './hashing.service'
+import type { TokenService } from './token.service'
 
 const logger = createLogger('AuthService')
 const ACCESS_PREFIX = 'access:'
 
-export const createAuthService = (
-  hashingService: IHashingService,
-  tokenService: ITokenService,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _emailService: IEmailService,
-  _userService: IUserService,
-  userRepository: IUserRepository,
-  tokenRepository: ITokenRepository,
-): IAuthService => {
-  const register = async (
+@singleton()
+export class AuthService {
+  private baseUserRepository = baseRepositories.baseUserRepository()
+
+  public constructor(
+    private hashingService: HashingService,
+    private tokenService: TokenService,
+    private userRepository: UserRepository,
+    private tokenRepository: TokenRepository,
+  ) {}
+
+  public register = async (
     email: string,
     password: string,
   ): Promise<Result<(UserDTO & { token: TokenType; jti: string }) | null>> => {
     try {
-      const isEmailValid = await validateNewEmailAvailability(email)
+      const isEmailValid = await this.validateNewEmailAvailability(email)
 
       return match(isEmailValid)
         .with({ ok: true }, async () => {
-          const hashedPassword = await hashingService.hash(password)
+          const hashedPassword = await this.hashingService.hash(password)
 
           try {
-            const newUser = await userRepository.createUser(
+            const newUser = await this.userRepository.createUser(
               email,
               hashedPassword,
             )
@@ -75,7 +74,7 @@ export const createAuthService = (
               } as const
             }
 
-            const { jti, token } = await generateToken(newUser, 'both')
+            const { jti, token } = await this.generateToken(newUser, 'both')
             return {
               ok: true,
               value: {
@@ -103,7 +102,7 @@ export const createAuthService = (
     }
   }
 
-  const login = async (
+  public login = async (
     email: string,
     password: string,
   ): Promise<
@@ -115,10 +114,8 @@ export const createAuthService = (
         return user
       }
 
-      const verifyPassword = async (
-        user: User,
-      ): Promise<Result<boolean>> => {
-        const result = await hashingService.verify(user.password, password)
+      const verifyPassword = async (user: User): Promise<Result<boolean>> => {
+        const result = await this.hashingService.verify(user.password, password)
         return result
       }
 
@@ -141,12 +138,15 @@ export const createAuthService = (
                 } as const
               }
               if (!user.isVerified) {
-                userRepository.updateOne({ id: user.id }, { isVerified: true })
+                this.baseUserRepository.updateOne(
+                  { id: user.id },
+                  { isVerified: true },
+                )
               }
 
               return {
                 ok: true,
-                value: await generateTokenAndReturnValues(user),
+                value: await this.generateTokenAndReturnValues(user),
               } as const
             })
             .otherwise(() => ({
@@ -161,13 +161,13 @@ export const createAuthService = (
     }
   }
 
-  const forgotPassword = async (email: string): Promise<Result<string>> => {
+  public forgotPassword = async (email: string): Promise<Result<string>> => {
     try {
-      if (!confirmEmailExists(email)) {
+      if (!this.confirmEmailExists(email)) {
         return { ok: false, error: new Error('Email not found') }
       }
 
-      const token = await generateUserToken(email, 'reset-password')
+      const token = await this.generateUserToken(email, 'reset-password')
 
       if (!token.ok) {
         return {
@@ -191,21 +191,21 @@ export const createAuthService = (
     }
   }
 
-  const resetPassword = async (
+  public resetPassword = async (
     token: string,
     password: string,
   ): Promise<Result<string>> => {
-    return await userRepository.resetPassword(
+    return await this.userRepository.resetPassword(
       token,
-      await hashingService.hash(password),
+      await this.hashingService.hash(password),
     )
   }
 
-  const getUser = async (
+  public getUser = async (
     accessToken: string,
   ): Promise<Result<UserAttributes | null>> => {
     try {
-      const decodedToken = verifyJwtToken(accessToken)
+      const decodedToken = this.verifyJwtToken(accessToken)
 
       return match(decodedToken)
         .with({ ok: true }, async result => {
@@ -215,7 +215,7 @@ export const createAuthService = (
             return { ok: false, error: new Error('Invalid token') } as const
           }
 
-          await checkTokenInRedis(decodedToken['jti'] ?? '')
+          await this.checkTokenInRedis(decodedToken['jti'] ?? '')
           const user = await User.findOne({
             where: { id: decodedToken['userId'] },
             include: [DieticianProfile],
@@ -239,12 +239,12 @@ export const createAuthService = (
     }
   }
 
-  const validateJwt = async (
+  public validateJwt = async (
     accessToken: string,
     refreshToken: string,
   ): Promise<Result<string>> => {
     try {
-      const decoded = verifyJwtToken(accessToken)
+      const decoded = this.verifyJwtToken(accessToken)
 
       return (
         match(decoded)
@@ -276,7 +276,8 @@ export const createAuthService = (
             // Expired token case
             async () => {
               // Try refreshing the token
-              const refreshTokenResult = await refreshAccessToken(refreshToken)
+              const refreshTokenResult =
+                await this.refreshAccessToken(refreshToken)
 
               return match(refreshTokenResult)
                 .with({ ok: true }, async result => {
@@ -306,9 +307,9 @@ export const createAuthService = (
     }
   }
 
-  const logout = async (accessToken: string): Promise<Result<string>> => {
+  public logout = async (accessToken: string): Promise<Result<string>> => {
     try {
-      const decoded = verifyJwtToken(accessToken)
+      const decoded = this.verifyJwtToken(accessToken)
 
       if (!decoded.ok) throw decoded.error
       const jti = (decoded as JwtPayload)['jti']
@@ -322,12 +323,12 @@ export const createAuthService = (
     }
   }
 
-  const updateProfile = async (
+  public updateProfile = async (
     userId: number,
     details: DieticianProfileValues,
   ): Promise<Result<boolean>> => {
     try {
-      const updated = await userRepository.updateDietician(
+      const updated = await this.userRepository.updateDietician(
         userId,
         details.emailAddress,
         {
@@ -342,21 +343,21 @@ export const createAuthService = (
     }
   }
 
-  const generateUserToken = async (
+  public generateUserToken = async (
     email: string,
     actionType: TokenActionType,
   ): Promise<Result<string>> => {
     let token = ''
 
     try {
-      const user = await userRepository.findOne({ email })
+      const user = await this.baseUserRepository.findOne({ email })
 
       if (!user) {
         return { ok: false, error: new Error('User not found') } as const
       }
 
       token = crypto.randomBytes(32).toString('hex')
-      tokenRepository.createToken({
+      this.tokenRepository.createToken({
         userId: user.id,
         token,
         actionType,
@@ -372,12 +373,12 @@ export const createAuthService = (
     return { ok: true, value: token }
   }
 
-  const verifyUserToken = async (
+  public verifyUserToken = async (
     token: string,
     actionType: TokenActionType,
     destroyToken = true,
   ): Promise<Result<string>> => {
-    const tokenEntity = await tokenRepository.findOne(token)
+    const tokenEntity = await this.tokenRepository.findOne(token)
 
     if (!tokenEntity) {
       return { ok: false, error: new Error('Invalid token') } as const
@@ -395,25 +396,29 @@ export const createAuthService = (
     }
 
     if (destroyToken) {
-      tokenRepository.destroyOne(token)
+      this.tokenRepository.destroyOne(token)
     }
 
     return { ok: true, value: 'User token has been verified' } as const
   }
 
-  const verifyUserTokenForPasswordlessAuth = async (
+  public verifyUserTokenForPasswordlessAuth = async (
     email: string,
     token: string,
   ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
-    const isVerified = await verifyUserToken(token, 'passwordless-auth', false)
+    const isVerified = await this.verifyUserToken(
+      token,
+      'passwordless-auth',
+      false,
+    )
 
     return match(isVerified)
       .with({ ok: true }, async () => {
         // We know for sure the token has been verified
-        const tokenEntity = await tokenRepository.findOne(token)
+        const tokenEntity = await this.tokenRepository.findOne(token)
 
         const user =
-          (await userRepository.findOne({
+          (await this.baseUserRepository.findOne({
             id: tokenEntity?.userId,
             email,
           })) ?? null
@@ -426,14 +431,17 @@ export const createAuthService = (
         }
 
         if (!user.isVerified) {
-          await userRepository.updateOne({ id: user.id }, { isVerified: true })
+          await this.baseUserRepository.updateOne(
+            { id: user.id },
+            { isVerified: true },
+          )
         }
 
-        await tokenRepository.destroyOne(token)
+        await this.tokenRepository.destroyOne(token)
 
         return {
           ok: true,
-          value: await generateTokenAndReturnValues(user),
+          value: await this.generateTokenAndReturnValues(user),
         } as const
       })
       .with({ ok: false }, () => {
@@ -445,12 +453,12 @@ export const createAuthService = (
       .exhaustive()
   }
 
-  const uploadAvatar = async (
+  public uploadAvatar = async (
     accessToken: string,
     buffer: string,
   ): Promise<Result<string>> => {
     try {
-      const decoded = verifyJwtToken(accessToken)
+      const decoded = this.verifyJwtToken(accessToken)
 
       return match(decoded)
         .with({ ok: true }, async result => {
@@ -460,7 +468,7 @@ export const createAuthService = (
             return { ok: false, error: new Error('Invalid token') } as const
           }
 
-          const uploadResult = await userRepository.uploadAvatar(
+          const uploadResult = await this.userRepository.uploadAvatar(
             decoded['userId'],
             buffer,
           )
@@ -485,11 +493,11 @@ export const createAuthService = (
     }
   }
 
-  const verifyJwtToken = (
+  public verifyJwtToken = (
     token: string,
     tokenType: 'access-token' | 'refresh-token' = 'access-token',
   ): Result<{ tokenExpired: boolean; decoded: JwtPayload | null }> => {
-    const decoded = tokenService.verify(token, env.JWT_SECRET)
+    const decoded = this.tokenService.verify(token, env.JWT_SECRET)
 
     return match(decoded)
       .with({ ok: true }, result => {
@@ -534,18 +542,18 @@ export const createAuthService = (
       .exhaustive()
   }
 
-  const createPatient = async (
+  public createPatient = async (
     surveyId: number,
     email: string,
     password: string,
     patientDetails: PatientProfileValues,
   ): Promise<Result<UserDTO>> => {
     try {
-      const isEmailValid = await validateNewEmailAvailability(email)
+      const isEmailValid = await this.validateNewEmailAvailability(email)
 
       return match(isEmailValid)
         .with({ ok: true }, async () => {
-          const hashedPassword = await hashingService.hash(password)
+          const hashedPassword = await this.hashingService.hash(password)
 
           const patientDetailsDTO: Omit<PatientProfileDTO, 'id' | 'userId'> = {
             firstName: patientDetails.firstName,
@@ -573,7 +581,7 @@ export const createAuthService = (
             },
           }
 
-          return await userRepository.createPatient({
+          return await this.userRepository.createPatient({
             surveyId,
             email,
             hashedPassword,
@@ -593,12 +601,14 @@ export const createAuthService = (
   }
 
   // Private helper functions
-  const confirmEmailExists = async (
+  public confirmEmailExists = async (
     email: string,
   ): Promise<Result<boolean>> => {
     try {
       const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await userRepository.findOne({ email }))
+      const emailExists = Boolean(
+        await this.baseUserRepository.findOne({ email }),
+      )
 
       if (!isValidEmail) {
         return {
@@ -625,12 +635,14 @@ export const createAuthService = (
     }
   }
 
-  const validateNewEmailAvailability = async (
+  public validateNewEmailAvailability = async (
     email: string,
   ): Promise<Result<boolean>> => {
     try {
       const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = Boolean(await userRepository.findOne({ email }))
+      const emailExists = Boolean(
+        await this.baseUserRepository.findOne({ email }),
+      )
 
       if (!isValidEmail) {
         return {
@@ -659,17 +671,17 @@ export const createAuthService = (
     }
   }
 
-  const generateUserTokenForPasswordlessAuth = async (
+  public generateUserTokenForPasswordlessAuth = async (
     email: string,
   ): Promise<Result<string>> => {
     try {
-      const isEmailRegistered = await confirmEmailExists(email)
+      const isEmailRegistered = await this.confirmEmailExists(email)
 
       return (
         match(isEmailRegistered)
           // Login case (existing user)
           .with({ ok: true }, async () => {
-            return await generateUserToken(email, 'passwordless-auth')
+            return await this.generateUserToken(email, 'passwordless-auth')
           })
           // Register case (new user)
           .with({ ok: false }, async () => {
@@ -679,10 +691,10 @@ export const createAuthService = (
               .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
               .toString('hex')
               .slice(0, passwordLength)
-            const hashedPassword = await hashingService.hash(password)
+            const hashedPassword = await this.hashingService.hash(password)
 
-            await register(email, hashedPassword)
-            return await generateUserToken(email, 'passwordless-auth')
+            await this.register(email, hashedPassword)
+            return await this.generateUserToken(email, 'passwordless-auth')
           })
           .exhaustive()
       )
@@ -694,16 +706,17 @@ export const createAuthService = (
     }
   }
 
-  const generateUserTokenForChangeEmail = async (
+  public generateUserTokenForChangeEmail = async (
     currentEmail: string,
     newEmail: string,
   ): Promise<Result<string>> => {
-    const currentEmailIsRegistered = await confirmEmailExists(currentEmail)
-    const newEmailIsAvailable = await validateNewEmailAvailability(newEmail)
+    const currentEmailIsRegistered = await this.confirmEmailExists(currentEmail)
+    const newEmailIsAvailable =
+      await this.validateNewEmailAvailability(newEmail)
 
     return match([currentEmailIsRegistered, newEmailIsAvailable])
       .with([{ ok: true }, { ok: true }], async () => {
-        return await generateUserToken(currentEmail, 'change-email')
+        return await this.generateUserToken(currentEmail, 'change-email')
       })
       .with([{ ok: false }, { ok: true }], () => {
         return {
@@ -725,11 +738,11 @@ export const createAuthService = (
       })
   }
 
-  const refreshAccessToken = async (
+  public refreshAccessToken = async (
     refreshToken: string,
   ): Promise<Result<UserAttributes & { token: TokenType; jti: string }>> => {
     try {
-      const decoded = verifyJwtToken(refreshToken, 'refresh-token')
+      const decoded = this.verifyJwtToken(refreshToken, 'refresh-token')
       return match(decoded)
         .with(
           {
@@ -746,13 +759,15 @@ export const createAuthService = (
                 ),
               } as const
             }
-            const user = await userRepository.findOne({ id: decoded['userId'] })
+            const user = await this.baseUserRepository.findOne({
+              id: decoded['userId'],
+            })
 
             if (!user) {
               return { ok: false, error: new Error('User not found') } as const
             }
 
-            const { jti, token } = await generateToken(user, 'access')
+            const { jti, token } = await this.generateToken(user, 'access')
             return {
               ok: true,
               value: {
@@ -778,19 +793,19 @@ export const createAuthService = (
     }
   }
 
-  const createToken = (
+  public createToken = (
     payload: TokenPayload,
     secret: string,
     expiresIn: number,
   ): string => {
-    return tokenService.sign(
+    return this.tokenService.sign(
       payload as unknown as Record<string, unknown>,
       secret,
       { expiresIn },
     )
   }
 
-  const generateToken = async (
+  public generateToken = async (
     user: UserDTO,
     type: 'access' | 'refresh' | 'both',
   ): Promise<{ jti: string; token: TokenType }> => {
@@ -810,7 +825,7 @@ export const createAuthService = (
       ttl: number,
     ) => {
       const payload = createPayload(tokenType)
-      return createToken(payload, env.JWT_SECRET, ttl)
+      return this.createToken(payload, env.JWT_SECRET, ttl)
     }
 
     const token: TokenType = { accessToken: '', refreshToken: '' }
@@ -829,11 +844,14 @@ export const createAuthService = (
       )
     }
 
-    await saveTokenIntoRedis(token, jti)
+    await this.saveTokenIntoRedis(token, jti)
     return { jti, token }
   }
 
-  const saveTokenIntoRedis = async (token: Partial<TokenType>, jti: string) => {
+  public saveTokenIntoRedis = async (
+    token: Partial<TokenType>,
+    jti: string,
+  ) => {
     if (token.accessToken) {
       await redis.set(
         `access:${jti}`,
@@ -853,7 +871,7 @@ export const createAuthService = (
     }
   }
 
-  const checkTokenInRedis = async (jti: string): Promise<string> => {
+  public checkTokenInRedis = async (jti: string): Promise<string> => {
     const tokenInRedis = await redis.get(`${ACCESS_PREFIX}${jti}`)
     if (!tokenInRedis) {
       throw new Error('Token is either invalid or expired.')
@@ -862,32 +880,12 @@ export const createAuthService = (
     return tokenInRedis
   }
 
-  const generateTokenAndReturnValues = async (user: UserDTO) => {
-    const { jti, token } = await generateToken(user, 'both')
+  public generateTokenAndReturnValues = async (user: UserDTO) => {
+    const { jti, token } = await this.generateToken(user, 'both')
     return {
       ...user,
       token,
       jti,
     }
-  }
-
-  return {
-    login,
-    register,
-    forgotPassword,
-    resetPassword,
-    refreshAccessToken,
-    getUser,
-    validateJwt,
-    logout,
-    updateProfile,
-    generateUserTokenForPasswordlessAuth,
-    generateUserTokenForChangeEmail,
-    generateUserToken,
-    verifyUserToken,
-    verifyUserTokenForPasswordlessAuth,
-    uploadAvatar,
-    verifyJwtToken,
-    createPatient,
   }
 }

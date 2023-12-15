@@ -1,19 +1,16 @@
-import type { ISurveyPreferencesRepository } from '@intake24-dietician/db/types/repositories'
 import type { SurveyPreferencesDTO } from '@intake24-dietician/common/entities/survey.dto'
 import { baseRepositories } from '@intake24-dietician/db/repositories/singleton'
 import FeedbackModule from '../models/api/feedback-modules/feedback-module.model'
 import SurveyPreferencesFeedbackModule from '../models/api/feedback-modules/survey-preferences-feedback-module.model'
 import RecallFrequency from '../models/api/recall-frequency.model'
 import SurveyPreferences from '../models/api/survey-preference.model'
+import { singleton } from 'tsyringe'
 
-export const createSurveyPreferencesRepository =
-  (): ISurveyPreferencesRepository => {
-    const { baseSurveyPreferencesRepository } = {
-      baseSurveyPreferencesRepository:
-        baseRepositories.baseSurveyPreferencesRepository(),
-    }
+@singleton()
+export class SurveyPreferenceRepository {
+    private baseSurveyPreferencesRepository = baseRepositories.baseSurveyPreferencesRepository()
 
-    const createOne = async (
+    public createOne = async (
       surveyPreferencesData: Pick<SurveyPreferencesDTO, 'surveyId'>,
       options: { transaction?: any; include?: any } = {},
     ) => {
@@ -58,6 +55,4 @@ export const createSurveyPreferencesRepository =
 
       return newSurveyPreferences
     }
-
-    return { ...baseSurveyPreferencesRepository, createOne }
   }

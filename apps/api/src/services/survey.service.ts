@@ -1,33 +1,29 @@
-import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
-import Survey from '@intake24-dietician/db/models/api/survey.model'
-import type { Result } from '@intake24-dietician/common/types/utils'
+import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 import type {
   SurveyDTO,
   SurveyPreferencesDTO,
 } from '@intake24-dietician/common/entities/survey.dto'
-import { createSurveyRepository } from '@intake24-dietician/db/repositories/survey.repository'
-import type { ISurveyApiService } from '@intake24-dietician/common/types/api'
-
-import { createLogger } from '../middleware/logger'
-import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import type { UserDTO } from '@intake24-dietician/common/entities/user.dto'
-import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
-import type { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import type { SurveyAttributes } from '@intake24-dietician/common/types/auth'
 import type { SurveyPreference } from '@intake24-dietician/common/types/survey'
-import SurveyPreferencesFeedbackModule from '@intake24-dietician/db/models/api/feedback-modules/survey-preferences-feedback-module.model'
-import SurveyPreferences from '@intake24-dietician/db/models/api/survey-preference.model'
+import type { Result } from '@intake24-dietician/common/types/utils'
+import { getErrorMessage } from '@intake24-dietician/common/utils/error'
 import { sequelize } from '@intake24-dietician/db/connection'
+import SurveyPreferencesFeedbackModule from '@intake24-dietician/db/models/api/feedback-modules/survey-preferences-feedback-module.model'
 import RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
+import SurveyPreferences from '@intake24-dietician/db/models/api/survey-preference.model'
+import Survey from '@intake24-dietician/db/models/api/survey.model'
 import DieticianProfile from '@intake24-dietician/db/models/auth/dietician-profile.model'
+import { singleton } from 'tsyringe'
+import { createLogger } from '../middleware/logger'
 
-export const createSurveyService = (): ISurveyApiService => {
-  const surveyRepository = createSurveyRepository()
-  const logger = createLogger('SurveyService')
-
-
+@singleton()
+export class SurveyService {
+  private logger = createLogger('SurveyService')
 
   // Get the recall by ids
-  const getSurveySecretByAlias = async (
+  public getSurveySecretByAlias = async (
     id: string,
   ): Promise<Result<SurveyAttributes | null | Error>> => {
     try {
@@ -47,7 +43,7 @@ export const createSurveyService = (): ISurveyApiService => {
     }
   }
 
-  const getSurveysByOwnerId = async (
+  public getSurveysByOwnerId = async (
     ownerId: number,
   ): Promise<Result<SurveyAttributes[] | null | Error>> => {
     const dietician = await DieticianProfile.findOne({
@@ -83,7 +79,7 @@ export const createSurveyService = (): ISurveyApiService => {
     }
   }
 
-  const getSurveyById = async (
+  public getSurveyById = async (
     id: SurveyDTO['id'],
   ): Promise<
     Result<
@@ -99,21 +95,21 @@ export const createSurveyService = (): ISurveyApiService => {
     >
   > => {
     try {
-      const survey = await surveyRepository.findOneWithPreferences(id)
+      const survey = await this.surveyRepository.findOneWithPreferences(id)
 
       if (!survey) {
-        logger.error('Survey not found')
+        this.logger.error('Survey not found')
         return {
           ok: false,
           error: new Error('Survey not found'),
         } as const
       }
 
-      logger.info('Survey found', survey)
+      this.logger.info('Survey found', survey)
       return { ok: true, value: survey } as const
     } catch (error) {
       console.error({ error })
-      logger.error('Failed to get survey', getErrorMessage(error))
+      this.logger.error('Failed to get survey', getErrorMessage(error))
       return {
         ok: false,
         error: new Error('Failed to get survey'),
@@ -121,7 +117,7 @@ export const createSurveyService = (): ISurveyApiService => {
     }
   }
 
-  const createSurvey = async (
+  public createSurvey = async (
     userId: number,
     surveyData: Omit<SurveyDTO, 'id'>,
   ): Promise<Result<boolean>> => {
@@ -134,15 +130,15 @@ export const createSurveyService = (): ISurveyApiService => {
     }
 
     try {
-      const survey = await surveyRepository.createOne({
+      const survey = await this.surveyRepository.createOne({
         ...surveyData,
         dieticianId: dietician.id,
       })
-      logger.info('Survey created', survey)
+      this.logger.info('Survey created', survey)
 
       return { ok: true, value: true } as const
     } catch (error) {
-      logger.error('Failed to create survey', error)
+      this.logger.error('Failed to create survey', error)
 
       return {
         ok: false,
@@ -151,7 +147,7 @@ export const createSurveyService = (): ISurveyApiService => {
     }
   }
 
-  const updateSurveyPreferences = async (
+  public updateSurveyPreferences = async (
     userId: UserDTO['id'],
     data: SurveyPreference,
   ): Promise<Result<boolean>> => {
@@ -164,7 +160,7 @@ export const createSurveyService = (): ISurveyApiService => {
         })
 
         if (!surveyPreferences) {
-          logger.error('Survey preferences not found')
+          this.logger.error('Survey preferences not found')
           throw new Error('Survey preferences not found')
         }
 
@@ -209,13 +205,5 @@ export const createSurveyService = (): ISurveyApiService => {
     } catch (error) {
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
-  }
-
-  return {
-    getSurveySecretByAlias,
-    getSurveysByOwnerId,
-    getSurveyById,
-    createSurvey,
-    updateSurveyPreferences,
   }
 }

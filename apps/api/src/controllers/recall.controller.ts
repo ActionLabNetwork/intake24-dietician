@@ -1,3 +1,7 @@
+import { createLogger } from '@/middleware/logger'
+import { RecallService } from '@/services/recall.service'
+import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import type { Request as ExRequest } from 'express'
 import {
   Body,
   Controller,
@@ -10,11 +14,7 @@ import {
   SuccessResponse,
   Tags,
 } from 'tsoa'
-import type { Request as ExRequest } from 'express'
-import type { IRecallApiService } from '@intake24-dietician/common/types/api'
-import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
-import { container } from '@/ioc/container'
-import { createRecallService } from '@/services/recall.service'
+import { container } from 'tsyringe'
 
 /**
  * Controller for handling recall related requests.
@@ -22,15 +22,9 @@ import { createRecallService } from '@/services/recall.service'
 @Route('recall')
 @Tags('Recall')
 export class RecallController extends Controller {
-  private readonly logger
-  private readonly recallService: IRecallApiService
+  private readonly logger = createLogger(RecallController.name)
+  private readonly recallService = container.resolve(RecallService)
 
-  public constructor() {
-    super()
-    this.recallService = createRecallService()
-
-    this.logger = container.resolve('createLogger')(RecallController.name)
-  }
 
   @Get('{id}')
   public async getRecallById(@Path() id: string): Promise<unknown> {

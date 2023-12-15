@@ -1,12 +1,17 @@
-import * as jwt from 'jsonwebtoken'
-import type { ITokenService } from '@intake24-dietician/common/types/auth'
 import { getErrorMessage } from '@intake24-dietician/common/utils/error'
+import * as jwt from 'jsonwebtoken'
+import { singleton } from 'tsyringe'
 
-export const createJwtTokenService = (): ITokenService => ({
-  sign(payload, secret, options) {
+@singleton()
+export class TokenService {
+  public sign(
+    payload: Record<string, unknown>,
+    secret: string,
+    options: { expiresIn: number },
+  ) {
     return jwt.sign(payload, secret, { expiresIn: options.expiresIn })
-  },
-  verify(token, secret) {
+  }
+  public verify(token: string, secret: string) {
     try {
       const decoded = jwt.verify(token, secret)
       return { ok: true, value: { tokenExpired: false, decoded } } as const
@@ -23,5 +28,5 @@ export const createJwtTokenService = (): ITokenService => ({
 
       return { ok: false, error: new Error(getErrorMessage(error)) } as const
     }
-  },
-})
+  }
+}
