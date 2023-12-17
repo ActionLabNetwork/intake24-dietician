@@ -21,8 +21,7 @@ export const tokens = pgTable('token', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
     .references(() => users.id)
-    .notNull()
-    .unique(),
+    .notNull(),
   token: text('token').notNull().unique(),
   actionType: tokenTypeEnum('action_type').notNull(),
   expiresAt: timestamp('expires_at', { precision: 6, withTimezone: true }),

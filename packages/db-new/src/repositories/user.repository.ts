@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm'
 import moment from 'moment'
-import type { AppDatabase } from '../database'
+import { AppDatabase } from '../database'
 import { dieticians, patients, surveys, tokens, users } from '../models'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
@@ -8,13 +8,13 @@ import type { UserCreateDto } from '@intake24-dietician/common/entities/user.dto
 import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
 import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
-import { singleton } from 'tsyringe'
+import { inject, injectable } from 'tsyringe'
 
-@singleton()
+@injectable()
 export class UserRepository {
-  private declare drizzle
+  private drizzle
 
-  public constructor(private db: AppDatabase) {
+  public constructor(@inject(AppDatabase) private db: AppDatabase) {
     this.drizzle = db.drizzleClient
   }
 
@@ -72,7 +72,7 @@ export class UserRepository {
   }
 
   public async resetPassword(token: string, hashedPassword: string) {
-    await this.drizzle.transaction(async tx => {
+    return await this.drizzle.transaction(async tx => {
       const tokenEntity = await tx.query.tokens
         .findFirst({
           where: eq(tokens.token, token),
@@ -85,11 +85,16 @@ export class UserRepository {
       if (moment().isAfter(moment(tokenEntity.expiresAt))) {
         throw new UnauthorizedError('Token expired')
       }
-      await tx
-        .update(users)
-        .set({ password: hashedPassword })
-        .where(eq(users.id, tokenEntity.userId))
-        .execute()
+
+      return (
+        (
+          await tx
+            .update(users)
+            .set({ password: hashedPassword })
+            .where(eq(users.id, tokenEntity.userId))
+            .execute()
+        ).length > 0
+      )
     })
   }
 

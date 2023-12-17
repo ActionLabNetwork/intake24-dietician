@@ -1,6 +1,9 @@
 import { router } from '../trpc'
-import { userRouter } from './auth/user'
+import { container } from 'tsyringe'
+import { AuthDieticianRouter } from './auth/dietician'
 
-export const appRouter = router({ user: userRouter })
+const authDieticianRouter = container.resolve(AuthDieticianRouter)
+
+export const appRouter = router({ authDietician: authDieticianRouter.getRouter() })
 
 export type AppRouter = typeof appRouter

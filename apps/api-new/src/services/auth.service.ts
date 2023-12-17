@@ -13,15 +13,15 @@ import type {
 } from '@intake24-dietician/common/types/auth'
 import { redis } from '@intake24-dietician/db-new/connection'
 import type { UserSelect } from '@intake24-dietician/common/entities-new/user.dto'
-import type { TokenRepository } from '@intake24-dietician/db-new/repositories/token.repository'
-import type { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
+import { TokenRepository } from '@intake24-dietician/db-new/repositories/token.repository'
+import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
 import crypto from 'crypto'
 import moment from 'moment'
-import { singleton } from 'tsyringe'
+import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { env } from '../config/env'
-import type { HashingService } from './hashing.service'
-import type { TokenService } from './token.service'
+import { HashingService } from './hashing.service'
+import { TokenService } from './token.service'
 
 import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
 import { ClientError } from '@intake24-dietician/common/errors/client-error'
@@ -34,10 +34,10 @@ const ACCESS_PREFIX = 'access:'
 @singleton()
 export class AuthService {
   public constructor(
-    private hashingService: HashingService,
-    private tokenService: TokenService,
-    private userRepository: UserRepository,
-    private tokenRepository: TokenRepository,
+    @inject(HashingService) private hashingService: HashingService,
+    @inject(TokenService) private tokenService: TokenService,
+    @inject(UserRepository) private userRepository: UserRepository,
+    @inject(TokenRepository) private tokenRepository: TokenRepository,
   ) {}
 
   public register = async (email: string, password: string) => {
@@ -60,7 +60,7 @@ export class AuthService {
   public login = async (email: string, password: string) => {
     const dietician = await this.userRepository.getUserByEmail(email)
 
-    if (!dietician) {
+    if (!dietician || dietician.role !== 'Dietician') {
       throw new NotFoundError('Dietician not found')
     }
 
@@ -82,7 +82,7 @@ export class AuthService {
   }
 
   public forgotPassword = async (email: string) => {
-    if (!this.confirmEmailExists(email)) {
+    if (!(await this.confirmEmailExists(email))) {
       throw new NotFoundError('Email not found')
     }
 
@@ -401,7 +401,7 @@ export class AuthService {
 
       return true
     } catch (error) {
-      throw new Error('Failed to validate email.')
+      throw new APIError('Failed to validate email.')
     }
   }
 

@@ -1,4 +1,3 @@
-import type { Result } from '@intake24-dietician/common/types/utils'
 import * as argon2 from 'argon2'
 import { singleton } from 'tsyringe'
 
@@ -12,13 +11,9 @@ export class HashingService {
     return await argon2.hash(Math.random().toString())
   }
 
-  public async verify(
-    hashedPassword: string,
-    password: string,
-  ): Promise<Result<boolean>> {
+  public async verify(hashedPassword: string, password: string) {
     try {
-      const result = await argon2.verify(hashedPassword, password)
-      return { ok: true, value: result }
+      return await argon2.verify(hashedPassword, password)
     } catch (_) {
       return { ok: false, error: new Error('Failed to verify hash') }
     }

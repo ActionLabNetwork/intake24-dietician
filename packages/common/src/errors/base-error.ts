@@ -19,6 +19,6 @@ export class BaseError extends Error {
     this.httpCode = httpCode
     this.isOperational = isOperational
 
-    Error.captureStackTrace(this)
+    // Error.captureStackTrace(this)
   }
 }

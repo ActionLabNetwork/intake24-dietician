@@ -33,7 +33,6 @@ const names = {
 
 export const users = pgTable('user', {
   id: serial('id').primaryKey(),
-  ...names,
   ...timestampFields,
   email: text('email').unique().notNull(),
   password: text('password'),

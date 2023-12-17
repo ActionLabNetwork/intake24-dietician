@@ -1,14 +1,14 @@
 import assert from 'assert'
-import type { AppDatabase } from '../database'
+import { AppDatabase } from '../database'
 import { tokens } from '../models'
-import { singleton } from 'tsyringe'
+import { inject, singleton } from 'tsyringe'
 import { eq } from 'drizzle-orm'
 
 @singleton()
 export class TokenRepository {
   private declare drizzle
 
-  public constructor(private db: AppDatabase) {
+  public constructor(@inject(AppDatabase) private db: AppDatabase) {
     this.drizzle = db.drizzleClient
   }
 

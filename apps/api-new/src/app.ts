@@ -1,14 +1,9 @@
-import type {
-  Response as ExResponse,
-  Request as ExRequest,
-  NextFunction,
-} from 'express'
+import type { Response as ExResponse } from 'express'
 import express from 'express'
 import bodyParser from 'body-parser'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import multer from 'multer'
-import type { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 import { env } from './config/env'
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
 import { createOpenApiExpressMiddleware } from 'trpc-openapi'
@@ -16,6 +11,11 @@ import { appRouter } from './routers/app'
 import { createContext } from './trpc'
 import swaggerUi from 'swagger-ui-express'
 import { openApiDocument } from './openapi'
+
+// Register DI Container
+// container.register(AppDatabase, { useClass: AppDatabase })
+// container.register(UserRepository, { useClass: UserRepository })
+// container.register(AuthDieticianRouter, { useClass: AuthDieticianRouter })
 
 export const app = express()
 
@@ -40,11 +40,17 @@ app.use(multer().single('file'))
 // Handle tRPC requests
 app.use(
   '/api/trpc',
-  createExpressMiddleware({ router: appRouter, createContext }),
+  createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  }),
 )
 
 // Handle OpenAPI requests
-app.use('/api', createOpenApiExpressMiddleware({ router: appRouter }))
+app.use(
+  '/api',
+  createOpenApiExpressMiddleware({ router: appRouter, createContext }),
+)
 
 // Serve Swagger UI with our OpenAPI schema
 app.use('/docs', swaggerUi.serve)
@@ -56,29 +62,3 @@ app.use((_req, res: ExResponse) => {
     message: 'Not Found',
   })
 })
-
-// Global Error Handler
-app.use(
-  (
-    err: unknown,
-    req: ExRequest,
-    res: ExResponse,
-    next: NextFunction,
-    // eslint-disable-next-line max-params
-  ): ExResponse | undefined => {
-    console.log({ err, type: typeof err })
-    if (err instanceof Error) {
-      return res.status(500).json({
-        message: 'Internal Server Error',
-      })
-    }
-
-    if (err instanceof Object) {
-      const internalError = err as ApiResponseWithError
-      return res.status(Number(internalError.error.status)).json(internalError)
-    }
-
-    next()
-    return
-  },
-)
