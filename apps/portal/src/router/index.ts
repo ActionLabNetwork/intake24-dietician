@@ -2,6 +2,7 @@
 import { env } from '@/config/env'
 import axios from 'axios'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
+import trpcClient from '../trpc/trpc'
 
 const routes = [
   {
@@ -279,10 +280,12 @@ router.beforeEach(async (to, _from, next) => {
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 const isUserAuthenticated = async () => {
   try {
-    const response = await axios.get(env.VITE_AUTH_API_VALIDATE_JWT_URI, {
-      withCredentials: true,
-    })
-    return response.data.isAuthenticated
+    // const response = await axios.get(env.VITE_AUTH_API_VALIDATE_JWT_URI, {
+    //   withCredentials: true,
+    // })
+    const result = await trpcClient.authDietician.validateSession.query()
+    return result
+    // return response.data.isAuthenticated
   } catch (error) {
     return false
   }

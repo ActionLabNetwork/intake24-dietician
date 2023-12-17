@@ -27,7 +27,6 @@ import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error
 import { ClientError } from '@intake24-dietician/common/errors/client-error'
 import { APIError } from '@intake24-dietician/common/errors/api-error'
 import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
-import assert from 'assert'
 
 const ACCESS_PREFIX = 'access:'
 
@@ -140,15 +139,20 @@ export class AuthService {
   }
 
   public logout = async (accessToken: string) => {
-    const decoded = this.verifyJwtToken(accessToken)
-    assert(decoded.decoded !== null)
+    try {
+      const decoded = this.verifyJwtToken(accessToken)
+      if (!decoded.decoded) return true
 
-    const jti = decoded.decoded.jti
+      const jti = decoded.decoded.jti
 
-    await redis.del(`access:${jti}`)
-    await redis.del(`refresh:${jti}`)
+      await redis.del(`access:${jti}`)
+      await redis.del(`refresh:${jti}`)
 
-    return true
+      return true
+    } catch (error) {
+      // We don't want to throw an error if the token is invalid
+      return true
+    }
   }
 
   // TODO: Fix typing

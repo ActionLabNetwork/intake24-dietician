@@ -1,4 +1,4 @@
-import { publicProcedure, router } from '../../trpc'
+import { protectedProcedure, publicProcedure, router } from '../../trpc'
 import { z } from 'zod'
 import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
@@ -11,6 +11,21 @@ import type { Token } from '@intake24-dietician/common/types/auth'
 @singleton()
 export class AuthDieticianRouter {
   private router = router({
+    sayHello: publicProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/say-hello',
+          tags: ['auth'],
+          summary: 'Ping',
+        },
+      })
+      .input(z.undefined())
+      .output(z.string())
+      .mutation(({ ctx }) => {
+        console.log({ accessToken: ctx.accessToken })
+        return 'Hello TRPC'
+      }),
     register: publicProcedure
       .meta({
         openapi: {
@@ -124,6 +139,40 @@ export class AuthDieticianRouter {
         } catch (error) {
           this.handleError(error)
         }
+      }),
+    logout: publicProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/logout',
+          tags: ['auth'],
+          summary: 'Log out of session',
+        },
+      })
+      .input(z.undefined())
+      .output(z.boolean())
+      .mutation(async opts => {
+        try {
+          opts.ctx.res.clearCookie('accessToken')
+          opts.ctx.res.clearCookie('refreshToken')
+          return await this.authService.logout(opts.ctx.accessToken)
+        } catch (error) {
+          this.handleError(error)
+        }
+      }),
+    validateSession: protectedProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/validate-jwt',
+          tags: ['auth'],
+          summary: 'Validate current authenticated session',
+        },
+      })
+      .input(z.undefined())
+      .output(z.boolean())
+      .query(() => {
+        return true
       }),
   })
 

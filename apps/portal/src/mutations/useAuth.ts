@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { env } from '../config/env'
 import {
-  AuthRequest,
   AuthResponse,
   DieticianProfileValues,
   UserAttributes,
@@ -11,19 +10,15 @@ import {
   ApiResponseWithData,
   ApiResponseWithError,
 } from '@intake24-dietician/common/types/api'
+import trpcClient from '../trpc/trpc'
 
 axios.defaults.withCredentials = true
 
 export const useRegister = () => {
-  const registerUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_REGISTER_URI}`
-
   const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<AuthResponse>,
-      AxiosError<ApiResponseWithError>,
-      AuthRequest
-    >({
-      mutationFn: async registerBody => axios.post(registerUri, registerBody),
+    useMutation({
+      mutationFn: async (registerBody: { email: string; password: string }) =>
+        trpcClient.authDietician.register.mutate(registerBody),
     })
 
   return {
@@ -38,20 +33,10 @@ export const useRegister = () => {
 }
 
 export const useLogin = () => {
-  const loginUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGIN_URI}`
-
   const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<
-        ApiResponseWithData<{
-          email: string
-          jti: string
-        }>
-      >,
-      AxiosError<ApiResponseWithError>,
-      AuthRequest
-    >({
-      mutationFn: loginBody => axios.post(loginUri, loginBody),
+    useMutation({
+      mutationFn: (loginBody: { email: string; password: string }) =>
+        trpcClient.authDietician.login.mutate(loginBody),
     })
 
   return {
@@ -65,29 +50,7 @@ export const useLogin = () => {
   }
 }
 
-export const useForgotPassword = () => {
-  const forgotPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_FORGOT_PASSWORD_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<AuthResponse>,
-      AxiosError<ApiResponseWithError>,
-      { email: string }
-    >({
-      mutationFn: forgotPasswordBody =>
-        axios.post(forgotPasswordUri, forgotPasswordBody),
-    })
-
-  return {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-    mutateAsync,
-  }
-}
+export const useForgotPassword = () => {}
 
 export const useResetPassword = () => {
   const resetPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_RESET_PASSWORD_URI}`

@@ -12,11 +12,6 @@ import { createContext } from './trpc'
 import swaggerUi from 'swagger-ui-express'
 import { openApiDocument } from './openapi'
 
-// Register DI Container
-// container.register(AppDatabase, { useClass: AppDatabase })
-// container.register(UserRepository, { useClass: UserRepository })
-// container.register(AuthDieticianRouter, { useClass: AuthDieticianRouter })
-
 export const app = express()
 
 const HOST = env.HOST || 'http://localhost'
