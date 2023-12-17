@@ -341,6 +341,25 @@ export class AuthService {
     return { tokenExpired, decoded }
   }
 
+  public generateUserTokenForPasswordlessAuth = async (email: string) => {
+    const isEmailRegistered = await this.confirmEmailExists(email)
+
+    if (isEmailRegistered) {
+      return await this.generateUserToken(email, 'passwordless-auth')
+    } else {
+      // Create a new user temporarily
+      const passwordLength = 12
+      const password = crypto
+        .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
+        .toString('hex')
+        .slice(0, passwordLength)
+      const hashedPassword = await this.hashingService.hash(password)
+
+      await this.register(email, hashedPassword)
+      return await this.generateUserToken(email, 'passwordless-auth')
+    }
+  }
+
   public generateUserTokenForChangeEmail = async (
     currentEmail: string,
     newEmail: string,
@@ -402,25 +421,6 @@ export class AuthService {
       return true
     } catch (error) {
       throw new APIError('Failed to validate email.')
-    }
-  }
-
-  private generateUserTokenForPasswordlessAuth = async (email: string) => {
-    const isEmailRegistered = await this.confirmEmailExists(email)
-
-    if (isEmailRegistered) {
-      return await this.generateUserToken(email, 'passwordless-auth')
-    } else {
-      // Create a new user temporarily
-      const passwordLength = 12
-      const password = crypto
-        .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
-        .toString('hex')
-        .slice(0, passwordLength)
-      const hashedPassword = await this.hashingService.hash(password)
-
-      await this.register(email, hashedPassword)
-      return await this.generateUserToken(email, 'passwordless-auth')
     }
   }
 

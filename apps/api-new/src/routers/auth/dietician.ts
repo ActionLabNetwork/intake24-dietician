@@ -1,7 +1,5 @@
-import { users } from '@intake24-dietician/db-new/models'
 import { publicProcedure, router } from '../../trpc'
 import { z } from 'zod'
-import { createSelectSchema } from 'drizzle-zod'
 import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
 import { TRPCError } from '@trpc/server'
@@ -13,15 +11,6 @@ import type { Token } from '@intake24-dietician/common/types/auth'
 @singleton()
 export class AuthDieticianRouter {
   private router = router({
-    sayHello: publicProcedure
-      .meta({
-        openapi: { method: 'GET', path: '/hello', tags: ['auth'] },
-      })
-      .input(z.undefined())
-      .output(z.string())
-      .query(async () => {
-        return 'Hello TRPC'
-      }),
     register: publicProcedure
       .meta({
         openapi: {
@@ -184,5 +173,3 @@ export class AuthDieticianRouter {
     })
   }
 }
-
-export const apiUser = z.array(createSelectSchema(users))
