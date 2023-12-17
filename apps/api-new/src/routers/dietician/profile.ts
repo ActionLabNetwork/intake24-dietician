@@ -1,11 +1,11 @@
-import { protectedProcedure, router } from '../../trpc'
-import { z } from 'zod'
-import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
-import { TRPCError } from '@trpc/server'
-import { BaseError } from '@intake24-dietician/common/errors/base-error'
 import { mapHttpCodeToTRPCCode } from '@/utils/trpc'
-import { userSelect } from '@intake24-dietician/common/entities-new/user.dto'
+import { UserWithDieticianDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { BaseError } from '@intake24-dietician/common/errors/base-error'
+import { TRPCError } from '@trpc/server'
+import { inject, singleton } from 'tsyringe'
+import { z } from 'zod'
+import { protectedProcedure, router } from '../../trpc'
 
 @singleton()
 export class DieticianProfileRouter {
@@ -20,7 +20,7 @@ export class DieticianProfileRouter {
         },
       })
       .input(z.undefined())
-      .output(userSelect)
+      .output(UserWithDieticianDto)
       .query(async opts => {
         try {
           const user = await this.authService.getUser(opts.ctx.accessToken)

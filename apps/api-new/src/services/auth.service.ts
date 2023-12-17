@@ -6,13 +6,18 @@
  * @packageDocumentation
  */
 /* eslint-disable max-params */
+import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { APIError } from '@intake24-dietician/common/errors/api-error'
+import { ClientError } from '@intake24-dietician/common/errors/client-error'
+import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
+import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import type {
   TokenActionType,
   TokenPayload,
   Token as TokenType,
 } from '@intake24-dietician/common/types/auth'
 import { redis } from '@intake24-dietician/db-new/connection'
-import type { UserSelect } from '@intake24-dietician/common/entities-new/user.dto'
 import { TokenRepository } from '@intake24-dietician/db-new/repositories/token.repository'
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
 import crypto from 'crypto'
@@ -22,11 +27,6 @@ import { z } from 'zod'
 import { env } from '../config/env'
 import { HashingService } from './hashing.service'
 import { TokenService } from './token.service'
-
-import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
-import { ClientError } from '@intake24-dietician/common/errors/client-error'
-import { APIError } from '@intake24-dietician/common/errors/api-error'
-import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 
 const ACCESS_PREFIX = 'access:'
 
@@ -273,8 +273,8 @@ export class AuthService {
   public createPatient = async (
     surveyId: number,
     email: string,
-    // password: string,
-    // patientDetails: PatientProfileValues,
+    patientDto: PatientCreateDto,
+    patientPreferences: PatientPreferenceCreateDto,
   ) => {
     const isEmailValid = await this.validateNewEmailAvailability(email)
 
@@ -282,36 +282,11 @@ export class AuthService {
       throw new ClientError('Invalid email address. Please try again.')
     }
 
-    // const patientDetailsDTO: Omit<PatientProfileDTO, 'id' | 'userId'> = {
-    //   firstName: patientDetails.firstName,
-    //   middleName: patientDetails.middleName,
-    //   lastName: patientDetails.lastName,
-    //   mobileNumber: patientDetails.mobileNumber,
-    //   address: patientDetails.address,
-    //   avatar: patientDetails.avatar,
-    //   age: patientDetails.age,
-    //   gender: patientDetails.gender,
-    //   height: patientDetails.height,
-    //   weight: patientDetails.weight,
-    //   additionalNotes: patientDetails.additionalNotes,
-    //   patientGoal: patientDetails.patientGoal,
-    //   patientPreferences: {
-    //     theme: patientDetails.theme,
-    //     sendAutomatedFeedback: patientDetails.sendAutomatedFeedback,
-    //     recallFrequency: {
-    //       id: 0,
-    //       quantity: patientDetails.recallFrequency.reminderEvery.quantity,
-    //       unit: patientDetails.recallFrequency.reminderEvery.unit,
-    //       reminderMessage: '',
-    //       end: patientDetails.recallFrequency.reminderEnds,
-    //     },
-    //   },
-    // }
-
     return await this.userRepository.createPatient(
       surveyId,
       email,
-      // patientDetails,
+      patientDto,
+      patientPreferences,
     )
   }
 
@@ -463,7 +438,7 @@ export class AuthService {
   }
 
   private generateToken = async (
-    user: UserSelect,
+    user: { id: number; email: string },
     type: 'access' | 'refresh' | 'both',
   ) => {
     const jti = crypto.randomBytes(16).toString('hex')

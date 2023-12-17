@@ -5,8 +5,8 @@ import { AuthService } from '@/services/auth.service'
 import { TRPCError } from '@trpc/server'
 import { BaseError } from '@intake24-dietician/common/errors/base-error'
 import { mapHttpCodeToTRPCCode } from '@/utils/trpc'
-import { userInsert } from '@intake24-dietician/common/entities-new/user.dto'
 import type { Token } from '@intake24-dietician/common/types/auth'
+import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
 
 @singleton()
 export class AuthDieticianRouter {
@@ -41,7 +41,7 @@ export class AuthDieticianRouter {
           password: z.string(),
         }),
       )
-      .output(userInsert)
+      .output(UserDtoSchema)
       .mutation(async opts => {
         try {
           const user = await this.authService.register(

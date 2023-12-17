@@ -1,14 +1,6 @@
-import {
-  ReminderConditionSchema
-} from '@intake24-dietician/common/entities/preferences.dto'
+import { ReminderConditionSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { relations } from 'drizzle-orm'
-import {
-  boolean,
-  integer,
-  pgTable,
-  serial,
-  text
-} from 'drizzle-orm/pg-core'
+import { boolean, integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
 import { feedbackModules } from './feedback-module.model'
 import { timestampFields } from './model.common'
 import { typedJsonbFromSchema } from './modelUtils'
