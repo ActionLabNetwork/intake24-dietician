@@ -1,14 +1,22 @@
-import { eq, and } from 'drizzle-orm'
-import moment from 'moment'
-import { AppDatabase } from '../database'
-import { dieticians, patients, surveys, tokens, users } from '../models'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
+import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities/preferences.dto'
 import type { UserCreateDto } from '@intake24-dietician/common/entities/user.dto'
 import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
 import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
+import { and, eq } from 'drizzle-orm'
+import moment from 'moment'
 import { inject, injectable } from 'tsyringe'
+import { AppDatabase } from '../database'
+import {
+  dieticians,
+  patientPreferences,
+  patients,
+  surveys,
+  tokens,
+  users,
+} from '../models'
 
 @injectable()
 export class UserRepository {
@@ -233,7 +241,8 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    // patientDetails: PatientFieldCreateDto,
+    patientDetails: PatientFieldCreateDto,
+    patientPreferenceDto: PatientPreferenceCreateDto | null,
   ) {
     await this.drizzle.transaction(async tx => {
       const [user] = await tx
@@ -245,8 +254,16 @@ export class UserRepository {
       const [patient] = await tx
         .insert(patients)
         .values({ surveyId, userId: user.id })
+        .returning()
+        .execute()
       assert(patient)
-      // TODO: insert patient preferences
+      if (patientPreferenceDto) {
+        await tx.insert(patientPreferences).values({
+          ...patientPreferenceDto,
+          patientId: patient.id,
+        })
+      }
+      return patient
     })
   }
 
@@ -254,6 +271,7 @@ export class UserRepository {
     patientId: number,
     patientDetails: Partial<PatientFieldCreateDto>,
     patientUserDetails: Partial<UserCreateDto>,
+    patientPreferenceDto: PatientPreferenceCreateDto | null | undefined,
   ) {
     const updateTimestamp = moment().toDate()
     await this.drizzle.transaction(async tx => {
@@ -269,7 +287,21 @@ export class UserRepository {
         .set({ ...patientUserDetails, updatedAt: updateTimestamp })
         .where(eq(users.id, patient.userId))
         .execute()
-      // TODO: update patient preferences
+      if (patientPreferenceDto === null) {
+        await tx
+          .delete(patientPreferences)
+          .where(eq(patientPreferences.patientId, patientId))
+          .execute()
+      }
+      if (patientPreferenceDto) {
+        const [patientPreference] = await tx
+          .update(patientPreferences)
+          .set(patientPreferenceDto)
+          .where(eq(patientPreferences.patientId, patientId))
+          .returning()
+          .execute()
+        assert(patientPreference)
+      }
     })
   }
 }
