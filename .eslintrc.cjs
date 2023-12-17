@@ -14,6 +14,6 @@ module.exports = {
     // myGlobal: false
   },
   rules: {
-    // Customize your rules
+    "max-params": "off"
   },
 }
