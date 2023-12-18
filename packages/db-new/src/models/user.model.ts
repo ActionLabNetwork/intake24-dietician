@@ -47,16 +47,8 @@ export const users = pgTable('user', {
 })
 
 export const userRelations = relations(users, ({ one, many }) => ({
-  dietician: one(dieticians, {
-    fields: [users.id],
-    references: [dieticians.userId],
-    relationName: 'user_dietician',
-  }),
-  patient: one(patients, {
-    fields: [users.id],
-    references: [patients.userId],
-    relationName: 'user_patient',
-  }),
+  dietician: one(dieticians),
+  patient: one(patients),
   token: many(tokens),
 }))
 
@@ -75,7 +67,10 @@ export const dieticians = pgTable('dietician', {
 })
 
 export const dieticianRelations = relations(dieticians, ({ one, many }) => ({
-  user: one(users),
+  user: one(users, {
+    fields: [dieticians.userId],
+    references: [users.id],
+  }),
   surveys: many(surveys),
 }))
 
@@ -110,8 +105,5 @@ export const patientRelations = relations(patients, ({ one }) => ({
     fields: [patients.surveyId],
     references: [surveys.id],
   }),
-  patientPreference: one(patientPreferences, {
-    fields: [patients.id],
-    references: [patientPreferences.patientId],
-  }),
+  patientPreference: one(patientPreferences),
 }))
