@@ -11,7 +11,7 @@ export const surveys = pgTable('survey', {
     .references(() => dieticians.id)
     .notNull(),
   surveyName: text('survey_name').notNull(),
-  intake24SurveyId: integer('intake24_survey_id').notNull(),
+  intake24SurveyId: text('intake24_survey_id').notNull(),
   intake24Secret: text('intake24_secret').notNull(),
   alias: text('alias').notNull(),
   recallSubmissionURL: text('recall_submission_url').notNull(),

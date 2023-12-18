@@ -39,8 +39,12 @@ export class DieticianProfileRouter {
         }),
       )
       .output(z.string())
+<<<<<<< HEAD
       .query(async opts => {
         // TODO: this endpoint is not protected by user id
+=======
+      .mutation(async opts => {
+>>>>>>> b4c8289 (refactor(api-new): add trpc endpoint for retrieving dietician's surveys)
         const token = await this.authService.generateUserTokenForChangeEmail(
           opts.input.currentEmail,
           opts.input.newEmail,
@@ -63,7 +67,7 @@ export class DieticianProfileRouter {
         }),
       )
       .output(z.boolean())
-      .query(async opts => {
+      .mutation(async opts => {
         const isVerified = await this.authService.verifyUserToken(
           opts.input.token,
           'change-email',
@@ -75,7 +79,7 @@ export class DieticianProfileRouter {
     uploadAvatar: protectedDieticianProcedure
       .meta({
         openapi: {
-          method: 'POST',
+          method: 'PUT',
           path: '/upload-avatar',
           tags: ['dietician', 'profile'],
           summary: 'Upload avatar',
@@ -83,12 +87,15 @@ export class DieticianProfileRouter {
       })
       .input(
         z.object({
-          buffer: z.string(),
+          avatarBase64: z.string(),
         }),
       )
       .output(z.boolean())
-      .query(async ({ ctx, input }) => {
-        return await this.authService.uploadAvatar(ctx.userId, input.buffer)
+      .mutation(async ({ ctx, input }) => {
+        return await this.authService.uploadAvatar(
+          ctx.userId,
+          input.avatarBase64,
+        )
       }),
   })
 

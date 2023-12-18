@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { env } from '../config/env'
 import {
-  AuthResponse,
   DieticianProfileValues,
   UserAttributes,
 } from '@intake24-dietician/common/types/auth'
@@ -11,8 +10,6 @@ import {
   ApiResponseWithError,
 } from '@intake24-dietician/common/types/api'
 import trpcClient from '../trpc/trpc'
-
-axios.defaults.withCredentials = true
 
 export const useRegister = () => {
   const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
@@ -50,25 +47,28 @@ export const useLogin = () => {
   }
 }
 
-export const useForgotPassword = () => {}
+export const useForgotPassword = () => {
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (email: { email: string }) =>
+        trpcClient.authDietician.forgotPassword.mutate(email),
+    })
+
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+    mutateAsync,
+  }
+}
 
 export const useResetPassword = () => {
-  const resetPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_RESET_PASSWORD_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ApiResponseWithError>,
-    { token: string; password: string }
-  >({
-    mutationFn: resetPasswordBody => {
-      return axios.post(
-        resetPasswordUri,
-        { password: resetPasswordBody.password },
-        {
-          params: { token: resetPasswordBody.token },
-        },
-      )
-    },
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (data: { password: string; token: string }) =>
+      trpcClient.authDietician.resetPassword.mutate(data),
   })
 
   return {
@@ -82,14 +82,8 @@ export const useResetPassword = () => {
 }
 
 export const useLogout = () => {
-  const logoutUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGOUT_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse,
-    AxiosError<ApiResponseWithError>,
-    {}
-  >({
-    mutationFn: () => axios.post(logoutUri),
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: () => trpcClient.authDietician.logout.mutate(),
   })
 
   return {
@@ -126,15 +120,12 @@ export const useUpdateProfile = () => {
 }
 
 export const useGenerateToken = () => {
-  const generateTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GENERATE_TOKEN_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ token: string }>>,
-    AxiosError<ApiResponseWithError>,
-    { currentEmail: string; newEmail: string }
-  >(generateTokenBody => {
-    return axios.post(generateTokenUri, generateTokenBody)
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
+    (generateTokenBody: { currentEmail: string; newEmail: string }) =>
+      trpcClient.dieticianProfile.generateChangeEmailToken.mutate(
+        generateTokenBody,
+      ),
+  )
 
   return {
     data,
@@ -147,15 +138,12 @@ export const useGenerateToken = () => {
 }
 
 export const useVerifyToken = () => {
-  const verifyTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_VERIFY_TOKEN_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ tokenVerified: boolean }>>,
-    AxiosError<ApiResponseWithError>,
-    { token: string }
-  >(verifyTokenBody => {
-    return axios.post(verifyTokenUri, verifyTokenBody)
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
+    (verifyTokenBody: { token: string }) =>
+      trpcClient.dieticianProfile.verifyChangeEmailToken.mutate(
+        verifyTokenBody,
+      ),
+  )
 
   return {
     data,
@@ -168,21 +156,18 @@ export const useVerifyToken = () => {
 }
 
 export const useUploadAvatar = () => {
-  const uploadAvatarUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_UPLOAD_AVATAR}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ avatarBlob: string }>>,
-    AxiosError<ApiResponseWithError>,
-    { avatarBase64: string }
-  >(uploadAvatarBody => {
-    const formData = new FormData()
-    formData.append('fileBase64', uploadAvatarBody.avatarBase64)
-    return axios.put(uploadAvatarUri, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
+    (uploadAvatarBody: { avatarBase64: string }) => {
+      const formData = new FormData()
+      formData.append('fileBase64', uploadAvatarBody.avatarBase64)
+      return trpcClient.dieticianProfile.uploadAvatar.mutate(uploadAvatarBody)
+      // return axios.put(uploadAvatarUri, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      // })
+    },
+  )
 
   return {
     data,

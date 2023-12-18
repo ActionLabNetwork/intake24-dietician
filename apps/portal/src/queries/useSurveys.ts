@@ -9,10 +9,9 @@ import {
 import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import trpcClient from '../trpc/trpc'
 
 export const useSurveys = () => {
-  const uri = `${env.VITE_AUTH_API_HOST}/surveys`
-
   const { data, isLoading, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
@@ -20,7 +19,7 @@ export const useSurveys = () => {
   >({
     queryKey: ['surveys'],
     queryFn: () => {
-      return axios.get(uri)
+      return trpcClient.dieticianSurvey.getSurveys.query()
     },
   })
 
