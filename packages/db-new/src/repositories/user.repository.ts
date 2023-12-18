@@ -1,7 +1,5 @@
-import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
-import type { PatientFieldCreateDto } from '@intake24-dietician/common/entities/patient-profile.dto'
-import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities/preferences.dto'
-import type { UserCreateDto } from '@intake24-dietician/common/entities/user.dto'
+import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { DieticianCreateDto, PatientCreateDto, UserCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
 import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
@@ -241,7 +239,7 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    patientDetails: PatientFieldCreateDto,
+    patientDetails: PatientCreateDto,
     patientPreferenceDto: PatientPreferenceCreateDto | null,
   ) {
     await this.drizzle.transaction(async tx => {
@@ -269,7 +267,7 @@ export class UserRepository {
 
   public async updatePatient(
     patientId: number,
-    patientDetails: Partial<PatientFieldCreateDto>,
+    patientDetails: Partial<PatientCreateDto>,
     patientUserDetails: Partial<UserCreateDto>,
     patientPreferenceDto: PatientPreferenceCreateDto | null | undefined,
   ) {
