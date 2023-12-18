@@ -108,7 +108,8 @@ export class AuthService {
     )
   }
 
-  public getDietician = async (dieticianId: number) => this.userRepository.getDietician(dieticianId)
+  public getDietician = async (dieticianId: number) =>
+    this.userRepository.getDietician(dieticianId)
 
   public getDieticianIdByUserId = async (userId: number) =>
     this.userRepository.getDieticianIdByUserId(userId)
@@ -393,6 +394,7 @@ export class AuthService {
 
       return true
     } catch (error) {
+      console.log({ error })
       throw new APIError('Failed to validate email.')
     }
   }

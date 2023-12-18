@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import type { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
+import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { ref } from 'vue'
 
 export const useWorkspaceStore = defineStore('workspace', () => {
-  const currentWorkspace = ref<SurveyDTO & { avatarColor: string }>()
+  const currentWorkspace = ref<SurveyDto & { avatarColor: string }>()
 
   return { currentWorkspace }
 })

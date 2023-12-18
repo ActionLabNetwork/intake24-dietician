@@ -78,11 +78,9 @@ export class UserRepository {
   }
 
   public async getUserByEmail(email: string) {
-    return await this.drizzle.query.users
-      .findFirst({
-        where: eq(users.email, email),
-      })
-      .execute()
+    return await this.drizzle.query.users.findFirst({
+      where: eq(users.email, email),
+    })
   }
 
   public async checkEmailExists(email: string) {

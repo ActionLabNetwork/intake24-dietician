@@ -1,8 +1,6 @@
-import type { DieticianCreateDto } from '@intake24-dietician/common/entities/dietician-profile.dto'
 import type { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import type { Result } from '@intake24-dietician/common/types/utils'
-import { getErrorMessage } from '@intake24-dietician/common/utils/error'
-import {
+import type {
   SurveyRepository,
   UserRepository,
 } from '@intake24-dietician/db-new/repositories'
@@ -97,6 +95,8 @@ export class UserService {
   public validateNewEmailAvailability = async (
     email: string,
   ): Promise<boolean> => {
+    const result = await this.userRepository.getUserByEmail(email)
+    console.log({ result })
     return (await this.userRepository.getUserByEmail(email)) === undefined
   }
 }

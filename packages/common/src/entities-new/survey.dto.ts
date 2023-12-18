@@ -1,15 +1,17 @@
 import { z } from 'zod'
 
 export const SurveyCreateDto = z.object({
-  dieticianId: z.number().nullable(),
-  surveyName: z.string().nullable(),
-  intake24SurveyId: z.string().nullable(),
-  intake24Secret: z.string().nullable(),
-  alias: z.string().nullable(),
-  recallSubmissionURL: z.string().nullable(),
+  dieticianId: z.number(),
+  surveyName: z.string(),
+  intake24SurveyId: z.string(),
+  intake24Secret: z.string(),
+  alias: z.string(),
+  recallSubmissionURL: z.string(),
 })
 export type SurveyCreateDto = z.infer<typeof SurveyCreateDto>
 
 export const SurveyDtoSchema = SurveyCreateDto.extend({
   id: z.number(),
 })
+
+export type SurveyDto = z.infer<typeof SurveyDtoSchema>

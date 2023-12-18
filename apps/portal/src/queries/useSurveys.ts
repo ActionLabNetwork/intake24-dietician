@@ -7,16 +7,11 @@ import {
   SurveyPreferencesDTO,
 } from '@intake24-dietician/common/entities/survey.dto'
 import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
-import type { Result } from '@intake24-dietician/common/types/utils'
 import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
 import trpcClient from '../trpc/trpc'
 
 export const useSurveys = () => {
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    AxiosResponse<Result<SurveyDTO[]>>
-  >({
+  const { data, isLoading, isError, error, isSuccess } = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
       return trpcClient.dieticianSurvey.getSurveys.query()

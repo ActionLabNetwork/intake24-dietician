@@ -12,19 +12,19 @@
           <p class="text-center text-body-1">No workspaces...</p>
         </div>
         <div v-else>
-          <v-list style="overflow: hidden">
+          <v-list v-if="currentWorkspace" style="overflow: hidden">
             <v-list-subheader>Current Workspace</v-list-subheader>
             <v-list-item loading="!currentWorkspace">
               <template v-if="currentWorkspace" v-slot:prepend>
                 <v-avatar :color="currentWorkspace.avatarColor">
                   <span class="text-h5">
-                    {{ currentWorkspace.name[0]?.toLocaleUpperCase() }}
+                    {{ currentWorkspace.surveyName[0]?.toLocaleUpperCase() }}
                   </span>
                 </v-avatar>
               </template>
               <div v-if="currentWorkspace">
                 <div class="font-weight-medium text-black">
-                  {{ currentWorkspace.name }}
+                  {{ currentWorkspace.surveyName }}
                 </div>
                 <div>ID: {{ currentWorkspace.id }}</div>
               </div>
@@ -42,13 +42,13 @@
               <template v-slot:prepend>
                 <v-avatar :color="workspace.avatarColor">
                   <span class="text-h5">
-                    {{ workspace.name[0]?.toLocaleUpperCase() }}
+                    {{ workspace.surveyName[0]?.toLocaleUpperCase() }}
                   </span>
                 </v-avatar>
               </template>
               <div>
                 <div class="font-weight-medium text-black">
-                  {{ workspace.name }}
+                  {{ workspace.surveyName }}
                 </div>
                 <div>ID: {{ workspace.id }}</div>
               </div>
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
+import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
@@ -82,7 +82,7 @@ const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()
 const { currentWorkspace } = storeToRefs(workspaceStore)
 
-const workspaces = ref<(SurveyDTO & { avatarColor: string })[]>([])
+const workspaces = ref<(SurveyDto & { avatarColor: string })[]>([])
 const otherWorkspaces = computed(() =>
   workspaces.value.filter(
     workspace => workspace.id !== currentWorkspace.value?.id,
@@ -92,10 +92,13 @@ const otherWorkspaces = computed(() =>
 watch(
   () => surveysQuery.data.value,
   newSurveysQueryData => {
-    if (!newSurveysQueryData?.data.ok) return
+    console.log({ newSurveysQueryData })
+    if (!newSurveysQueryData || newSurveysQueryData.length === 0) return
 
-    const surveys = newSurveysQueryData.data.value
-    const colors = generateDistinctColors(surveys.map(survey => survey.name))
+    const surveys = newSurveysQueryData
+    const colors = generateDistinctColors(
+      surveys.map(survey => survey.surveyName),
+    )
 
     const surveysWithAvatarColors = surveys.map((survey, index) => ({
       ...survey,
