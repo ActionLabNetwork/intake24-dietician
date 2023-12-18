@@ -1,13 +1,13 @@
 import { AuthService } from '@/services/auth.service'
-import { UserWithDieticianDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { DieticianWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
-import { protectedProcedure, router } from '../../trpc'
+import { protectedDieticianProcedure, router } from '../../trpc'
 
 @singleton()
 export class DieticianProfileRouter {
   private router = router({
-    profile: protectedProcedure
+    profile: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
@@ -17,13 +17,13 @@ export class DieticianProfileRouter {
         },
       })
       .input(z.undefined())
-      .output(UserWithDieticianDto)
+      .output(DieticianWithUserDto)
       .query(async opts => {
-        const user = await this.authService.getUser(opts.ctx.userId)
-        console.log({ user })
-        return user
+        const dietician = await this.authService.getDietician(opts.ctx.dieticianId)
+        if (!dietician) throw new Error("Dietician not found")
+        return dietician
       }),
-    generateChangeEmailToken: protectedProcedure
+    generateChangeEmailToken: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'POST',
@@ -40,6 +40,7 @@ export class DieticianProfileRouter {
       )
       .output(z.string())
       .query(async opts => {
+        // TODO: this endpoint is not protected by user id
         const token = await this.authService.generateUserTokenForChangeEmail(
           opts.input.currentEmail,
           opts.input.newEmail,
@@ -47,7 +48,7 @@ export class DieticianProfileRouter {
         console.log({ token })
         return token
       }),
-    verifyChangeEmailToken: protectedProcedure
+    verifyChangeEmailToken: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'POST',
@@ -71,7 +72,7 @@ export class DieticianProfileRouter {
 
         return isVerified
       }),
-    uploadAvatar: protectedProcedure
+    uploadAvatar: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'POST',

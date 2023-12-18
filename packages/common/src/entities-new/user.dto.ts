@@ -26,8 +26,8 @@ export const DieticianDtoSchema = DieticianCreateDto.extend({
   id: z.number(),
 })
 
-export const UserWithDieticianDto = UserDtoSchema.extend({
-  dietician: DieticianDtoSchema,
+export const DieticianWithUserDto = DieticianDtoSchema.extend({
+  user: UserDtoSchema,
 })
 
 export const PatientCreateDtoSchema = z.object({

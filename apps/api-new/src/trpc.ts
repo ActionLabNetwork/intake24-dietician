@@ -57,6 +57,23 @@ const validateUserMiddleware = t.middleware(async ({ next, ctx }) => {
   }
 })
 
+const validateDieticianMiddleware = validateUserMiddleware.unstable_pipe(
+  async ({ next, ctx }) => {
+    const userId = ctx.userId
+    const authService = container.resolve(AuthService)
+    const dieticianId = await authService.getDieticianIdByUserId(userId)
+    if (!dieticianId) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'This endpoint is reserved for a dietician, please log in.',
+      })
+    }
+    return next({
+      ctx: { ...ctx, dieticianId },
+    })
+  },
+)
+
 export const publicProcedure = t.procedure.use(
   t.middleware(async opts => {
     const result = await opts.next()
@@ -81,3 +98,6 @@ export const publicProcedure = t.procedure.use(
 
 // Extended procedures
 export const protectedProcedure = t.procedure.use(validateUserMiddleware)
+export const protectedDieticianProcedure = t.procedure.use(
+  validateDieticianMiddleware,
+)

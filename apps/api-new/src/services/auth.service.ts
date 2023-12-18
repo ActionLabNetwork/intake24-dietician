@@ -108,13 +108,10 @@ export class AuthService {
     )
   }
 
-  public getUser = async (userId: number) => {
-    const user = await this.userRepository.getDieticianById(userId)
-    if (!user) {
-      throw new NotFoundError('User not found')
-    }
-    return user
-  }
+  public getDietician = async (dieticianId: number) => this.userRepository.getDietician(dieticianId)
+
+  public getDieticianIdByUserId = async (userId: number) =>
+    this.userRepository.getDieticianIdByUserId(userId)
 
   // public validateJwt = async (accessToken: string, refreshToken: string) => {
   //   const decoded = this.verifyJwtToken(accessToken)
@@ -407,9 +404,7 @@ export class AuthService {
     }
 
     // this is getting by user ID? Also why only dieticians can refresh a token?
-    const user = await this.userRepository.getDieticianById(
-      decoded.decoded?.['userId'],
-    )
+    const user = await this.userRepository.getUserById(decoded.decoded.userId)
 
     if (!user) {
       throw new NotFoundError('User not found')

@@ -1,5 +1,9 @@
 import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities-new/preferences.dto'
-import type { DieticianCreateDto, PatientCreateDto, UserCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type {
+  DieticianCreateDto,
+  UserCreateDto,
+  PatientCreateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
 import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
@@ -63,6 +67,14 @@ export class UserRepository {
           .execute()
       ).length > 1
     )
+  }
+
+  public async getUserById(id: number) {
+    return await this.drizzle.query.users
+      .findFirst({
+        where: eq(users.id, id),
+      })
+      .execute()
   }
 
   public async getUserByEmail(email: string) {
@@ -148,16 +160,28 @@ export class UserRepository {
     return user?.dietician
   }
 
-  public async getDieticianById(id: number) {
-    const user = await this.drizzle.query.users
+  public async getDietician(id: number) {
+    const user = await this.drizzle.query.dieticians
       .findFirst({
-        where: and(eq(users.id, id), eq(users.role, 'Dietician')),
+        where: eq(dieticians.id, id),
         with: {
-          dietician: true,
+          user: true,
         },
       })
       .execute()
     return user
+  }
+
+  public async getDieticianIdByUserId(userId: number) {
+    const dietician = await this.drizzle.query.dieticians
+      .findFirst({
+        columns: {
+          id: true,
+        },
+        where: eq(dieticians.userId, userId),
+      })
+      .execute()
+    return dietician?.id
   }
 
   public async createDieticianUser(email: string, hashedPassword: string) {
