@@ -39,12 +39,7 @@ export class DieticianProfileRouter {
         }),
       )
       .output(z.string())
-<<<<<<< HEAD
-      .query(async opts => {
-        // TODO: this endpoint is not protected by user id
-=======
       .mutation(async opts => {
->>>>>>> b4c8289 (refactor(api-new): add trpc endpoint for retrieving dietician's surveys)
         const token = await this.authService.generateUserTokenForChangeEmail(
           opts.input.currentEmail,
           opts.input.newEmail,
