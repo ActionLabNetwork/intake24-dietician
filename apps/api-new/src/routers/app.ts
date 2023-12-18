@@ -4,6 +4,7 @@ import { AuthDieticianRouter } from './auth/dietician'
 import { AuthPatientRouter } from './auth/patient'
 import { DieticianProfileRouter } from './dietician/profile'
 import { DieticianSurveyRouter } from './dietician/survey'
+import { DieticianPatientRouter } from './dietician/patient'
 
 export const createAppRouter = () =>
   router({
@@ -11,6 +12,7 @@ export const createAppRouter = () =>
     authPatient: container.resolve(AuthPatientRouter).getRouter(),
     dieticianProfile: container.resolve(DieticianProfileRouter).getRouter(),
     dieticianSurvey: container.resolve(DieticianSurveyRouter).getRouter(),
+    dieticianPatient: container.resolve(DieticianPatientRouter).getRouter(),
   })
 
 export type AppRouter = ReturnType<typeof createAppRouter>

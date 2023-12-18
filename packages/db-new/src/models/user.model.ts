@@ -26,12 +26,6 @@ export const genderEnum = pgEnum('gender', [
 
 export const roleEnum = pgEnum('role', ['Dietician', 'Patient'])
 
-const names = {
-  firstName: text('first_name').default('').notNull(),
-  middleName: text('middle_name').default('').notNull(),
-  lastName: text('last_name').default('').notNull(),
-}
-
 export const users = pgTable('user', {
   id: serial('id').primaryKey(),
   ...timestampFields,
@@ -57,13 +51,13 @@ export const dieticians = pgTable('dietician', {
     .references(() => users.id)
     .notNull()
     .unique(),
-  ...names,
-  mobileNumber: text('mobile_number').default('').notNull(),
-  businessNumber: text('business_number').default('').notNull(),
-  businessAddress: text('business_address').default('').notNull(),
-  shortBio: text('short_bio').default('').notNull(),
-  // switch to https://stackoverflow.com/questions/76399047/how-to-represent-bytea-datatype-from-pg-inside-new-drizzle-orm?
-  avatar: text('avatar'),
+  firstName: text('first_name'),
+  middleName: text('middle_name'),
+  lastName: text('last_name'),
+  mobileNumber: text('mobile_number'),
+  businessNumber: text('business_number'),
+  businessAddress: text('business_address'),
+  shortBio: text('short_bio'),
   ...timestampFields,
 })
 
@@ -84,19 +78,19 @@ export const patients = pgTable('patient', {
   surveyId: integer('survey_id')
     .references(() => surveys.id)
     .notNull(),
-  ...names,
-  mobileNumber: text('mobile_number').default('').notNull(),
-  address: text('address').default('').notNull(),
-  age: integer('age'),
-  gender: genderEnum('gender'),
-  height: integer('height'),
-  weight: integer('weight'),
-  additionalDetails: jsonb('additional_details'),
-  additionalNotes: text('additional_notes').default('').notNull(),
-  patientGoal: text('patient_goal').default('').notNull(),
-  // switch to https://stackoverflow.com/questions/76399047/how-to-represent-bytea-datatype-from-pg-inside-new-drizzle-orm?
-  avatar: text('avatar').default('').notNull(),
-  patientPreferences: typedJsonbFromSchema(PatientPreferenceSchema)(
+  firstName: text('first_name').notNull(),
+  middleName: text('middle_name').notNull(),
+  lastName: text('last_name').notNull(),
+  mobileNumber: text('mobile_number').notNull(),
+  address: text('address').notNull(),
+  age: integer('age').notNull(),
+  gender: genderEnum('gender').notNull(),
+  height: integer('height').notNull(),
+  weight: integer('weight').notNull(),
+  additionalDetails: jsonb('additional_details').$type<Record<string, unknown>>(),
+  additionalNotes: text('additional_notes').notNull(),
+  patientGoal: text('patient_goal').notNull(),
+  patientPreference: typedJsonbFromSchema(PatientPreferenceSchema)(
     'preference',
   ).notNull(),
   ...timestampFields,

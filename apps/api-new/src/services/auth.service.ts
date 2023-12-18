@@ -7,7 +7,6 @@
  */
 /* eslint-disable max-params */
 import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
-import type { PatientPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import {
   TokenPayloadSchema,
@@ -261,10 +260,10 @@ export class AuthService {
   }
 
   public createPatient = async (
+    dieticianId: number,
     surveyId: number,
     email: string,
     patientDto: PatientCreateDto,
-    patientPreferences: PatientPreference,
   ) => {
     const isEmailValid = await this.validateNewEmailAvailability(email)
 
@@ -275,11 +274,37 @@ export class AuthService {
     if (!survey) {
       throw new NotFoundError('Survey not found')
     }
-    return await this.userRepository.createPatient(
-      surveyId,
+    if (survey.dieticianId !== dieticianId) {
+      throw new UnauthorizedError('Invalid dietician')
+    }
+    return await this.userRepository.createPatient(surveyId, email, {
+      patientPreference: survey.surveyPreference,
+      ...patientDto,
+    })
+  }
+
+  public updatePatient = async (
+    dieticianId: number,
+    patientId: number,
+    email: string,
+    patientDto: Partial<PatientCreateDto>,
+  ) => {
+    const isEmailValid = await this.validateNewEmailAvailability(email)
+    if (!isEmailValid) {
+      throw new ClientError('Invalid email address. Please try again.')
+    }
+    if (
+      !(await this.userRepository.isPatientDieticians({
+        dieticianId,
+        patientId,
+      }))
+    ) {
+      throw new UnauthorizedError('Invalid dietician')
+    }
+
+    return await this.userRepository.updatePatient(patientId, patientDto, {
       email,
-      {patientPreferences: survey.surveyPreference, ...patientDto},
-    )
+    })
   }
 
   public verifyJwtToken = (
@@ -384,27 +409,13 @@ export class AuthService {
   }
 
   private validateNewEmailAvailability = async (email: string) => {
-    try {
-      const isValidEmail = z.string().email().safeParse(email).success
-      const emailExists = await this.userRepository.checkEmailExists(email)
-
-      if (!isValidEmail) {
-        throw new ClientError(
-          'Invalid email address. Please try again with a different one.',
-        )
-      }
-
-      if (emailExists) {
-        throw new ClientError(
-          'An account with this email address already exists. Please try again with a different one.',
-        )
-      }
-
-      return true
-    } catch (error) {
-      console.log({ error })
-      throw new Error('Failed to validate email.')
+    const emailExists = await this.userRepository.checkEmailExists(email)
+    if (emailExists) {
+      throw new ClientError(
+        'An account with this email address already exists. Please try again with a different one.',
+      )
     }
+    return true
   }
 
   private refreshAccessToken = async (refreshToken: string) => {

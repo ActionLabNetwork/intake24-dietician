@@ -34,16 +34,16 @@ export const DieticianWithUserDto = DieticianDtoSchema.extend({
 })
 
 export const PatientCreateDtoSchema = z.object({
-  firstName: z.string(),
+  firstName: z.string().min(1),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: z.string(),
+  mobileNumber: z.string(),  // TODO validate phone number
   address: z.string(),
-  age: z.number(),
+  age: z.number().int(),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
-  height: z.number(),
-  weight: z.number(),
-  additionalDetails: z.record(z.unknown()).optional(),
+  height: z.number().int(),
+  weight: z.number().int(),
+  additionalDetails: z.record(z.string(), z.unknown()).nullable(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey

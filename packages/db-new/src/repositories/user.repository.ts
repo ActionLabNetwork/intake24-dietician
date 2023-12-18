@@ -1,8 +1,8 @@
 import type { PatientPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type {
   DieticianCreateDto,
-  UserCreateDto,
   PatientCreateDto,
+  UserCreateDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import assert from 'assert'
 import { and, eq } from 'drizzle-orm'
@@ -238,9 +238,9 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    patientDetails: PatientCreateDto & {patientPreferences: PatientPreference},
+    patientDetails: PatientCreateDto & {patientPreference: PatientPreference},
   ) {
-    await this.drizzle.transaction(async tx => {
+    return await this.drizzle.transaction(async tx => {
       const [user] = await tx
         .insert(users)
         .values({ email, role: 'Patient' })
@@ -263,7 +263,7 @@ export class UserRepository {
     patientUserDetails: Partial<UserCreateDto>,
   ) {
     const updateTimestamp = moment().toDate()
-    await this.drizzle.transaction(async tx => {
+    return await this.drizzle.transaction(async tx => {
       const [patient] = await tx
         .update(patients)
         .set({ ...patientDetails, updatedAt: updateTimestamp })
