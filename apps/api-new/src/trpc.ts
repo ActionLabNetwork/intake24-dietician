@@ -43,12 +43,8 @@ const validateUserMiddleware = t.middleware(async ({ next, ctx }) => {
   const accessToken = ctx.req.cookies['accessToken']
   const authService = container.resolve(AuthService)
   try {
-    const decodedToken = authService.verifyJwtToken(accessToken)
-    const jti = decodedToken.decoded?.jti
-    if (!jti) throw Error()
-    await authService.checkTokenInRedis(jti)
-
-    const userId = decodedToken.decoded?.['userId']
+    const decodedToken = await authService.verifyAccessToken(accessToken)
+    const userId = decodedToken.userId
     if (!userId) throw Error()
     return next({
       ctx: { ...ctx, userId },

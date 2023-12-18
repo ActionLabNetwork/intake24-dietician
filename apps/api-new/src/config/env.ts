@@ -24,13 +24,11 @@ export const env = createEnv({
     MAILTRAP_API_KEY: z.string(),
     LOGGER_DISABLED: z.string().transform(s => s !== 'false' && s !== '0'),
     REDIS_CONNECTION_HOST: withDevDefault(z.string(), 'localhost'),
-    REDIS_CONNECTION_PORT: withDevDefault(
-      z
-        .string()
-        .transform(s => Number(s))
-        .pipe(z.number()),
-      6379,
-    ),
+    REDIS_CONNECTION_PORT: withDevDefault(z.coerce.number(), 6379),
+    POSTGRES_USER: withDevDefault(z.string(), 'postgres'),
+    POSTGRES_PASSWORD: withDevDefault(z.string(), 'postgres'),
+    POSTGRES_PORT: withDevDefault(z.string(), '5433'),
+    POSTGRES_DB_NAME: withDevDefault(z.string(), 'intake24-dietician-db'),
   },
   client: {},
   runtimeEnv: process.env,

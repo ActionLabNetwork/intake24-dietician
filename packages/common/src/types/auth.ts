@@ -1,6 +1,7 @@
 import type { ApiResponse } from '@intake24-dietician/common/types/api'
 import type { ReminderConditions } from './reminder'
 import type { Theme } from './theme'
+import { z } from 'zod'
 
 export type TTokenType =
   | 'access-token'
@@ -53,12 +54,14 @@ export interface Token {
   refreshToken: string
 }
 
-export interface TokenPayload {
-  userId: number
-  email: string
-  tokenType: 'access-token' | 'refresh-token'
-  jti: string
-}
+export const TokenPayloadSchema = z.object({
+  userId: z.number(),
+  email: z.string().email(),
+  tokenType: z.enum(['access-token', 'refresh-token']),
+  jti: z.string(),
+})
+
+export type TokenPayload = z.infer<typeof TokenPayloadSchema>
 
 export interface DieticianProfileValues {
   firstName: string
