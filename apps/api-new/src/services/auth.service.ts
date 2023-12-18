@@ -6,7 +6,7 @@
  * @packageDocumentation
  */
 /* eslint-disable max-params */
-import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { PatientPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { APIError } from '@intake24-dietician/common/errors/api-error'
 import { ClientError } from '@intake24-dietician/common/errors/client-error'
@@ -28,6 +28,7 @@ import { env } from '../config/env'
 import { HashingService } from './hashing.service'
 import { TokenService } from './token.service'
 import Redis from 'ioredis'
+import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 
 const ACCESS_PREFIX = 'access:'
 
@@ -38,6 +39,7 @@ export class AuthService {
     @inject(TokenService) private tokenService: TokenService,
     @inject(UserRepository) private userRepository: UserRepository,
     @inject(TokenRepository) private tokenRepository: TokenRepository,
+    @inject(SurveyRepository) private surveyRepository: SurveyRepository,
     @inject(Redis) private redis: Redis,
   ) {}
 
@@ -265,19 +267,21 @@ export class AuthService {
     surveyId: number,
     email: string,
     patientDto: PatientCreateDto,
-    patientPreferences: PatientPreferenceCreateDto,
+    patientPreferences: PatientPreference,
   ) => {
     const isEmailValid = await this.validateNewEmailAvailability(email)
 
     if (!isEmailValid) {
       throw new ClientError('Invalid email address. Please try again.')
     }
-
+    const survey = await this.surveyRepository.getSurveyById(surveyId)
+    if (!survey) {
+      throw new NotFoundError('Survey not found')
+    }
     return await this.userRepository.createPatient(
       surveyId,
       email,
-      patientDto,
-      patientPreferences,
+      {patientPreferences: survey.surveyPreference, ...patientDto},
     )
   }
 

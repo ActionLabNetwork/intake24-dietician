@@ -30,29 +30,29 @@ export const ReminderConditionSchema = z.object({
 
 export type ReminderCondition = z.infer<typeof ReminderConditionSchema>
 
-export const CommonPreferenceCreateDtoSchema = z.object({
-  theme: z.string().default('Classic'),
-  sendAutomatedFeedback: z.boolean().default(true),
+const CommonPreferenceSchema = z.object({
+  theme: z.string(),
+  sendAutomatedFeedback: z.boolean(),
   reminderCondition: ReminderConditionSchema,
   reminderMessage: z.string(),
 })
 
-export type CommonPreferenceCreateDto = z.infer<
-  typeof CommonPreferenceCreateDtoSchema
+type CommonPreference = z.infer<
+  typeof CommonPreferenceSchema
 >
 
-export const SurveyPreferenceCreateDtoSchema =
-  CommonPreferenceCreateDtoSchema.extend({
+export const SurveyPreferenceSchema =
+  CommonPreferenceSchema.extend({
     notifyEmail: z.boolean(),
     notifySMS: z.boolean(),
   })
 
-export type SurveyPreferenceCreateDto = z.infer<
-  typeof SurveyPreferenceCreateDtoSchema
+export type SurveyPreference = z.infer<
+  typeof SurveyPreferenceSchema
 >
 
-export const PatientPreferenceCreateDtoSchema = CommonPreferenceCreateDtoSchema
+export const PatientPreferenceSchema = CommonPreferenceSchema
 
-export type PatientPreferenceCreateDto = z.infer<
-  typeof PatientPreferenceCreateDtoSchema
+export type PatientPreference = z.infer<
+  typeof PatientPreferenceSchema
 >

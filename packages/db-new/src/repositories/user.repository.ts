@@ -1,4 +1,4 @@
-import type { PatientPreferenceCreateDto } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { PatientPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type {
   DieticianCreateDto,
   UserCreateDto,
@@ -11,7 +11,6 @@ import { inject, injectable } from 'tsyringe'
 import { AppDatabase } from '../database'
 import {
   dieticians,
-  patientPreferences,
   patients,
   surveys,
   users,
@@ -239,8 +238,7 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    patientDetails: PatientCreateDto,
-    patientPreferenceDto: PatientPreferenceCreateDto | null,
+    patientDetails: PatientCreateDto & {patientPreferences: PatientPreference},
   ) {
     await this.drizzle.transaction(async tx => {
       const [user] = await tx
@@ -251,16 +249,10 @@ export class UserRepository {
       assert(user)
       const [patient] = await tx
         .insert(patients)
-        .values({ surveyId, userId: user.id })
+        .values({ surveyId, userId: user.id, ...patientDetails })
         .returning()
         .execute()
       assert(patient)
-      if (patientPreferenceDto) {
-        await tx.insert(patientPreferences).values({
-          ...patientPreferenceDto,
-          patientId: patient.id,
-        })
-      }
       return patient
     })
   }
@@ -269,7 +261,6 @@ export class UserRepository {
     patientId: number,
     patientDetails: Partial<PatientCreateDto>,
     patientUserDetails: Partial<UserCreateDto>,
-    patientPreferenceDto: PatientPreferenceCreateDto | null | undefined,
   ) {
     const updateTimestamp = moment().toDate()
     await this.drizzle.transaction(async tx => {
@@ -285,21 +276,6 @@ export class UserRepository {
         .set({ ...patientUserDetails, updatedAt: updateTimestamp })
         .where(eq(users.id, patient.userId))
         .execute()
-      if (patientPreferenceDto === null) {
-        await tx
-          .delete(patientPreferences)
-          .where(eq(patientPreferences.patientId, patientId))
-          .execute()
-      }
-      if (patientPreferenceDto) {
-        const [patientPreference] = await tx
-          .update(patientPreferences)
-          .set(patientPreferenceDto)
-          .where(eq(patientPreferences.patientId, patientId))
-          .returning()
-          .execute()
-        assert(patientPreference)
-      }
     })
   }
 }

@@ -1,9 +1,10 @@
-import { integer, pgTable, serial, text, boolean } from 'drizzle-orm/pg-core'
-import { timestampFields } from './model.common'
-import { dieticians, patients } from './user.model'
 import { relations } from 'drizzle-orm'
-import { surveyPreferences } from './preferences.model'
+import { boolean, integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import { timestampFields } from './model.common'
+import { typedJsonbFromSchema } from './modelUtils'
 import { recalls } from './recall.model'
+import { dieticians, patients } from './user.model'
+import { SurveyPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 
 export const surveys = pgTable('survey', {
   id: serial('id').primaryKey(),
@@ -16,6 +17,7 @@ export const surveys = pgTable('survey', {
   alias: text('alias').notNull(),
   recallSubmissionURL: text('recall_submission_url').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
+  surveyPreference: typedJsonbFromSchema(SurveyPreferenceSchema)("preference").notNull(),
   ...timestampFields,
 })
 
@@ -25,7 +27,6 @@ export const surveyRelations = relations(surveys, ({ one, many }) => ({
     references: [dieticians.id],
   }),
   patients: many(patients),
-  surveyPreference: one(surveyPreferences),
   recalls: many(recalls),
 }))
 

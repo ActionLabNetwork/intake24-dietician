@@ -12,7 +12,8 @@ import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
 import { tokens } from './token.model'
 import { surveys } from './survey.model'
-import { patientPreferences } from './preferences.model'
+import { typedJsonbFromSchema } from './modelUtils'
+import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
@@ -93,6 +94,7 @@ export const patients = pgTable('patient', {
   additionalDetails: jsonb('additional_details'),
   additionalNotes: text('additional_notes'),
   patientGoal: text('patient_goal'),
+  patientPreferences: typedJsonbFromSchema(PatientPreferenceSchema)('preference').notNull(),
   ...timestampFields,
 })
 
@@ -104,6 +106,5 @@ export const patientRelations = relations(patients, ({ one }) => ({
   survey: one(surveys, {
     fields: [patients.surveyId],
     references: [surveys.id],
-  }),
-  patientPreference: one(patientPreferences),
+  })
 }))

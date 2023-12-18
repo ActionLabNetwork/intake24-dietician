@@ -1,16 +1,18 @@
 import { z } from 'zod'
+import { SurveyPreferenceSchema } from './preferences.dto'
 
-export const SurveyCreateDto = z.object({
-  dieticianId: z.number(),
+export const SurveyCreateDtoSchema = z.object({
   surveyName: z.string(),
   intake24SurveyId: z.string(),
   intake24Secret: z.string(),
   alias: z.string(),
   recallSubmissionURL: z.string(),
+  isActive: z.boolean(),
+  surveyPreference: SurveyPreferenceSchema
 })
-export type SurveyCreateDto = z.infer<typeof SurveyCreateDto>
+export type SurveyCreateDto = z.infer<typeof SurveyCreateDtoSchema>
 
-export const SurveyDtoSchema = SurveyCreateDto.extend({
+export const SurveyDtoSchema = SurveyCreateDtoSchema.extend({
   id: z.number(),
 })
 

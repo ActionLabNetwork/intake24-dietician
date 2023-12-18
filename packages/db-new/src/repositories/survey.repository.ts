@@ -1,7 +1,11 @@
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { surveys, users } from '../models'
+import { surveys } from '../models'
 import { eq } from 'drizzle-orm'
+import type {
+  SurveyCreateDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
+import assert from 'assert'
 
 @singleton()
 export class SurveyRepository {
@@ -11,21 +15,42 @@ export class SurveyRepository {
     this.drizzle = db.drizzleClient
   }
 
-  public async getSurveys(userId: number) {
-    const userWithDietician = await this.drizzle.query.users.findFirst({
-      where: eq(users.id, userId),
-      with: { dietician: { with: { surveys: true } } },
+  public async getSurveysOfDietician(dieticianId: number) {
+    return await this.drizzle.query.surveys.findMany({
+      where: eq(surveys.dieticianId, dieticianId),
     })
-
-    return userWithDietician?.dietician.surveys ?? []
   }
 
-  public async getSurveyWithPatients(id: number) {
+  public async getSurveyById(id: number) {
     return await this.drizzle.query.surveys.findFirst({
       where: eq(surveys.id, id),
-      with: {
-        patients: true,
-      },
     })
+  }
+
+  public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
+    const [insertedSurvey] = await this.drizzle
+      .insert(surveys)
+      .values({
+        dieticianId,
+        ...surveyDto,
+      })
+      .returning({ id: surveys.id })
+      .execute()
+    assert(insertedSurvey)
+    return insertedSurvey.id
+  }
+
+  public async updateSurvey(
+    surveyId: number,
+    surveyDto: Partial<SurveyCreateDto>,
+  ) {
+    await this.drizzle
+      .update(surveys)
+      .set({
+        ...surveyDto,
+        updatedAt: new Date(),
+      })
+      .where(eq(surveys.id, surveyId))
+      .execute()
   }
 }

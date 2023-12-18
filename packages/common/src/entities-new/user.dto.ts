@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { PatientPreferenceSchema } from './preferences.dto'
 
 export const UserCreateDtoSchema = z.object({
   email: z.string().email(),
@@ -43,6 +44,12 @@ export const PatientCreateDtoSchema = z.object({
   additionalDetails: z.record(z.unknown()).optional(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
+  patientPreference: PatientPreferenceSchema.optional() // if not provided this is copied from survey
 })
 
 export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
+
+export const PatientDtoSchema = PatientCreateDtoSchema.extend({
+  id: z.number(),
+  patientPreference: PatientPreferenceSchema
+})
