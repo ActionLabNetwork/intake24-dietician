@@ -4,8 +4,6 @@ import type {
   UserCreateDto,
   PatientCreateDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
-import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
-import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import assert from 'assert'
 import { and, eq } from 'drizzle-orm'
 import moment from 'moment'
@@ -16,7 +14,6 @@ import {
   patientPreferences,
   patients,
   surveys,
-  tokens,
   users,
 } from '../models'
 
@@ -87,31 +84,12 @@ export class UserRepository {
     return !!(await this.getUserByEmail(email))
   }
 
-  public async resetPassword(token: string, hashedPassword: string) {
-    return await this.drizzle.transaction(async tx => {
-      const tokenEntity = await tx.query.tokens
-        .findFirst({
-          where: eq(tokens.token, token),
-        })
-        .execute()
-
-      if (!tokenEntity) {
-        throw new NotFoundError('Token not found')
-      }
-      if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-        throw new UnauthorizedError('Token expired')
-      }
-
-      return (
-        (
-          await tx
-            .update(users)
-            .set({ password: hashedPassword })
-            .where(eq(users.id, tokenEntity.userId))
-            .execute()
-        ).length > 0
-      )
-    })
+  public async resetPassword(userId: number, hashedPassword: string) {
+    await this.drizzle
+      .update(users)
+      .set({ password: hashedPassword })
+      .where(eq(users.id, userId))
+      .execute()
   }
 
   public async isPatientDieticians(args: {

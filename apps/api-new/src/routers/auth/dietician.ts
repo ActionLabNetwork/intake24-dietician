@@ -114,7 +114,7 @@ export class AuthDieticianRouter {
           password: z.string(),
         }),
       )
-      .output(z.boolean())
+      .output(z.void())
       .mutation(async opts => {
         return await this.authService.resetPassword(
           opts.input.token,

@@ -30,12 +30,12 @@ export class TokenRepository {
       .execute()
   }
 
-  public async destroyOne(token: string) {
-    const destroyedTokens = await this.drizzle
+  public async consumeOne(token: string) {
+    const [tokenEntity] = await this.drizzle
       .delete(tokens)
       .where(eq(tokens.token, token))
       .returning()
       .execute()
-    return destroyedTokens.length > 0
+    return tokenEntity
   }
 }

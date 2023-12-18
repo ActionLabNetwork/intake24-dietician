@@ -102,8 +102,15 @@ export class AuthService {
   }
 
   public resetPassword = async (token: string, password: string) => {
+    const tokenEntity = await this.tokenRepository.consumeOne(token)
+    if (!tokenEntity) {
+      throw new UnauthorizedError('Token not found')
+    }
+    if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+      throw new UnauthorizedError('Token expired')
+    }
     return await this.userRepository.resetPassword(
-      token,
+      tokenEntity.userId,
       await this.hashingService.hash(password),
     )
   }
@@ -205,7 +212,7 @@ export class AuthService {
     }
 
     if (destroyToken) {
-      await this.tokenRepository.destroyOne(token)
+      await this.tokenRepository.consumeOne(token)
     }
 
     return true
@@ -239,7 +246,7 @@ export class AuthService {
       await this.userRepository.verifyUser(user.id)
     }
 
-    await this.tokenRepository.destroyOne(token)
+    await this.tokenRepository.consumeOne(token)
 
     const { jti, token: _token } = await this.generateToken(user, 'both')
 
