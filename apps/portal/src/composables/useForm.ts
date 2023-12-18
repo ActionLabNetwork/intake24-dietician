@@ -4,8 +4,6 @@ import { ToastPluginApi } from 'vue-toast-notification'
 import type { ZodType } from 'zod'
 import { DEFAULT_ERROR_MESSAGE } from '../constants'
 import { MutateFunction } from '@tanstack/vue-query'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import { AxiosError } from 'axios'
 
 /**
  * Custom hook for handling form logic.
@@ -31,12 +29,7 @@ export const useForm = <T extends {}, TSubmit>({
   initialValues: T
   schema: ZodType
   $toast?: ToastPluginApi
-  mutationFn: MutateFunction<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    TSubmit,
-    unknown
-  >
+  mutationFn: MutateFunction<unknown, unknown, TSubmit, unknown>
   onSuccess?: () => void
   onError?: (err: string) => void
 }) => {
@@ -74,10 +67,9 @@ export const useForm = <T extends {}, TSubmit>({
           resolve()
         },
         onError: err => {
-          $toast?.error(
-            err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE,
-          )
-          onError?.(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+          console.log({ errFromUseForm: err })
+          $toast?.error(DEFAULT_ERROR_MESSAGE)
+          onError?.(DEFAULT_ERROR_MESSAGE)
         },
       })
 

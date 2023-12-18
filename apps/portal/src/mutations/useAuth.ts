@@ -1,15 +1,13 @@
 import { useMutation } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
 import { env } from '../config/env'
-import {
-  DieticianProfileValues,
-  UserAttributes,
-} from '@intake24-dietician/common/types/auth'
+import { UserAttributes } from '@intake24-dietician/common/types/auth'
 import {
   ApiResponseWithData,
   ApiResponseWithError,
 } from '@intake24-dietician/common/types/api'
 import trpcClient from '../trpc/trpc'
+import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 export const useRegister = () => {
   const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
@@ -102,7 +100,7 @@ export const useUpdateProfile = () => {
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
     AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
     AxiosError<ApiResponseWithError>,
-    { dieticianProfile: DieticianProfileValues }
+    { dieticianProfile: DieticianCreateDto & { emailAddress: string } }
   >({
     mutationFn: profileBody => {
       return axios.put(profileUri, profileBody)

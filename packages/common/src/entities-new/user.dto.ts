@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { PatientPreferenceSchema } from './preferences.dto'
+import { TimestampSchema } from './timestamp.dto'
 
 export const UserCreateDtoSchema = z.object({
   email: z.string().email(),
@@ -26,7 +27,7 @@ export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
 
 export const DieticianDtoSchema = DieticianCreateDto.extend({
   id: z.number(),
-})
+}).extend(TimestampSchema.shape)
 
 export const DieticianWithUserDto = DieticianDtoSchema.extend({
   user: UserDtoSchema,
@@ -45,12 +46,12 @@ export const PatientCreateDtoSchema = z.object({
   additionalDetails: z.record(z.unknown()).optional(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
-  patientPreference: PatientPreferenceSchema.optional() // if not provided this is copied from survey
+  patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
 
 export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
 
 export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
-  patientPreference: PatientPreferenceSchema
-})
+  patientPreference: PatientPreferenceSchema,
+}).extend(TimestampSchema.shape)

@@ -19,8 +19,10 @@ export class DieticianProfileRouter {
       .input(z.undefined())
       .output(DieticianWithUserDto)
       .query(async opts => {
-        const dietician = await this.authService.getDietician(opts.ctx.dieticianId)
-        if (!dietician) throw new Error("Dietician not found")
+        const dietician = await this.authService.getDietician(
+          opts.ctx.dieticianId,
+        )
+        if (!dietician) throw new Error('Dietician not found')
         return dietician
       }),
     generateChangeEmailToken: protectedDieticianProcedure

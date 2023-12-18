@@ -20,7 +20,6 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3 mt-sm-0"
-            :disabled="disableSubmitButton"
             :loading="updateProfileMutation.isLoading.value"
             @click="handleSubmit"
           >
@@ -33,14 +32,14 @@
         <PersonalDetails
           v-if="personalDetailsFormValues"
           :default-state="personalDetailsFormValues"
-          :email="user.email"
+          :email="user.user.email"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ContactDetails
           v-if="contactDetailsFormValues"
           class="mt-10"
           :default-state="contactDetailsFormValues"
-          :email="user.email"
+          :email="user.user.email"
           :handleSubmit="handleSubmit"
           @update="value => handleProfileDetailsUpdate(value)"
         />
@@ -57,7 +56,6 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3"
-            :disabled="disableSubmitButton"
             :loading="updateProfileMutation.isLoading.value"
           >
             {{ t('profile.cta') }}
@@ -69,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import PersonalDetails, {
   PersonalDetailsFormValues,
 } from '@/components/profile/PersonalDetails.vue'
@@ -84,9 +82,9 @@ import { storeToRefs } from 'pinia'
 import { useUpdateProfile, useUploadAvatar } from '@/mutations/useAuth'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { DieticianProfileValues } from '@intake24-dietician/common/types/auth'
-import { pick, keys, isEqual } from 'radash'
+// import { pick, keys, isEqual } from 'radash'
 import { VForm } from 'vuetify/lib/components/index.mjs'
+import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -99,7 +97,7 @@ const uploadAvatarMutation = useUploadAvatar()
 const $toast = useToast()
 
 const form = ref()
-const profileFormValues = ref<DieticianProfileValues>({
+const profileFormValues = ref<DieticianCreateDto & { emailAddress: string }>({
   firstName: '',
   middleName: '',
   lastName: '',
@@ -109,8 +107,6 @@ const profileFormValues = ref<DieticianProfileValues>({
   businessAddress: '',
   shortBio: '',
   avatar: null,
-  createdAt: new Date(),
-  updatedAt: new Date(),
 })
 
 const personalDetailsFormValues = ref<PersonalDetailsFormValues>()
@@ -157,34 +153,32 @@ const handleSubmit = async (validate = true): Promise<void> => {
     if (profileFormValues.value.avatar) {
       uploadAvatarMutation.mutate({
         avatarBase64:
-          profileFormValues.value.avatar ??
-          user.value?.dieticianProfile.avatar ??
-          '',
+          profileFormValues.value.avatar ?? user.value?.avatar ?? '',
       })
     }
   })
 }
 
-const disableSubmitButton = computed(() => {
-  const errors: any[] = form.value?.['errors']
+// TODO: Refactor this convoluted logic
+// const disableSubmitButton = computed(() => {
+//   const errors: any[] = form.value?.['errors']
 
-  if (errors?.length > 0) return true
-  if (!user.value) return true
+//   if (errors?.length > 0) return true
+//   if (!user.value) return true
 
-  const hasBeenUpdatedSinceCreation =
-    user.value.dieticianProfile.createdAt !==
-    user.value.dieticianProfile.updatedAt
+//   const hasBeenUpdatedSinceCreation =
+//     user.value.createdAt !== user.value.updatedAt
 
-  const hasBeenUpdated = !isEqual(profileFormValues.value, {
-    ...pick(
-      user.value?.dieticianProfile,
-      keys(profileFormValues.value) as (keyof DieticianProfileValues)[],
-    ),
-    emailAddress: user.value?.email,
-  })
+//   const hasBeenUpdated = !isEqual(profileFormValues.value, {
+//     ...pick(
+//       user.value,
+//       keys(profileFormValues.value) as (keyof DieticianProfileValues)[],
+//     ),
+//     emailAddress: user.value?.email,
+//   })
 
-  return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
-})
+//   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
+// })
 
 watch(
   user,
@@ -192,35 +186,33 @@ watch(
   newUser => {
     if (newUser) {
       profileFormValues.value = {
-        firstName: newUser.dieticianProfile.firstName ?? '',
-        middleName: newUser.dieticianProfile.middleName ?? '',
-        lastName: newUser.dieticianProfile.lastName ?? '',
-        emailAddress: newUser.email ?? '',
-        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
-        shortBio: newUser.dieticianProfile.shortBio ?? '',
-        avatar: newUser.dieticianProfile.avatar ?? null,
-        createdAt: newUser.dieticianProfile.createdAt ?? new Date(),
-        updatedAt: newUser.dieticianProfile.updatedAt ?? new Date(),
+        firstName: newUser.firstName,
+        middleName: newUser.middleName,
+        lastName: newUser.lastName,
+        emailAddress: newUser.user.email,
+        mobileNumber: newUser.mobileNumber ?? '',
+        businessNumber: newUser.businessNumber ?? '',
+        businessAddress: newUser.businessAddress ?? '',
+        shortBio: newUser.shortBio ?? '',
+        avatar: newUser.avatar ?? null,
       }
 
       personalDetailsFormValues.value = {
-        firstName: newUser.dieticianProfile.firstName ?? '',
-        middleName: newUser.dieticianProfile.middleName ?? '',
-        lastName: newUser.dieticianProfile.lastName ?? '',
-        avatar: newUser.dieticianProfile.avatar ?? '',
+        firstName: newUser.firstName,
+        middleName: newUser.middleName,
+        lastName: newUser.lastName,
+        avatar: newUser.avatar ?? '',
       }
 
       contactDetailsFormValues.value = {
-        emailAddress: newUser.email ?? '',
-        mobileNumber: newUser.dieticianProfile.mobileNumber ?? '',
-        businessNumber: newUser.dieticianProfile.businessNumber ?? '',
-        businessAddress: newUser.dieticianProfile.businessAddress ?? '',
+        emailAddress: newUser.user.email ?? '',
+        mobileNumber: newUser.mobileNumber ?? '',
+        businessNumber: newUser.businessNumber ?? '',
+        businessAddress: newUser.businessAddress ?? '',
       }
 
       shortBioFormValues.value = {
-        shortBio: newUser.dieticianProfile.shortBio ?? '',
+        shortBio: newUser.shortBio ?? '',
       }
     }
   },
