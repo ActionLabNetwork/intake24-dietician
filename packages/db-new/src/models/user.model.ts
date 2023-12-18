@@ -27,9 +27,9 @@ export const genderEnum = pgEnum('gender', [
 export const roleEnum = pgEnum('role', ['Dietician', 'Patient'])
 
 const names = {
-  firstName: text('first_name'),
-  middleName: text('middle_name'),
-  lastName: text('last_name'),
+  firstName: text('first_name').default('').notNull(),
+  middleName: text('middle_name').default('').notNull(),
+  lastName: text('last_name').default('').notNull(),
 }
 
 export const users = pgTable('user', {

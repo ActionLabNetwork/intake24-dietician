@@ -20,7 +20,15 @@
       </div>
     </template>
   </v-app-bar>
-  <NavigationDrawer :drawer="drawer" @change="newVal => (drawer = newVal)" />
+  <NavigationDrawer
+    :drawer="drawer"
+    @change="
+      newVal => {
+        console.log({ newVal })
+        drawer = newVal
+      }
+    "
+  />
 </template>
 
 <script lang="ts" setup>

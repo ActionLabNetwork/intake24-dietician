@@ -8,10 +8,7 @@
         <template v-slot:activator="{ props }">
           <v-btn class="mr-16 mr-3" v-bind="props">
             <v-avatar
-              :image="
-                user?.dieticianProfile.avatar ||
-                getDefaultAvatar(user?.email ?? '')
-              "
+              :image="user?.avatar || getDefaultAvatar(user?.user.email ?? '')"
             ></v-avatar>
             <v-icon icon="mdi-chevron-down" size="large" />
           </v-btn>
@@ -36,7 +33,7 @@ import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
 const { data, isLoading: isProfileLoading } = useProfile()
 
-const user = ref(data.value?.data.data.user)
+const user = ref(data.value)
 const _user = ref({
   initials: '',
   fullName: '',
@@ -45,13 +42,10 @@ const _user = ref({
 
 watch(data, newData => {
   if (!newData) return
-  const {
-    firstName,
-    lastName,
-    emailAddress: email,
-  } = newData.data.data.user.dieticianProfile
+  const { firstName, lastName } = newData
+  const email = newData.user.email
 
-  user.value = newData.data.data.user
+  user.value = newData
 
   _user.value.initials = getInitials(firstName, lastName)
   _user.value.fullName = getFullName(firstName, lastName)
@@ -60,13 +54,10 @@ watch(data, newData => {
 
 const logoutMutation = useLogout()
 const handleLogout = () => {
-  logoutMutation.mutate(
-    {},
-    {
-      onSuccess: () => {
-        router.push({ path: '/auth/login' })
-      },
+  logoutMutation.mutate(undefined, {
+    onSuccess: () => {
+      router.push({ path: '/auth/login' })
     },
-  )
+  })
 }
 </script>

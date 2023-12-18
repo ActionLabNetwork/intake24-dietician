@@ -13,13 +13,14 @@ export const UserDtoSchema = UserCreateDtoSchema.extend({
 export type UserDto = z.infer<typeof UserDtoSchema>
 
 export const DieticianCreateDto = z.object({
-  firstName: z.string().nullable(),
-  middleName: z.string().nullable(),
-  lastName: z.string().nullable(),
+  firstName: z.string(),
+  middleName: z.string(),
+  lastName: z.string(),
   mobileNumber: z.string().nullable(),
   businessNumber: z.string().nullable(),
   businessAddress: z.string().nullable(),
   shortBio: z.string().nullable(),
+  avatar: z.string().nullable(),
 })
 export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
 
