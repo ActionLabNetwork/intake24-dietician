@@ -106,18 +106,11 @@ export class AuthService {
     )
   }
 
-  public getUser = async (accessToken: string) => {
-    const decodedToken = this.verifyJwtToken(accessToken)
-    await this.checkTokenInRedis(decodedToken.decoded?.['jti'] ?? '')
-
-    const user = await this.userRepository.getDieticianById(
-      decodedToken.decoded?.['userId'],
-    )
-
+  public getUser = async (userId: number) => {
+    const user = await this.userRepository.getDieticianById(userId)
     if (!user) {
       throw new NotFoundError('User not found')
     }
-
     return user
   }
 
@@ -257,17 +250,8 @@ export class AuthService {
     }
   }
 
-  public uploadAvatar = async (accessToken: string, buffer: string) => {
-    const decoded = this.verifyJwtToken(accessToken)
-
-    if (decoded.decoded === null) {
-      throw new UnauthorizedError('Token has expired, please log in again.')
-    }
-
-    return await this.userRepository.uploadAvatar(
-      decoded.decoded?.['userId'],
-      buffer,
-    )
+  public uploadAvatar = async (userId: number, buffer: string) => {
+    return await this.userRepository.uploadAvatar(userId, buffer)
   }
 
   public createPatient = async (
@@ -360,6 +344,15 @@ export class AuthService {
     }
 
     throw new ClientError('Invalid current and new email')
+  }
+
+  public checkTokenInRedis = async (jti: string) => {
+    const tokenInRedis = await redis.get(`${ACCESS_PREFIX}${jti}`)
+    if (!tokenInRedis) {
+      throw new UnauthorizedError('Token is either invalid or expired.')
+    }
+
+    return tokenInRedis
   }
 
   // Private helper functions
@@ -501,14 +494,5 @@ export class AuthService {
         env.JWT_REFRESH_TOKEN_TTL,
       )
     }
-  }
-
-  private checkTokenInRedis = async (jti: string) => {
-    const tokenInRedis = await redis.get(`${ACCESS_PREFIX}${jti}`)
-    if (!tokenInRedis) {
-      throw new UnauthorizedError('Token is either invalid or expired.')
-    }
-
-    return tokenInRedis
   }
 }

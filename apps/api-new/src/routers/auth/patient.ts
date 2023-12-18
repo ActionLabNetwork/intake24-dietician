@@ -2,9 +2,6 @@ import { publicProcedure, router } from '../../trpc'
 import { z } from 'zod'
 import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
-import { TRPCError } from '@trpc/server'
-import { BaseError } from '@intake24-dietician/common/errors/base-error'
-import { mapHttpCodeToTRPCCode } from '@/utils/trpc'
 import type { Token } from '@intake24-dietician/common/types/auth'
 
 @singleton()
@@ -26,15 +23,10 @@ export class AuthPatientRouter {
       )
       .output(z.boolean())
       .mutation(async opts => {
-        try {
-          await this.authService.generateUserTokenForPasswordlessAuth(
-            opts.input.identifier,
-          )
-
-          return true
-        } catch (error) {
-          this.handleError(error)
-        }
+        await this.authService.generateUserTokenForPasswordlessAuth(
+          opts.input.identifier,
+        )
+        return true
       }),
     passwordlessVerify: publicProcedure
       .meta({
@@ -53,22 +45,17 @@ export class AuthPatientRouter {
       )
       .output(z.boolean())
       .mutation(async opts => {
-        try {
-          const user =
-            await this.authService.verifyUserTokenForPasswordlessAuth(
-              opts.input.identifier,
-              opts.input.token,
-            )
+        const user = await this.authService.verifyUserTokenForPasswordlessAuth(
+          opts.input.identifier,
+          opts.input.token,
+        )
 
-          const authCookies = this.getAuthCookies(user.token, 'both')
-          authCookies.forEach(cookie => {
-            opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
-          })
+        const authCookies = this.getAuthCookies(user.token, 'both')
+        authCookies.forEach(cookie => {
+          opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
+        })
 
-          return true
-        } catch (error) {
-          this.handleError(error)
-        }
+        return true
       }),
   })
 
@@ -79,7 +66,7 @@ export class AuthPatientRouter {
   }
 
   private getAuthCookies(token: Token, scope: 'access' | 'refresh' | 'both') {
-    let cookies = []
+    const cookies = []
 
     if (scope === 'access' || scope === 'both') {
       cookies.push({
@@ -98,23 +85,5 @@ export class AuthPatientRouter {
     }
 
     return cookies
-  }
-
-  private handleError(error: unknown): never {
-    if (error instanceof TRPCError) {
-      throw error
-    }
-
-    if (error instanceof BaseError) {
-      throw new TRPCError({
-        code: mapHttpCodeToTRPCCode(error.httpCode),
-        message: error.name,
-      })
-    }
-
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected error occurred',
-    })
   }
 }

@@ -1,19 +1,18 @@
-import { AppDatabase } from '@intake24-dietician/db-new/database'
 import { TRPCError, initTRPC } from '@trpc/server'
 import type * as trpcExpress from '@trpc/server/adapters/express'
 import type { OpenApiMeta } from 'trpc-openapi'
 import { container } from 'tsyringe'
 import { ZodError } from 'zod'
-import { verifyJwtToken } from './middleware/auth'
-
-const db = container.resolve(AppDatabase)
+import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
+import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
+import { AuthService } from './services/auth.service'
 
 export const createContext = ({
   req,
   res,
 }: trpcExpress.CreateExpressContextOptions) => {
-  let accessToken: string = req.cookies['accessToken']
-  return { req, res, db, accessToken }
+  const accessToken: string | undefined = req.cookies['accessToken']
+  return { req, res, accessToken }
 } // no context
 
 type Context = Awaited<ReturnType<typeof createContext>>
@@ -37,22 +36,52 @@ const t = initTRPC
     },
   })
 
-const isAuthed = t.middleware(({ next, ctx }) => {
-  const isVerified = verifyJwtToken(ctx.accessToken)
+export const middleware = t.middleware
+export const router = t.router
 
-  if (!isVerified) {
+const validateUserMiddleware = t.middleware(async ({ next, ctx }) => {
+  const accessToken = ctx.req.cookies['accessToken']
+  const authService = container.resolve(AuthService)
+  try {
+    const decodedToken = authService.verifyJwtToken(accessToken)
+    const jti = decodedToken.decoded?.jti
+    if (!jti) throw Error()
+    await authService.checkTokenInRedis(jti)
+
+    const userId = decodedToken.decoded?.['userId']
+    if (!userId) throw Error()
+    return next({
+      ctx: { ...ctx, userId },
+    })
+  } catch (error) {
     throw new TRPCError({
       code: 'UNAUTHORIZED',
       message: 'Not authenticated, please log in.',
     })
   }
-
-  return next()
 })
 
-export const middleware = t.middleware
-export const router = t.router
-export const publicProcedure = t.procedure
+export const publicProcedure = t.procedure.use(
+  t.middleware(async opts => {
+    const result = await opts.next()
+    if (result.ok) return result
+    const error = result.error
+    if (error.code !== 'INTERNAL_SERVER_ERROR') {
+      return result
+    }
+    if (error.cause instanceof NotFoundError) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: error.message })
+    }
+    if (error.cause instanceof UnauthorizedError) {
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message })
+    }
+    console.error(error.stack)
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Unexpected error occurred',
+    })
+  }),
+)
 
 // Extended procedures
-export const protectedProcedure = t.procedure.use(isAuthed)
+export const protectedProcedure = t.procedure.use(validateUserMiddleware)

@@ -1,8 +1,5 @@
 import { AuthService } from '@/services/auth.service'
-import { mapHttpCodeToTRPCCode } from '@/utils/trpc'
 import { UserWithDieticianDto } from '@intake24-dietician/common/entities-new/user.dto'
-import { BaseError } from '@intake24-dietician/common/errors/base-error'
-import { TRPCError } from '@trpc/server'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { protectedProcedure, router } from '../../trpc'
@@ -22,13 +19,9 @@ export class DieticianProfileRouter {
       .input(z.undefined())
       .output(UserWithDieticianDto)
       .query(async opts => {
-        try {
-          const user = await this.authService.getUser(opts.ctx.accessToken)
-          console.log({ user })
-          return user
-        } catch (error) {
-          this.handleError(error)
-        }
+        const user = await this.authService.getUser(opts.ctx.userId)
+        console.log({ user })
+        return user
       }),
     generateChangeEmailToken: protectedProcedure
       .meta({
@@ -41,23 +34,18 @@ export class DieticianProfileRouter {
       })
       .input(
         z.object({
-          currentEmail: z.string(),
-          newEmail: z.string(),
+          currentEmail: z.string().email(),
+          newEmail: z.string().email(),
         }),
       )
       .output(z.string())
       .query(async opts => {
-        try {
-          const token = await this.authService.generateUserTokenForChangeEmail(
-            opts.input.currentEmail,
-            opts.input.newEmail,
-          )
-          console.log({ token })
-
-          return token
-        } catch (error) {
-          this.handleError(error)
-        }
+        const token = await this.authService.generateUserTokenForChangeEmail(
+          opts.input.currentEmail,
+          opts.input.newEmail,
+        )
+        console.log({ token })
+        return token
       }),
     verifyChangeEmailToken: protectedProcedure
       .meta({
@@ -75,17 +63,13 @@ export class DieticianProfileRouter {
       )
       .output(z.boolean())
       .query(async opts => {
-        try {
-          const isVerified = await this.authService.verifyUserToken(
-            opts.input.token,
-            'change-email',
-            true,
-          )
+        const isVerified = await this.authService.verifyUserToken(
+          opts.input.token,
+          'change-email',
+          true,
+        )
 
-          return isVerified
-        } catch (error) {
-          this.handleError(error)
-        }
+        return isVerified
       }),
     uploadAvatar: protectedProcedure
       .meta({
@@ -102,15 +86,8 @@ export class DieticianProfileRouter {
         }),
       )
       .output(z.boolean())
-      .query(async opts => {
-        try {
-          return await this.authService.uploadAvatar(
-            opts.ctx.accessToken,
-            opts.input.buffer,
-          )
-        } catch (error) {
-          this.handleError(error)
-        }
+      .query(async ({ ctx, input }) => {
+        return await this.authService.uploadAvatar(ctx.userId, input.buffer)
       }),
   })
 
@@ -118,23 +95,5 @@ export class DieticianProfileRouter {
 
   public getRouter() {
     return this.router
-  }
-
-  private handleError(error: unknown): never {
-    if (error instanceof TRPCError) {
-      throw error
-    }
-
-    if (error instanceof BaseError) {
-      throw new TRPCError({
-        code: mapHttpCodeToTRPCCode(error.httpCode),
-        message: error.name,
-      })
-    }
-
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected error occurred',
-    })
   }
 }

@@ -18,13 +18,7 @@ export const env = createEnv({
     JWT_SECRET: withDevDefault(z.string(), 'super_secret_jwt'),
     JWT_API_INTEGRATION_ISSUER: withDevDefault(z.string(), 'intake24'),
     MAILTRAP_HOST: withDevDefault(z.string(), 'sandbox.smtp.mailtrap.io'),
-    MAILTRAP_PORT: withDevDefault(
-      z
-        .string()
-        .transform(s => Number(s))
-        .pipe(z.number()),
-      2525,
-    ),
+    MAILTRAP_PORT: withDevDefault(z.coerce.number(), 2525),
     MAILTRAP_USER: z.string(),
     MAILTRAP_PASS: z.string(),
     MAILTRAP_API_KEY: z.string(),

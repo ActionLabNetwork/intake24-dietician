@@ -2,9 +2,6 @@ import { protectedProcedure, publicProcedure, router } from '../../trpc'
 import { z } from 'zod'
 import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
-import { TRPCError } from '@trpc/server'
-import { BaseError } from '@intake24-dietician/common/errors/base-error'
-import { mapHttpCodeToTRPCCode } from '@/utils/trpc'
 import type { Token } from '@intake24-dietician/common/types/auth'
 import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
 
@@ -37,27 +34,23 @@ export class AuthDieticianRouter {
       })
       .input(
         z.object({
-          email: z.string(),
+          email: z.string().email(),
           password: z.string(),
         }),
       )
       .output(UserDtoSchema)
       .mutation(async opts => {
-        try {
-          const user = await this.authService.register(
-            opts.input.email,
-            opts.input.password,
-          )
+        const user = await this.authService.register(
+          opts.input.email,
+          opts.input.password,
+        )
 
-          const authCookies = this.getAuthCookies(user.token, 'both')
-          authCookies.forEach(cookie => {
-            opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
-          })
+        const authCookies = this.getAuthCookies(user.token, 'both')
+        authCookies.forEach(cookie => {
+          opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
+        })
 
-          return user
-        } catch (error) {
-          this.handleError(error)
-        }
+        return user
       }),
     login: publicProcedure
       .meta({
@@ -70,27 +63,23 @@ export class AuthDieticianRouter {
       })
       .input(
         z.object({
-          email: z.string(),
+          email: z.string().email(),
           password: z.string(),
         }),
       )
       .output(z.string())
       .mutation(async opts => {
-        try {
-          const userWithTokens = await this.authService.login(
-            opts.input.email,
-            opts.input.password,
-          )
+        const userWithTokens = await this.authService.login(
+          opts.input.email,
+          opts.input.password,
+        )
 
-          const authCookies = this.getAuthCookies(userWithTokens.token, 'both')
-          authCookies.forEach(cookie => {
-            opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
-          })
+        const authCookies = this.getAuthCookies(userWithTokens.token, 'both')
+        authCookies.forEach(cookie => {
+          opts.ctx.res.cookie(cookie.name, cookie.value, cookie.options)
+        })
 
-          return userWithTokens.email
-        } catch (error) {
-          this.handleError(error)
-        }
+        return userWithTokens.email
       }),
     forgotPassword: publicProcedure
       .meta({
@@ -103,16 +92,12 @@ export class AuthDieticianRouter {
       })
       .input(
         z.object({
-          email: z.string(),
+          email: z.string().email(),
         }),
       )
       .output(z.boolean())
       .mutation(async opts => {
-        try {
-          return await this.authService.forgotPassword(opts.input.email)
-        } catch (error) {
-          this.handleError(error)
-        }
+        return await this.authService.forgotPassword(opts.input.email)
       }),
     resetPassword: publicProcedure
       .meta({
@@ -131,14 +116,10 @@ export class AuthDieticianRouter {
       )
       .output(z.boolean())
       .mutation(async opts => {
-        try {
-          return await this.authService.resetPassword(
-            opts.input.token,
-            opts.input.password,
-          )
-        } catch (error) {
-          this.handleError(error)
-        }
+        return await this.authService.resetPassword(
+          opts.input.token,
+          opts.input.password,
+        )
       }),
     logout: publicProcedure
       .meta({
@@ -152,13 +133,11 @@ export class AuthDieticianRouter {
       .input(z.undefined())
       .output(z.boolean())
       .mutation(async opts => {
-        try {
-          opts.ctx.res.clearCookie('accessToken')
-          opts.ctx.res.clearCookie('refreshToken')
-          return await this.authService.logout(opts.ctx.accessToken)
-        } catch (error) {
-          this.handleError(error)
-        }
+        opts.ctx.res.clearCookie('accessToken')
+        opts.ctx.res.clearCookie('refreshToken')
+        const accessToken = opts.ctx.accessToken
+        if (!accessToken) return false
+        return await this.authService.logout(accessToken)
       }),
     validateSession: protectedProcedure
       .meta({
@@ -183,7 +162,7 @@ export class AuthDieticianRouter {
   }
 
   private getAuthCookies(token: Token, scope: 'access' | 'refresh' | 'both') {
-    let cookies = []
+    const cookies = []
 
     if (scope === 'access' || scope === 'both') {
       cookies.push({
@@ -202,23 +181,5 @@ export class AuthDieticianRouter {
     }
 
     return cookies
-  }
-
-  private handleError(error: unknown): never {
-    if (error instanceof TRPCError) {
-      throw error
-    }
-
-    if (error instanceof BaseError) {
-      throw new TRPCError({
-        code: mapHttpCodeToTRPCCode(error.httpCode),
-        message: error.name,
-      })
-    }
-
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'An unexpected error occurred',
-    })
   }
 }
