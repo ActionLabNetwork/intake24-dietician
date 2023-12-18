@@ -6,29 +6,26 @@
  * @packageDocumentation
  */
 /* eslint-disable max-params */
+import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
 import type { PatientPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
-import { APIError } from '@intake24-dietician/common/errors/api-error'
-import { ClientError } from '@intake24-dietician/common/errors/client-error'
-import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
-import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import {
+  TokenPayloadSchema,
+  type Token,
   type TokenActionType,
   type TokenPayload,
-  type Token,
-  TokenPayloadSchema,
 } from '@intake24-dietician/common/types/auth'
+import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { TokenRepository } from '@intake24-dietician/db-new/repositories/token.repository'
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
 import crypto from 'crypto'
+import Redis from 'ioredis'
 import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { env } from '../config/env'
 import { HashingService } from './hashing.service'
 import { TokenService } from './token.service'
-import Redis from 'ioredis'
-import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 
 const ACCESS_PREFIX = 'access:'
 
@@ -91,7 +88,7 @@ export class AuthService {
 
     const token = await this.generateUserToken(email, 'reset-password')
     if (!token) {
-      throw new APIError('Token creation failed')
+      throw new Error('Token creation failed')
     }
 
     const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
@@ -406,7 +403,7 @@ export class AuthService {
       return true
     } catch (error) {
       console.log({ error })
-      throw new APIError('Failed to validate email.')
+      throw new Error('Failed to validate email.')
     }
   }
 

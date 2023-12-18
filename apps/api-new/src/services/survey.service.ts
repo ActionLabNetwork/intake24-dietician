@@ -1,8 +1,7 @@
 import { inject, singleton } from 'tsyringe'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
-import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
-import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import type { SurveyCreateDto} from '@intake24-dietician/common/entities-new/survey.dto';
+import { NotFoundError, UnauthorizedError } from '@/utils/trpc';
 
 @singleton()
 export class SurveyService {

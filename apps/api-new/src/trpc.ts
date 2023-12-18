@@ -2,9 +2,6 @@ import { TRPCError, initTRPC } from '@trpc/server'
 import type * as trpcExpress from '@trpc/server/adapters/express'
 import type { OpenApiMeta } from 'trpc-openapi'
 import { container } from 'tsyringe'
-import { ZodError } from 'zod'
-import { NotFoundError } from '@intake24-dietician/common/errors/not-found-error'
-import { UnauthorizedError } from '@intake24-dietician/common/errors/unauthorized-error'
 import { AuthService } from './services/auth.service'
 
 export const createContext = ({
@@ -21,17 +18,14 @@ const t = initTRPC
   .context<Context>()
   .meta<OpenApiMeta>()
   .create({
-    errorFormatter(opts) {
-      const { shape, error } = opts
+    errorFormatter({ shape, error }) {
       return {
         ...shape,
-        data: {
-          ...shape.data,
-          zodError:
-            error.code === 'BAD_REQUEST' && error.cause instanceof ZodError
-              ? error.cause.flatten()
-              : null,
-        },
+        message:
+          // Preventing leaking of sensitive information
+          error.code === 'INTERNAL_SERVER_ERROR'
+            ? 'Unexpected error occurred'
+            : error.message,
       }
     },
   })
@@ -74,27 +68,7 @@ const validateDieticianMiddleware = validateUserMiddleware.unstable_pipe(
   },
 )
 
-export const publicProcedure = t.procedure.use(
-  t.middleware(async opts => {
-    const result = await opts.next()
-    if (result.ok) return result
-    const error = result.error
-    if (error.code !== 'INTERNAL_SERVER_ERROR') {
-      return result
-    }
-    if (error.cause instanceof NotFoundError) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: error.message })
-    }
-    if (error.cause instanceof UnauthorizedError) {
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: error.message })
-    }
-    console.error(error.stack)
-    throw new TRPCError({
-      code: 'INTERNAL_SERVER_ERROR',
-      message: 'Unexpected error occurred',
-    })
-  }),
-)
+export const publicProcedure = t.procedure
 
 // Extended procedures
 export const protectedProcedure = t.procedure.use(validateUserMiddleware)

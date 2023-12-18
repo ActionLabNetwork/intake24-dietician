@@ -1,9 +1,9 @@
-import { protectedProcedure, publicProcedure, router } from '../../trpc'
-import { z } from 'zod'
-import { inject, singleton } from 'tsyringe'
 import { AuthService } from '@/services/auth.service'
-import type { Token } from '@intake24-dietician/common/types/auth'
 import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import type { Token } from '@intake24-dietician/common/types/auth'
+import { inject, singleton } from 'tsyringe'
+import { z } from 'zod'
+import { protectedProcedure, publicProcedure, router } from '../../trpc'
 
 @singleton()
 export class AuthDieticianRouter {

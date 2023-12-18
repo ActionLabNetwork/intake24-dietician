@@ -1,15 +1,20 @@
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
+import type { OnErrorFunction } from '@trpc/server/dist/internals/types'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import type { Response as ExResponse } from 'express'
+import type { Response, Request } from 'express'
 import express from 'express'
 import multer from 'multer'
 import swaggerUi from 'swagger-ui-express'
-import { createOpenApiExpressMiddleware, generateOpenApiDocument } from 'trpc-openapi'
+import {
+  createOpenApiExpressMiddleware,
+  generateOpenApiDocument,
+} from 'trpc-openapi'
 import { env } from './config/env'
 import { createAppRouter } from './routers/app'
 import { createContext } from './trpc'
+import { resolveLogger } from './di/di.config'
 
 export function createApp() {
   const app = express()
@@ -30,9 +35,15 @@ export function createApp() {
   app.use(bodyParser.json({ limit: '50mb' }))
   app.use(cookieParser())
   app.use(multer().single('file'))
-  // app.use(pino({ logger: createLogger() }))
 
   const appRouter = createAppRouter()
+
+  const logger = resolveLogger()
+  const onError: OnErrorFunction<typeof appRouter, Request> = ({ error }) => {
+    if (error.code === 'INTERNAL_SERVER_ERROR') {
+      logger.error(error.cause)
+    }
+  }
 
   // Handle tRPC requests
   app.use(
@@ -40,13 +51,18 @@ export function createApp() {
     createExpressMiddleware({
       router: appRouter,
       createContext,
+      onError,
     }),
   )
 
   // Handle OpenAPI requests
   app.use(
     '/api',
-    createOpenApiExpressMiddleware({ router: appRouter, createContext }),
+    createOpenApiExpressMiddleware({
+      router: appRouter,
+      createContext,
+      onError,
+    }),
   )
 
   // Serve Swagger UI with our OpenAPI schema
@@ -61,7 +77,7 @@ export function createApp() {
   app.get('/docs', swaggerUi.setup(openApiDocument))
 
   // Catch-all missing route handler
-  app.use((_req, res: ExResponse) => {
+  app.use((_req, res: Response) => {
     res.status(404).send({
       message: 'Not Found',
     })

@@ -1,8 +1,18 @@
-// import { AuthService } from '@/services/auth.service'
-// import { AppDatabase } from '@intake24-dietician/db-new/database'
-// import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
-// import { container } from 'tsyringe'
+import type { Logger } from 'pino';
+import pino from 'pino'
+import { container } from 'tsyringe'
 
-// container.register(AuthService, { useClass: AuthService })
-// container.register(UserRepository, { useClass: UserRepository })
-// container.register(AppDatabase, { useClass: AppDatabase })
+export function registerLogger() {
+  container.register('LOGGER', {
+    useValue: pino({
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+        },
+      },
+    }),
+  })
+}
+
+export const resolveLogger = () => container.resolve<Logger>("LOGGER")
