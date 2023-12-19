@@ -163,7 +163,21 @@ export class UserRepository {
         .execute()
       assert(user)
 
-      await tx.insert(dieticians).values({ userId: user.id }).execute()
+      // TODO: split this into two endpoints would make more sense
+      // (one for creating the user and one for creating the profile)
+      await tx
+        .insert(dieticians)
+        .values({
+          userId: user.id,
+          firstName: '',
+          middleName: '',
+          lastName: '',
+          mobileNumber: '',
+          businessNumber: '',
+          businessAddress: '',
+          shortBio: '',
+        })
+        .execute()
       return user
     })
   }
