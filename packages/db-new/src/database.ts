@@ -6,7 +6,7 @@ import { singleton } from 'tsyringe'
 @singleton()
 export class AppDatabase {
   public drizzleClient
-  private sqlClient
+  public sqlClient
 
   public constructor(private connectionString: string) {
     this.sqlClient = postgres(this.connectionString)

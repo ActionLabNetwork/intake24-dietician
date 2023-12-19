@@ -1,4 +1,4 @@
-import type { IRecallExtended } from '@intake24-dietician/common/types/recall'
+import type { IRecall } from '@intake24-dietician/common/types/recall'
 
 import { relations } from 'drizzle-orm'
 import { integer, jsonb, pgTable, serial } from 'drizzle-orm/pg-core'
@@ -10,7 +10,7 @@ export const recalls = pgTable('recall', {
   patientId: integer('patient_id')
     .references(() => patients.id)
     .notNull(),
-  recall: jsonb('recall').$type<IRecallExtended>().notNull(),
+  recall: jsonb('recall').$type<IRecall>().notNull(),
   ...timestampFields,
 })
 
