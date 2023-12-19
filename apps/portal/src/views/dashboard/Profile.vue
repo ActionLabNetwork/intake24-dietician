@@ -28,25 +28,25 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form v-if="user" ref="form" @submit.prevent="() => handleSubmit()">
+      <v-form v-if="profile" ref="form" @submit.prevent="() => handleSubmit()">
         <PersonalDetails
           v-if="personalDetailsFormValues"
           :default-state="personalDetailsFormValues"
-          :email="user.user.email"
+          :email="profile.user.email"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ContactDetails
           v-if="contactDetailsFormValues"
           class="mt-10"
           :default-state="contactDetailsFormValues"
-          :email="user.user.email"
+          :email="profile.user.email"
           :handleSubmit="handleSubmit"
           @update="value => handleProfileDetailsUpdate(value)"
         />
         <ShortBio
           v-if="shortBioFormValues"
           class="mt-16"
-          :user="user"
+          :user="profile"
           :default-state="shortBioFormValues"
           @update="value => handleProfileDetailsUpdate(value)"
         />
@@ -92,7 +92,8 @@ type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
 const { t } = useI18n<i18nOptions>()
 
 const authStore = useAuthStore()
-const { user, isProfileLoading, profileQuerySucceeded } = storeToRefs(authStore)
+const { profile, isProfileLoading, profileQuerySucceeded } =
+  storeToRefs(authStore)
 
 const updateProfileMutation = useUpdateProfile()
 const uploadAvatarMutation = useUploadAvatar()
@@ -161,7 +162,8 @@ const handleSubmit = async (): Promise<void> => {
 
   if (profileFormValues.value.avatar) {
     uploadAvatarMutation.mutate({
-      avatarBase64: profileFormValues.value.avatar ?? user.value?.avatar ?? '',
+      avatarBase64:
+        profileFormValues.value.avatar ?? profile.value?.avatar ?? '',
     })
   }
 }
@@ -188,7 +190,7 @@ const handleSubmit = async (): Promise<void> => {
 // })
 
 watch(
-  user,
+  profile,
   // eslint-disable-next-line complexity
   newUser => {
     if (newUser) {
@@ -212,7 +214,7 @@ watch(
       }
 
       contactDetailsFormValues.value = {
-        emailAddress: newUser.user.email ?? '',
+        email: newUser.user.email ?? '',
         mobileNumber: newUser.mobileNumber ?? '',
         businessNumber: newUser.businessNumber ?? '',
         businessAddress: newUser.businessAddress ?? '',

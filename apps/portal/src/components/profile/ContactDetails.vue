@@ -45,8 +45,8 @@
                 </BaseInput>
                 <BaseInput
                   type="email"
-                  :value="formValues.emailAddress"
-                  @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                  :value="formValues.email"
+                  @update="newVal => handleFieldUpdate('email', newVal)"
                 >
                   <span class="input-label">
                     New {{ t('profile.form.contactDetails.email.label') }}
@@ -111,14 +111,14 @@ import { useI18n } from 'vue-i18n'
 import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form, Layout } from './types'
-import { contactDetailsSchema } from '@intake24-dietician/portal/schema/profile'
 import {
   DieticianCreateDto,
+  UserCreateDto,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface ContactDetailsFormValues {
-  emailAddress: string
+  email: string
   mobileNumber: string
   businessNumber: string
   businessAddress: string
@@ -172,7 +172,7 @@ const handleSendVerificationToken = () => {
   generateTokenMutation.mutate(
     {
       currentEmail: currentEmailAddress.value,
-      newEmail: formValues.value.emailAddress,
+      newEmail: formValues.value.email,
     },
     {
       onSuccess() {
@@ -198,7 +198,7 @@ const handleVerifyToken = () => {
           showVerificationTokenField.value = false
           verificationToken.value = ''
           errorMsg.value = ''
-          currentEmailAddress.value = formValues.value.emailAddress
+          currentEmailAddress.value = formValues.value.email
         } catch (error) {
           errorMsg.value = 'Error updating email address'
         }
@@ -210,11 +210,15 @@ const handleVerifyToken = () => {
   )
 }
 
-const fields = contactDetailsSchema.fields
-type Field = (typeof fields)[number]
+type Field =
+  | keyof Pick<
+      DieticianCreateDto,
+      'mobileNumber' | 'businessNumber' | 'businessAddress'
+    >
+  | keyof Pick<UserCreateDto, 'email'>
 
 const formConfig: Form<Field> = {
-  emailAddress: {
+  email: {
     key: 'emailAddress',
     autocomplete: 'email',
     label: t('profile.form.contactDetails.email.label'),
@@ -227,7 +231,7 @@ const formConfig: Form<Field> = {
       (value: string) =>
         validateWithZod(UserCreateDtoSchema.shape.email, value),
     ],
-    handleUpdate: val => handleFieldUpdate('emailAddress', val),
+    handleUpdate: val => handleFieldUpdate('email', val),
     layout: { cols: 12, md: 4 },
     suffixIcon: 'mdi-mail',
     handleSuffixIconClick: () => {
