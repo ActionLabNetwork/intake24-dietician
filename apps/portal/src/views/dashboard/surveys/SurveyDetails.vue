@@ -37,12 +37,12 @@ import { ref } from 'vue'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import NavCard from '@/components/surveys/NavCard.vue'
-// import { useRoute } from 'vue-router'
+import { useRoute } from 'vue-router'
 
 // const { t } = useI18n<i18nOptions>()
 
 // const router = useRouter()
-// const route = useRoute()
+const route = useRoute()
 
 const breadcrumbItems = ref([
   {
@@ -51,7 +51,7 @@ const breadcrumbItems = ref([
     href: '/dashboard/my-surveys',
   },
   {
-    title: 'Survey settings',
+    title: route.name as string,
     disabled: true,
     href: '',
   },

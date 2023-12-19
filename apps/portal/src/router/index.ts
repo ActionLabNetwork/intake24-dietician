@@ -219,15 +219,22 @@ const routes = [
             },
           },
           {
-            path: 'survey-details',
-            name: 'Survey Details',
+            path: 'patient-list',
+            name: 'Survey Patient List',
             component: () =>
-              import(
-                '@/components/patients/patient-details/PatientDetails.vue'
-              ),
+              import('@/views/dashboard/surveys/patients/Patients.vue'),
             meta: {
               requiresAuth: true,
-            } as const,
+            },
+          },
+          {
+            path: 'add-patient',
+            name: 'Survey Add Patient',
+            component: () =>
+              import('@/views/dashboard/surveys/patients/AddPatient.vue'),
+            meta: {
+              requiresAuth: true,
+            },
           },
         ],
         meta: {

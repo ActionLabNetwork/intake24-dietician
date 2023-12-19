@@ -90,7 +90,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -109,6 +109,7 @@ import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 import router from '@intake24-dietician/portal/router'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 // const { t } = useI18n<i18nOptions>()
 
 const $toast = useToast()
@@ -135,7 +136,7 @@ const contactDetailsFormValues = ref<ContactDetailsFormValues>({
   lastName: '',
   avatar: '',
   mobileNumber: '',
-  emailAddress: '',
+  email: '',
   address: '',
 })
 
@@ -160,9 +161,21 @@ const recallFrequency = ref<ReminderCondition>({
   },
 })
 
-const aggregatedData = computed(() => ({
+// const aggregatedData = computed<PatientCreateDto>(() => ({
+//   ...contactDetailsFormValues.value,
+//   ...personalDetailsFormValues.value,
+//   additionalDetails: null,
+//   theme: theme.value,
+//   sendAutomatedFeedback: sendAutomatedFeedback.value,
+//   recallFrequency: recallFrequency.value,
+//   createdAt: new Date(),
+//   updatedAt: new Date(),
+// }))
+
+const aggregatedData = computed<PatientCreateDto>(() => ({
   ...contactDetailsFormValues.value,
   ...personalDetailsFormValues.value,
+  additionalDetails: null,
   theme: theme.value,
   sendAutomatedFeedback: sendAutomatedFeedback.value,
   recallFrequency: recallFrequency.value,
@@ -226,6 +239,8 @@ const handleSubmit = async () => {
     })
   })
 }
+
+watch(aggregatedData, newAggregatedData => console.log({ newAggregatedData }))
 </script>
 
 <style scoped lang="scss">

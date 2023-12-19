@@ -11,8 +11,8 @@ export const createAppRouter = () =>
     authDietician: container.resolve(AuthDieticianRouter).getRouter(),
     authPatient: container.resolve(AuthPatientRouter).getRouter(),
     dieticianProfile: container.resolve(DieticianProfileRouter).getRouter(),
-    dieticianSurvey: container.resolve(DieticianSurveyRouter).getRouter(),
     dieticianPatient: container.resolve(DieticianPatientRouter).getRouter(),
+    dieticianSurvey: container.resolve(DieticianSurveyRouter).getRouter(),
   })
 
 export type AppRouter = ReturnType<typeof createAppRouter>

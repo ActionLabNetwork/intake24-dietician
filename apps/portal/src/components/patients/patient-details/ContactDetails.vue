@@ -130,8 +130,8 @@
                 </BaseInput>
                 <BaseInput
                   type="email"
-                  :value="formValues.emailAddress"
-                  @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                  :value="formValues.email"
+                  @update="newVal => handleFieldUpdate('email', newVal)"
                 >
                   <span class="input-label">
                     New {{ t('profile.form.contactDetails.email.label') }}
@@ -205,19 +205,22 @@ import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form } from '../../profile/types'
 import ImageUpload from '../../profile/ImageUpload.vue'
 import {
-  contactDetailsSchemaName,
-  contactDetailsSchemaContact,
-} from '@intake24-dietician/portal/schema/patient'
+  PatientCreateDto,
+  PatientCreateDtoSchema,
+  UserCreateDto,
+  UserCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
 
-export interface ContactDetailsFormValues {
-  firstName: string
-  middleName: string
-  lastName: string
-  avatar: string
-  mobileNumber: string
-  emailAddress: string
-  address: string
-}
+export type ContactDetailsFormValues = Pick<
+  PatientCreateDto,
+  | 'firstName'
+  | 'middleName'
+  | 'lastName'
+  | 'avatar'
+  | 'mobileNumber'
+  | 'address'
+> &
+  Pick<UserCreateDto, 'email'>
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
@@ -257,7 +260,7 @@ const handleSendVerificationToken = () => {
   generateTokenMutation.mutate(
     {
       currentEmail: currentEmailAddress.value,
-      newEmail: formValues.value.emailAddress,
+      newEmail: formValues.value.email,
     },
     {
       onSuccess() {
@@ -282,7 +285,7 @@ const handleVerifyToken = () => {
 
           changeEmailDialog.value = false
           errorMsg.value = ''
-          currentEmailAddress.value = formValues.value.emailAddress
+          currentEmailAddress.value = formValues.value.email
         } catch (error) {
           errorMsg.value = 'Error updating email address'
         }
@@ -294,99 +297,102 @@ const handleVerifyToken = () => {
   )
 }
 
-const formConfigNames: Form<(typeof contactDetailsSchemaName.fields)[number]> =
-  {
-    firstName: {
-      key: 'firstName',
-      label: t('profile.form.personalDetails.firstName.label'),
-      required: true,
-      labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
-      type: 'input',
-      inputType: 'text',
-      rules: [
-        (value: string) =>
-          validateWithZod(contactDetailsSchemaName.schema.firstName, value),
-      ],
-      handleUpdate: val => handleFieldUpdate('firstName', val),
-    },
-    middleName: {
-      key: 'middleName',
-      label: t('profile.form.personalDetails.middleName.label'),
-      required: false,
-      type: 'input',
-      inputType: 'text',
-      rules: [
-        (value: string) =>
-          validateWithZod(contactDetailsSchemaName.schema.middleName, value),
-      ],
-      handleUpdate: val => handleFieldUpdate('middleName', val),
-    },
-    lastName: {
-      key: 'lastName',
-      label: t('profile.form.personalDetails.lastName.label'),
-      required: false,
-      type: 'input',
-      inputType: 'text',
-      rules: [
-        (value: string) =>
-          validateWithZod(contactDetailsSchemaName.schema.lastName, value),
-      ],
-      handleUpdate: val => handleFieldUpdate('lastName', val),
-    },
-  }
-
-// eslint-disable-next-line vue/no-setup-props-destructure
-const formConfigContact: Form<
-  (typeof contactDetailsSchemaContact.fields)[number]
-  // eslint-disable-next-line vue/no-setup-props-destructure
+const formConfigNames: Form<
+  keyof Pick<PatientCreateDto, 'firstName' | 'middleName' | 'lastName'>
 > = {
-  mobileNumber: {
-    key: 'mobileNumber',
-    autocomplete: 'tel',
-    label: t('profile.form.contactDetails.mobileNumber.label'),
-    labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
+  firstName: {
+    key: 'firstName',
+    label: t('profile.form.personalDetails.firstName.label'),
     required: true,
+    labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchemaContact.schema.mobileNumber, value),
+        validateWithZod(PatientCreateDtoSchema.shape.firstName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('mobileNumber', val),
+    handleUpdate: val => handleFieldUpdate('firstName', val),
   },
-  emailAddress: {
-    key: 'emailAddress',
-    autocomplete: 'email',
-    label: t('profile.form.contactDetails.email.label'),
-    labelSuffix: t('profile.form.contactDetails.email.labelSuffix'),
-    required: true,
-    readonly: props.mode === 'Edit',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(contactDetailsSchemaContact.schema.emailAddress, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('emailAddress', val),
-    suffixIcon: props.mode === 'Edit' ? 'mdi-mail' : '',
-    handleSuffixIconClick: () => {
-      changeEmailDialog.value = true
-    },
-  },
-  address: {
-    key: 'address',
-    autocomplete: 'address-level3',
-    label: 'Address',
+  middleName: {
+    key: 'middleName',
+    label: t('profile.form.personalDetails.middleName.label'),
     required: false,
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchemaContact.schema.address, value),
+        validateWithZod(PatientCreateDtoSchema.shape.middleName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('address', val),
+    handleUpdate: val => handleFieldUpdate('middleName', val),
+  },
+  lastName: {
+    key: 'lastName',
+    label: t('profile.form.personalDetails.lastName.label'),
+    required: false,
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(PatientCreateDtoSchema.shape.lastName, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('lastName', val),
   },
 }
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+type Field =
+  | keyof Pick<PatientCreateDto, 'mobileNumber' | 'address'>
+  | keyof Pick<UserCreateDto, 'email'>
+const formConfigContact: Form<Field> =
+  // eslint-disable-next-line vue/no-setup-props-destructure
+  {
+    mobileNumber: {
+      key: 'mobileNumber',
+      autocomplete: 'tel',
+      label: t('profile.form.contactDetails.mobileNumber.label'),
+      labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
+      required: true,
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(PatientCreateDtoSchema.shape.mobileNumber, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('mobileNumber', val),
+    },
+    email: {
+      key: 'email',
+      autocomplete: 'email',
+      label: t('profile.form.contactDetails.email.label'),
+      labelSuffix: t('profile.form.contactDetails.email.labelSuffix'),
+      required: true,
+      readonly: props.mode === 'Edit',
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(UserCreateDtoSchema.shape.email, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('email', val),
+      suffixIcon: props.mode === 'Edit' ? 'mdi-mail' : '',
+      handleSuffixIconClick: () => {
+        changeEmailDialog.value = true
+      },
+    },
+    address: {
+      key: 'address',
+      autocomplete: 'address-level3',
+      label: 'Address',
+      required: false,
+      type: 'input',
+      inputType: 'text',
+      rules: [
+        (value: string) =>
+          validateWithZod(PatientCreateDtoSchema.shape.address, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('address', val),
+    },
+  }
 
 watch(
   () => props.defaultState,
@@ -398,7 +404,7 @@ watch(
     }
 
     if (!currentEmailAddress.value) {
-      currentEmailAddress.value = newDefaultState.emailAddress
+      currentEmailAddress.value = newDefaultState.email
     }
   },
   { immediate: true },

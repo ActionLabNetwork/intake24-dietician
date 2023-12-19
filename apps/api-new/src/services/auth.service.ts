@@ -385,7 +385,6 @@ export class AuthService {
     if (verifyResult.decoded === null) {
       throw new UnauthorizedError('Token has expired, please log in again.')
     }
-    // why do we need to verify again in Redis?
     const tokenInRedis = await this.redis.get(
       `${ACCESS_PREFIX}${verifyResult.decoded.jti}`,
     )

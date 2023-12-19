@@ -1,6 +1,6 @@
 import { AuthService } from '@/services/auth.service'
 import { PatientService } from '@/services/patient.service'
-import { protectedDieticianProcedure, router } from '@/trpc'
+import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   PatientCreateDtoSchema,
   PatientDtoSchema,
@@ -47,7 +47,7 @@ export class DieticianPatientRouter {
         }),
       )
       .output(z.number())
-      .query(async opts => {
+      .mutation(async opts => {
         const { surveyId, email, patient } = opts.input
         return (
           await this.authService.createPatient(
@@ -133,7 +133,7 @@ export class DieticianPatientRouter {
     @inject(AuthService) private authService: AuthService,
   ) {}
 
-  public getRouter() {
+  public getRouter(): typeof this.router {
     return this.router
   }
 }
