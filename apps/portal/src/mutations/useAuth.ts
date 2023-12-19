@@ -88,18 +88,19 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (updateProfileBody: {
-      emailAddress: string
-      dieticianProfile: Partial<DieticianCreateDto>
-    }) => {
-      const { emailAddress, dieticianProfile } = updateProfileBody
-      return trpcClient.dieticianProfile.updateProfile.mutate({
-        email: emailAddress,
-        profile: dieticianProfile,
-      })
-    },
-  })
+  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (updateProfileBody: {
+        emailAddress: string
+        dieticianProfile: Partial<DieticianCreateDto>
+      }) => {
+        const { emailAddress, dieticianProfile } = updateProfileBody
+        return trpcClient.dieticianProfile.updateProfile.mutate({
+          email: emailAddress,
+          profile: dieticianProfile,
+        })
+      },
+    })
 
   return {
     data,
@@ -108,6 +109,7 @@ export const useUpdateProfile = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 

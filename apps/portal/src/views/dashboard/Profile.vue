@@ -85,6 +85,9 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 // import { pick, keys, isEqual } from 'radash'
 import { VForm } from 'vuetify/lib/components/index.mjs'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useForm } from '@intake24-dietician/portal/composables/useForm'
+
+type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
 
 const { t } = useI18n<i18nOptions>()
 
@@ -97,6 +100,32 @@ const uploadAvatarMutation = useUploadAvatar()
 const $toast = useToast()
 
 const form = ref()
+const profileForm = useForm<
+  Partial<ProfileFormValues>,
+  { emailAddress: string; dieticianProfile: Partial<DieticianCreateDto> }
+>({
+  initialValues: {
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    emailAddress: '',
+    mobileNumber: '',
+    businessNumber: '',
+    businessAddress: '',
+    shortBio: '',
+    avatar: null,
+  },
+  schema: DieticianCreateDto,
+  $toast,
+  mutationFn: updateProfileMutation.mutateAsync,
+  onSuccess: () => {
+    $toast.success('Profile updated successfully')
+  },
+  onError: () => {
+    console.log('Failed to update dietician profile')
+  },
+})
+
 const profileFormValues = ref<DieticianCreateDto & { emailAddress: string }>({
   firstName: '',
   middleName: '',
@@ -122,41 +151,19 @@ const handleProfileDetailsUpdate = (
   profileFormValues.value = { ...profileFormValues.value, ...details }
 }
 
-const handleSubmit = async (validate = true): Promise<void> => {
-  if (validate) await form.value.validate()
+const handleSubmit = async (): Promise<void> => {
+  const { emailAddress, ...dieticianProfile } = profileFormValues.value
 
-  const errors = form.value.errors
-
-  return new Promise((resolve, reject) => {
-    if (errors.length > 0) {
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    const { emailAddress, ...dieticianProfile } = profileFormValues.value
-    updateProfileMutation.mutate(
-      {
-        emailAddress,
-        dieticianProfile,
-      },
-      {
-        onSuccess: () => {
-          $toast.success('Profile updated successfully')
-          resolve()
-        },
-        onError: () => {
-          reject(new Error('Profile update failed'))
-        },
-      },
-    )
-
-    if (profileFormValues.value.avatar) {
-      uploadAvatarMutation.mutate({
-        avatarBase64:
-          profileFormValues.value.avatar ?? user.value?.avatar ?? '',
-      })
-    }
+  profileForm.handleSubmit(profileFormValues.value, {
+    emailAddress,
+    dieticianProfile,
   })
+
+  if (profileFormValues.value.avatar) {
+    uploadAvatarMutation.mutate({
+      avatarBase64: profileFormValues.value.avatar ?? user.value?.avatar ?? '',
+    })
+  }
 }
 
 // TODO: Refactor this convoluted logic

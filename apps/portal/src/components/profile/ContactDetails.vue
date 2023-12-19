@@ -112,6 +112,10 @@ import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form, Layout } from './types'
 import { contactDetailsSchema } from '@intake24-dietician/portal/schema/profile'
+import {
+  DieticianCreateDto,
+  UserCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface ContactDetailsFormValues {
   emailAddress: string
@@ -221,7 +225,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.emailAddress, value),
+        validateWithZod(UserCreateDtoSchema.shape.email, value),
     ],
     handleUpdate: val => handleFieldUpdate('emailAddress', val),
     layout: { cols: 12, md: 4 },
@@ -240,7 +244,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.mobileNumber, value),
+        validateWithZod(DieticianCreateDto.shape.mobileNumber, value),
     ],
     handleUpdate: val => handleFieldUpdate('mobileNumber', val),
     layout: { cols: 12, md: 4 },
@@ -253,7 +257,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.businessNumber, value),
+        validateWithZod(DieticianCreateDto.shape.businessNumber, value),
     ],
     handleUpdate: val => handleFieldUpdate('businessNumber', val),
     layout: { cols: 12, md: 4 },
@@ -267,7 +271,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.businessAddress, value),
+        validateWithZod(DieticianCreateDto.shape.businessAddress, value),
     ],
     handleUpdate: val => handleFieldUpdate('businessAddress', val),
     layout: { cols: 12 },

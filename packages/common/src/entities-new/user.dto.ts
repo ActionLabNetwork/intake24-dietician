@@ -2,6 +2,22 @@ import { z } from 'zod'
 import { PatientPreferenceSchema } from './preferences.dto'
 import { TimestampSchema } from './timestamp.dto'
 
+// Mobile number schemas
+const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/, {
+  message: 'Invalid mobile number format',
+})
+
+const IndonesianMobileSchema = z.string().regex(/^\+?628\d{8,11}$/)
+
+const MalaysianMobileSchema = z.string().regex(/^01\d{7,8}$/)
+
+export const MobileNumberSchema = z.union([
+  AustralianMobileSchema,
+  IndonesianMobileSchema,
+  MalaysianMobileSchema,
+])
+
+// User schemas
 export const UserCreateDtoSchema = z.object({
   email: z.string().email(),
   password: z.string().nullable(),
@@ -14,10 +30,10 @@ export const UserDtoSchema = UserCreateDtoSchema.extend({
 export type UserDto = z.infer<typeof UserDtoSchema>
 
 export const DieticianCreateDto = z.object({
-  firstName: z.string(),
+  firstName: z.string().min(1, 'First name is required'),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: z.string(),
+  mobileNumber: MobileNumberSchema,
   businessNumber: z.string(),
   businessAddress: z.string(),
   shortBio: z.string(),
@@ -34,10 +50,10 @@ export const DieticianWithUserDto = DieticianDtoSchema.extend({
 })
 
 export const PatientCreateDtoSchema = z.object({
-  firstName: z.string().min(1),
+  firstName: z.string().min(1, 'First name is required'),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: z.string(),  // TODO validate phone number
+  mobileNumber: MobileNumberSchema,
   address: z.string(),
   age: z.number().int(),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),

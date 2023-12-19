@@ -50,30 +50,24 @@ export const useForm = <T extends {}, TSubmit>({
     validationData: Partial<TSubmit>,
     submissionData: TSubmit,
   ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Validate with zod
-      const result = schema.safeParse(validationData)
+    // Validate with zod
+    const result = schema.safeParse(validationData)
 
-      if (!result.success) {
-        $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-        onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-        reject(new Error('Form validation failed'))
-        return
-      }
+    if (!result.success) {
+      $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      return
+    }
 
-      mutationFn(submissionData, {
-        onSuccess: () => {
-          onSuccess?.()
-          resolve()
-        },
-        onError: err => {
-          console.log({ errFromUseForm: err })
-          $toast?.error(DEFAULT_ERROR_MESSAGE)
-          onError?.(DEFAULT_ERROR_MESSAGE)
-        },
-      })
-
-      resolve()
+    mutationFn(submissionData, {
+      onSuccess: () => {
+        onSuccess?.()
+      },
+      onError: err => {
+        console.log({ errFromUseForm: err })
+        $toast?.error(DEFAULT_ERROR_MESSAGE)
+        onError?.(DEFAULT_ERROR_MESSAGE)
+      },
     })
   }
 
