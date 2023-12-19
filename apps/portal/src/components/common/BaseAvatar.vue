@@ -40,17 +40,23 @@ const _user = ref({
   email: '',
 })
 
-watch(data, newData => {
-  if (!newData) return
-  const { firstName, lastName } = newData
-  const email = newData.user.email
+watch(
+  data,
+  newData => {
+    if (!newData) return
 
-  user.value = newData
+    console.log({ newData })
+    const { firstName, lastName } = newData
+    const email = newData.user.email
 
-  _user.value.initials = getInitials(firstName, lastName)
-  _user.value.fullName = getFullName(firstName, lastName)
-  _user.value.email = email ?? ''
-})
+    user.value = newData
+
+    _user.value.initials = getInitials(firstName, lastName)
+    _user.value.fullName = getFullName(firstName, lastName)
+    _user.value.email = email ?? ''
+  },
+  { immediate: true },
+)
 
 const logoutMutation = useLogout()
 const handleLogout = () => {

@@ -41,5 +41,4 @@ defineProps<{
 }>()
 
 const { t } = useI18n<i18nOptions>()
-
 </script>
