@@ -14,7 +14,15 @@
         <div v-else>
           <v-list v-if="currentWorkspace" style="overflow: hidden">
             <v-list-subheader>Current Workspace</v-list-subheader>
-            <v-list-item loading="!currentWorkspace">
+            <v-list-item
+              loading="!currentWorkspace"
+              @click="
+                router.push({
+                  name: 'Survey Patient List',
+                  params: { id: currentWorkspace.id },
+                })
+              "
+            >
               <template v-if="currentWorkspace" v-slot:prepend>
                 <v-avatar :color="currentWorkspace.avatarColor">
                   <span class="text-h5">
@@ -77,6 +85,9 @@ import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()

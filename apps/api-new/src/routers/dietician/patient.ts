@@ -4,6 +4,7 @@ import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   PatientCreateDtoSchema,
   PatientDtoSchema,
+  PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
 import { inject, singleton } from 'tsyringe'
@@ -26,7 +27,7 @@ export class DieticianPatientRouter {
           id: z.number().int(),
         }),
       )
-      .output(PatientDtoSchema)
+      .output(PatientWithUserDto)
       .query(async opts => {
         return await this.patientService.getPatientById(opts.input.id)
       }),

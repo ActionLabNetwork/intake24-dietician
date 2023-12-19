@@ -1,6 +1,7 @@
-import { useQuery } from '@tanstack/vue-query'
+import { useQuery, useQueryClient } from '@tanstack/vue-query'
 // import { getDefaultAvatar } from '../utils/profile'
 import trpcClient from '../trpc/trpc'
+import { getDefaultAvatar } from '../utils/profile'
 
 export const usePatients = (surveyId: string) => {
   const { data, isLoading, isError, error, isSuccess } = useQuery({
@@ -21,45 +22,34 @@ export const usePatients = (surveyId: string) => {
   }
 }
 
-// export const usePatientById = (userId: string) => {
-//   const queryClient = useQueryClient()
-//   const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}/${userId}`
+export const usePatientById = (userId: string) => {
+  const queryClient = useQueryClient()
 
-//   const { data, isLoading, isError, error, isSuccess } = useQuery<
-//     unknown,
-//     AxiosError<ApiResponseWithError>,
-//     AxiosResponse<{
-//       data: Omit<UserDTO, 'password'> & {
-//         deletionDate: Date
-//       }
-//     }>
-//   >({
-//     queryKey: [userId],
-//     queryFn: async () => {
-//       const response: AxiosResponse<{
-//         data: Omit<UserDTO, 'password'>
-//       }> = await axios.get(sessionUri)
+  const { data, isLoading, isError, error, isSuccess } = useQuery({
+    queryKey: [userId],
+    queryFn: async () => {
+      const response = await trpcClient.dieticianPatient.getPatient.query({
+        id: Number(userId),
+      })
 
-//       const avatar =
-//         response.data.data.patientProfile?.avatar ||
-//         getDefaultAvatar(response.data.data.email)
+      const avatar = response.avatar || getDefaultAvatar(response.user.email)
 
-//       response.data.data.patientProfile!.avatar = avatar
-//       return response
-//     },
-//   })
+      response.avatar = avatar
+      return response
+    },
+  })
 
-//   const invalidatePatientByIdQuery = async () => {
-//     await queryClient.invalidateQueries({ queryKey: [userId] })
-//     await queryClient.refetchQueries({ queryKey: [userId] })
-//   }
+  const invalidatePatientByIdQuery = async () => {
+    await queryClient.invalidateQueries({ queryKey: [userId] })
+    await queryClient.refetchQueries({ queryKey: [userId] })
+  }
 
-//   return {
-//     data,
-//     isLoading,
-//     isError,
-//     error,
-//     isSuccess,
-//     invalidatePatientByIdQuery,
-//   }
-// }
+  return {
+    data,
+    isLoading,
+    isError,
+    error,
+    isSuccess,
+    invalidatePatientByIdQuery,
+  }
+}

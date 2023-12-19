@@ -110,3 +110,7 @@ export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
   patientPreference: PatientPreferenceSchema,
 }).extend(TimestampSchema.shape)
+
+export const PatientWithUserDto = PatientDtoSchema.extend({
+  user: UserDtoSchema,
+})
