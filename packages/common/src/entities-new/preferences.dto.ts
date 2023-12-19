@@ -31,28 +31,21 @@ export const ReminderConditionSchema = z.object({
 export type ReminderCondition = z.infer<typeof ReminderConditionSchema>
 
 const CommonPreferenceSchema = z.object({
-  theme: z.string(),
+  theme: z.enum(['Classic', 'Fun']),
   sendAutomatedFeedback: z.boolean(),
   reminderCondition: ReminderConditionSchema,
   reminderMessage: z.string(),
 })
 
-type CommonPreference = z.infer<
-  typeof CommonPreferenceSchema
->
+export type CommonPreference = z.infer<typeof CommonPreferenceSchema>
 
-export const SurveyPreferenceSchema =
-  CommonPreferenceSchema.extend({
-    notifyEmail: z.boolean(),
-    notifySMS: z.boolean(),
-  })
+export const SurveyPreferenceSchema = CommonPreferenceSchema.extend({
+  notifyEmail: z.boolean(),
+  notifySMS: z.boolean(),
+})
 
-export type SurveyPreference = z.infer<
-  typeof SurveyPreferenceSchema
->
+export type SurveyPreference = z.infer<typeof SurveyPreferenceSchema>
 
 export const PatientPreferenceSchema = CommonPreferenceSchema
 
-export type PatientPreference = z.infer<
-  typeof PatientPreferenceSchema
->
+export type PatientPreference = z.infer<typeof PatientPreferenceSchema>

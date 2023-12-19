@@ -63,6 +63,7 @@ export class DieticianSurveyRouter {
       )
       .output(z.number())
       .mutation(async opts => {
+        console.log({ opts: opts.input.survey })
         return await this.surveyService.createSurvey(
           opts.ctx.dieticianId,
           opts.input.survey,

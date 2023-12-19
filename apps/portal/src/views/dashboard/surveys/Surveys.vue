@@ -1,5 +1,5 @@
 <template>
-<v-main v-if="isProfileLoading" align="center">
+  <v-main v-if="isProfileLoading" align="center">
     <v-container>
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>
@@ -13,10 +13,19 @@
           >
             <div>
               <h1 class="text heading">
-                {{ t('surveys.disclaimerNotrifications.title', { username: user?.dieticianProfile.firstName}) }}
+                {{
+                  t('surveys.disclaimerNotrifications.title', {
+                    username: user?.dieticianProfile.firstName,
+                  })
+                }}
               </h1>
               <h3 class="text subheading">
-                {{ t('surveys.disclaimerNotrifications.subtitle', {newSurveysNumber: 3, templatesNumber: 1}) }}
+                {{
+                  t('surveys.disclaimerNotrifications.subtitle', {
+                    newSurveysNumber: 3,
+                    templatesNumber: 1,
+                  })
+                }}
               </h3>
             </div>
             <div>
@@ -27,7 +36,7 @@
                 density="comfortable"
                 @click="welcomeAlert = false"
               >
-                {{t('surveys.disclaimerNotrifications.dismiss')}}
+                {{ t('surveys.disclaimerNotrifications.dismiss') }}
               </v-btn>
             </div>
           </div>
@@ -36,10 +45,12 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" :addButtonLink="addButtonLink" />
-        <SurveysList
-          :data="dataQuery.data.value?.data.ok === true ? dataQuery.data.value?.data.value : []"
+        <HomeSummary
+          :summary="summary"
+          :summaryKeys="summaryKeys"
+          :addButtonLink="addButtonLink"
         />
+        <SurveysList :data="dataQuery.data.value ?? []" />
       </div>
     </v-container>
   </v-main>
@@ -72,10 +83,11 @@ const addButtonLink = '/dashboard/my-surveys/add-survey'
 
 const summary = computed((): Summary => {
   const data = dataQuery.data.value?.data
-  if (data === undefined || !data.ok) return { total: 0, active: 0, archived: 0 }
+  if (data === undefined || !data.ok)
+    return { total: 0, active: 0, archived: 0 }
 
   return data.value.reduce(
-    (counts) => {
+    counts => {
       counts.total++
       counts.active++
       return counts

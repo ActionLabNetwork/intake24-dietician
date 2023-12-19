@@ -2,10 +2,9 @@ import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { surveys } from '../models'
 import { eq } from 'drizzle-orm'
-import type {
-  SurveyCreateDto,
-} from '@intake24-dietician/common/entities-new/survey.dto'
+import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
+import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 
 @singleton()
 export class SurveyRepository {
@@ -28,11 +27,24 @@ export class SurveyRepository {
   }
 
   public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
+    const surveyPreference: SurveyPreference = {
+      theme: 'Classic',
+      sendAutomatedFeedback: true,
+      notifyEmail: true,
+      notifySMS: true,
+      reminderCondition: {
+        reminderEvery: { every: 5, unit: 'days' },
+        reminderEnds: { type: 'never' },
+      },
+      reminderMessage: '',
+    }
+
     const [insertedSurvey] = await this.drizzle
       .insert(surveys)
       .values({
         dieticianId,
         ...surveyDto,
+        surveyPreference,
       })
       .returning({ id: surveys.id })
       .execute()

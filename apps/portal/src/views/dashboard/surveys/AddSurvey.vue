@@ -32,12 +32,14 @@ import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/S
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
-import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import router from '@intake24-dietician/portal/router'
-import { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import {
+  SurveyCreateDto,
+  SurveyCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
 const { t } = useI18n<i18nOptions>()
@@ -74,10 +76,9 @@ const handleSurveyConfigUpdate = (
 
 const handleSubmit = async () => {
   return new Promise((resolve, reject) => {
+    console.log('surveyConfigFormValues', surveyConfigFormValues.value)
     // Validate with zod
-    const result = SurveyConfigurationSchemaDetails.zodSchema.safeParse(
-      surveyConfigFormValues.value,
-    )
+    const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)

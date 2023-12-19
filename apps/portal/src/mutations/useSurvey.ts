@@ -13,7 +13,10 @@ export const useAddSurvey = () => {
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: {
       survey: Omit<SurveyCreateDto, 'surveyPreference'>
-    }) => trpcClient.dieticianSurvey.createSurvey.mutate(body),
+    }) => {
+      console.log({ b: body.survey })
+      return trpcClient.dieticianSurvey.createSurvey.mutate(body)
+    },
   })
 
   return {
