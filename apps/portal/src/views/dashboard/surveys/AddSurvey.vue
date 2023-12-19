@@ -28,9 +28,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import SurveyConfiguration, {
-  SurveyConfigurationFormValues,
-} from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
+import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
@@ -39,6 +37,7 @@ import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import router from '@intake24-dietician/portal/router'
+import { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
 const { t } = useI18n<i18nOptions>()
@@ -58,15 +57,18 @@ const breadcrumbItems = ref([
   },
 ])
 
-const surveyConfigFormValues = ref<SurveyConfigurationFormValues>({
-  name: '',
+const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+  surveyName: '',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',
-  recallSubmissionUrl: '',
+  recallSubmissionURL: '',
+  isActive: true,
 })
 
-const handleSurveyConfigUpdate = (values: SurveyConfigurationFormValues) => {
+const handleSurveyConfigUpdate = (
+  values: Omit<SurveyCreateDto, 'surveyPreference'>,
+) => {
   surveyConfigFormValues.value = values
 }
 
@@ -83,16 +85,19 @@ const handleSubmit = async () => {
       return
     }
 
-    addSurveyMutation.mutate(surveyConfigFormValues.value, {
-      onSuccess: () => {
-        $toast.success('Survey added to records')
-        resolve('Survey added to records')
-        router.push('/dashboard/my-surveys')
+    addSurveyMutation.mutate(
+      { survey: surveyConfigFormValues.value },
+      {
+        onSuccess: () => {
+          $toast.success('Survey added to records')
+          resolve('Survey added to records')
+          router.push('/dashboard/my-surveys')
+        },
+        onError: () => {
+          $toast.error(DEFAULT_ERROR_MESSAGE)
+        },
       },
-      onError: err => {
-        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-      },
-    })
+    )
   })
 }
 </script>

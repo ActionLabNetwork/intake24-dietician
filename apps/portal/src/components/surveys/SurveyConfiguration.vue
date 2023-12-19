@@ -62,37 +62,32 @@ import type { Form } from '../profile/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
+import {
+  SurveyCreateDto,
+  SurveyCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 // import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
-export interface SurveyConfigurationFormValues {
-  name: string
-  intake24SurveyId: string
-  intake24Secret: string
-  alias: string
-  recallSubmissionUrl: string
-}
-
 const props = defineProps<{
-  defaultState: SurveyConfigurationFormValues
+  defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
-  update: [value: SurveyConfigurationFormValues]
+  update: [value: Omit<SurveyCreateDto, 'surveyPreference'>]
 }>()
 
 const { t } = useI18n<i18nOptions>()
 const { mdAndUp } = useDisplay()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<SurveyConfigurationFormValues>({
+const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   ...props.defaultState,
 })
 
 const handleFieldUpdate = (
-  fieldName: keyof SurveyConfigurationFormValues,
+  fieldName: keyof Omit<SurveyCreateDto, 'isActive' | 'surveyPreference'>,
   newVal: string,
 ) => {
   formValues.value[fieldName] = newVal
@@ -100,10 +95,10 @@ const handleFieldUpdate = (
 }
 
 const formSurveyConfig: Form<
-  (typeof SurveyConfigurationSchemaDetails.fields)[number]
+  keyof Omit<SurveyCreateDto, 'isActive' | 'surveyPreference'>
 > = {
-  name: {
-    key: 'name',
+  surveyName: {
+    key: 'surveyName',
     label: t('surveys.addNewSurvey.surveyDetails.name'),
     required: true,
     labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
@@ -111,9 +106,9 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurationSchemaDetails.schema.name, value),
+        validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('name', val),
+    handleUpdate: val => handleFieldUpdate('surveyName', val),
   },
   intake24SurveyId: {
     key: 'intake24SurveyId',
@@ -124,10 +119,7 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.intake24SurveyId,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.intake24SurveyId, value),
     ],
     handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
   },
@@ -140,10 +132,7 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.intake24Secret,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.intake24Secret, value),
     ],
     handleUpdate: val => handleFieldUpdate('intake24Secret', val),
   },
@@ -156,12 +145,12 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurationSchemaDetails.schema.alias, value),
+        validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
   },
-  recallSubmissionUrl: {
-    key: 'recallSubmissionUrl',
+  recallSubmissionURL: {
+    key: 'recallSubmissionURL',
     label: 'Recall Submission URL',
     required: true,
     labelSuffix: ' (required)',
@@ -169,12 +158,9 @@ const formSurveyConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.recallSubmissionUrl,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.recallSubmissionURL, value),
     ],
-    handleUpdate: val => handleFieldUpdate('recallSubmissionUrl', val),
+    handleUpdate: val => handleFieldUpdate('recallSubmissionURL', val),
   },
 }
 </script>

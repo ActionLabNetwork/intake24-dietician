@@ -1,9 +1,6 @@
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
-import {
-  protectedDieticianProcedure,
-  router,
-} from '../../trpc'
+import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   SurveyCreateDtoSchema,
   SurveyDtoSchema,
@@ -56,7 +53,7 @@ export class DieticianSurveyRouter {
           method: 'POST',
           path: '/surveys',
           tags: ['dietician', 'surveys'],
-          summary: "Create create survey",
+          summary: 'Create a survey',
         },
       })
       .input(
@@ -65,7 +62,7 @@ export class DieticianSurveyRouter {
         }),
       )
       .output(z.number())
-      .query(async opts => {
+      .mutation(async opts => {
         return await this.surveyService.createSurvey(
           opts.ctx.dieticianId,
           opts.input.survey,
@@ -77,7 +74,7 @@ export class DieticianSurveyRouter {
           method: 'PUT',
           path: '/surveys/{id}',
           tags: ['dietician', 'surveys'],
-          summary: "Update a survey",
+          summary: 'Update a survey',
         },
       })
       .input(
