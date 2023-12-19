@@ -12,10 +12,16 @@ axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 export const useAddPatient = () => {
   const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: {
-      surveyId: number
+      surveyId: string
       email: string
       patient: PatientCreateDto
-    }) => trpcClient.dieticianPatient.createPatient.mutate(body),
+    }) => {
+      console.log({ body })
+      return trpcClient.dieticianPatient.createPatient.mutate({
+        ...body,
+        surveyId: Number(body.surveyId),
+      })
+    },
   })
 
   return {

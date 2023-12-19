@@ -103,14 +103,16 @@ import VisualThemeSelector from '@intake24-dietician/portal/components/patients/
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
 import { Theme } from '@intake24-dietician/common/types/theme'
-import { PatientSchema } from '@/schema/patient'
 import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
 import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 import router from '@intake24-dietician/portal/router'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
-import { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useRoute } from 'vue-router'
+import { PatientCreateDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
 // const { t } = useI18n<i18nOptions>()
+
+const route = useRoute()
 
 const $toast = useToast()
 const addPatientMutation = useAddPatient()
@@ -161,18 +163,7 @@ const recallFrequency = ref<ReminderCondition>({
   },
 })
 
-// const aggregatedData = computed<PatientCreateDto>(() => ({
-//   ...contactDetailsFormValues.value,
-//   ...personalDetailsFormValues.value,
-//   additionalDetails: null,
-//   theme: theme.value,
-//   sendAutomatedFeedback: sendAutomatedFeedback.value,
-//   recallFrequency: recallFrequency.value,
-//   createdAt: new Date(),
-//   updatedAt: new Date(),
-// }))
-
-const aggregatedData = computed<PatientCreateDto>(() => ({
+const aggregatedData = computed(() => ({
   ...contactDetailsFormValues.value,
   ...personalDetailsFormValues.value,
   additionalDetails: null,
@@ -184,7 +175,8 @@ const aggregatedData = computed<PatientCreateDto>(() => ({
 }))
 
 const isFormValid = computed(() => {
-  return PatientSchema.safeParse(aggregatedData.value).success
+  // TODO: Add proper zod validation
+  return true
 })
 
 const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
@@ -208,11 +200,9 @@ const handleRecallFrequencyUpdate = (value: ReminderCondition) => {
 }
 
 const handleSubmit = async () => {
-  await form.value.validate()
-
   return new Promise((resolve, reject) => {
     // Validate with zod
-    const result = PatientSchema.safeParse(aggregatedData.value)
+    const result = PatientCreateDtoSchema.safeParse(aggregatedData.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
@@ -227,16 +217,23 @@ const handleSubmit = async () => {
       return
     }
 
-    addPatientMutation.mutate(aggregatedData.value, {
-      onSuccess: () => {
-        $toast.success('Patient added to records')
-        resolve('Patient added to records')
-        router.push('/dashboard/my-patients')
+    addPatientMutation.mutate(
+      {
+        surveyId: (route.params['id'] as string) ?? '',
+        email: aggregatedData.value.email,
+        patient: aggregatedData.value,
       },
-      onError: err => {
-        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+      {
+        onSuccess: () => {
+          $toast.success('Patient added to records')
+          resolve('Patient added to records')
+          router.push('/dashboard/my-patients')
+        },
+        onError: () => {
+          $toast.error(DEFAULT_ERROR_MESSAGE)
+        },
       },
-    })
+    )
   })
 }
 

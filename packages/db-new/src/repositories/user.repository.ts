@@ -248,6 +248,19 @@ export class UserRepository {
       .execute()
   }
 
+  public async getPatientsBySurveyIdAndDieticianId(
+    surveyId: number,
+    dieticianId: number,
+  ) {
+    const result = await this.drizzle
+      .select()
+      .from(patients)
+      .innerJoin(surveys, eq(patients.surveyId, surveyId))
+      .innerJoin(dieticians, eq(surveys.dieticianId, dieticianId))
+
+    return result.map(table => table.patient)
+  }
+
   public async createPatient(
     surveyId: number,
     email: string,

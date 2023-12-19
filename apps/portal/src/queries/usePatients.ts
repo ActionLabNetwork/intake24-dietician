@@ -1,24 +1,14 @@
-import { env } from '@/config/env'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
-import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import { getDefaultAvatar } from '../utils/profile'
-import { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import { useQuery } from '@tanstack/vue-query'
+// import { getDefaultAvatar } from '../utils/profile'
+import trpcClient from '../trpc/trpc'
 
-export const usePatients = () => {
-  const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}`
-
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    AxiosResponse<{
-      data: (PatientProfileValues & { id: number; isArchived: boolean })[]
-    }>
-  >({
+export const usePatients = (surveyId: string) => {
+  const { data, isLoading, isError, error, isSuccess } = useQuery({
     queryKey: ['patients'],
     queryFn: () => {
-      return axios.get(sessionUri)
+      return trpcClient.dieticianPatient.getPatients.query({
+        surveyId: Number(surveyId),
+      })
     },
   })
 
@@ -31,45 +21,45 @@ export const usePatients = () => {
   }
 }
 
-export const usePatientById = (userId: string) => {
-  const queryClient = useQueryClient()
-  const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}/${userId}`
+// export const usePatientById = (userId: string) => {
+//   const queryClient = useQueryClient()
+//   const sessionUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GET_PATIENTS}/${userId}`
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    AxiosResponse<{
-      data: Omit<UserDTO, 'password'> & {
-        deletionDate: Date
-      }
-    }>
-  >({
-    queryKey: [userId],
-    queryFn: async () => {
-      const response: AxiosResponse<{
-        data: Omit<UserDTO, 'password'>
-      }> = await axios.get(sessionUri)
+//   const { data, isLoading, isError, error, isSuccess } = useQuery<
+//     unknown,
+//     AxiosError<ApiResponseWithError>,
+//     AxiosResponse<{
+//       data: Omit<UserDTO, 'password'> & {
+//         deletionDate: Date
+//       }
+//     }>
+//   >({
+//     queryKey: [userId],
+//     queryFn: async () => {
+//       const response: AxiosResponse<{
+//         data: Omit<UserDTO, 'password'>
+//       }> = await axios.get(sessionUri)
 
-      const avatar =
-        response.data.data.patientProfile?.avatar ||
-        getDefaultAvatar(response.data.data.email)
+//       const avatar =
+//         response.data.data.patientProfile?.avatar ||
+//         getDefaultAvatar(response.data.data.email)
 
-      response.data.data.patientProfile!.avatar = avatar
-      return response
-    },
-  })
+//       response.data.data.patientProfile!.avatar = avatar
+//       return response
+//     },
+//   })
 
-  const invalidatePatientByIdQuery = async () => {
-    await queryClient.invalidateQueries({ queryKey: [userId] })
-    await queryClient.refetchQueries({ queryKey: [userId] })
-  }
+//   const invalidatePatientByIdQuery = async () => {
+//     await queryClient.invalidateQueries({ queryKey: [userId] })
+//     await queryClient.refetchQueries({ queryKey: [userId] })
+//   }
 
-  return {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    invalidatePatientByIdQuery,
-  }
-}
+//   return {
+//     data,
+//     isLoading,
+//     isError,
+//     error,
+//     isSuccess,
+//     invalidatePatientByIdQuery,
+//   }
+// }

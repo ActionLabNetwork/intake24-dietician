@@ -13,9 +13,7 @@
           :summaryKeys="summaryKeys"
           :addButtonLink="addButtonLink"
         />
-        <PatientList
-          :patients-data="patientsQuery.data.value?.data.data ?? []"
-        />
+        <PatientList :patients-data="patientsQuery.data.value ?? []" />
       </div>
     </v-container>
   </v-main>
@@ -44,12 +42,12 @@ const { isProfileLoading } = storeToRefs(authStore)
 
 const route = useRoute()
 
-const patientsQuery = usePatients()
+const patientsQuery = usePatients(route.params['id'] as string)
 
 const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['id']}/add-patient`
 
 const summary = computed((): Summary => {
-  const patients = patientsQuery.data.value?.data.data ?? []
+  const patients = patientsQuery.data.value ?? []
 
   return patients.reduce(
     (counts, patient) => {

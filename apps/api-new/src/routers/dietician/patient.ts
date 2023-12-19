@@ -18,7 +18,7 @@ export class DieticianPatientRouter {
           method: 'GET',
           path: '/patients/{id}',
           tags: ['patients'],
-          summary: 'Get patients',
+          summary: 'Get a patient',
         },
       })
       .input(
@@ -29,6 +29,23 @@ export class DieticianPatientRouter {
       .output(PatientDtoSchema)
       .query(async opts => {
         return await this.patientService.getPatientById(opts.input.id)
+      }),
+    getPatients: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/patients',
+          tags: ['patients'],
+          summary: 'Get patients',
+        },
+      })
+      .input(z.object({ surveyId: z.number() }))
+      .output(z.array(PatientDtoSchema))
+      .query(async opts => {
+        return await this.patientService.getPatients(
+          opts.input.surveyId,
+          opts.ctx.dieticianId,
+        )
       }),
     createPatient: protectedDieticianProcedure
       .meta({

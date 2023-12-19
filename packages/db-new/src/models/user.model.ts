@@ -12,18 +12,14 @@ import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
 import { tokens } from './token.model'
 import { surveys } from './survey.model'
-import { byteaAsBase64, typedJsonbFromSchema } from './modelUtils'
+import { typedJsonbFromSchema } from './modelUtils'
 import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { recalls } from './recall.model'
+import { genders } from '@intake24-dietician/common/entities-new/user.dto'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
-export const genderEnum = pgEnum('gender', [
-  'Male',
-  'Female',
-  'Non-binary',
-  'Prefer not to say',
-])
+export const genderEnum = pgEnum('gender', genders)
 
 export const roleEnum = pgEnum('role', ['Dietician', 'Patient'])
 
@@ -59,7 +55,7 @@ export const dieticians = pgTable('dietician', {
   businessNumber: text('business_number').notNull(),
   businessAddress: text('business_address').notNull(),
   shortBio: text('short_bio').notNull(),
-  avatar: byteaAsBase64("avatar"),
+  avatar: text('avatar'),
   ...timestampFields,
 })
 
@@ -93,10 +89,11 @@ export const patients = pgTable('patient', {
     jsonb('additional_details').$type<Record<string, unknown>>(),
   additionalNotes: text('additional_notes').notNull(),
   patientGoal: text('patient_goal').notNull(),
-  avatar: byteaAsBase64("avatar"),
+  avatar: text('avatar'),
   patientPreference: typedJsonbFromSchema(PatientPreferenceSchema)(
     'preference',
   ).notNull(),
+  isArchived: boolean('is_archived').default(false).notNull(),
   ...timestampFields,
 })
 
@@ -109,5 +106,5 @@ export const patientRelations = relations(patients, ({ one, many }) => ({
     fields: [patients.surveyId],
     references: [surveys.id],
   }),
-  recalls: many(recalls)
+  recalls: many(recalls),
 }))
