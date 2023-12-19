@@ -11,10 +11,11 @@
         :default-state="recallReminderProps"
         @update="handleRecallRemindersUpdate"
       />
-      <!-- <Notifications
-        :default-state="surveyQuery.data.value?.data.surveyPreference"
+      <Notifications
+        v-if="notificationsProps"
+        :default-state="notificationsProps"
         @update="handleNotificationsUpdate"
-      /> -->
+      />
     </div>
     <div class="mt-10 ml-4">
       <p class="font-weight-medium">Review and save changes</p>
@@ -33,7 +34,7 @@
 <script lang="ts" setup>
 // import { SurveyPreferenceFeedbackModules } from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
-// import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
+import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -60,7 +61,6 @@ const surveyQueryData = computed(() => {
 
 const recallReminderProps = computed(() => {
   const surveyPreference = surveyQuery.data.value?.surveyPreference
-  console.log({ surveyPreference })
 
   if (
     surveyPreference?.reminderCondition &&
@@ -69,6 +69,22 @@ const recallReminderProps = computed(() => {
     return {
       reminderCondition: surveyPreference.reminderCondition,
       reminderMessage: surveyPreference.reminderMessage,
+    }
+  }
+
+  return undefined
+})
+
+const notificationsProps = computed(() => {
+  const surveyPreference = surveyQuery.data.value?.surveyPreference
+
+  if (
+    surveyPreference?.notifyEmail !== undefined &&
+    surveyPreference?.notifySMS !== undefined
+  ) {
+    return {
+      notifyEmail: surveyPreference.notifyEmail,
+      notifySms: surveyPreference.notifySMS,
     }
   }
 
@@ -101,20 +117,20 @@ const handleRecallRemindersUpdate = (value: {
   }
 }
 
-// const handleNotificationsUpdate = (channels: {
-//   email: boolean
-//   sms: boolean
-// }) => {
-//   if (!formData.value) {
-//     return
-//   }
+const handleNotificationsUpdate = (channels: {
+  email: boolean
+  sms: boolean
+}) => {
+  if (!formData.value) {
+    return
+  }
 
-//   formData.value = {
-//     ...formData.value,
-//     notifyEmail: channels.email,
-//     notifySms: channels.sms,
-//   }
-// }
+  formData.value = {
+    ...formData.value,
+    notifyEmail: channels.email,
+    notifySMS: channels.sms,
+  }
+}
 
 const handleSubmit = async (): Promise<void> => {
   if (!formData.value) {
