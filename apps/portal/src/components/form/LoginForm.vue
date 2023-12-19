@@ -108,8 +108,6 @@ import { validateWithZod } from '@intake24-dietician/portal/validators'
 import type { Form } from '@/types/form.types'
 import BaseProgressCircular from '../common/BaseProgressCircular.vue'
 
-// Stores
-
 // i18n
 const { t } = useI18n<i18nOptions>()
 

@@ -50,6 +50,8 @@ const emit = defineEmits<{ update: [value: string] }>()
 const updateValue = useDebounceFn((e: InputEvent) => {
   emit('update', (e.target as HTMLInputElement).value)
 }, INPUT_DEBOUNCE_TIME)
+
+
 </script>
 
 <style scoped>

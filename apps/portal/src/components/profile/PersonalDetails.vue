@@ -63,7 +63,7 @@ import { getDefaultAvatar } from '@/utils/profile'
 import { Form } from './types'
 import ImageUpload from './ImageUpload.vue'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
-import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { DieticianUpdateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface PersonalDetailsFormValues {
   firstName: string
@@ -95,9 +95,7 @@ const handleFieldUpdate = (
   emit('update', { ...formValues.value })
 }
 
-const formConfig: Form<
-  keyof Pick<DieticianCreateDto, 'firstName' | 'middleName' | 'lastName'>
-> = {
+const formConfig: Form<keyof Omit<PersonalDetailsFormValues, 'avatar'>> = {
   firstName: {
     key: 'firstName',
     label: t('profile.form.personalDetails.firstName.label'),
@@ -107,7 +105,7 @@ const formConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(DieticianCreateDto.shape.firstName, value),
+        validateWithZod(DieticianUpdateDto.shape.firstName, value),
     ],
     handleUpdate: val => handleFieldUpdate('firstName', val),
   },
@@ -119,7 +117,7 @@ const formConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(DieticianCreateDto.shape.middleName, value),
+        validateWithZod(DieticianUpdateDto.shape.middleName, value),
     ],
     handleUpdate: val => handleFieldUpdate('middleName', val),
   },
@@ -131,7 +129,7 @@ const formConfig: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(DieticianCreateDto.shape.lastName, value),
+        validateWithZod(DieticianUpdateDto.shape.lastName, value),
     ],
     handleUpdate: val => handleFieldUpdate('lastName', val),
   },

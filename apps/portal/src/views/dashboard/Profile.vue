@@ -87,35 +87,43 @@ import { VForm } from 'vuetify/lib/components/index.mjs'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useForm } from '@intake24-dietician/portal/composables/useForm'
 
+// Types
 type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
 
+const defaultValue = {
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  emailAddress: '',
+  mobileNumber: '',
+  businessNumber: '',
+  businessAddress: '',
+  shortBio: '',
+  avatar: null,
+}
+
+// i18n
 const { t } = useI18n<i18nOptions>()
 
+// Stores
 const authStore = useAuthStore()
 const { profile, isProfileLoading, profileQuerySucceeded } =
   storeToRefs(authStore)
 
+// Mutations
 const updateProfileMutation = useUpdateProfile()
 const uploadAvatarMutation = useUploadAvatar()
 
+// Composables
 const $toast = useToast()
 
+// Refs
 const form = ref()
 const profileForm = useForm<
   Partial<ProfileFormValues>,
   { emailAddress: string; dieticianProfile: Partial<DieticianCreateDto> }
 >({
-  initialValues: {
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    emailAddress: '',
-    mobileNumber: '',
-    businessNumber: '',
-    businessAddress: '',
-    shortBio: '',
-    avatar: null,
-  },
+  initialValues: defaultValue,
   schema: DieticianCreateDto,
   $toast,
   mutationFn: updateProfileMutation.mutateAsync,
@@ -127,17 +135,9 @@ const profileForm = useForm<
   },
 })
 
-const profileFormValues = ref<DieticianCreateDto & { emailAddress: string }>({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  emailAddress: '',
-  mobileNumber: '',
-  businessNumber: '',
-  businessAddress: '',
-  shortBio: '',
-  avatar: null,
-})
+const profileFormValues = ref<DieticianCreateDto & { emailAddress: string }>(
+  defaultValue,
+)
 
 const personalDetailsFormValues = ref<PersonalDetailsFormValues>()
 const contactDetailsFormValues = ref<ContactDetailsFormValues>()
