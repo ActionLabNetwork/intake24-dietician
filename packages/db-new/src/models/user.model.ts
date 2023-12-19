@@ -58,6 +58,7 @@ export const dieticians = pgTable('dietician', {
   businessNumber: text('business_number'),
   businessAddress: text('business_address'),
   shortBio: text('short_bio'),
+  avatar: text('avatar'),
   ...timestampFields,
 })
 
@@ -87,9 +88,11 @@ export const patients = pgTable('patient', {
   gender: genderEnum('gender').notNull(),
   height: integer('height').notNull(),
   weight: integer('weight').notNull(),
-  additionalDetails: jsonb('additional_details').$type<Record<string, unknown>>(),
+  additionalDetails:
+    jsonb('additional_details').$type<Record<string, unknown>>(),
   additionalNotes: text('additional_notes').notNull(),
   patientGoal: text('patient_goal').notNull(),
+  avatar: text('avatar'),
   patientPreference: typedJsonbFromSchema(PatientPreferenceSchema)(
     'preference',
   ).notNull(),

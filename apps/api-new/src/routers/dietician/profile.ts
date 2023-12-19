@@ -1,5 +1,8 @@
 import { AuthService } from '@/services/auth.service'
-import { DieticianWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  DieticianCreateDto,
+  DieticianWithUserDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { protectedDieticianProcedure, router } from '../../trpc'
@@ -7,7 +10,7 @@ import { protectedDieticianProcedure, router } from '../../trpc'
 @singleton()
 export class DieticianProfileRouter {
   private router = router({
-    profile: protectedDieticianProcedure
+    getProfile: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
@@ -24,6 +27,29 @@ export class DieticianProfileRouter {
         )
         if (!dietician) throw new Error('Dietician not found')
         return dietician
+      }),
+    updateProfile: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'PUT',
+          path: '/profile',
+          tags: ['dietician', 'profile'],
+          summary: "Update dietician's profile",
+        },
+      })
+      .input(
+        z.object({ email: z.string(), profile: DieticianCreateDto.partial() }),
+      )
+      .output(z.boolean())
+      .mutation(async opts => {
+        const updated = await this.authService.updateDietician(
+          opts.ctx.dieticianId,
+          opts.input.email,
+          opts.input.profile,
+        )
+
+        if (!updated) throw new Error('Dietician not updated')
+        return updated
       }),
     generateChangeEmailToken: protectedDieticianProcedure
       .meta({

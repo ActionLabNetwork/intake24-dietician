@@ -5,9 +5,8 @@
  * @summary The authentication service is responsible for handling user authentication and authorization.
  * @packageDocumentation
  */
-/* eslint-disable max-params */
 import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
-import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type { DieticianCreateDto, PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import {
   TokenPayloadSchema,
   type Token,
@@ -114,10 +113,16 @@ export class AuthService {
   }
 
   public getDietician = async (dieticianId: number) =>
-    this.userRepository.getDietician(dieticianId)
+    await this.userRepository.getDietician(dieticianId)
 
   public getDieticianIdByUserId = async (userId: number) =>
-    this.userRepository.getDieticianIdByUserId(userId)
+    await this.userRepository.getDieticianIdByUserId(userId)
+
+  public updateDietician = async (
+    dieticianId: number,
+    email: string,
+    details: Partial<DieticianCreateDto>,
+  ) => await this.userRepository.updateDietician(dieticianId, email, details)
 
   // public validateJwt = async (accessToken: string, refreshToken: string) => {
   //   const decoded = this.verifyJwtToken(accessToken)

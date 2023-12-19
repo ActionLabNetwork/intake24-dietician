@@ -4,7 +4,7 @@ import trpcClient from '../trpc/trpc'
 export const useProfile = () => {
   const { data, isLoading, isError, error, isSuccess } = useQuery({
     queryKey: ['auth'],
-    queryFn: () => trpcClient.dieticianProfile.profile.query(),
+    queryFn: () => trpcClient.dieticianProfile.getProfile.query(),
   })
 
   return {

@@ -9,12 +9,7 @@ import { and, eq } from 'drizzle-orm'
 import moment from 'moment'
 import { inject, injectable } from 'tsyringe'
 import { AppDatabase } from '../database'
-import {
-  dieticians,
-  patients,
-  surveys,
-  users,
-} from '../models'
+import { dieticians, patients, surveys, users } from '../models'
 
 @injectable()
 export class UserRepository {
@@ -179,27 +174,31 @@ export class UserRepository {
     details: Partial<DieticianCreateDto>,
   ) {
     const updateTimestamp = moment().toDate()
-    await this.drizzle.transaction(async tx => {
-      const dietician = await tx
-        .update(dieticians)
-        .set({ ...details, updatedAt: updateTimestamp })
-        .where(eq(dieticians.id, dieticianId))
-        .returning()
-        .execute()
-      await tx
-        .update(users)
-        .set({ email })
-        .where(eq(users.id, dietician[0]!!.userId))
-        .returning()
-        .execute()
-    })
+    return (
+      (
+        await this.drizzle.transaction(async tx => {
+          const dietician = await tx
+            .update(dieticians)
+            .set({ ...details, updatedAt: updateTimestamp })
+            .where(eq(dieticians.id, dieticianId))
+            .returning()
+            .execute()
+          return await tx
+            .update(users)
+            .set({ email })
+            .where(eq(users.id, dietician[0]!.userId))
+            .returning()
+            .execute()
+        })
+      ).length > 0
+    )
   }
 
   public async uploadAvatar(userId: number, buffer: string) {
     return (
       (
         await this.drizzle
-          .update(users)
+          .update(dieticians)
           .set({ avatar: buffer })
           .where(eq(users.id, userId))
           .returning()
@@ -238,7 +237,7 @@ export class UserRepository {
   public async createPatient(
     surveyId: number,
     email: string,
-    patientDetails: PatientCreateDto & {patientPreference: PatientPreference},
+    patientDetails: PatientCreateDto & { patientPreference: PatientPreference },
   ) {
     return await this.drizzle.transaction(async tx => {
       const [user] = await tx

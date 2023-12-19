@@ -17,10 +17,10 @@ export const DieticianCreateDto = z.object({
   firstName: z.string(),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: z.string().nullable(),
-  businessNumber: z.string().nullable(),
-  businessAddress: z.string().nullable(),
-  shortBio: z.string().nullable(),
+  mobileNumber: z.string(),
+  businessNumber: z.string(),
+  businessAddress: z.string(),
+  shortBio: z.string(),
   avatar: z.string().nullable(),
 })
 export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
@@ -48,7 +48,6 @@ export const PatientCreateDtoSchema = z.object({
   patientGoal: z.string(),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
-
 export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
 
 export const PatientDtoSchema = PatientCreateDtoSchema.extend({

@@ -133,11 +133,11 @@ const handleSubmit = async (validate = true): Promise<void> => {
       return
     }
 
+    const { emailAddress, ...dieticianProfile } = profileFormValues.value
     updateProfileMutation.mutate(
       {
-        dieticianProfile: {
-          ...profileFormValues.value,
-        },
+        emailAddress,
+        dieticianProfile,
       },
       {
         onSuccess: () => {

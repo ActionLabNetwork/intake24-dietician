@@ -1,11 +1,4 @@
 import { useMutation } from '@tanstack/vue-query'
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import { env } from '../config/env'
-import { UserAttributes } from '@intake24-dietician/common/types/auth'
-import {
-  ApiResponseWithData,
-  ApiResponseWithError,
-} from '@intake24-dietician/common/types/api'
 import trpcClient from '../trpc/trpc'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
@@ -95,15 +88,16 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
-  const profileUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_PROFILE_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
-    AxiosError<ApiResponseWithError>,
-    { dieticianProfile: DieticianCreateDto & { emailAddress: string } }
-  >({
-    mutationFn: profileBody => {
-      return axios.put(profileUri, profileBody)
+  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (updateProfileBody: {
+      emailAddress: string
+      dieticianProfile: Partial<DieticianCreateDto>
+    }) => {
+      const { emailAddress, dieticianProfile } = updateProfileBody
+      return trpcClient.dieticianProfile.updateProfile.mutate({
+        email: emailAddress,
+        profile: dieticianProfile,
+      })
     },
   })
 
