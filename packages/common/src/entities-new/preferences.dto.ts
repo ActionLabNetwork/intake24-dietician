@@ -13,7 +13,8 @@ export const ReminderEndCondition = z.discriminatedUnion('type', [
   }),
   z.object({
     type: z.literal('on'),
-    date: z.coerce.date(),
+    // date: z.coerce.date(),
+    date: z.string(),
   }),
   z.object({
     type: z.literal('after'),
@@ -31,7 +32,7 @@ export const ReminderConditionSchema = z.object({
 export type ReminderCondition = z.infer<typeof ReminderConditionSchema>
 
 const CommonPreferenceSchema = z.object({
-  theme: z.enum(['Classic', 'Fun']),
+  theme: z.enum(['Classic', 'Fun']).default('Classic'),
   sendAutomatedFeedback: z.boolean(),
   reminderCondition: ReminderConditionSchema,
   reminderMessage: z.string(),

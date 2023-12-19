@@ -16,7 +16,7 @@ export const surveys = {
   },
   backToSurveyList: 'Back to survey list',
   addNewSurvey: {
-    title: 'Add new survey',
+    title: 'Create your new clinic',
     save: 'Save',
     surveyDetails: {
       title: 'Survey details',
@@ -29,7 +29,7 @@ export const surveys = {
       intake24Secret: 'Intake24 secret',
     },
     subtitle:
-      'This is the page for you to add a survey. You can base its configuration on Template or define it differently.',
+      'Your practise, your space. Create and tailor the new workspace according to your work needs.',
     dismiss: 'Dismiss',
   },
 }

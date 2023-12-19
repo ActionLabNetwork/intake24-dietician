@@ -2,12 +2,7 @@ import { env } from '@/config/env'
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import axios, { AxiosError, AxiosResponse } from 'axios'
-import {
-  SurveyDTO,
-  SurveyPreferencesDTO,
-} from '@intake24-dietician/common/entities/survey.dto'
-import type { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
-import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
 import trpcClient from '../trpc/trpc'
 
 export const useSurveys = () => {
@@ -29,28 +24,16 @@ export const useSurveys = () => {
 
 export const useSurveyById = (id: string) => {
   const queryClient = useQueryClient()
-  const sessionUri = `${env.VITE_AUTH_API_HOST}/surveys/${id}`
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    {
-      data: SurveyDTO & {
-        surveyPreference: SurveyPreferencesDTO & {
-          feedbackModules: (FeedbackModuleDTO & {
-            isActive: boolean
-            feedbackAboveRecommendedLevel: string
-            feedbackBelowRecommendedLevel: string
-          })[]
-        } & { recallFrequency: RecallFrequencyDTO }
-      }
-    }
-  >({
+  const { data, isLoading, isError, error, isSuccess } = useQuery({
     queryKey: [id],
     queryFn: async () => {
-      const response: AxiosResponse<{
-        data: Omit<SurveyDTO, 'intake24Secret'>
-      }> = await axios.get(sessionUri)
+      const response = await trpcClient.dieticianSurvey.getSurveyById.query({
+        id: Number(id),
+      })
+
+      console.log({ response: response.surveyPreference })
+
       return response
     },
   })

@@ -1,21 +1,20 @@
 <template>
   <div class="wrapper">
-    <div v-if="!!surveyQuery.data.value?.data" class="ma-0 pa-0">
-      <FeedbackModules
+    <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+      <!-- <FeedbackModules
         :default-state="surveyQuery.data.value?.data.surveyPreference"
         :submit="handleSubmit"
         @update="handleFeedbackModulesUpdate"
-      />
+      /> -->
       <RecallReminders
-        :default-state="
-          surveyQuery.data.value?.data.surveyPreference.recallFrequency
-        "
+        v-if="recallReminderProps"
+        :default-state="recallReminderProps"
         @update="handleRecallRemindersUpdate"
       />
-      <Notifications
+      <!-- <Notifications
         :default-state="surveyQuery.data.value?.data.surveyPreference"
         @update="handleNotificationsUpdate"
-      />
+      /> -->
     </div>
     <div class="mt-10 ml-4">
       <p class="font-weight-medium">Review and save changes</p>
@@ -32,65 +31,90 @@
 </template>
 
 <script lang="ts" setup>
-import FeedbackModules, {
-  SurveyPreferenceFeedbackModules,
-} from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
+// import { SurveyPreferenceFeedbackModules } from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
-import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
+// import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-import { useUpdateSurveyPreferences } from '@intake24-dietician/portal/mutations/useSurvey'
+// import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
+// import { useUpdateSurveyPreferences } from '@intake24-dietician/portal/mutations/useSurvey'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
-import { SurveyPreference } from '@intake24-dietician/common/types/survey'
+// import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
+import {
+  ReminderCondition,
+  SurveyPreference,
+} from '@intake24-dietician/common/entities-new/preferences.dto'
 
 const $toast = useToast()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['id'] as string)
-const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
+// const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
 const formData = ref<SurveyPreference>()
 
 const surveyQueryData = computed(() => {
-  return surveyQuery.data.value?.data
+  return surveyQuery.data.value
 })
 
-const handleFeedbackModulesUpdate = (
-  value: SurveyPreferenceFeedbackModules,
-) => {
-  if (!formData.value) {
-    return
-  }
-  formData.value = { ...formData.value, ...value }
-}
+const recallReminderProps = computed(() => {
+  const surveyPreference = surveyQuery.data.value?.surveyPreference
+  console.log({ surveyPreference })
 
-const handleRecallRemindersUpdate = (value: RecallFrequencyDTO) => {
+  if (
+    surveyPreference?.reminderCondition &&
+    surveyPreference?.reminderMessage !== undefined
+  ) {
+    return {
+      reminderCondition: surveyPreference.reminderCondition,
+      reminderMessage: surveyPreference.reminderMessage,
+    }
+  }
+
+  return undefined
+})
+
+// const handleFeedbackModulesUpdate = (
+//   value: SurveyPreferenceFeedbackModules,
+// ) => {
+//   if (!formData.value) {
+//     return
+//   }
+//   formData.value = { ...formData.value, ...value }
+// }
+
+const handleRecallRemindersUpdate = (value: {
+  reminderCondition: ReminderCondition
+  reminderMessage: string
+}) => {
   if (!formData.value) {
     return
   }
 
   console.log({ recallFreq: value })
 
-  formData.value = { ...formData.value, recallFrequency: value }
-}
-
-const handleNotificationsUpdate = (channels: {
-  email: boolean
-  sms: boolean
-}) => {
-  if (!formData.value) {
-    return
-  }
-
   formData.value = {
     ...formData.value,
-    notifyEmail: channels.email,
-    notifySms: channels.sms,
+    reminderCondition: value.reminderCondition,
+    reminderMessage: value.reminderMessage,
   }
 }
+
+// const handleNotificationsUpdate = (channels: {
+//   email: boolean
+//   sms: boolean
+// }) => {
+//   if (!formData.value) {
+//     return
+//   }
+
+//   formData.value = {
+//     ...formData.value,
+//     notifyEmail: channels.email,
+//     notifySms: channels.sms,
+//   }
+// }
 
 const handleSubmit = async (): Promise<void> => {
   if (!formData.value) {
@@ -101,18 +125,18 @@ const handleSubmit = async (): Promise<void> => {
   console.log({ FORMAAA: formData.value })
 
   // TODO: Add zod validation
-  updateSurveyPreferencesMutation.mutate(formData.value, {
-    onSuccess: () => {
-      $toast.success('Survey preferences updated')
-    },
-    onError: err => {
-      $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-    },
-  })
+  // updateSurveyPreferencesMutation.mutate(formData.value, {
+  //   onSuccess: () => {
+  //     $toast.success('Survey preferences updated')
+  //   },
+  //   onError: err => {
+  //     $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
+  //   },
+  // })
 }
 
 watch(surveyQueryData, newSurveyQueryData => {
-  if (!newSurveyQueryData) return
+  if (!newSurveyQueryData?.surveyPreference) return
   formData.value = { ...newSurveyQueryData?.surveyPreference }
 })
 

@@ -92,7 +92,6 @@ const otherWorkspaces = computed(() =>
 watch(
   () => surveysQuery.data.value,
   newSurveysQueryData => {
-    console.log({ newSurveysQueryData })
     if (!newSurveysQueryData || newSurveysQueryData.length === 0) return
 
     const surveys = newSurveysQueryData
@@ -105,7 +104,6 @@ watch(
       avatarColor: colors[index]!,
     }))
 
-    console.log({ surveys })
     workspaces.value = surveysWithAvatarColors
     currentWorkspace.value = surveysWithAvatarColors[0]
   },

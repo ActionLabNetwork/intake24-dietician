@@ -81,11 +81,11 @@ export class DieticianSurveyRouter {
       .input(
         z.object({
           id: z.number().int(),
-          survey: SurveyCreateDtoSchema,
+          survey: SurveyCreateDtoSchema.partial(),
         }),
       )
       .output(z.void())
-      .query(async opts => {
+      .mutation(async opts => {
         return await this.surveyService.updateSurvey(
           opts.input.id,
           opts.ctx.dieticianId,

@@ -15,7 +15,7 @@
               <h1 class="text heading">
                 {{
                   t('surveys.disclaimerNotrifications.title', {
-                    username: user?.dieticianProfile.firstName,
+                    username: profile?.firstName,
                   })
                 }}
               </h1>
@@ -73,7 +73,7 @@ import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
 const { t } = useI18n<i18nOptions>()
 const authStore = useAuthStore()
-const { user, isProfileLoading } = storeToRefs(authStore)
+const { profile, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
 
@@ -82,11 +82,10 @@ const dataQuery = useSurveys()
 const addButtonLink = '/dashboard/my-surveys/add-survey'
 
 const summary = computed((): Summary => {
-  const data = dataQuery.data.value?.data
-  if (data === undefined || !data.ok)
-    return { total: 0, active: 0, archived: 0 }
+  const data = dataQuery.data.value
+  if (data === undefined) return { total: 0, active: 0, archived: 0 }
 
-  return data.value.reduce(
+  return data.reduce(
     counts => {
       counts.total++
       counts.active++

@@ -8,10 +8,10 @@
           <BaseInput
             type="number"
             name="recallFrequency"
-            :value="reminderConditions.reminderEvery.quantity.toString()"
+            :value="reminderConditions.reminderEvery.every.toString()"
             @update="
               newVal => {
-                reminderConditions.reminderEvery.quantity = Number(newVal)
+                reminderConditions.reminderEvery.every = Number(newVal)
                 $emit('update', reminderConditions)
               }
             "
@@ -87,20 +87,20 @@ import { capitalize } from 'radash'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  ReminderConditions,
   reminderEndsTypes,
   units,
 } from '@intake24-dietician/common/types/reminder'
+import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 
 const props = withDefaults(
-  defineProps<{ defaultState: ReminderConditions; hideLabel?: boolean }>(),
+  defineProps<{ defaultState: ReminderCondition; hideLabel?: boolean }>(),
   { hideLabel: false },
 )
-const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
+const emit = defineEmits<{ update: [reminderConditions: ReminderCondition] }>()
 
-const reminderConditions = ref<ReminderConditions>({
+const reminderConditions = ref<ReminderCondition>({
   reminderEvery: {
-    quantity: 5,
+    every: 5,
     unit: 'days',
   },
   reminderEnds: {
