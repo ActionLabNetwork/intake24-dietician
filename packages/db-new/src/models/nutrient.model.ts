@@ -14,7 +14,7 @@ export const nutrientUnitsRelations = relations(nutrientUnits, ({ many }) => ({
 }))
 
 export const nutrientTypes = pgTable('nutrient_types', {
-  id: serial('id').primaryKey(),
+    id: serial('id').primaryKey(),
   unitId: integer('unit_id')
     .references(() => nutrientUnits.id)
     .notNull(),
