@@ -14,6 +14,7 @@ import { tokens } from './token.model'
 import { surveys } from './survey.model'
 import { byteaAsBase64, typedJsonbFromSchema } from './modelUtils'
 import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { recalls } from './recall.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
@@ -99,7 +100,7 @@ export const patients = pgTable('patient', {
   ...timestampFields,
 })
 
-export const patientRelations = relations(patients, ({ one }) => ({
+export const patientRelations = relations(patients, ({ one, many }) => ({
   user: one(users, {
     fields: [patients.userId],
     references: [users.id],
@@ -108,4 +109,5 @@ export const patientRelations = relations(patients, ({ one }) => ({
     fields: [patients.surveyId],
     references: [surveys.id],
   }),
+  recalls: many(recalls)
 }))

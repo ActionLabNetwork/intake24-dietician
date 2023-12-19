@@ -2,7 +2,6 @@ import { relations } from 'drizzle-orm'
 import { boolean, integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { typedJsonbFromSchema } from './modelUtils'
-import { recalls } from './recall.model'
 import { dieticians, patients } from './user.model'
 import { SurveyPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 
@@ -27,7 +26,6 @@ export const surveyRelations = relations(surveys, ({ one, many }) => ({
     references: [dieticians.id],
   }),
   patients: many(patients),
-  recalls: many(recalls),
 }))
 
 // export const recall = pgTable('recall', {

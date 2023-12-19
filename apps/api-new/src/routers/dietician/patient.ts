@@ -5,6 +5,7 @@ import {
   PatientCreateDtoSchema,
   PatientDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
+import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 
@@ -81,6 +82,48 @@ export class DieticianPatientRouter {
           id,
           email,
           patient,
+        )
+      }),
+    getRecalls: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/patients/{patientId}/recalls',
+          tags: ['patients'],
+          summary: 'Get recalls of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number().int(),
+        }),
+      )
+      .output(z.array(RecallDtoSchema))
+      .query(async opts => {
+        return await this.patientService.getRecallsOfPatient(
+          opts.input.patientId,
+          opts.ctx.dieticianId,
+        )
+      }),
+    getRecall: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/recalls/{id}',
+          tags: ['patients'],
+          summary: 'Get recall by id',
+        },
+      })
+      .input(
+        z.object({
+          id: z.number().int(),
+        }),
+      )
+      .output(RecallDtoSchema)
+      .query(async opts => {
+        return await this.patientService.getRecallById(
+          opts.input.id,
+          opts.ctx.dieticianId,
         )
       }),
   })
