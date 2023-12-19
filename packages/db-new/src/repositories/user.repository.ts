@@ -194,13 +194,13 @@ export class UserRepository {
     )
   }
 
-  public async uploadAvatar(userId: number, buffer: string) {
+  public async uploadDieticianAvatar(dieticianId: number, buffer: string) {
     return (
       (
         await this.drizzle
           .update(dieticians)
           .set({ avatar: buffer })
-          .where(eq(users.id, userId))
+          .where(eq(dieticians.id, dieticianId))
           .returning()
           .execute()
       ).length > 0

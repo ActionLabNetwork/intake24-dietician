@@ -46,6 +46,7 @@ export const PatientCreateDtoSchema = z.object({
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
+  avatar: z.string().nullable(),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
 export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>

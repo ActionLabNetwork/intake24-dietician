@@ -260,8 +260,8 @@ export class AuthService {
     }
   }
 
-  public uploadAvatar = async (userId: number, buffer: string) => {
-    return await this.userRepository.uploadAvatar(userId, buffer)
+  public uploadDieticianAvatar = async (dieticianId: number, buffer: string) => {
+    return await this.userRepository.uploadDieticianAvatar(dieticianId, buffer)
   }
 
   public createPatient = async (

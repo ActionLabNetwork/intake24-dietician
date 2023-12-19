@@ -115,8 +115,8 @@ export class DieticianProfileRouter {
       )
       .output(z.boolean())
       .mutation(async ({ ctx, input }) => {
-        return await this.authService.uploadAvatar(
-          ctx.userId,
+        return await this.authService.uploadDieticianAvatar(
+          ctx.dieticianId,
           input.avatarBase64,
         )
       }),
