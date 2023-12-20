@@ -3,6 +3,7 @@ import type * as trpcExpress from '@trpc/server/adapters/express'
 import type { OpenApiMeta } from 'trpc-openapi'
 import { container } from 'tsyringe'
 import { AuthService } from './services/auth.service'
+import superjson from 'superjson'
 
 export const createContext = ({
   req,
@@ -18,6 +19,7 @@ const t = initTRPC
   .context<Context>()
   .meta<OpenApiMeta>()
   .create({
+    transformer: superjson,
     errorFormatter({ shape, error }) {
       return {
         ...shape,
