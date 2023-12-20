@@ -1,8 +1,6 @@
 <template>
   <div>
     <v-container>
-      Recall Reminder: {{ recallReminder }} ||||| Default State:
-      {{ defaultState }}
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >

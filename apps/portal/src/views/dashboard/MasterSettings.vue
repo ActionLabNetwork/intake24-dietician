@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
       <!-- <FeedbackModules
-        :default-state="surveyQuery.data.value?.data.surveyPreference"
+        :default-state="surveyQuery.data.value.surveyPreference"
         :submit="handleSubmit"
         @update="handleFeedbackModulesUpdate"
       /> -->

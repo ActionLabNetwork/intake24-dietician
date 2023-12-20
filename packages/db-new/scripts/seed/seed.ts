@@ -188,18 +188,21 @@ async function seedNutrientTypes(
     unit_id: string
   }[]
 
-  nutrientTypesData.map(async type => {
+  console.log({ length: nutrientTypesData.length })
+
+  const typesPromises = nutrientTypesData.map(async type => {
     const unitId = await drizzle
       .select({ id: nutrientUnits.id })
       .from(nutrientUnits)
       .where(eq(nutrientUnits.description, type.unit_id))
 
-    await drizzle.insert(nutrientTypes).values({
-      id: type.id,
+    return drizzle.insert(nutrientTypes).values({
       unitId: unitId[0]!.id,
       description: type.description,
     })
   })
+
+  await Promise.all(typesPromises)
 }
 
 async function seedFeedbackModules(
