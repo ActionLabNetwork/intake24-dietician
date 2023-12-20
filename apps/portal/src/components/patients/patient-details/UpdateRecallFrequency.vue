@@ -11,7 +11,13 @@
             :value="reminderConditions.reminderEvery.every.toString()"
             @update="
               newVal => {
-                reminderConditions.reminderEvery.every = Number(newVal)
+                reminderConditions = {
+                  ...reminderConditions,
+                  reminderEvery: {
+                    every: Number(newVal),
+                    unit: reminderConditions.reminderEvery.unit,
+                  },
+                }
               }
             "
           >
@@ -27,7 +33,13 @@
             density="comfortable"
             @update:model-value="
               newVal => {
-                reminderConditions.reminderEvery.unit = newVal
+                reminderConditions = {
+                  ...reminderConditions,
+                  reminderEvery: {
+                    every: reminderConditions.reminderEvery.every,
+                    unit: newVal,
+                  },
+                }
               }
             "
           ></v-select>
@@ -157,7 +169,7 @@ const handleOccurrencesCountUpdate = (newVal: string) => {
 }
 
 watch(
-  reminderConditions,
+  () => reminderConditions.value,
   newVal => {
     emit('update', newVal)
   },
