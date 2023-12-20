@@ -7,6 +7,8 @@ import { assert } from 'console'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { JwtService } from './jwt.service'
+import type { PatientDto } from '@intake24-dietician/common/entities-new/user.dto'
+import moment from 'moment'
 
 @singleton()
 export class PatientService {
@@ -20,13 +22,17 @@ export class PatientService {
   public async getPatientById(id: number) {
     const patient = await this.userRepository.getPatient(id)
     if (!patient) throw new NotFoundError('Patient not found')
-    return patient
+    return await this.attachExtraPatientFields(patient)
   }
 
   public async getPatients(surveyId: number, dieticianId: number) {
-    return await this.userRepository.getPatientsBySurveyIdAndDieticianId(
-      surveyId,
-      dieticianId,
+    const patients =
+      await this.userRepository.getPatientsBySurveyIdAndDieticianId(
+        surveyId,
+        dieticianId,
+      )
+    return await Promise.all(
+      patients.map(patient => this.attachExtraPatientFields(patient)),
     )
   }
 
@@ -73,5 +79,27 @@ export class PatientService {
       throw new ClientError('The client does not belong to the survey')
 
     await this.recallRepository.createRecall(patientId, recall)
+  }
+
+  private async attachExtraPatientFields(
+    patient: Omit<PatientDto, 'startSurveyUrl'> & {
+      survey: { intake24Secret: string; recallSubmissionURL: string }
+    },
+  ): Promise<PatientDto> {
+    const payload = {
+      username: patient.id.toString(),
+      password: 'super_secret_password', // TODO: should this be created for the user and stored?
+      redirectUrl: 'https://google.com', // TODO: what should this be set to
+    }
+    const jwt = await this.jwtService.sign(
+      payload,
+      moment().add(5, 'days').toDate(),
+      patient.survey.intake24Secret && undefined,
+    )
+    return {
+      ...patient,
+      startSurveyUrl:
+        patient.survey.recallSubmissionURL + `/create-user/${jwt}`,
+    }
   }
 }

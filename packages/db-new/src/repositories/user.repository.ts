@@ -260,7 +260,12 @@ export class UserRepository {
       with: {
         patients: {
           where: eq(patients.surveyId, surveyId),
-          with: { user: true },
+          with: { user: true, survey: {
+            columns: {
+              intake24Secret: true,
+              recallSubmissionURL: true
+            }
+          } },
         },
       },
     })

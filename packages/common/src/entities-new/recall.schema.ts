@@ -18,7 +18,7 @@ export const RecallMealSchema = z.object({
   name: z.string(),
   hours: z.number(),
   minutes: z.number(),
-  duration: z.number(),
+  duration: z.number().nullable(),
   customFields: z.array(recordOfAnySchema).nullable(),
   missingFoods: z.array(recordOfAnySchema).nullable(),
   foods: z.array(recordOfAnySchema),

@@ -110,7 +110,7 @@ async function seedSurvey(
       intake24SurveyId: 'test',
       intake24Secret: 'intake24_survey_secret',
       alias: 'test',
-      recallSubmissionURL: 'https://intake24.co.uk/recall',
+      recallSubmissionURL: 'https://survey.intake24.dev/demo',
       surveyPreference: preference,
     })
     .returning()

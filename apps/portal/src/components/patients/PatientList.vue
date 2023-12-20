@@ -118,9 +118,9 @@
               icon="mdi-content-copy"
               size="medium"
               variant="plain"
-              @click="generateSurveyLink(item.raw.id)"
+              @click="generateSurveyLink(item.raw.surveyURL)"
             />
-            {{ item.raw.surveyURL }}
+            <!-- {{ item.raw.surveyURL }} -->
           </td>
         </tr>
       </template>
@@ -133,7 +133,6 @@
 </template>
 
 <script setup lang="ts">
-import * as jose from 'jose'
 import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
@@ -186,7 +185,7 @@ interface KeyValueTypes {
   }
   patientStatus: 'Active' | 'Archived'
   lastReminderSent: string
-  surveyURL: null
+  surveyURL: string
 }
 
 type SpecificPatientTableColumns = {
@@ -276,22 +275,9 @@ const patients = ref<SpecificPatientTableColumns[]>([])
 
 const snackbar = ref(false)
 
-const generateSurveyLink = async (userId: number) => {
-  const externalUsername = `dietician:survey_id:${userId}`
-  const secret = 'super_secret_jwt'
-  const payload = {
-    username: externalUsername,
-    password: 'super_secret_password',
-    redirectUrl: 'https://google.com',
-  }
-  const token = await new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('2h')
-    .sign(new TextEncoder().encode(secret))
-  const url = `https://survey.intake24.dev/demo/create-user/${token}`
+const generateSurveyLink = async (link: string) => {
   try {
-    await navigator.clipboard.writeText(url)
+    await navigator.clipboard.writeText(link)
     snackbar.value = true
   } catch (err) {
     console.error('Failed to copy URL: ', err)
@@ -319,7 +305,7 @@ watch(
           },
           patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: getRandomDate(),
-          surveyURL: null,
+          surveyURL: patient.startSurveyUrl,
         }
       }) ?? []
   },

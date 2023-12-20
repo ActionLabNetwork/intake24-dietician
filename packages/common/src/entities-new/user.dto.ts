@@ -111,6 +111,7 @@ export type PatientUpdateDto = z.infer<typeof PatientUpdateDtoSchema>
 export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
   patientPreference: PatientPreferenceSchema,
+  startSurveyUrl: z.string().url(),
 }).extend(TimestampSchema.shape)
 export type PatientDto = z.infer<typeof PatientDtoSchema>
 
