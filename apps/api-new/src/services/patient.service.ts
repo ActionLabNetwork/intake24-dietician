@@ -66,7 +66,7 @@ export class PatientService {
     assert(patientUser)
     if (!patientUser) throw new ClientError('Patient cannot be extracted')
     // we are using our user ID for Intake's username
-    const patientId = z.coerce.number().int().parse(patientUser.username) 
+    const patientId = z.coerce.number().int().parse(patientUser.username)
     const patient = await this.userRepository.getPatient(patientId)
     if (!patient) throw new NotFoundError('Patient cannot be found')
     if (patient.surveyId !== surveyId)

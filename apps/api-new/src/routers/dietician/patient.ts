@@ -3,7 +3,6 @@ import { PatientService } from '@/services/patient.service'
 import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   PatientCreateDtoSchema,
-  PatientDtoSchema,
   PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
@@ -41,7 +40,7 @@ export class DieticianPatientRouter {
         },
       })
       .input(z.object({ surveyId: z.number() }))
-      .output(z.array(PatientDtoSchema))
+      .output(z.array(PatientWithUserDto))
       .query(async opts => {
         return await this.patientService.getPatients(
           opts.input.surveyId,

@@ -252,13 +252,24 @@ export class UserRepository {
     surveyId: number,
     dieticianId: number,
   ) {
-    const result = await this.drizzle
-      .select()
-      .from(patients)
-      .innerJoin(surveys, eq(patients.surveyId, surveyId))
-      .innerJoin(dieticians, eq(surveys.dieticianId, dieticianId))
+    const survey = await this.drizzle.query.surveys.findFirst({
+      where: and(
+        eq(surveys.id, surveyId),
+        eq(surveys.dieticianId, dieticianId),
+      ),
+      with: {
+        patients: {
+          where: eq(patients.surveyId, surveyId),
+          with: { user: true },
+        },
+      },
+    })
 
-    return result.map(table => table.patient)
+    if (!survey) {
+      throw new Error('Survey not found')
+    }
+
+    return survey.patients
   }
 
   public async createPatient(

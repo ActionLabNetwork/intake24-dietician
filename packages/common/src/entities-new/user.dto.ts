@@ -84,9 +84,10 @@ export const PatientCreateDtoSchema = z.object({
   additionalNotes: z.string(),
   patientGoal: z.string(),
   avatar: z.string().nullable(),
+  isArchived: z.boolean(),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
-export type PatientUpdateDto = z.infer<typeof PatientCreateDtoSchema>
+export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
 
 export const PatientUpdateDtoSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -102,15 +103,18 @@ export const PatientUpdateDtoSchema = z.object({
   additionalNotes: z.string(),
   patientGoal: z.string(),
   avatar: z.string().nullable(),
+  isArchived: z.boolean(),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
-export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
+export type PatientUpdateDto = z.infer<typeof PatientUpdateDtoSchema>
 
 export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
   patientPreference: PatientPreferenceSchema,
 }).extend(TimestampSchema.shape)
+export type PatientDto = z.infer<typeof PatientDtoSchema>
 
 export const PatientWithUserDto = PatientDtoSchema.extend({
   user: UserDtoSchema,
 })
+export type PatientWithUserDto = z.infer<typeof PatientWithUserDto>

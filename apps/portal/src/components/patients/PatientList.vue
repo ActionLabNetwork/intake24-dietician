@@ -138,7 +138,7 @@ import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 // import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // import { computed } from 'vue'
 // import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
@@ -151,7 +151,7 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
-  patientsData: (PatientProfileValues & { id: number; isArchived: boolean })[]
+  patientsData: PatientWithUserDto[]
 }>()
 const headerTitles = [
   'Id',
@@ -306,14 +306,16 @@ watch(
       newPatients.map(patient => {
         return {
           id: patient.id,
-          email: patient.emailAddress,
+          email: patient.user.email,
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
           lastRecall: getRandomDate(),
           lastFeedbackSent: {
             date: getRandomDate(),
-            type: patient.sendAutomatedFeedback ? 'Auto' : 'Tailored',
+            type: patient.patientPreference.sendAutomatedFeedback
+              ? 'Auto'
+              : 'Tailored',
           },
           patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: getRandomDate(),
