@@ -39,22 +39,19 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 // import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-// import { useUpdateSurveyPreferences } from '@intake24-dietician/portal/mutations/useSurvey'
+import { useUpdateSurveyPreferences } from '@intake24-dietician/portal/mutations/useSurvey'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-// import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
-import {
-  ReminderCondition,
-  SurveyPreference,
-} from '@intake24-dietician/common/entities-new/preferences.dto'
+import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
+import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['id'] as string)
-// const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
+const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
-const formData = ref<SurveyPreference>()
+const formData = ref<SurveyDto>()
 
 const surveyQueryData = computed(() => {
   return surveyQuery.data.value
@@ -103,14 +100,18 @@ const handleRecallRemindersUpdate = (value: {
   reminderCondition: ReminderCondition
   reminderMessage: string
 }) => {
+  console.log({ value })
   if (!formData.value) {
     return
   }
 
   formData.value = {
     ...formData.value,
-    reminderCondition: value.reminderCondition,
-    reminderMessage: value.reminderMessage,
+    surveyPreference: {
+      ...formData.value.surveyPreference,
+      reminderCondition: value.reminderCondition,
+      reminderMessage: value.reminderMessage,
+    },
   }
 }
 
@@ -124,8 +125,11 @@ const handleNotificationsUpdate = (channels: {
 
   formData.value = {
     ...formData.value,
-    notifyEmail: channels.email,
-    notifySMS: channels.sms,
+    surveyPreference: {
+      ...formData.value.surveyPreference,
+      notifyEmail: channels.email,
+      notifySMS: channels.sms,
+    },
   }
 }
 
@@ -135,20 +139,25 @@ const handleSubmit = async (): Promise<void> => {
     return
   }
 
+  const { id, ...survey } = formData.value
+
   // TODO: Add zod validation
-  // updateSurveyPreferencesMutation.mutate(formData.value, {
-  //   onSuccess: () => {
-  //     $toast.success('Survey preferences updated')
-  //   },
-  //   onError: err => {
-  //     $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-  //   },
-  // })
+  updateSurveyPreferencesMutation.mutate(
+    { id, survey },
+    {
+      onSuccess: () => {
+        $toast.success('Survey preferences updated')
+      },
+      onError: () => {
+        $toast.error(DEFAULT_ERROR_MESSAGE)
+      },
+    },
+  )
 }
 
 watch(surveyQueryData, newSurveyQueryData => {
   if (!newSurveyQueryData?.surveyPreference) return
-  formData.value = { ...newSurveyQueryData?.surveyPreference }
+  formData.value = newSurveyQueryData
 })
 
 watch(formData, newFormData => {

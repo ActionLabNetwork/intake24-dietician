@@ -175,6 +175,7 @@ onMounted(() => {
       value: undefined,
       column: 2,
       onUpdate: (newRecallReminder: ReminderCondition) => {
+        console.log({ newRecallReminder })
         recallReminder.value = newRecallReminder
         emit('update', {
           reminderCondition: recallReminder.value,
@@ -204,6 +205,7 @@ watch(
   aggregatedData,
   newAggregatedData => {
     const { recallReminder, frequencyReminderMessage } = newAggregatedData
+    console.log({ newAggregatedData })
     const formData: {
       reminderCondition: ReminderCondition
       reminderMessage: string
@@ -214,7 +216,7 @@ watch(
 
     emit('update', formData)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 </script>
 

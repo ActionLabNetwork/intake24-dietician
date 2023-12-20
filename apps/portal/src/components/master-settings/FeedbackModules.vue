@@ -1,11 +1,9 @@
 <template>
   <div>
     <v-container>
-      <pre>FeedbackModuleSetup: {{ feedbackModuleSetup }}</pre>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
-        <pre>{{ feedbackMapping }}</pre>
         <div>
           <h1 class="text heading">Feedback module setup</h1>
           <h3 class="text subheading">

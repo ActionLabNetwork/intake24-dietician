@@ -12,7 +12,6 @@
             @update="
               newVal => {
                 reminderConditions.reminderEvery.every = Number(newVal)
-                $emit('update', reminderConditions)
               }
             "
           >
@@ -29,7 +28,6 @@
             @update:model-value="
               newVal => {
                 reminderConditions.reminderEvery.unit = newVal
-                $emit('update', reminderConditions)
               }
             "
           ></v-select>
@@ -158,9 +156,13 @@ const handleOccurrencesCountUpdate = (newVal: string) => {
   }
 }
 
-watch(reminderConditions, newVal => {
-  emit('update', newVal)
-})
+watch(
+  reminderConditions,
+  newVal => {
+    emit('update', newVal)
+  },
+  { deep: true },
+)
 
 watch(
   () => props.defaultState,

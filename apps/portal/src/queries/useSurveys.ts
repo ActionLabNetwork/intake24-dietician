@@ -32,8 +32,6 @@ export const useSurveyById = (id: string) => {
         id: Number(id),
       })
 
-      console.log({ response: response.surveyPreference })
-
       return response
     },
   })
