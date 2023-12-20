@@ -1,8 +1,8 @@
-import type { IRecall } from '@intake24-dietician/common/types/recall'
-
+import { RecallSchema } from '@intake24-dietician/common/entities-new/recall.schema'
 import { relations } from 'drizzle-orm'
-import { integer, jsonb, pgTable, serial } from 'drizzle-orm/pg-core'
+import { integer, pgTable, serial } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
+import { typedJsonbFromSchema } from './modelUtils'
 import { patients } from './user.model'
 
 export const recalls = pgTable('recall', {
@@ -10,7 +10,7 @@ export const recalls = pgTable('recall', {
   patientId: integer('patient_id')
     .references(() => patients.id)
     .notNull(),
-  recall: jsonb('recall').$type<IRecall>().notNull(),
+  recall: typedJsonbFromSchema(RecallSchema)('recall').notNull(),
   ...timestampFields,
 })
 

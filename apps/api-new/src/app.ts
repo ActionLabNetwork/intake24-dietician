@@ -15,6 +15,7 @@ import { env } from './config/env'
 import { createAppRouter } from './routers/app'
 import { createContext } from './trpc'
 import { resolveLogger } from './di/di.config'
+import { registerIntegrationEndpoints } from './routers/integration.controller'
 
 export function createApp() {
   const app = express()
@@ -64,6 +65,8 @@ export function createApp() {
       onError,
     }),
   )
+
+  registerIntegrationEndpoints(app)
 
   // Serve Swagger UI with our OpenAPI schema
   const openApiDocument = generateOpenApiDocument(appRouter, {

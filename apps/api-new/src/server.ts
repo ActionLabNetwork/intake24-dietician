@@ -8,6 +8,7 @@ import { AppDatabase } from '@intake24-dietician/db-new/database'
 import Redis from 'ioredis'
 import { createApp } from './app'
 import { registerLogger as injectLogger } from './di/di.config'
+import { JwtService } from './services/jwt.service'
 // import initJobs from './jobs/queue'
 
 // --- Setup dependencies
@@ -26,6 +27,8 @@ const redis = new Redis({
   host: env.REDIS_CONNECTION_HOST,
 })
 container.register(Redis, { useValue: redis })
+
+container.register(JwtService, { useValue: new JwtService(env.JWT_SECRET) })
 
 injectLogger()
 
