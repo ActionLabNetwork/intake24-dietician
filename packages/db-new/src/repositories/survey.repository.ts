@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { surveyPreferencesFeedbackModules, surveys } from '../models'
+import { surveyToFeedbackModules, surveys } from '../models'
 import { eq } from 'drizzle-orm'
 import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
@@ -24,17 +24,6 @@ export class SurveyRepository {
     const survey = this.drizzle.query.surveys.findFirst({
       where: eq(surveys.id, id),
     })
-
-    const joinedSurveys = await this.drizzle
-      .select()
-      .from(surveys)
-      .where(eq(surveys.id, id))
-      .innerJoin(
-        surveyPreferencesFeedbackModules,
-        eq(surveyPreferencesFeedbackModules.surveyId, surveys.id),
-      )
-
-    console.log({ joinedSurveys })
 
     return survey
   }
@@ -66,7 +55,7 @@ export class SurveyRepository {
 
       const feedbackModules = await tx.query.feedbackModules.findMany()
       for (const module of feedbackModules) {
-        await tx.insert(surveyPreferencesFeedbackModules).values({
+        await tx.insert(surveyToFeedbackModules).values({
           surveyId: insertedSurvey.id,
           feedbackModuleId: module.id,
         })

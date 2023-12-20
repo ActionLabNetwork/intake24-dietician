@@ -17,25 +17,22 @@ export const feedbackModulesRelations = relations(
   }),
 )
 
-export const surveyToFeedbackModules = pgTable(
-  'survey_feedback_modules',
-  {
-    surveyId: integer('survey_preferences_id')
-      .notNull()
-      .references(() => surveys.id),
-    feedbackModuleId: integer('feedback_module_id')
-      .notNull()
-      .references(() => feedbackModules.id),
-    isActive: boolean('is_active').default(true).notNull(),
-    feedbackBelowRecommendedLevel: text('feedback_below_recommended_level')
-      .default('')
-      .notNull(),
-    feedbackAboveRecommendedLevel: text('feedback_above_recommended_level')
-      .default('')
-      .notNull(),
-    ...timestampFields,
-  },
-)
+export const surveyToFeedbackModules = pgTable('survey_feedback_modules', {
+  surveyId: integer('survey_preferences_id')
+    .notNull()
+    .references(() => surveys.id),
+  feedbackModuleId: integer('feedback_module_id')
+    .notNull()
+    .references(() => feedbackModules.id),
+  isActive: boolean('is_active').default(true).notNull(),
+  feedbackBelowRecommendedLevel: text('feedback_below_recommended_level')
+    .default('')
+    .notNull(),
+  feedbackAboveRecommendedLevel: text('feedback_above_recommended_level')
+    .default('')
+    .notNull(),
+  ...timestampFields,
+})
 
 export const surveyPreferencesFeedbackModulesRelations = relations(
   surveyToFeedbackModules,

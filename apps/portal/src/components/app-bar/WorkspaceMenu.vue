@@ -93,9 +93,10 @@ import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()
@@ -124,7 +125,12 @@ watch(
     }))
 
     workspaces.value = surveysWithAvatarColors
-    currentWorkspace.value = surveysWithAvatarColors[0]
+    const currentWorkspaceId = Number(route.params['id'] as string)
+    const _currentWorkspace = surveysWithAvatarColors.find(
+      survey => survey.id === currentWorkspaceId,
+    )
+
+    currentWorkspace.value = _currentWorkspace
   },
 )
 </script>
