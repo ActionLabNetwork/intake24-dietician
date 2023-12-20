@@ -1,6 +1,6 @@
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { surveys } from '../models'
+import { surveyPreferencesFeedbackModules, surveys } from '../models'
 import { eq } from 'drizzle-orm'
 import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
@@ -21,9 +21,22 @@ export class SurveyRepository {
   }
 
   public async getSurveyById(id: number) {
-    return await this.drizzle.query.surveys.findFirst({
+    const survey = this.drizzle.query.surveys.findFirst({
       where: eq(surveys.id, id),
     })
+
+    const joinedSurveys = await this.drizzle
+      .select()
+      .from(surveys)
+      .where(eq(surveys.id, id))
+      .innerJoin(
+        surveyPreferencesFeedbackModules,
+        eq(surveyPreferencesFeedbackModules.surveyId, surveys.id),
+      )
+
+    console.log({ joinedSurveys })
+
+    return survey
   }
 
   public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
@@ -39,17 +52,28 @@ export class SurveyRepository {
       reminderMessage: '',
     }
 
-    const [insertedSurvey] = await this.drizzle
-      .insert(surveys)
-      .values({
-        dieticianId,
-        ...surveyDto,
-        surveyPreference,
-      })
-      .returning({ id: surveys.id })
-      .execute()
-    assert(insertedSurvey)
-    return insertedSurvey.id
+    return await this.drizzle.transaction(async tx => {
+      const [insertedSurvey] = await tx
+        .insert(surveys)
+        .values({
+          dieticianId,
+          ...surveyDto,
+          surveyPreference,
+        })
+        .returning({ id: surveys.id })
+        .execute()
+      assert(insertedSurvey)
+
+      const feedbackModules = await tx.query.feedbackModules.findMany()
+      for (const module of feedbackModules) {
+        await tx.insert(surveyPreferencesFeedbackModules).values({
+          surveyId: insertedSurvey.id,
+          feedbackModuleId: module.id,
+        })
+      }
+
+      return insertedSurvey.id
+    })
   }
 
   public async updateSurvey(

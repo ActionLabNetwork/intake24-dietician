@@ -50,8 +50,6 @@ async function cleanupTables(sql: ReturnType<typeof initDrizzle>['sql']) {
     await sql.unsafe(statement)
     await sql.unsafe(resetSequenceStatement).catch(() => {}) // Let it fail silently if sequence doesn't exist
   }
-
-  // TODO: Write raw sql to reset sequence of all tables to 1
 }
 
 async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {

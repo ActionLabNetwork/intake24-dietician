@@ -45,7 +45,15 @@
               :key="i"
               :value="workspace"
               variant="plain"
-              @click="currentWorkspace = workspace"
+              @click="
+                () => {
+                  currentWorkspace = workspace
+                  router.push({
+                    name: 'Survey Patient List',
+                    params: { id: currentWorkspace.id },
+                  })
+                }
+              "
             >
               <template v-slot:prepend>
                 <v-avatar :color="workspace.avatarColor">

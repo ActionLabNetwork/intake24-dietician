@@ -1,11 +1,11 @@
 <template>
   <div class="wrapper">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-      <!-- <FeedbackModules
+      <FeedbackModules
         :default-state="surveyQuery.data.value.surveyPreference"
         :submit="handleSubmit"
         @update="handleFeedbackModulesUpdate"
-      /> -->
+      />
       <RecallReminders
         v-if="recallReminderProps"
         :default-state="recallReminderProps"
@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-// import { SurveyPreferenceFeedbackModules } from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
+import FeedbackModules from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
 import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
