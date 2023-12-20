@@ -4,6 +4,7 @@ import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   SurveyCreateDtoSchema,
   SurveyDtoSchema,
+  SurveyPlainDtoSchema,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyService } from '@/services/survey.service'
 
@@ -20,7 +21,7 @@ export class DieticianSurveyRouter {
         },
       })
       .input(z.undefined())
-      .output(z.array(SurveyDtoSchema))
+      .output(z.array(SurveyPlainDtoSchema))
       .query(async opts => {
         return await this.surveyService.getSurveysOfDietician(
           opts.ctx.dieticianId,

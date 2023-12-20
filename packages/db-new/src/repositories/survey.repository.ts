@@ -1,10 +1,15 @@
+import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type {
+  SurveyCreateDto,
+  SurveyDto,
+  SurveyFeedbackModuleCreateDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
+import assert from 'assert'
+import { eq } from 'drizzle-orm'
+import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { surveyToFeedbackModules, surveys } from '../models'
-import { eq } from 'drizzle-orm'
-import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
-import assert from 'assert'
-import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { feedbackModules, surveyToFeedbackModules, surveys } from '../models'
 
 @singleton()
 export class SurveyRepository {
@@ -20,47 +25,69 @@ export class SurveyRepository {
     })
   }
 
-  public async getSurveyById(id: number) {
-    const survey = this.drizzle.query.surveys.findFirst({
-      where: eq(surveys.id, id),
+  public async getSurveyById(
+    id: number,
+  ): Promise<(SurveyDto & { dieticianId: number }) | undefined> {
+    const queryResult = await this.drizzle.transaction(async tx => {
+      const survey = await tx.query.surveys.findFirst({
+        where: eq(surveys.id, id),
+      })
+      if (!survey) return undefined
+      const queriedFeedbackModules = await this.drizzle
+        .select()
+        .from(surveyToFeedbackModules)
+        .rightJoin(
+          feedbackModules,
+          eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
+        )
+        .execute()
+      return { survey, queriedFeedbackModules }
     })
+    if (!queryResult) return undefined
 
-    return survey
+    const denormalizedFeedbackModules = queryResult.queriedFeedbackModules.map(
+      row => ({
+        isActive: false,
+        feedbackModuleId: row['feedback-module'].id,
+        feedbackBelowRecommendedLevel: '',
+        feedbackAboveRecommendedLevel: '',
+        ...row['feedback-module'],
+        ...row['survey_feedback_modules'],
+      }),
+    )
+    return {
+      ...queryResult.survey,
+      feedbackModules: denormalizedFeedbackModules,
+    }
   }
 
-  public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
-    const surveyPreference: SurveyPreference = {
-      theme: 'Classic',
-      sendAutomatedFeedback: true,
-      notifyEmail: true,
-      notifySMS: true,
-      reminderCondition: {
-        reminderEvery: { every: 5, unit: 'days' },
-        reminderEnds: { type: 'never' },
-      },
-      reminderMessage: '',
-    }
-
+  public async createSurvey(
+    dieticianId: number,
+    surveyDto: SurveyCreateDto & {
+      surveyPreference: SurveyPreference
+      feedbackModules: SurveyFeedbackModuleCreateDto[]
+    },
+  ) {
     return await this.drizzle.transaction(async tx => {
+      const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
       const [insertedSurvey] = await tx
         .insert(surveys)
         .values({
           dieticianId,
-          ...surveyDto,
-          surveyPreference,
+          ...surveyDtoWithoutModules,
         })
         .returning({ id: surveys.id })
         .execute()
       assert(insertedSurvey)
-
-      const feedbackModules = await tx.query.feedbackModules.findMany()
-      for (const module of feedbackModules) {
-        await tx.insert(surveyToFeedbackModules).values({
-          surveyId: insertedSurvey.id,
-          feedbackModuleId: module.id,
-        })
-      }
-
+      await tx
+        .insert(surveyToFeedbackModules)
+        .values(
+          feedbackModules.map(module => ({
+            ...module,
+            surveyId: insertedSurvey.id,
+          })),
+        )
+        .execute()
       return insertedSurvey.id
     })
   }
@@ -69,13 +96,30 @@ export class SurveyRepository {
     surveyId: number,
     surveyDto: Partial<SurveyCreateDto>,
   ) {
-    await this.drizzle
-      .update(surveys)
-      .set({
-        ...surveyDto,
-        updatedAt: new Date(),
+    await this.drizzle.transaction(async tx => {
+      const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
+      await tx
+        .update(surveys)
+        .set({
+          ...surveyDtoWithoutModules,
+          updatedAt: new Date(),
+        })
+        .where(eq(surveys.id, surveyId))
+        .execute()
+      if (!feedbackModules) return
+      feedbackModules.forEach(module => {
+        const { feedbackModuleId, ...rest } = module
+        tx.insert(surveyToFeedbackModules)
+          .values({ ...module, surveyId })
+          .onConflictDoUpdate({
+            target: [
+              surveyToFeedbackModules.feedbackModuleId,
+              surveyToFeedbackModules.surveyId,
+            ],
+            set: { ...rest, updatedAt: moment().toDate() },
+          })
+          .execute()
       })
-      .where(eq(surveys.id, surveyId))
-      .execute()
+    })
   }
 }

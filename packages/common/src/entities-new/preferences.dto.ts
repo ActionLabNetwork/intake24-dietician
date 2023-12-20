@@ -32,7 +32,7 @@ export const ReminderConditionSchema = z.object({
 export type ReminderCondition = z.infer<typeof ReminderConditionSchema>
 
 const CommonPreferenceSchema = z.object({
-  theme: z.enum(['Classic', 'Fun']).default('Classic'),
+  theme: z.enum(['Classic', 'Fun']),
   sendAutomatedFeedback: z.boolean(),
   reminderCondition: ReminderConditionSchema,
   reminderMessage: z.string(),
