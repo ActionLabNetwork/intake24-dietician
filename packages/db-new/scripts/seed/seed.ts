@@ -43,7 +43,12 @@ async function cleanupTables(sql: ReturnType<typeof initDrizzle>['sql']) {
   for (const table of tables) {
     const tableName = table['tablename']
     const statement = `TRUNCATE TABLE "${tableName}" CASCADE`
+    const resetSequenceStatement = `
+      SELECT setval(pg_get_serial_sequence('${tableName}', 'id'), 1, false);
+    `
+
     await sql.unsafe(statement)
+    await sql.unsafe(resetSequenceStatement).catch(() => {}) // Let it fail silently if sequence doesn't exist
   }
 
   // TODO: Write raw sql to reset sequence of all tables to 1
@@ -187,8 +192,6 @@ async function seedNutrientTypes(
     description: string
     unit_id: string
   }[]
-
-  console.log({ length: nutrientTypesData.length })
 
   const typesPromises = nutrientTypesData.map(async type => {
     const unitId = await drizzle
