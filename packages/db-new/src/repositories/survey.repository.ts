@@ -54,6 +54,11 @@ export class SurveyRepository {
         ...row['survey_feedback_modules'],
       }),
     )
+
+    denormalizedFeedbackModules.sort(
+      (a, b) => a.feedbackModuleId - b.feedbackModuleId,
+    )
+
     return {
       ...queryResult.survey,
       feedbackModules: denormalizedFeedbackModules,

@@ -1,11 +1,18 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, serial, text, unique } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  unique,
+} from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { surveys } from './survey.model'
 
 export const feedbackModules = pgTable('feedback-module', {
   id: serial('id').primaryKey(),
-  name: text('name').notNull(),
+  name: text('name').unique().notNull(),
   description: text('description').default('').notNull(),
   ...timestampFields,
 })
@@ -36,9 +43,9 @@ export const surveyToFeedbackModules = pgTable(
       .notNull(),
     ...timestampFields,
   },
-  (t) => ({
-    surveyModuleUnique: unique().on(t.surveyId, t.feedbackModuleId)
-  })
+  t => ({
+    surveyModuleUnique: unique().on(t.surveyId, t.feedbackModuleId),
+  }),
 )
 
 export const surveyPreferencesFeedbackModulesRelations = relations(

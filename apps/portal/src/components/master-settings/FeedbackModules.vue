@@ -1,9 +1,11 @@
 <template>
   <div>
     <v-container>
+      <pre>FeedbackModuleSetup: {{ feedbackModuleSetup }}</pre>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
+        <pre>{{ feedbackMapping }}</pre>
         <div>
           <h1 class="text heading">Feedback module setup</h1>
           <h3 class="text subheading">
@@ -110,6 +112,7 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 } from './ModuleSelectionAndFeedbackPersonalisation.vue'
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities/survey.dto'
 import { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -122,12 +125,12 @@ export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
 }
 
 const props = defineProps<{
-  defaultState: SurveyPreferenceFeedbackModules
+  defaultState: SurveyDto
   submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  update: [value: SurveyPreferenceFeedbackModules]
+  update: [value: SurveyDto]
 }>()
 
 type CSSClass = string | string[] | object
@@ -172,7 +175,7 @@ const createFeedbackEntry = (key: ModuleName) => {
   if (!feedbackModel) {
     $toast.error('Failed to load feedback modules')
     return {
-      id: 0,
+      name: 'N/A',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
@@ -180,7 +183,7 @@ const createFeedbackEntry = (key: ModuleName) => {
   }
 
   return {
-    id: feedbackModel.id,
+    name: feedbackModel.name,
     feedbackBelow: feedbackModel.feedbackBelowRecommendedLevel,
     feedbackAbove: feedbackModel.feedbackAboveRecommendedLevel,
     isActive: feedbackModel.isActive,
@@ -189,13 +192,13 @@ const createFeedbackEntry = (key: ModuleName) => {
 
 const $toast = useToast()
 
-const feedbackModuleSetup = ref<SurveyPreferenceFeedbackModules>(
-  toRefs(props).defaultState.value,
-)
+const feedbackModuleSetup = ref(toRefs(props).defaultState.value)
 
-const theme = ref<Theme>(toRefs(props).defaultState.value.theme as Theme)
+const theme = ref<Theme>(
+  toRefs(props).defaultState.value.surveyPreference.theme as Theme,
+)
 const sendAutomatedFeedback = ref<boolean>(
-  toRefs(props).defaultState.value.sendAutomatedFeedback,
+  toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
 )
 const feedbackMapping = ref<FeedbackMapping>({
   '/meal-diary': createFeedbackEntry('Meal diary'),
@@ -208,7 +211,10 @@ const feedbackMapping = ref<FeedbackMapping>({
 const handleVisualThemeUpdate = (_theme: Theme) => {
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
-    theme: _theme,
+    surveyPreference: {
+      ...feedbackModuleSetup.value.surveyPreference,
+      theme: _theme,
+    },
   }
   theme.value = _theme
 }
@@ -216,7 +222,10 @@ const handleVisualThemeUpdate = (_theme: Theme) => {
 const handleSendAutomatedFeedback = (automatedFeedback: boolean) => {
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
-    sendAutomatedFeedback: automatedFeedback,
+    surveyPreference: {
+      ...feedbackModuleSetup.value.surveyPreference,
+      sendAutomatedFeedback: automatedFeedback,
+    },
   }
   sendAutomatedFeedback.value = automatedFeedback
 }
@@ -225,7 +234,7 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
   const updatedFeedbackModules = Object.values(feedbackMapping).reduce(
     (acc, updatedModule) => {
       const feedbackModule = feedbackModuleSetup.value.feedbackModules.find(
-        module => module.id === updatedModule.id,
+        module => module.name === updatedModule.name,
       )
 
       if (feedbackModule) {
@@ -241,6 +250,7 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
     },
     [] as typeof feedbackModuleSetup.value.feedbackModules,
   )
+  console.log({ updatedFeedbackModules })
 
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,

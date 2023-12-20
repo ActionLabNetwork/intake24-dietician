@@ -25,7 +25,7 @@ export type ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels = Record<
   ModuleRoute,
   {
     component: Component
-    id: number
+    name: string
     feedbackAbove: string
     feedbackBelow: string
     isActive: boolean

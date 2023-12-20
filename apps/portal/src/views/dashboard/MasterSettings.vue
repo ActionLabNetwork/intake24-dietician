@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
       <FeedbackModules
-        :default-state="surveyQuery.data.value.surveyPreference"
+        :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
         @update="handleFeedbackModulesUpdate"
       />
@@ -47,6 +47,7 @@ import {
   ReminderCondition,
   SurveyPreference,
 } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
 const route = useRoute()
@@ -91,14 +92,12 @@ const notificationsProps = computed(() => {
   return undefined
 })
 
-// const handleFeedbackModulesUpdate = (
-//   value: SurveyPreferenceFeedbackModules,
-// ) => {
-//   if (!formData.value) {
-//     return
-//   }
-//   formData.value = { ...formData.value, ...value }
-// }
+const handleFeedbackModulesUpdate = (value: SurveyDto) => {
+  if (!formData.value) {
+    return
+  }
+  formData.value = { ...formData.value, ...value }
+}
 
 const handleRecallRemindersUpdate = (value: {
   reminderCondition: ReminderCondition
@@ -107,8 +106,6 @@ const handleRecallRemindersUpdate = (value: {
   if (!formData.value) {
     return
   }
-
-  console.log({ recallFreq: value })
 
   formData.value = {
     ...formData.value,
@@ -137,8 +134,6 @@ const handleSubmit = async (): Promise<void> => {
     $toast.error('No data to submit')
     return
   }
-
-  console.log({ FORMAAA: formData.value })
 
   // TODO: Add zod validation
   // updateSurveyPreferencesMutation.mutate(formData.value, {
