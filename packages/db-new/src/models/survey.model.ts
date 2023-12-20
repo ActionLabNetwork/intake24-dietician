@@ -4,6 +4,7 @@ import { timestampFields } from './model.common'
 import { typedJsonbFromSchema } from './modelUtils'
 import { dieticians, patients } from './user.model'
 import { SurveyPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { surveyToFeedbackModules } from './feedback-module.model'
 
 export const surveys = pgTable('survey', {
   id: serial('id').primaryKey(),
@@ -16,7 +17,9 @@ export const surveys = pgTable('survey', {
   alias: text('alias').notNull(),
   recallSubmissionURL: text('recall_submission_url').notNull(),
   isActive: boolean('is_active').default(true).notNull(),
-  surveyPreference: typedJsonbFromSchema(SurveyPreferenceSchema)("preference").notNull(),
+  surveyPreference: typedJsonbFromSchema(SurveyPreferenceSchema)(
+    'preference',
+  ).notNull(),
   ...timestampFields,
 })
 
@@ -26,6 +29,7 @@ export const surveyRelations = relations(surveys, ({ one, many }) => ({
     references: [dieticians.id],
   }),
   patients: many(patients),
+  surveyToFeedbackModules: many(surveyToFeedbackModules),
 }))
 
 // export const recall = pgTable('recall', {
