@@ -87,7 +87,7 @@
 </template>
 
 <script setup lang="ts">
-import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
@@ -102,7 +102,7 @@ const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()
 const { currentWorkspace } = storeToRefs(workspaceStore)
 
-const workspaces = ref<(SurveyDto & { avatarColor: string })[]>([])
+const workspaces = ref<(SurveyPlainDto & { avatarColor: string })[]>([])
 const otherWorkspaces = computed(() =>
   workspaces.value.filter(
     workspace => workspace.id !== currentWorkspace.value?.id,
@@ -113,6 +113,8 @@ watch(
   () => surveysQuery.data.value,
   newSurveysQueryData => {
     if (!newSurveysQueryData || newSurveysQueryData.length === 0) return
+
+    console.log({ newSurveysQueryData })
 
     const surveys = newSurveysQueryData
     const colors = generateDistinctColors(
@@ -126,9 +128,10 @@ watch(
 
     workspaces.value = surveysWithAvatarColors
     const currentWorkspaceId = Number(route.params['id'] as string)
-    const _currentWorkspace = surveysWithAvatarColors.find(
-      survey => survey.id === currentWorkspaceId,
-    )
+    const _currentWorkspace =
+      surveysWithAvatarColors.find(
+        survey => survey.id === currentWorkspaceId,
+      ) || workspaces.value[0]
 
     currentWorkspace.value = _currentWorkspace
   },

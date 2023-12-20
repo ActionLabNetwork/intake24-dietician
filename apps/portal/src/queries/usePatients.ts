@@ -2,13 +2,14 @@ import { useQuery, useQueryClient } from '@tanstack/vue-query'
 // import { getDefaultAvatar } from '../utils/profile'
 import trpcClient from '../trpc/trpc'
 import { getDefaultAvatar } from '../utils/profile'
+import { Ref } from 'vue'
 
-export const usePatients = (surveyId: string) => {
-  const { data, isLoading, isError, error, isSuccess } = useQuery({
-    queryKey: ['patients'],
+export const usePatients = (surveyId: Ref<string>) => {
+  const { data, isLoading, isError, error, isSuccess, refetch } = useQuery({
+    queryKey: ['patients', surveyId],
     queryFn: () => {
       return trpcClient.dieticianPatient.getPatients.query({
-        surveyId: Number(surveyId),
+        surveyId: Number(surveyId.value),
       })
     },
   })
@@ -19,6 +20,7 @@ export const usePatients = (surveyId: string) => {
     isError,
     error,
     isSuccess,
+    refetch,
   }
 }
 

@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/stores/auth'
@@ -42,7 +42,11 @@ const { isProfileLoading } = storeToRefs(authStore)
 
 const route = useRoute()
 
-const patientsQuery = usePatients(route.params['id'] as string)
+const surveyId = computed(() => {
+  return route.params['id'] as string
+})
+
+const patientsQuery = usePatients(surveyId)
 
 const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['id']}/add-patient`
 
@@ -69,6 +73,13 @@ const summaryKeys = computed((): SummaryKeys => {
     entrySingular: t('patients.entrySingular'),
   }
 })
+
+watch(
+  () => surveyId.value,
+  () => {
+    patientsQuery.refetch()
+  },
+)
 </script>
 
 <style scoped lang="scss">
