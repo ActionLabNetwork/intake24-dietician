@@ -6,7 +6,7 @@ import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
 import trpcClient from '../trpc/trpc'
 
 export const useSurveys = () => {
-  const { data, isLoading, isError, error, isSuccess } = useQuery({
+  const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
       return trpcClient.dieticianSurvey.getSurveys.query()
@@ -15,7 +15,7 @@ export const useSurveys = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -25,7 +25,7 @@ export const useSurveys = () => {
 export const useSurveyById = (id: string) => {
   const queryClient = useQueryClient()
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery({
+  const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: [id],
     queryFn: async () => {
       const response = await trpcClient.dieticianSurvey.getSurveyById.query({
@@ -43,7 +43,7 @@ export const useSurveyById = (id: string) => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -55,7 +55,7 @@ export const useSurveysByOwnerId = (ownerId: string) => {
   const queryClient = useQueryClient()
   const sessionUri = `${env.VITE_AUTH_API_HOST}/survey/owner/${ownerId}`
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
+  const { data, isPending, isError, error, isSuccess } = useQuery<
     unknown,
     AxiosError<ApiResponseWithError>,
     AxiosResponse<{
@@ -78,7 +78,7 @@ export const useSurveysByOwnerId = (ownerId: string) => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,

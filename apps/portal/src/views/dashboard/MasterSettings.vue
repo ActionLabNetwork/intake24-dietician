@@ -100,7 +100,6 @@ const handleRecallRemindersUpdate = (value: {
   reminderCondition: ReminderCondition
   reminderMessage: string
 }) => {
-  console.log({ value })
   if (!formData.value) {
     return
   }
@@ -158,10 +157,6 @@ const handleSubmit = async (): Promise<void> => {
 watch(surveyQueryData, newSurveyQueryData => {
   if (!newSurveyQueryData?.surveyPreference) return
   formData.value = newSurveyQueryData
-})
-
-watch(formData, newFormData => {
-  console.log({ newFormData })
 })
 </script>
 

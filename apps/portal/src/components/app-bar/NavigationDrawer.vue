@@ -62,7 +62,7 @@ const navItems = [
     to: '/dashboard/my-surveys',
   },
   {
-    title: 'My Profile',
+    title: 'My profile',
     value: 'myProfile',
     to: '/dashboard/my-profile',
   },

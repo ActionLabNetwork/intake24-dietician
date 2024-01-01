@@ -26,7 +26,7 @@
         </div>
         <div class="v-col pt-10">
           <v-select
-            :items="units"
+            :items="ReminderEverySchema.shape.unit.options"
             variant="solo-filled"
             flat
             :model-value="reminderConditions.reminderEvery.unit"
@@ -97,10 +97,10 @@ import { capitalize } from 'radash'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  reminderEndsTypes,
-  units,
-} from '@intake24-dietician/common/types/reminder'
-import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
+  ReminderEverySchema,
+  ReminderCondition,
+  ReminderEndCondition,
+} from '@intake24-dietician/common/entities-new/preferences.dto'
 
 const props = withDefaults(
   defineProps<{ defaultState: ReminderCondition; hideLabel?: boolean }>(),
@@ -122,9 +122,9 @@ onMounted(() => {
   emit('update', reminderConditions.value)
 })
 
-const frequencyEndOptions = reminderEndsTypes.map(type => ({
-  label: capitalize(type),
-  value: type,
+const frequencyEndOptions = ReminderEndCondition.options.map(type => ({
+  label: capitalize(type.shape.type.value),
+  value: type.shape.type.value,
 }))
 
 const frequencyRadio = ref<(typeof frequencyEndOptions)[number]['value']>(

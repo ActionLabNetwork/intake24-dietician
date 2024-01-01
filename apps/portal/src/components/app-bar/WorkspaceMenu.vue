@@ -14,36 +14,23 @@
         <div v-else>
           <v-list v-if="currentWorkspace" style="overflow: hidden">
             <v-list-subheader>Current Workspace</v-list-subheader>
-            <v-list-item
-              loading="!currentWorkspace"
+            <WorkspaceMenuItem
+              :workspace="currentWorkspace"
               @click="
                 router.push({
                   name: 'Survey Patient List',
                   params: { id: currentWorkspace.id },
                 })
               "
-            >
-              <template v-if="currentWorkspace" v-slot:prepend>
-                <v-avatar :color="currentWorkspace.avatarColor">
-                  <span class="text-h5">
-                    {{ currentWorkspace.surveyName[0]?.toLocaleUpperCase() }}
-                  </span>
-                </v-avatar>
-              </template>
-              <div v-if="currentWorkspace">
-                <div class="font-weight-medium text-black">
-                  {{ currentWorkspace.surveyName }}
-                </div>
-                <div>ID: {{ currentWorkspace.id }}</div>
-              </div>
-            </v-list-item>
+            />
           </v-list>
           <v-list v-if="workspaces.length > 1">
             <v-list-subheader>Other Workspaces</v-list-subheader>
-            <v-list-item
-              v-for="(workspace, i) in otherWorkspaces"
-              :key="i"
+            <WorkspaceMenuItem
+              v-for="workspace in otherWorkspaces"
+              :key="workspace.id"
               :value="workspace"
+              :workspace="workspace"
               variant="plain"
               @click="
                 () => {
@@ -54,21 +41,7 @@
                   })
                 }
               "
-            >
-              <template v-slot:prepend>
-                <v-avatar :color="workspace.avatarColor">
-                  <span class="text-h5">
-                    {{ workspace.surveyName[0]?.toLocaleUpperCase() }}
-                  </span>
-                </v-avatar>
-              </template>
-              <div>
-                <div class="font-weight-medium text-black">
-                  {{ workspace.surveyName }}
-                </div>
-                <div>ID: {{ workspace.id }}</div>
-              </div>
-            </v-list-item>
+            />
           </v-list>
         </div>
         <div class="pa-3">
@@ -91,6 +64,7 @@ import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/sur
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
+import WorkspaceMenuItem from './WorkspaceMenuItem.vue'
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
@@ -113,8 +87,6 @@ watch(
   () => surveysQuery.data.value,
   newSurveysQueryData => {
     if (!newSurveysQueryData || newSurveysQueryData.length === 0) return
-
-    console.log({ newSurveysQueryData })
 
     const surveys = newSurveysQueryData
     const colors = generateDistinctColors(
@@ -165,9 +137,9 @@ watch(
 
 .my-menu::after {
   border-bottom: 13px solid #000;
-  filter: blur(10px);
+  filter: blur(25px);
   opacity: 0.6;
   transform: translateY(-15px);
-  z-index: -2;
+  z-index: 2;
 }
 </style>

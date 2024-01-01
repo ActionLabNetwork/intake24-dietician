@@ -31,7 +31,7 @@ import router from '@/router'
 import { ref, watch } from 'vue'
 import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
-const { data, isLoading: isProfileLoading } = useProfile()
+const { data, isPending: isProfileLoading } = useProfile()
 
 const user = ref(data.value)
 const _user = ref({
@@ -45,7 +45,6 @@ watch(
   newData => {
     if (!newData) return
 
-    console.log({ newData })
     const { firstName, lastName } = newData
     const email = newData.user.email
 

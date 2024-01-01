@@ -20,7 +20,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3 mt-sm-0"
-            :loading="updateProfileMutation.isLoading.value"
+            :loading="updateProfileMutation.isPending.value"
             @click="handleSubmit"
           >
             {{ t('profile.cta') }}
@@ -56,7 +56,7 @@
             type="submit"
             color="primary text-capitalize"
             class="mt-3"
-            :loading="updateProfileMutation.isLoading.value"
+            :loading="updateProfileMutation.isPending.value"
           >
             {{ t('profile.cta') }}
           </v-btn>

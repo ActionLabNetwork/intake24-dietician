@@ -5,7 +5,7 @@ import { ref, watch } from 'vue'
 export const useAuthStore = defineStore('auth', () => {
   const {
     data,
-    isLoading: isProfileLoading,
+    isPending: isProfileLoading,
     isSuccess: profileQuerySucceeded,
   } = useProfile()
   const profile = ref(data.value)

@@ -6,7 +6,11 @@
  * @packageDocumentation
  */
 import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
-import type { DieticianCreateDto, PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type {
+  DieticianCreateDto,
+  PatientCreateDto,
+  PatientUpdateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import {
   TokenPayloadSchema,
   type Token,
@@ -260,7 +264,10 @@ export class AuthService {
     }
   }
 
-  public uploadDieticianAvatar = async (dieticianId: number, buffer: string) => {
+  public uploadDieticianAvatar = async (
+    dieticianId: number,
+    buffer: string,
+  ) => {
     return await this.userRepository.uploadDieticianAvatar(dieticianId, buffer)
   }
 
@@ -292,12 +299,18 @@ export class AuthService {
     dieticianId: number,
     patientId: number,
     email: string,
-    patientDto: Partial<PatientCreateDto>,
+    patientDto: Partial<PatientUpdateDto>,
   ) => {
-    const isEmailValid = await this.validateNewEmailAvailability(email)
-    if (!isEmailValid) {
-      throw new ClientError('Invalid email address. Please try again.')
+    const patient = await this.userRepository.getPatient(patientId)
+    console.log({ patientDto })
+
+    if (patient?.user.email !== email) {
+      const isEmailValid = await this.validateNewEmailAvailability(email)
+      if (!isEmailValid) {
+        throw new ClientError('Invalid email address. Please try again.')
+      }
     }
+
     if (
       !(await this.userRepository.isPatientDieticians({
         dieticianId,

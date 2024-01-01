@@ -20,9 +20,13 @@ export class RecallRepository {
   }
 
   public async getRecallsOfPatient(patientId: number) {
-    return await this.drizzle.query.recalls.findMany({
-      where: eq(recalls.patientId, patientId),
-    })
+    const _recalls = await this.drizzle.query.recalls
+      .findMany({
+        where: eq(recalls.patientId, patientId),
+      })
+      .execute()
+
+    return _recalls
   }
 
   public async createRecall(patientId: number, recall: IRecall) {

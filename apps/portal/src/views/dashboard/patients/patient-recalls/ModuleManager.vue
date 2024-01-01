@@ -40,25 +40,22 @@ const component = shallowRef<Component>(
   Object.values(routeToModuleComponentMapping)[0] ?? MealDiaryModule,
 )
 
-const recallsQuery = useRecallsByUserId(
-  ref(`dietician:survey_id:${route.params['id']}`),
-)
-// const recallsQuery = useRecallsByUserId(ref('4072'))
+// const recallsQuery = useRecallsByUserId(
+//   ref(`dietician:survey_id:${route.params['id']}`),
+// )
+const recallsQuery = useRecallsByUserId(ref('1'))
 
-const recallsData = computed(() =>
-  recallsQuery.data.value?.data.ok ? recallsQuery.data.value?.data.value : [],
-)
+const recallsData = computed(() => recallsQuery.data.value ?? [])
 
 const recallDates = computed(() => {
-  const data = recallsQuery.data.value?.data
-  if (data?.ok) {
-    return data.value.map(recall => ({
-      id: recall.id,
-      startTime: recall.startTime,
-      endTime: recall.endTime,
-    }))
-  }
-  return []
+  const data = recallsQuery.data.value
+  if (!data) return []
+
+  return data.map(recall => ({
+    id: recall.id,
+    startTime: recall.recall.startTime,
+    endTime: recall.recall.endTime,
+  }))
 })
 
 watch(
@@ -70,9 +67,9 @@ watch(
 )
 
 watch(
-  () => recallsQuery.data.value?.data,
+  () => recallsQuery.data.value,
   data => {
-    if (data?.ok) {
+    if (data) {
       // Default to latest recall date
       date.value = recallDates.value.at(-1)?.startTime ?? new Date()
     }

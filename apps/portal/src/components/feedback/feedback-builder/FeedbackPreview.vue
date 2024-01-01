@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div id="print-content" justify="center">
+  <div id="print-content" justify="center" elevation="2">
     <v-card flat>
       <div v-if="modules && modules.length > 0">
         <div
@@ -64,14 +64,14 @@
 
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
-import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
 import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
+import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 interface Props {
   patientName: string
-  recallsData: IRecallExtended[]
+  recallsData: RecallDto[]
   recallDate: Date
   modules: { key: ModuleRoute; component: Component; feedback: string }[]
   dialog: boolean

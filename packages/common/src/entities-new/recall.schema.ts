@@ -23,6 +23,7 @@ export const RecallMealSchema = z.object({
   missingFoods: z.array(recordOfAnySchema).nullable(),
   foods: z.array(recordOfAnySchema),
 })
+export type RecallMeal = z.infer<typeof RecallMealSchema>
 
 export const RecallPotionSizeSchema = z.object({
   id: z.string(),

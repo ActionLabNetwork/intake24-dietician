@@ -58,7 +58,7 @@
                   color="secondary text-capitalize"
                   class="mb-10"
                   :disabled="showVerificationTokenField"
-                  :loading="generateTokenMutation.isLoading.value"
+                  :loading="generateTokenMutation.isPending.value"
                   @click="handleSendVerificationToken"
                 >
                   {{

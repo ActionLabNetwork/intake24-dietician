@@ -3,7 +3,7 @@ import trpcClient from '../trpc/trpc'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 export const useRegister = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: async (registerBody: { email: string; password: string }) =>
         trpcClient.authDietician.register.mutate(registerBody),
@@ -11,7 +11,7 @@ export const useRegister = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -21,15 +21,16 @@ export const useRegister = () => {
 }
 
 export const useLogin = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
-      mutationFn: (loginBody: { email: string; password: string }) =>
-        trpcClient.authDietician.login.mutate(loginBody),
+      mutationFn: (loginBody: { email: string; password: string }) => {
+        return trpcClient.authDietician.login.mutate(loginBody)
+      },
     })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -39,7 +40,7 @@ export const useLogin = () => {
 }
 
 export const useForgotPassword = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (email: { email: string }) =>
         trpcClient.authDietician.forgotPassword.mutate(email),
@@ -47,7 +48,7 @@ export const useForgotPassword = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -57,14 +58,14 @@ export const useForgotPassword = () => {
 }
 
 export const useResetPassword = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (data: { password: string; token: string }) =>
       trpcClient.authDietician.resetPassword.mutate(data),
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -73,13 +74,13 @@ export const useResetPassword = () => {
 }
 
 export const useLogout = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: () => trpcClient.authDietician.logout.mutate(),
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -88,7 +89,7 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (updateProfileBody: {
         emailAddress: string
@@ -104,7 +105,7 @@ export const useUpdateProfile = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -114,16 +115,19 @@ export const useUpdateProfile = () => {
 }
 
 export const useGenerateToken = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
-    (generateTokenBody: { currentEmail: string; newEmail: string }) =>
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (generateTokenBody: {
+      currentEmail: string
+      newEmail: string
+    }) =>
       trpcClient.dieticianProfile.generateChangeEmailToken.mutate(
         generateTokenBody,
       ),
-  )
+  })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -132,16 +136,16 @@ export const useGenerateToken = () => {
 }
 
 export const useVerifyToken = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
-    (verifyTokenBody: { token: string }) =>
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (verifyTokenBody: { token: string }) =>
       trpcClient.dieticianProfile.verifyChangeEmailToken.mutate(
         verifyTokenBody,
       ),
-  )
+  })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -150,8 +154,8 @@ export const useVerifyToken = () => {
 }
 
 export const useUploadAvatar = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation(
-    (uploadAvatarBody: { avatarBase64: string }) => {
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (uploadAvatarBody: { avatarBase64: string }) => {
       const formData = new FormData()
       formData.append('fileBase64', uploadAvatarBody.avatarBase64)
       return trpcClient.dieticianProfile.uploadAvatar.mutate(uploadAvatarBody)
@@ -161,11 +165,11 @@ export const useUploadAvatar = () => {
       //   },
       // })
     },
-  )
+  })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,

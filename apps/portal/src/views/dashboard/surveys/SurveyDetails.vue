@@ -19,7 +19,7 @@
           Back to survey list
         </v-btn>
       </v-row>
-      <v-row class="mt-6">
+      <v-row>
         <!-- <v-col cols="12" md="3"> -->
         <!-- <NavCard class="mx-sm-0 mx-auto mb-10" /> -->
         <!-- </v-col> -->

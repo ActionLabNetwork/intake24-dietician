@@ -228,6 +228,108 @@ const routes = [
             },
           },
           {
+            path: 'patient-list/patient-records/:id/feedback-records/compose-feedback',
+            name: 'Survey Patient Compose New Feedback',
+            component: () =>
+              import(
+                '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
+              ),
+          },
+          {
+            path: 'patient-list/patient-records/:id/feedback-records/compose-feedback/preview',
+            name: 'Survey Patient Preview feedback',
+            component: () =>
+              import(
+                '@/components/feedback/feedback-builder/FeedbackPreview.vue'
+              ),
+          },
+          {
+            path: 'patient-list/patient-records/:id',
+            name: 'Survey Patient Records',
+            component: () =>
+              import('@/views/dashboard/patients/PatientRecords.vue'),
+            children: [
+              {
+                path: 'feedback-records',
+                name: 'Survey Patient Feedback Records',
+                component: () =>
+                  import(
+                    '@/components/patients/feedback-records/FeedbackRecords.vue'
+                  ),
+                meta: {
+                  requiresAuth: true,
+                },
+              },
+              {
+                path: 'patient-details',
+                name: 'Survey Patient Details',
+                component: () =>
+                  import(
+                    '@/components/patients/patient-details/PatientDetails.vue'
+                  ),
+                meta: {
+                  requiresAuth: true,
+                } as const,
+              },
+              {
+                path: 'patient-recalls',
+                name: 'Survey Patient Recalls',
+                component: () =>
+                  import(
+                    '@/components/patients/patient-details/PatientRecalls.vue'
+                  ),
+                children: [
+                  {
+                    path: 'meal-diary',
+                    name: 'Survey Patient Meal Diary',
+                    component: () =>
+                      import(
+                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                      ),
+                    meta: {
+                      requiresAuth: true,
+                    } as const,
+                  },
+                  {
+                    path: 'energy-intake',
+                    name: 'Survey Patient Energy Intake',
+                    component: () =>
+                      import(
+                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                      ),
+                  },
+                  {
+                    path: 'carbs-exchange',
+                    name: 'Survey Patient Carbs Exchange',
+                    component: () =>
+                      import(
+                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                      ),
+                  },
+                  {
+                    path: 'fibre-intake',
+                    name: 'Survey Patient Fibre Intake',
+                    component: () =>
+                      import(
+                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                      ),
+                  },
+                  {
+                    path: 'water-intake',
+                    name: 'Survey Patient Water Intake',
+                    component: () =>
+                      import(
+                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
+                      ),
+                  },
+                ],
+              },
+            ],
+            meta: {
+              requiresAuth: true,
+            },
+          },
+          {
             path: 'add-patient',
             name: 'Survey Add Patient',
             component: () =>
@@ -287,12 +389,7 @@ router.beforeEach(async (to, _from, next) => {
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 const isUserAuthenticated = async () => {
   try {
-    // const response = await axios.get(env.VITE_AUTH_API_VALIDATE_JWT_URI, {
-    //   withCredentials: true,
-    // })
-    const result = await trpcClient.authDietician.validateSession.query()
-    return result
-    // return response.data.isAuthenticated
+    return await trpcClient.authDietician.validateSession.query()
   } catch (error) {
     return false
   }

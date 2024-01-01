@@ -14,7 +14,7 @@
     <div v-if="recallData" :style="timelineStyle" class="timeline">
       <v-timeline side="end" align="start" density="compact">
         <v-timeline-item
-          v-for="meal in recallData.meals"
+          v-for="meal in recallData.recall.meals"
           :key="meal.id"
           dot-color="orange"
           size="small"
@@ -113,7 +113,7 @@ watch(
   () => props.mode,
   newMode => {
     if (newMode === 'preview' && recallData.value) {
-      openPanels.value = recallData.value.meals.map((_, index) => index)
+      openPanels.value = recallData.value.recall.meals.map((_, index) => index)
     } else {
       openPanels.value = []
     }

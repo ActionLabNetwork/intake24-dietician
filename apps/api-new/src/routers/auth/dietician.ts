@@ -1,5 +1,6 @@
 import { AuthService } from '@/services/auth.service'
 import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 import type { Token } from '@intake24-dietician/common/types/auth'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
@@ -61,12 +62,7 @@ export class AuthDieticianRouter {
           summary: 'Login as a dietician',
         },
       })
-      .input(
-        z.object({
-          email: z.string().email(),
-          password: z.string(),
-        }),
-      )
+      .input(LoginDtoSchema)
       .output(z.string())
       .mutation(async opts => {
         const userWithTokens = await this.authService.login(

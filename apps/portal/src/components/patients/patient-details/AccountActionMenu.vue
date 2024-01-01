@@ -43,7 +43,7 @@
           <v-card-text>
             <p>
               Are you sure you want to
-              {{ props.patient?.deletionDate ? 'activate' : 'archive' }}
+              {{ props.patient?.isArchived ? 'activate' : 'archive' }}
               patient:
             </p>
             <p>
@@ -75,14 +75,10 @@ import {
   useRestorePatient,
   useDeletePatient,
 } from '@intake24-dietician/portal/mutations/usePatients'
-import { UserDTO } from '@intake24-dietician/common/entities/user.dto'
+import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 const props = defineProps<{
-  patient:
-    | (Omit<UserDTO, 'password'> & {
-        deletionDate: Date
-      })
-    | undefined
+  patient: PatientWithUserDto | undefined
 }>()
 
 const emit = defineEmits<{ update: [null] }>()
@@ -97,7 +93,7 @@ const archiveOrActivateLabel = computed(() => {
 })
 
 const activateOrDelete = computed((): 'activate' | 'delete' => {
-  return props.patient?.deletionDate ? 'activate' : 'delete'
+  return props.patient?.isArchived ? 'activate' : 'delete'
 })
 
 const actions = computed(
@@ -121,18 +117,18 @@ const actions = computed(
 )
 
 const fullName = computed(() => {
-  return `${props.patient?.patientProfile?.firstName} ${props.patient?.patientProfile?.lastName}`
+  return `${props.patient?.firstName} ${props.patient?.lastName}`
 })
 
 const dialog = ref({
   show: false,
   confirmHandler: () => {
     if (activateOrDelete.value === 'activate') {
-      activatePatientMutation.mutate(props.patient?.id)
+      activatePatientMutation.mutate(props.patient?.user.id)
       emit('update', null)
       dialog.value.show = false
     } else {
-      deletePatientMutation.mutate(props.patient?.id)
+      deletePatientMutation.mutate(props.patient?.user.id)
       emit('update', null)
       dialog.value.show = false
     }

@@ -84,7 +84,7 @@ export const PatientCreateDtoSchema = z.object({
   additionalNotes: z.string(),
   patientGoal: z.string(),
   avatar: z.string().nullable(),
-  isArchived: z.boolean(),
+  isArchived: z.boolean().optional().default(false),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
 export type PatientCreateDto = z.infer<typeof PatientCreateDtoSchema>
@@ -103,7 +103,7 @@ export const PatientUpdateDtoSchema = z.object({
   additionalNotes: z.string(),
   patientGoal: z.string(),
   avatar: z.string().nullable(),
-  isArchived: z.boolean(),
+  isArchived: z.boolean().default(false),
   patientPreference: PatientPreferenceSchema.optional(), // if not provided this is copied from survey
 })
 export type PatientUpdateDto = z.infer<typeof PatientUpdateDtoSchema>

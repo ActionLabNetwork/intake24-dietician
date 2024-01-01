@@ -18,6 +18,7 @@
       :rules="rules ?? []"
       :readonly="readonly ?? false"
       :suffix="suffix"
+      :data-cy="dataCy"
       @input="updateValue"
       @click:append-inner="handleIconClick"
       @click:append="handleOuterIconClick"
@@ -43,6 +44,7 @@ defineProps<{
   readonly?: boolean
   labelClass?: string
   required?: boolean
+  dataCy?: string
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
@@ -50,8 +52,6 @@ const emit = defineEmits<{ update: [value: string] }>()
 const updateValue = useDebounceFn((e: InputEvent) => {
   emit('update', (e.target as HTMLInputElement).value)
 }, INPUT_DEBOUNCE_TIME)
-
-
 </script>
 
 <style scoped>

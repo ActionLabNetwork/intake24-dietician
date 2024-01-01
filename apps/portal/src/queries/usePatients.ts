@@ -5,7 +5,7 @@ import { getDefaultAvatar } from '../utils/profile'
 import { Ref } from 'vue'
 
 export const usePatients = (surveyId: Ref<string>) => {
-  const { data, isLoading, isError, error, isSuccess, refetch } = useQuery({
+  const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
     queryKey: ['patients', surveyId],
     queryFn: () => {
       return trpcClient.dieticianPatient.getPatients.query({
@@ -16,7 +16,7 @@ export const usePatients = (surveyId: Ref<string>) => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -27,7 +27,7 @@ export const usePatients = (surveyId: Ref<string>) => {
 export const usePatientById = (userId: string) => {
   const queryClient = useQueryClient()
 
-  const { data, isLoading, isError, error, isSuccess } = useQuery({
+  const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: [userId],
     queryFn: async () => {
       const response = await trpcClient.dieticianPatient.getPatient.query({
@@ -48,7 +48,7 @@ export const usePatientById = (userId: string) => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,

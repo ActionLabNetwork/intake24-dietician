@@ -71,7 +71,7 @@ const props = defineProps<{
   id: string
   fullName: string
   avatar: string
-  recallDates: { id: string; startTime: Date; endTime: Date }[]
+  recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
 }>()

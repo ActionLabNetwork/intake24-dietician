@@ -1,44 +1,28 @@
 <template>
-  <div class="wrapper">
+  <div v-if="surveyQuery.isPending.value">
+    <BaseProgressCircularVue />
+  </div>
+  <div v-else-if="surveyQuery.isError.value">
+    <!-- TODO: Create an error page  -->
+    Error page
+  </div>
+  <div v-else class="wrapper">
     <v-container>
-      <div>
-        <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
-          <template v-slot:divider>
-            <v-icon icon="mdi-chevron-right"></v-icon>
-          </template>
-        </v-breadcrumbs>
-        <v-btn
-          prepend-icon="mdi-chevron-left"
-          flat
-          class="text-none px-0 mt-10"
-          variant="text"
-          to="/dashboard/my-patients"
-        >
-          Back to patient list
-        </v-btn>
-      </div>
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center mt-12"
       >
         <div>
           <h1 class="text heading">New patient information</h1>
-          <h3 class="text subheading">
-            Your new patient information strength is
-            <span class="text-decoration-underline font-weight-medium">
-              Basic
-            </span>
-          </h3>
         </div>
         <div>
-          <v-btn
-            color="primary text-none"
+          <BaseButton
             class="mt-3 mt-sm-0"
             :disabled="!isFormValid"
             type="submit"
             @click.prevent="handleSubmit"
           >
             Add patient to records
-          </v-btn>
+          </BaseButton>
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
@@ -109,30 +93,22 @@ import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
 import router from '@intake24-dietician/portal/router'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { useRoute } from 'vue-router'
-import { PatientCreateDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import { PatientUpdateDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import BaseButton from '@intake24-dietician/portal/components/common/BaseButton.vue'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 // const { t } = useI18n<i18nOptions>()
 
 const route = useRoute()
 
 const $toast = useToast()
-const addPatientMutation = useAddPatient()
 
-const breadcrumbItems = ref([
-  {
-    title: 'My Patients',
-    disabled: false,
-    href: '/dashboard/my-patients',
-  },
-  {
-    title: 'Add new patient',
-    disabled: true,
-    href: '/dashboard/my-patients/add-patient',
-  },
-])
+const surveyQuery = useSurveyById(route.params['id'] as string)
+const addPatientMutation = useAddPatient()
 
 const form = ref()
 
-const contactDetailsFormValues = ref<ContactDetailsFormValues>({
+// Default values
+const defaultContactDetailsFormValues: ContactDetailsFormValues = {
   firstName: '',
   middleName: '',
   lastName: '',
@@ -140,20 +116,18 @@ const contactDetailsFormValues = ref<ContactDetailsFormValues>({
   mobileNumber: '',
   email: '',
   address: '',
-})
-
-const personalDetailsFormValues = ref<PersonalDetailsFormValues>({
+}
+const defaultPersonalDetailsFormValues: PersonalDetailsFormValues = {
   age: 20,
   gender: 'Male',
   weight: 70,
   height: 170,
   additionalNotes: '',
   patientGoal: '',
-})
-
-const theme = ref<Theme>('Classic')
-const sendAutomatedFeedback = ref<boolean>(false)
-const recallFrequency = ref<ReminderCondition>({
+}
+const defaultTheme: Theme = 'Classic'
+const defaultSendAutomatedFeedback = false
+const defaultRecallFrequency: ReminderCondition = {
   reminderEvery: {
     every: 5,
     unit: 'days',
@@ -161,7 +135,17 @@ const recallFrequency = ref<ReminderCondition>({
   reminderEnds: {
     type: 'never',
   },
-})
+}
+
+const contactDetailsFormValues = ref<ContactDetailsFormValues>(
+  defaultContactDetailsFormValues,
+)
+const personalDetailsFormValues = ref<PersonalDetailsFormValues>(
+  defaultPersonalDetailsFormValues,
+)
+const theme = ref<Theme>(defaultTheme)
+const sendAutomatedFeedback = ref<boolean>(defaultSendAutomatedFeedback)
+const recallFrequency = ref<ReminderCondition>(defaultRecallFrequency)
 
 const aggregatedData = computed(() => ({
   ...contactDetailsFormValues.value,
@@ -170,8 +154,7 @@ const aggregatedData = computed(() => ({
   theme: theme.value,
   sendAutomatedFeedback: sendAutomatedFeedback.value,
   recallFrequency: recallFrequency.value,
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  isArchived: false,
 }))
 
 const isFormValid = computed(() => {
@@ -202,7 +185,7 @@ const handleRecallFrequencyUpdate = (value: ReminderCondition) => {
 const handleSubmit = async () => {
   return new Promise((resolve, reject) => {
     // Validate with zod
-    const result = PatientCreateDtoSchema.safeParse(aggregatedData.value)
+    const result = PatientUpdateDtoSchema.safeParse(aggregatedData.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
@@ -237,7 +220,17 @@ const handleSubmit = async () => {
   })
 }
 
-watch(aggregatedData, newAggregatedData => console.log({ newAggregatedData }))
+watch(
+  () => surveyQuery.data.value,
+  survey => {
+    theme.value = survey?.surveyPreference.theme ?? defaultTheme
+    sendAutomatedFeedback.value =
+      survey?.surveyPreference.sendAutomatedFeedback ??
+      defaultSendAutomatedFeedback
+    recallFrequency.value =
+      survey?.surveyPreference.reminderCondition ?? defaultRecallFrequency
+  },
+)
 </script>
 
 <style scoped lang="scss">

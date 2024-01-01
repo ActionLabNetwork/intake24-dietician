@@ -53,8 +53,8 @@
         <SurveysList :data="dataQuery.data.value ?? []" />
       </div>
     </v-container>
+    <router-view />
   </v-main>
-  <router-view />
 </template>
 
 <script lang="ts" setup>

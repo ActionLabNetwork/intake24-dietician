@@ -53,7 +53,12 @@ export class PatientService {
   }
 
   public async getRecallsOfPatient(patientId: number, dieticianId: number) {
-    if (!this.userRepository.isPatientDieticians({ patientId, dieticianId })) {
+    if (
+      !(await this.userRepository.isPatientDieticians({
+        patientId,
+        dieticianId,
+      }))
+    ) {
       throw new UnauthorizedError(
         'You are not authorized to access this recall',
       )

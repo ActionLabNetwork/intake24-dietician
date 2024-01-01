@@ -2,6 +2,7 @@
   <v-card>
     <v-card-text>
       <div class="mx-auto text-center">
+        <!-- Avatar -->
         <div v-if="showAvatar">
           <v-avatar color="brown" class="mb-3">
             <span class="text-h5">{{ user.initials }}</span>
@@ -12,6 +13,8 @@
           </p>
           <v-divider class="my-3"></v-divider>
         </div>
+
+        <!-- My Profile button -->
         <div>
           <router-link
             to="/dashboard/my-profile"
@@ -21,8 +24,12 @@
           </router-link>
         </div>
         <v-divider class="my-3"></v-divider>
+
+        <!-- Language select dropdown -->
         <LanguageSelect />
         <v-divider class="my-3"></v-divider>
+
+        <!-- Log out button -->
         <v-btn rounded variant="text" @click="handleLogout"> Log Out </v-btn>
       </div>
     </v-card-text>

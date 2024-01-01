@@ -18,7 +18,7 @@ import { MutateFunction } from '@tanstack/vue-query'
  * @param {Function} [options.onError] - The callback function to be called when an error occurs during form submission.
  * @returns {Object} - An object containing the form values, form validation function, form update function, and form submission function.
  */
-export const useForm = <T extends {}, TSubmit>({
+export const useForm = <TInitial extends {}, TSubmit>({
   initialValues,
   schema,
   $toast,
@@ -26,14 +26,14 @@ export const useForm = <T extends {}, TSubmit>({
   onSuccess,
   onError,
 }: {
-  initialValues: T
+  initialValues: TInitial
   schema: ZodType
   $toast?: ToastPluginApi
   mutationFn: MutateFunction<unknown, unknown, TSubmit, unknown>
   onSuccess?: () => void
   onError?: (err: string) => void
 }) => {
-  const formValues = ref<T>(initialValues)
+  const formValues = ref<TInitial>(initialValues)
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
     return schema.safeParse(validationData).success
@@ -46,10 +46,19 @@ export const useForm = <T extends {}, TSubmit>({
     formValues.value[property] = value
   }
 
-  const handleSubmit = async (
+  interface SubmitHandler {
+    (validationData: TSubmit): Promise<void>
+    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
+  }
+
+  const handleSubmit: SubmitHandler = async (
     validationData: Partial<TSubmit>,
-    submissionData: TSubmit,
+    submissionData?: TSubmit,
   ): Promise<void> => {
+    // If submissionData is not provided, use validationData as submissionData
+    // eslint-disable-next-line no-param-reassign
+    submissionData = submissionData ?? (validationData as TSubmit)
+
     // Validate with zod
     const result = schema.safeParse(validationData)
 
@@ -63,8 +72,7 @@ export const useForm = <T extends {}, TSubmit>({
       onSuccess: () => {
         onSuccess?.()
       },
-      onError: err => {
-        console.log({ errFromUseForm: err })
+      onError: () => {
         $toast?.error(DEFAULT_ERROR_MESSAGE)
         onError?.(DEFAULT_ERROR_MESSAGE)
       },

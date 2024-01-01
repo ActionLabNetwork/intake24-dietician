@@ -8,18 +8,17 @@ axios.defaults.withCredentials = true
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddSurvey = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: {
       survey: Omit<SurveyCreateDto, 'surveyPreference'>
     }) => {
-      console.log({ b: body.survey })
       return trpcClient.dieticianSurvey.createSurvey.mutate(body)
     },
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -28,14 +27,14 @@ export const useAddSurvey = () => {
 }
 
 export const useUpdateSurveyPreferences = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { id: number; survey: Partial<SurveyCreateDto> }) =>
       trpcClient.dieticianSurvey.updateSurvey.mutate(body),
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,

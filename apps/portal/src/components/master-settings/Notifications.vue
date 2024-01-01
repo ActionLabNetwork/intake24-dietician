@@ -86,7 +86,6 @@ function handleSwitchUpdate(
     sms: notificationChannels.value.sms.selected,
   })
 
-  console.log({ NEW: notificationChannels.value })
 }
 </script>
 

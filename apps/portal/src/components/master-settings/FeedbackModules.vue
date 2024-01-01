@@ -248,7 +248,6 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
     },
     [] as typeof feedbackModuleSetup.value.feedbackModules,
   )
-  console.log({ updatedFeedbackModules })
 
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,

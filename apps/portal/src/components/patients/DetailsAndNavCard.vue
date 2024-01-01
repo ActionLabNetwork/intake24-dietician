@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="patientQuery.isLoading.value">
+  <v-card :loading="patientQuery.isPending.value">
     <template v-slot:loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
@@ -51,38 +51,42 @@ const paddedId = computed(() => {
 })
 
 const fullName = computed(() => {
-  const firstName =
-    patientQuery.data.value?.data.data.patientProfile?.firstName ?? ''
-  const lastName =
-    patientQuery.data.value?.data.data.patientProfile?.lastName ?? ''
+  const firstName = patientQuery.data.value?.firstName ?? ''
+  const lastName = patientQuery.data.value?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
 
 const avatar = computed(() => {
-  return (
-    patientQuery.data.value?.data.data.patientProfile?.avatar ??
-    getDefaultAvatar('')
-  )
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
 })
 
 const navItems = [
   {
     title: 'Feedback records',
     value: 'feedbackRecords',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/feedback-records`,
+    to: {
+      name: 'Survey Patient Feedback Records',
+      params: { id: route.params['id'] },
+    },
     selected: computed(() => route.path.includes('feedback-records')),
   },
   {
     title: 'Patient details',
     value: 'patientDetails',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-details`,
+    to: {
+      name: 'Survey Patient Details',
+      params: { id: route.params['id'] },
+    },
     selected: computed(() => route.path.includes('patient-details')),
   },
   {
     title: 'Patient recalls',
     value: 'patientRecalls',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-recalls/meal-diary`,
+    to: {
+      name: 'Survey Patient Meal Diary',
+      params: { id: route.params['id'] },
+    },
     selected: computed(() => route.path.includes('patient-recalls')),
   },
 ]

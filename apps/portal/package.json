@@ -6,11 +6,13 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite --port 3001 preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "lint": "eslint . --fix --ignore-path .gitignore",
+    "cypress:open": "cypress open"
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
-    "@tanstack/vue-query": "^4.35.2",
+    "@tanstack/vue-query": "^5.14.6",
+    "@tanstack/vue-query-devtools": "^5.14.6",
     "@trpc/client": "^10.44.1",
     "@vuepic/vue-datepicker": "^7.2.0",
     "@vueuse/core": "^10.4.1",
@@ -19,6 +21,7 @@
     "chart.js": "^4.4.0",
     "chroma-js": "^2.4.2",
     "core-js": "^3.32.2",
+    "cypress": "^13.6.1",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.1",
     "jose": "^5.1.3",

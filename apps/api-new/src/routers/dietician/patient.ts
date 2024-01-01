@@ -2,7 +2,7 @@ import { AuthService } from '@/services/auth.service'
 import { PatientService } from '@/services/patient.service'
 import { protectedDieticianProcedure, router } from '../../trpc'
 import {
-  PatientCreateDtoSchema,
+  PatientUpdateDtoSchema,
   PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
@@ -60,7 +60,7 @@ export class DieticianPatientRouter {
         z.object({
           surveyId: z.number(),
           email: z.string().email(),
-          patient: PatientCreateDtoSchema,
+          patient: PatientUpdateDtoSchema,
         }),
       )
       .output(z.number())
@@ -87,13 +87,14 @@ export class DieticianPatientRouter {
       .input(
         z.object({
           id: z.number().int(),
-          patient: PatientCreateDtoSchema.partial(),
+          patient: PatientUpdateDtoSchema.partial(),
           email: z.string().email(),
         }),
       )
       .output(z.void())
-      .query(async opts => {
+      .mutation(async opts => {
         const { id, email, patient } = opts.input
+        console.log({ patient })
         await this.authService.updatePatient(
           opts.ctx.dieticianId,
           id,
@@ -117,10 +118,12 @@ export class DieticianPatientRouter {
       )
       .output(z.array(RecallDtoSchema))
       .query(async opts => {
-        return await this.patientService.getRecallsOfPatient(
+        const recalls = await this.patientService.getRecallsOfPatient(
           opts.input.patientId,
           opts.ctx.dieticianId,
         )
+
+        return recalls
       }),
     getRecall: protectedDieticianProcedure
       .meta({

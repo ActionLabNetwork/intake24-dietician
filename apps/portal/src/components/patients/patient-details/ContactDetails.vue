@@ -3,6 +3,7 @@
     <p class="font-weight-medium">Contact details</p>
     <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
       <v-container>
+        <!-- Medium viewport and up -->
         <div v-if="mdAndUp">
           <v-row dense justify="center" align="center">
             <v-col class="v-col-2" align="center">
@@ -45,7 +46,7 @@
             </v-col>
           </v-row>
         </div>
-
+        <!-- Mobile version -->
         <div v-else>
           <v-row dense justify="center" align="center">
             <div class="d-flex flex-column">
@@ -143,7 +144,7 @@
                   color="secondary text-capitalize"
                   class="mb-10"
                   :disabled="showVerificationTokenField"
-                  :loading="generateTokenMutation.isLoading.value"
+                  :loading="generateTokenMutation.isPending.value"
                   @click="handleSendVerificationToken"
                 >
                   {{
@@ -203,14 +204,14 @@ import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form } from '../../profile/types'
 import ImageUpload from '../../profile/ImageUpload.vue'
 import {
-  PatientCreateDto,
-  PatientCreateDtoSchema,
+  PatientUpdateDto,
+  PatientUpdateDtoSchema,
   UserCreateDto,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
 
 export type ContactDetailsFormValues = Pick<
-  PatientCreateDto,
+  PatientUpdateDto,
   | 'firstName'
   | 'middleName'
   | 'lastName'
@@ -295,9 +296,7 @@ const handleVerifyToken = () => {
   )
 }
 
-const formConfigNames: Form<
-  keyof Pick<PatientCreateDto, 'firstName' | 'middleName' | 'lastName'>
-> = {
+const formConfigNames: Form<['firstName', 'middleName', 'lastName'][number]> = {
   firstName: {
     key: 'firstName',
     label: t('profile.form.personalDetails.firstName.label'),
@@ -307,7 +306,7 @@ const formConfigNames: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(PatientCreateDtoSchema.shape.firstName, value),
+        validateWithZod(PatientUpdateDtoSchema.shape.firstName, value),
     ],
     handleUpdate: val => handleFieldUpdate('firstName', val),
   },
@@ -319,7 +318,7 @@ const formConfigNames: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(PatientCreateDtoSchema.shape.middleName, value),
+        validateWithZod(PatientUpdateDtoSchema.shape.middleName, value),
     ],
     handleUpdate: val => handleFieldUpdate('middleName', val),
   },
@@ -331,17 +330,14 @@ const formConfigNames: Form<
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(PatientCreateDtoSchema.shape.lastName, value),
+        validateWithZod(PatientUpdateDtoSchema.shape.lastName, value),
     ],
     handleUpdate: val => handleFieldUpdate('lastName', val),
   },
 }
 
 // eslint-disable-next-line vue/no-setup-props-destructure
-type Field =
-  | keyof Pick<PatientCreateDto, 'mobileNumber' | 'address'>
-  | keyof Pick<UserCreateDto, 'email'>
-const formConfigContact: Form<Field> =
+const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
   // eslint-disable-next-line vue/no-setup-props-destructure
   {
     mobileNumber: {
@@ -354,7 +350,7 @@ const formConfigContact: Form<Field> =
       inputType: 'text',
       rules: [
         (value: string) =>
-          validateWithZod(PatientCreateDtoSchema.shape.mobileNumber, value),
+          validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),
       ],
       handleUpdate: val => handleFieldUpdate('mobileNumber', val),
     },
@@ -386,7 +382,7 @@ const formConfigContact: Form<Field> =
       inputType: 'text',
       rules: [
         (value: string) =>
-          validateWithZod(PatientCreateDtoSchema.shape.address, value),
+          validateWithZod(PatientUpdateDtoSchema.shape.address, value),
       ],
       handleUpdate: val => handleFieldUpdate('address', val),
     },

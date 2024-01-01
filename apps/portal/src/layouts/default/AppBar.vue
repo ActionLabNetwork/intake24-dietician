@@ -24,7 +24,6 @@
     :drawer="drawer"
     @change="
       newVal => {
-        console.log({ newVal })
         drawer = newVal
       }
     "

@@ -1,21 +1,14 @@
-import { env } from '@/config/env'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import { IRecallExtended } from '@intake24-dietician/common/types/recall'
-import { Result } from '@intake24-dietician/common/types/utils'
 import { useQuery } from '@tanstack/vue-query'
-import axios, { AxiosError, AxiosResponse } from 'axios'
 import { Ref } from 'vue'
+import trpcClient from '../trpc/trpc'
 
 export const useRecallById = (recallId: Ref<string>) => {
-  const { data, isLoading, isError, error, isSuccess, refetch } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    AxiosResponse<Result<IRecallExtended | null>>
-  >({
+  const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
     queryKey: ['recallId', recallId.value],
     queryFn: async () => {
-      const uri = `${env.VITE_AUTH_API_HOST}${env.VITE_API_RECALL}/${recallId.value}`
-      return await axios.get(uri)
+      return await trpcClient.dieticianPatient.getRecall.query({
+        id: Number(recallId.value),
+      })
     },
     enabled: !!recallId.value,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
@@ -23,7 +16,7 @@ export const useRecallById = (recallId: Ref<string>) => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -32,23 +25,19 @@ export const useRecallById = (recallId: Ref<string>) => {
 }
 
 export const useRecallsByUserId = (userId: Ref<string>) => {
-  const uri = `${env.VITE_AUTH_API_HOST}${env.VITE_API_RECALL}/users/${userId.value}`
-
-  const { data, isLoading, isError, error, isSuccess } = useQuery<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    AxiosResponse<Result<IRecallExtended[]>>
-  >({
+  const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['userId', userId],
     queryFn: async () => {
-      return await axios.get(uri)
+      return await trpcClient.dieticianPatient.getRecalls.query({
+        patientId: Number(userId.value),
+      })
     },
     enabled: !!userId,
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,

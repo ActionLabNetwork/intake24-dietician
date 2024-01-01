@@ -60,7 +60,7 @@
           <td class="text-left">
             <div class="d-flex align-center">
               <v-avatar
-                :image="item.raw.avatar ?? getDefaultAvatar(item.raw.email)"
+                :image="item.raw.avatar || getDefaultAvatar(item.raw.email)"
               />
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
@@ -70,7 +70,10 @@
               color="primary"
               class="text-capitalize"
               min-width="50%"
-              :to="`/dashboard/my-patients/patient-records/${item.raw.id}/feedback-records`"
+              :to="{
+                name: 'Survey Patient Feedback Records',
+                params: { patientId: item.raw.id },
+              }"
             >
               View
             </v-btn>

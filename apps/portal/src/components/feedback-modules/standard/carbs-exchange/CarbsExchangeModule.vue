@@ -18,7 +18,7 @@
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
-      <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+      <BaseProgressCircular v-if="recallQuery.isPending.value" />
       <!-- Error state -->
       <div v-if="recallQuery.isError.value" class="mt-10">
         <v-alert
@@ -64,7 +64,6 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
 } from '@/components/feedback-modules/card-styles/DetailedCard.vue'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
@@ -78,6 +77,7 @@ import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextA
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -120,7 +120,7 @@ const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
   )
 }
 
-const calculateMealCarbsExchange = (meal: IRecallMeal) => {
+const calculateMealCarbsExchange = (meal: RecallMeal) => {
   const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
     return total + calculateFoodCarbsExchange(food)
   }, 0)
@@ -150,25 +150,24 @@ watch(
 )
 
 watch(
-  () => recallQuery.data.value?.data,
+  () => recallQuery.data.value,
   data => {
-    // TODO: Improve typings, remove uses of any
-    if (data?.ok && data.value) {
-      colorPalette.value = generatePastelPalette(
-        data.value.meals.length + 1,
-        data.value.meals.map(meal => meal.hours),
-      )
+    if (!data) return
 
-      Object.keys(mealCards).forEach(key => {
-        delete mealCards[key]
-      })
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
 
-      totalCarbs.value = Math.floor(
-        data.value.meals.reduce((totalCarbs, meal) => {
-          return totalCarbs + calculateMealCarbsExchange(meal)
-        }, 0),
-      )
-    }
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    totalCarbs.value = Math.floor(
+      data.recall.meals.reduce((totalCarbs, meal) => {
+        return totalCarbs + calculateMealCarbsExchange(meal)
+      }, 0),
+    )
   },
   { immediate: true },
 )

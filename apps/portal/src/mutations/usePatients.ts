@@ -1,22 +1,23 @@
 import { useMutation } from '@tanstack/vue-query'
 import axios, { AxiosError } from 'axios'
 import { env } from '../config/env'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
 import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 import trpcClient from '../trpc/trpc'
-import type { PatientCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type {
+  PatientUpdateDto,
+  PatientCreateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 
 axios.defaults.withCredentials = true
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddPatient = () => {
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation({
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: {
       surveyId: string
       email: string
       patient: PatientCreateDto
     }) => {
-      console.log({ body })
       return trpcClient.dieticianPatient.createPatient.mutate({
         ...body,
         surveyId: Number(body.surveyId),
@@ -26,7 +27,7 @@ export const useAddPatient = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -35,20 +36,20 @@ export const useAddPatient = () => {
 }
 
 export const useUpdatePatient = () => {
-  const updatePatientUri = env.VITE_AUTH_API_UPDATE_PATIENT
-
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      unknown,
-      AxiosError<ApiResponseWithError>,
-      PatientProfileValues & { patientId: number }
-    >({
-      mutationFn: body => axios.put(updatePatientUri, body),
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (body: {
+        id: number
+        email: string
+        patient: Partial<PatientUpdateDto>
+      }) => {
+        return trpcClient.dieticianPatient.updatePatient.mutate(body)
+      },
     })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -60,7 +61,7 @@ export const useUpdatePatient = () => {
 export const useDeletePatient = () => {
   const deletePatientUri = env.VITE_AUTH_API_DELETE_PATIENT
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
     unknown,
     AxiosError<ApiResponseWithError>,
     number | undefined
@@ -78,7 +79,7 @@ export const useDeletePatient = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -89,7 +90,7 @@ export const useDeletePatient = () => {
 export const useRestorePatient = () => {
   const restorePatientUri = env.VITE_AUTH_API_RESTORE_PATIENT
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
     unknown,
     AxiosError<ApiResponseWithError>,
     number | undefined
@@ -107,7 +108,7 @@ export const useRestorePatient = () => {
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
