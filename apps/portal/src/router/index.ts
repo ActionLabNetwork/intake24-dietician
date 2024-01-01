@@ -12,9 +12,6 @@ const routes = [
       {
         path: '',
         name: 'Home',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
         component: () => import('@/views/dashboard/Profile.vue'),
         meta: {
           requiresAuth: true,
@@ -22,6 +19,8 @@ const routes = [
       } as const,
     ],
   } as const,
+
+  // Auth Pages
   {
     path: '/auth',
     children: [
@@ -66,15 +65,7 @@ const routes = [
       {
         path: '',
         name: 'Dashboard',
-        component: () => import('@/views/dashboard/patients/Patients.vue'),
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'my-patients',
-        name: 'My Patients',
-        component: () => import('@/views/dashboard/patients/Patients.vue'),
+        component: () => import('@/views/dashboard/Profile.vue'),
         meta: {
           requiresAuth: true,
         },
@@ -83,124 +74,6 @@ const routes = [
         path: 'my-surveys',
         name: 'My Surveys',
         component: () => import('@/views/dashboard/surveys/Surveys.vue'),
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'my-patients/patient-records/:id',
-        name: 'Patient records',
-        component: () =>
-          import('@/views/dashboard/patients/PatientRecords.vue'),
-        children: [
-          {
-            path: 'feedback-records',
-            name: 'Feedback Records',
-            component: () =>
-              import(
-                '@/components/patients/feedback-records/FeedbackRecords.vue'
-              ),
-            meta: {
-              requiresAuth: true,
-            },
-          },
-          {
-            path: 'patient-details',
-            name: 'Patient Details',
-            component: () =>
-              import(
-                '@/components/patients/patient-details/PatientDetails.vue'
-              ),
-            meta: {
-              requiresAuth: true,
-            } as const,
-          },
-          {
-            path: 'patient-recalls',
-            name: 'Patient Recalls',
-            component: () =>
-              import(
-                '@/components/patients/patient-details/PatientRecalls.vue'
-              ),
-            children: [
-              {
-                path: 'meal-diary',
-                name: 'Meal Diary',
-                component: () =>
-                  import(
-                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                  ),
-                meta: {
-                  requiresAuth: true,
-                } as const,
-              },
-              {
-                path: 'energy-intake',
-                name: 'Energy Intake',
-                component: () =>
-                  import(
-                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                  ),
-              },
-              {
-                path: 'carbs-exchange',
-                name: 'Carbs Exchange',
-                component: () =>
-                  import(
-                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                  ),
-              },
-              {
-                path: 'fibre-intake',
-                name: 'Fibre Intake',
-                component: () =>
-                  import(
-                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                  ),
-              },
-              {
-                path: 'water-intake',
-                name: 'Water Intake',
-                component: () =>
-                  import(
-                    '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                  ),
-              },
-            ],
-          },
-        ],
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback',
-        name: 'Compose New Feedback',
-        component: () =>
-          import(
-            '@/views/dashboard/patients/feedback-records/ComposeFeedback.vue'
-          ),
-      },
-      {
-        path: 'my-patients/patient-records/:id/feedback-records/compose-feedback/preview',
-        name: 'Preview feedback',
-        component: () =>
-          import('@/components/feedback/feedback-builder/FeedbackPreview.vue'),
-      },
-      {
-        path: 'my-patients/add-patient',
-        name: 'Add patient',
-        component: () => import('@/views/dashboard/patients/AddPatient.vue'),
-
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'my-surveys/add-survey',
-        name: 'Add Survey',
-        component: () => import('@/views/dashboard/surveys/AddSurvey.vue'),
-
         meta: {
           requiresAuth: true,
         },
@@ -339,14 +212,6 @@ const routes = [
             },
           },
         ],
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'master-settings',
-        name: 'Master Settings',
-        component: () => import('@/views/dashboard/MasterSettings.vue'),
         meta: {
           requiresAuth: true,
         },
