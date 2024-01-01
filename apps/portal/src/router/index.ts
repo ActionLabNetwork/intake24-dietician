@@ -63,6 +63,14 @@ const routes = [
     component: () => import('@/layouts/default/Default.vue'),
     children: [
       {
+        path: 'my-profile',
+        name: 'My Profile',
+        component: () => import('@/views/dashboard/Profile.vue'),
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
         path: '',
         name: 'Dashboard',
         component: () => import('@/views/dashboard/Profile.vue'),
@@ -88,7 +96,7 @@ const routes = [
         },
       },
       {
-        path: 'my-surveys/survey-details/:id',
+        path: 'my-surveys/survey-details/:surveyId',
         name: 'Survey Details',
         component: () => import('@/views/dashboard/surveys/SurveyDetails.vue'),
         children: [
@@ -110,7 +118,7 @@ const routes = [
             },
           },
           {
-            path: 'patient-list/patient-records/:id/feedback-records/compose-feedback',
+            path: 'patient-list/patient-records/:patientId/feedback-records/compose-feedback',
             name: 'Survey Patient Compose New Feedback',
             component: () =>
               import(
@@ -118,7 +126,7 @@ const routes = [
               ),
           },
           {
-            path: 'patient-list/patient-records/:id/feedback-records/compose-feedback/preview',
+            path: 'patient-list/patient-records/:patientId/feedback-records/compose-feedback/preview',
             name: 'Survey Patient Preview feedback',
             component: () =>
               import(
@@ -126,7 +134,7 @@ const routes = [
               ),
           },
           {
-            path: 'patient-list/patient-records/:id',
+            path: 'patient-list/patient-records/:patientId',
             name: 'Survey Patient Records',
             component: () =>
               import('@/views/dashboard/patients/PatientRecords.vue'),
@@ -221,14 +229,6 @@ const routes = [
             },
           },
         ],
-        meta: {
-          requiresAuth: true,
-        },
-      },
-      {
-        path: 'my-profile',
-        name: 'My Profile',
-        component: () => import('@/views/dashboard/Profile.vue'),
         meta: {
           requiresAuth: true,
         },

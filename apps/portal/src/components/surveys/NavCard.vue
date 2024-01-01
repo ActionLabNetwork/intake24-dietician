@@ -37,7 +37,7 @@ import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 const route = useRoute()
 
 const paddedId = computed(() => {
-  return ((route.params['id'] as string) ?? '').padStart(
+  return ((route.params['surveyId'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )
@@ -47,13 +47,13 @@ const navItems = [
   {
     title: 'Master Settings',
     value: 'masterSettings',
-    to: `/dashboard/my-surveys/survey-details/${route.params['id']}/master-settings`,
+    to: `/dashboard/my-surveys/survey-details/${route.params['surveyId']}/master-settings`,
     selected: computed(() => route.path.includes('master-settings')),
   },
   {
     title: 'Patient List',
     value: 'patientList',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-list`,
+    to: `/dashboard/my-patients/patient-records/${route.params['patientId']}/patient-list`,
     selected: computed(() => route.path.includes('patient-list')),
   },
 ]

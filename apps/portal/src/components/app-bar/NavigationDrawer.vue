@@ -54,7 +54,7 @@ const navItems = [
   {
     title: 'My patients',
     value: 'myPatients',
-    to: '/dashboard/my-patients',
+    to: '/dashboard/my-profile',
   },
   {
     title: 'My surveys',

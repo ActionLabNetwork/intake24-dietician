@@ -115,7 +115,7 @@ import { z } from 'zod'
 // const { t } = useI18n<i18nOptions>()
 
 const route = useRoute()
-const patientQuery = usePatientById(route.params['id'] as string)
+const patientQuery = usePatientById(route.params['patientId'] as string)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
@@ -191,7 +191,7 @@ const aggregatedData = computed(() => {
 
 const isFormValid = computed(() => {
   return patientForm.isFormValid({
-    id: Number(route.params['id']),
+    id: Number(route.params['patientId']),
     email: patientQuery.data.value?.user.email ?? '',
     patient: aggregatedData.value,
   })
@@ -199,7 +199,7 @@ const isFormValid = computed(() => {
 
 const handleSubmit = async (): Promise<void> => {
   return await patientForm.handleSubmit({
-    id: Number(route.params['id']),
+    id: Number(route.params['patientId']),
     email: patientQuery.data.value?.user.email ?? '',
     patient: aggregatedData.value,
   })

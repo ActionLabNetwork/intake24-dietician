@@ -41,10 +41,10 @@ import { usePatientById } from '@/queries/usePatients'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 const route = useRoute()
-const patientQuery = usePatientById(route.params['id'] as string)
+const patientQuery = usePatientById(route.params['patientId'] as string)
 
 const paddedId = computed(() => {
-  return ((route.params['id'] as string) ?? '').padStart(
+  return ((route.params['patientId'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )
@@ -67,7 +67,7 @@ const navItems = [
     value: 'feedbackRecords',
     to: {
       name: 'Survey Patient Feedback Records',
-      params: { id: route.params['id'] },
+      params: { id: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('feedback-records')),
   },
@@ -76,7 +76,7 @@ const navItems = [
     value: 'patientDetails',
     to: {
       name: 'Survey Patient Details',
-      params: { id: route.params['id'] },
+      params: { id: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-details')),
   },
@@ -85,7 +85,7 @@ const navItems = [
     value: 'patientRecalls',
     to: {
       name: 'Survey Patient Meal Diary',
-      params: { id: route.params['id'] },
+      params: { id: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-recalls')),
   },

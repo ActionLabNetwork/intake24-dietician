@@ -48,7 +48,7 @@ import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
 const route = useRoute()
-const surveyQuery = useSurveyById(route.params['id'] as string)
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
 const formData = ref<SurveyDto>()

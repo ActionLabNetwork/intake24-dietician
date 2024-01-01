@@ -19,7 +19,7 @@
               @click="
                 router.push({
                   name: 'Survey Patient List',
-                  params: { id: currentWorkspace.id },
+                  params: { surveyId: currentWorkspace.id },
                 })
               "
             />
@@ -35,9 +35,10 @@
               @click="
                 () => {
                   currentWorkspace = workspace
+                  console.log({ workspace })
                   router.push({
                     name: 'Survey Patient List',
-                    params: { id: currentWorkspace.id },
+                    params: { surveyId: currentWorkspace.id },
                   })
                 }
               "
@@ -99,7 +100,7 @@ watch(
     }))
 
     workspaces.value = surveysWithAvatarColors
-    const currentWorkspaceId = Number(route.params['id'] as string)
+    const currentWorkspaceId = Number(route.params['surveyId'] as string)
     const _currentWorkspace =
       surveysWithAvatarColors.find(
         survey => survey.id === currentWorkspaceId,

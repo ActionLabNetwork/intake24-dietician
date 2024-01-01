@@ -22,7 +22,7 @@
         @click="
           router.push({
             name: 'Survey Master Settings',
-            params: { id: route.params['id'] as string },
+            params: { id: route.params['surveyId'] as string },
           })
         "
       />

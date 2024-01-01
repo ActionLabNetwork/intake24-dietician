@@ -102,7 +102,7 @@ const route = useRoute()
 
 const $toast = useToast()
 
-const surveyQuery = useSurveyById(route.params['id'] as string)
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const addPatientMutation = useAddPatient()
 
 const form = ref()
@@ -202,7 +202,7 @@ const handleSubmit = async () => {
 
     addPatientMutation.mutate(
       {
-        surveyId: (route.params['id'] as string) ?? '',
+        surveyId: (route.params['surveyId'] as string) ?? '',
         email: aggregatedData.value.email,
         patient: aggregatedData.value,
       },
@@ -210,7 +210,10 @@ const handleSubmit = async () => {
         onSuccess: () => {
           $toast.success('Patient added to records')
           resolve('Patient added to records')
-          router.push('/dashboard/my-patients')
+          router.push({
+            name: 'Survey Patient List',
+            params: { surveyId: route.params['surveyId'] as string },
+          })
         },
         onError: () => {
           $toast.error(DEFAULT_ERROR_MESSAGE)

@@ -94,7 +94,7 @@ const route = useRoute()
 const $toast = useToast()
 
 // Queries
-const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
+const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
 // const recallsQuery = useRecallsByUserId(
 //   ref(`dietician:survey_id:${route.params['id']}`),
 // )
@@ -124,7 +124,7 @@ const patientQueryData = computed(() => {
   return patientQuery.data.value
 })
 const paddedId = computed(() => {
-  return ((route.params['id'] as string) ?? '').padStart(
+  return ((route.params['patientId'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )

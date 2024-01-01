@@ -43,12 +43,12 @@ const { isProfileLoading } = storeToRefs(authStore)
 const route = useRoute()
 
 const surveyId = computed(() => {
-  return route.params['id'] as string
+  return route.params['surveyId'] as string
 })
 
 const patientsQuery = usePatients(surveyId)
 
-const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['id']}/add-patient`
+const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['surveyId']}/add-patient`
 
 const summary = computed((): Summary => {
   const patients = patientsQuery.data.value ?? []

@@ -17,7 +17,7 @@
         <!-- My Profile button -->
         <div>
           <router-link
-            to="/dashboard/my-profile"
+            :to="{ name: 'My Profile' }"
             class="text-decoration-none text-black"
           >
             {{ t('appBar.my_profile') }}
