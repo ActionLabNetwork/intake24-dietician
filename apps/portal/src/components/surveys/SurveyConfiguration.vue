@@ -69,6 +69,11 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 // import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
+type FormField = keyof Omit<
+  SurveyCreateDto,
+  'isActive' | 'surveyPreference' | 'feedbackModules'
+>
+
 const props = defineProps<{
   defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
@@ -86,17 +91,12 @@ const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   ...props.defaultState,
 })
 
-const handleFieldUpdate = (
-  fieldName: keyof Omit<SurveyCreateDto, 'isActive' | 'surveyPreference'>,
-  newVal: string,
-) => {
+const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   formValues.value[fieldName] = newVal
   emit('update', { ...formValues.value })
 }
 
-const formSurveyConfig: Form<
-  keyof Omit<SurveyCreateDto, 'isActive' | 'surveyPreference'>
-> = {
+const formSurveyConfig: Form<FormField> = {
   surveyName: {
     key: 'surveyName',
     label: t('surveys.addNewSurvey.surveyDetails.name'),

@@ -79,6 +79,15 @@ const routes = [
         },
       },
       {
+        path: 'my-surveys/add-survey',
+        name: 'Add Survey',
+        component: () => import('@/views/dashboard/surveys/AddSurvey.vue'),
+
+        meta: {
+          requiresAuth: true,
+        },
+      },
+      {
         path: 'my-surveys/survey-details/:id',
         name: 'Survey Details',
         component: () => import('@/views/dashboard/surveys/SurveyDetails.vue'),
