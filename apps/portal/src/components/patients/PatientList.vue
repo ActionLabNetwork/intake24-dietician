@@ -238,27 +238,6 @@ const headers = ref<PatientTableHeaders[]>([
   },
 ])
 
-// const recallsQuery = useRecallsByUserId(ref('4072'))
-// const latestRecallsByPatient = computed(() => {
-//   const latestRecall =
-//     recallsQuery.data.value?.data.ok &&
-//     recallsQuery.data.value?.data.value
-//       .map(recall => recall.endTime)
-//       .toSorted()
-//       .at(-1)
-
-//   if (latestRecall) {
-//     const date = new Date(latestRecall)
-//     return date.toLocaleDateString('en-AU', {
-//       day: 'numeric',
-//       month: 'short',
-//       year: 'numeric',
-//     })
-//   }
-
-//   return undefined
-// })
-
 const search = ref('')
 
 const randomDate = (start: Date, end: Date) => {

@@ -67,7 +67,7 @@ const navItems = [
     value: 'feedbackRecords',
     to: {
       name: 'Survey Patient Feedback Records',
-      params: { id: route.params['patientId'] },
+      params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('feedback-records')),
   },
@@ -76,7 +76,7 @@ const navItems = [
     value: 'patientDetails',
     to: {
       name: 'Survey Patient Details',
-      params: { id: route.params['patientId'] },
+      params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-details')),
   },
@@ -85,7 +85,7 @@ const navItems = [
     value: 'patientRecalls',
     to: {
       name: 'Survey Patient Meal Diary',
-      params: { id: route.params['patientId'] },
+      params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-recalls')),
   },

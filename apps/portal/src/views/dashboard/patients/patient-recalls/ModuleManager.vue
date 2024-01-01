@@ -43,7 +43,9 @@ const component = shallowRef<Component>(
 // const recallsQuery = useRecallsByUserId(
 //   ref(`dietician:survey_id:${route.params['id']}`),
 // )
-const recallsQuery = useRecallsByUserId(ref('1'))
+const recallsQuery = useRecallsByUserId(
+  ref(route.params['patientId'] as string),
+)
 
 const recallsData = computed(() => recallsQuery.data.value ?? [])
 

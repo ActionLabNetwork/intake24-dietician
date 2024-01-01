@@ -14,7 +14,10 @@
           flat
           class="text-none"
           variant="text"
-          to="/dashboard/my-patients"
+          :to="{
+            name: 'Survey Patient List',
+            params: { surveyId: route.params['surveyId'] },
+          }"
         >
           Back to patient list
         </v-btn>
