@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -50,11 +50,8 @@ import DetailsAndNavCard from '@/components/patients/DetailsAndNavCard.vue'
 import ModuleSelectList from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
-import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
 
 // const { t } = useI18n<i18nOptions>()
-
-const recallsStore = useRecallsStore()
 
 const router = useRouter()
 const route = useRoute()
@@ -89,22 +86,22 @@ const handleModuleUpdate = (module: ReturnType<typeof defineComponent>) => {
   router.push(`${path}${module}`)
 }
 
-watch(
-  () => recallsQuery.data,
-  recalls => {
-    // Update Pinia store with new recalls
-    recallsStore.recalls =
-      recalls.value?.map(recall => ({
-        ...recall,
-        recall: {
-          ...recall.recall,
-          startTime: recall.recall.startTime,
-          endTime: recall.recall.endTime,
-        },
-      })) ?? []
-  },
-  { immediate: true },
-)
+// watch(
+//   () => recallsQuery.data,
+//   recalls => {
+//     // Update Pinia store with new recalls
+//     recallsStore.recalls =
+//       recalls.value?.map(recall => ({
+//         ...recall,
+//         recall: {
+//           ...recall.recall,
+//           startTime: recall.recall.startTime,
+//           endTime: recall.recall.endTime,
+//         },
+//       })) ?? []
+//   },
+//   { immediate: true },
+// )
 </script>
 
 <style scoped lang="scss">

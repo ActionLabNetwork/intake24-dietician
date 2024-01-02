@@ -4,10 +4,12 @@
       <div class="d-flex flex-column flex-sm-row justify-space-between">
         <p class="title mb-3 mb-sm-0">Feedback records</p>
         <v-btn
+          v-if="recallsStore.recalls !== undefined"
           append-icon="mdi-plus"
           color="primary"
           class="text-none"
           :to="`${route.fullPath}/compose-feedback`"
+          :loading="recallsStore.isPending"
           :disabled="!recallsStore.hasRecalls"
         >
           {{
@@ -34,6 +36,8 @@ import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
 
 const route = useRoute()
 const recallsStore = useRecallsStore()
+
+recallsStore.fetchRecalls(route.params['patientId'] as string)
 </script>
 
 <style scoped lang="scss">
