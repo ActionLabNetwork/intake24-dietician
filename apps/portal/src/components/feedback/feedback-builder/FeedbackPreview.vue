@@ -69,7 +69,6 @@ interface Props {
   recallsData: RecallDto[]
   recallDate: Date
   modules: { key: ModuleRoute; component: Component; feedback: string }[]
-  dialog: boolean
 }
 
 defineProps<Props>()

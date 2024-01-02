@@ -19,7 +19,7 @@ export class AuthDieticianRouter {
           summary: 'Ping',
         },
       })
-      .input(z.undefined())
+      .input(z.object({ test: z.date() }))
       .output(z.string())
       .mutation(({ ctx }) => {
         console.log({ accessToken: ctx.accessToken })

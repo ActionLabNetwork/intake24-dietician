@@ -51,7 +51,12 @@
           >
             {{ previewing ? 'Edit' : 'Preview' }}
           </v-btn>
-          <v-btn class="text-none ml-8" color="#F1F1F1" flat>
+          <v-btn
+            class="text-none ml-8"
+            color="#F1F1F1"
+            flat
+            @click="handleSaveDraftClick"
+          >
             Save as draft
           </v-btn>
           <v-btn class="text-none ml-3" color="primary" flat>
@@ -63,9 +68,12 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { Component, computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { useSaveDraft } from '@intake24-dietician/portal/mutations/useFeedback'
+import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import { ModuleRoute } from '@intake24-dietician/common/types/modules'
 
 const props = defineProps<{
   id: string
@@ -74,6 +82,16 @@ const props = defineProps<{
   recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
+  draft: {
+    recallsData: RecallDto[]
+    recallDate: Date
+    modules: {
+      key: ModuleRoute
+      component: Component
+      feedback: string
+      selected: boolean
+    }[]
+  }
 }>()
 const emit = defineEmits<{
   'update:date': [date: Date]
@@ -84,6 +102,9 @@ interface SharedItem {
   shared: string
   type: 'Tailored' | 'Auto'
 }
+
+// Mutations
+const saveDraftMutation = useSaveDraft()
 
 const allowedDates = computed(() => {
   return props.recallDates.map(date => date.startTime)
@@ -104,6 +125,18 @@ const items = ref<SharedItem[]>([
   { shared: 'Audience', type: 'Tailored' },
   { shared: 'Conversions', type: 'Auto' },
 ])
+
+const handleSaveDraftClick = () => {
+  console.log({
+    patientId: Number(props.id),
+    draft: props.draft,
+  })
+
+  saveDraftMutation.mutate({
+    patientId: Number(props.id),
+    draft: props.draft,
+  })
+}
 </script>
 
 <style scoped lang="scss">

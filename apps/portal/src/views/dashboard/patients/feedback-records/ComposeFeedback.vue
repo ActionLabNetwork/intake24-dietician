@@ -20,6 +20,7 @@
           :recall-dates="recallDates"
           :initial-date="date"
           :previewing="previewing"
+          :draft="allModules"
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
@@ -53,9 +54,7 @@
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
       :patient-name="fullName"
-      :dialog="previewDialog"
       class="mt-0"
-      @click:close="() => (previewDialog = false)"
     />
   </div>
 </template>
@@ -105,7 +104,6 @@ const recallsQuery = useRecallsByUserId(
 // Refs
 const date = ref<Date>(new Date())
 const component = ref<ModuleRoute>('/meal-diary')
-const previewDialog = ref<boolean>(false)
 const previewing = ref<boolean>(false)
 
 // Computed properties
@@ -152,11 +150,42 @@ const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
 })
 const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-  '/meal-diary': { component: MealDiaryModule, feedback: '' },
-  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
-  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
-  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
-  '/water-intake': { component: WaterIntakeModule, feedback: '' },
+  '/meal-diary': { component: MealDiaryModule, feedback: 'Hello' },
+  '/carbs-exchange': { component: CarbsExchangeModule, feedback: 'Hi' },
+  '/energy-intake': { component: EnergyIntakeModule, feedback: 'Yohoo' },
+  '/fibre-intake': { component: FibreIntakeModule, feedback: 'Yay' },
+  '/water-intake': { component: WaterIntakeModule, feedback: 'Clap' },
+})
+
+const allModules = ref<
+  | {
+      recallsData: typeof recallsData
+      recallDate: typeof date
+      modules: {
+        key: ModuleRoute
+        component: Component
+        feedback: string
+        selected: boolean
+      }[]
+    }
+  | undefined
+>({
+  recallsData: recallsData,
+  recallDate: date,
+  modules: Object.entries(routeToModuleComponentMapping).map(
+    ([key, module]) => {
+      const component = module.component
+      const feedback = module.feedback
+      const selected = false
+
+      return {
+        key: key as keyof typeof routeToModuleComponentMapping,
+        component,
+        feedback,
+        selected,
+      }
+    },
+  ),
 })
 
 const selectedModules = ref<
@@ -173,6 +202,19 @@ const handleModuleUpdate = (module: ModuleRoute) => {
 }
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
+  allModules.value = {
+    recallsData: recallsData.value,
+    recallDate: date.value,
+    modules: modules.map(module => {
+      const key = module.to
+      const component = routeToModuleComponentMapping[module.to].component
+      const feedback = routeToModuleComponentMapping[module.to].feedback
+      const selected = module.selected
+
+      return { key, component, feedback, selected }
+    }),
+  }
+
   selectedModules.value = {
     recallsData: recallsData.value,
     recallDate: date.value,
@@ -206,7 +248,6 @@ const handlePreviewButtonClick = () => {
     $toast.warning('Please select at least one module to preview')
     return
   }
-  previewDialog.value = true
   previewing.value = !previewing.value
 }
 
@@ -219,6 +260,13 @@ watch(
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => allModules.value,
+  newSelectedModules => {
+    console.log({ newSelectedModules })
+  },
 )
 </script>
 
