@@ -21,6 +21,7 @@
         <v-list nav>
           <v-list-item
             v-for="item in navItems"
+            v-show="item.show"
             :key="item.value"
             :title="item.title"
             :to="item.to"
@@ -34,11 +35,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { usePatientById } from '@/queries/usePatients'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+
+const props = defineProps<{ hasRecalls: boolean }>()
 
 const route = useRoute()
 const patientQuery = usePatientById(route.params['patientId'] as string)
@@ -70,6 +73,7 @@ const navItems = [
       params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('feedback-records')),
+    show: true,
   },
   {
     title: 'Patient details',
@@ -79,6 +83,7 @@ const navItems = [
       params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-details')),
+    show: true,
   },
   {
     title: 'Patient recalls',
@@ -88,6 +93,7 @@ const navItems = [
       params: { patientId: route.params['patientId'] },
     },
     selected: computed(() => route.path.includes('patient-recalls')),
+    show: toRefs(props).hasRecalls.value,
   },
 ]
 </script>
