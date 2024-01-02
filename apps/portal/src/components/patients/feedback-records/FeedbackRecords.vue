@@ -8,8 +8,13 @@
           color="primary"
           class="text-none"
           :to="`${route.fullPath}/compose-feedback`"
+          :disabled="!recallsStore.hasRecalls"
         >
-          Compose new feedback
+          {{
+            recallsStore.hasRecalls
+              ? 'Compose new feedback'
+              : 'No recalls available'
+          }}
         </v-btn>
       </div>
 
@@ -24,9 +29,11 @@
 import DraftItemList from '@/components/patients/feedback-records/DraftItemList.vue'
 import SharedItemList from './SharedItemList.vue'
 import { useRoute } from 'vue-router'
+import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
 // import DraftItem from './DraftItem.vue'
 
 const route = useRoute()
+const recallsStore = useRecallsStore()
 </script>
 
 <style scoped lang="scss">
