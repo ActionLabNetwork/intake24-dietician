@@ -9,6 +9,7 @@ import Redis from 'ioredis'
 import { createApp } from './app'
 import { registerLogger as injectLogger } from './di/di.config'
 import { JwtService } from './services/jwt.service'
+import { EmailService } from './services/email.service'
 // import initJobs from './jobs/queue'
 
 // --- Setup dependencies
@@ -29,6 +30,19 @@ const redis = new Redis({
 container.register(Redis, { useValue: redis })
 
 container.register(JwtService, { useValue: new JwtService(env.JWT_SECRET) })
+
+container.register(EmailService, {
+  useValue: new EmailService({
+    smtp: {
+      host: env.MAILTRAP_HOST,
+      port: env.MAILTRAP_PORT,
+      auth: {
+        user: env.MAILTRAP_USER,
+        pass: env.MAILTRAP_PASS,
+      },
+    },
+  }),
+})
 
 injectLogger()
 
