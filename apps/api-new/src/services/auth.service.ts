@@ -28,11 +28,13 @@ import { z } from 'zod'
 import { env } from '../config/env'
 import { HashingService } from './hashing.service'
 import { TokenService } from './token.service'
-
-const ACCESS_PREFIX = 'access:'
+import type { Result } from '@intake24-dietician/common/types/utils'
+import { resolveLogger } from '../di/di.config'
 
 @singleton()
 export class AuthService {
+  private readonly logger = resolveLogger()
+
   public constructor(
     @inject(HashingService) private hashingService: HashingService,
     @inject(TokenService) private tokenService: TokenService,
@@ -128,54 +130,18 @@ export class AuthService {
     details: Partial<DieticianCreateDto>,
   ) => await this.userRepository.updateDietician(dieticianId, email, details)
 
-  // public validateJwt = async (accessToken: string, refreshToken: string) => {
-  //   const decoded = this.verifyJwtToken(accessToken)
-
-  //   if (decoded.tokenExpired) {
-  //     const refreshTokenResult = await this.refreshAccessToken(refreshToken)
-  //     return refreshTokenResult.token.accessToken
-  //   }
-
-  //   const tokenInRedis = await redis.get(`access:${decoded.decoded.jti}`)
-
-  //   if (!tokenInRedis) {
-  //     throw new UnauthorizedError('Token is either invalid or expired.')
-  //   }
-
-  //   return accessToken
-  // }
-
-  public logout = async (accessToken: string) => {
-    try {
-      const decoded = this.verifyJwtToken(accessToken)
-      if (!decoded.decoded) return true
-
-      const jti = decoded.decoded.jti
-
-      await this.redis.del(`access:${jti}`)
-      await this.redis.del(`refresh:${jti}`)
-
-      return true
-    } catch (error) {
-      // We don't want to throw an error if the token is invalid
-      return true
+  public logout = async (accessToken: string): Promise<void> => {
+    const decoded = await this.safeParseJwtToken(accessToken, 'access-token')
+    if (!decoded.ok && decoded.error !== 'token_expired') {
+      throw new ClientError('Invalid token')
     }
+    if (!decoded.ok) {
+      return
+    }
+    const jti = decoded.value.jti
+    await this.redis.del(`access:${jti}`)
+    await this.redis.del(`refresh:${jti}`)
   }
-
-  // TODO: Fix typing
-  // public updateProfile = async (
-  //   userId: number,
-  //   details: DieticianProfileValues,
-  // ) => {
-  //   return await this.userRepository.updateDietician(
-  //     userId,
-  //     details.emailAddress,
-  //     {
-  //       ...details,
-  //       userId,
-  //     } satisfies Partial<DieticianCreateDto>,
-  //   )
-  // }
 
   public generateUserToken = async (
     email: string,
@@ -325,30 +291,35 @@ export class AuthService {
     })
   }
 
-  public verifyJwtToken = (
+  public safeParseJwtToken = async <T extends 'access-token' | 'refresh-token'>(
     token: string,
-    tokenType: 'access-token' | 'refresh-token' = 'access-token',
-  ) => {
+    tokenType: T,
+  ): Promise<
+    Result<
+      TokenPayload & { tokenType: T },
+      'token_expired' | 'invalid_token' | 'bad_token_shape' | 'bad_token_type'
+    >
+  > => {
     const result = this.tokenService.verify(token)
-    if (!result.ok && result.error === 'token_expired') {
-      return { tokenExpired: true, decoded: null }
-    }
-    if (!result.ok) {
-      throw new ClientError('Token is invalid')
-    }
+    if (!result.ok) return result
+
     const payloadResult = TokenPayloadSchema.safeParse(result.value)
+
     if (!payloadResult.success) {
-      throw new ClientError('Token payload is invalid')
+      return { ok: false, error: 'bad_token_shape' }
     }
     const payload = payloadResult.data
     if (payload.tokenType !== tokenType) {
-      throw new ClientError(
-        `Invalid token type. Please provide ${
-          tokenType === 'access-token' ? 'an' : 'a'
-        } ${tokenType}.`,
-      )
+      return { ok: false, error: 'bad_token_type' }
     }
-    return { tokenExpired: false, decoded: payload }
+    const storedToken = await this.redis.get(
+      `${payload.tokenType.split('-')[0]}:${payload.jti}`,
+    )
+    if (!storedToken) {
+      return { ok: false, error: 'token_expired' }
+    }
+
+    return { ok: true, value: payload as TokenPayload & { tokenType: T } }
   }
 
   public generateUserTokenForPasswordlessAuth = async (email: string) => {
@@ -394,17 +365,45 @@ export class AuthService {
   }
 
   public verifyAccessToken = async (accessToken: string) => {
-    const verifyResult = this.verifyJwtToken(accessToken)
-    if (verifyResult.decoded === null) {
+    const tokenResult = await this.safeParseJwtToken(
+      accessToken,
+      'access-token',
+    )
+    if (!tokenResult.ok && tokenResult.error === 'token_expired') {
       throw new UnauthorizedError('Token has expired, please log in again.')
     }
-    const tokenInRedis = await this.redis.get(
-      `${ACCESS_PREFIX}${verifyResult.decoded.jti}`,
-    )
-    if (!tokenInRedis) {
-      throw new UnauthorizedError('Token is either invalid or expired.')
+    if (!tokenResult.ok) {
+      this.logger.warn({
+        message: 'User provided invalid access token',
+        token: accessToken,
+      })
+      throw new UnauthorizedError('Invalid token.')
     }
-    return verifyResult.decoded
+    return tokenResult.value
+  }
+
+  public refreshAccessToken = async (refreshToken: string) => {
+    const tokenResult = await this.safeParseJwtToken(
+      refreshToken,
+      'refresh-token',
+    )
+    if (!tokenResult.ok) {
+      if (tokenResult.error !== 'token_expired') {
+        this.logger.warn({
+          message: 'User provided invalid refresh token',
+          token: refreshToken,
+        })
+      }
+      return tokenResult
+    }
+
+    const user = await this.userRepository.getUserById(tokenResult.value.userId)
+    if (!user) {
+      return { ok: false, error: 'user_not_found' } as const
+    }
+
+    const { token } = await this.generateToken(user, 'access')
+    return { ok: true, value: token } as const
   }
 
   // Private helper functions
@@ -435,27 +434,6 @@ export class AuthService {
     return true
   }
 
-  private refreshAccessToken = async (refreshToken: string) => {
-    const decoded = this.verifyJwtToken(refreshToken, 'refresh-token')
-    if (decoded.decoded === null) {
-      throw new UnauthorizedError('Token has expired, please log in again.')
-    }
-
-    // this is getting by user ID? Also why only dieticians can refresh a token?
-    const user = await this.userRepository.getUserById(decoded.decoded.userId)
-
-    if (!user) {
-      throw new NotFoundError('User not found')
-    }
-
-    const { jti, token } = await this.generateToken(user, 'access')
-    return {
-      ...user,
-      token,
-      jti,
-    }
-  }
-
   private generateToken = async (
     user: { id: number; email: string },
     type: 'access' | 'refresh' | 'both',
@@ -466,7 +444,12 @@ export class AuthService {
       tokenType: TokenPayload['tokenType'],
       expiresIn: number,
     ) => {
-      const payload = { userId: user.id, email: user.email, tokenType, jti }
+      const payload: TokenPayload = {
+        userId: user.id,
+        email: user.email,
+        tokenType,
+        jti,
+      }
       return this.tokenService.sign(payload, { expiresIn })
     }
 

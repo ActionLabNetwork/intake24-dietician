@@ -38,19 +38,12 @@ export const router = t.router
 const validateUserMiddleware = t.middleware(async ({ next, ctx }) => {
   const accessToken = ctx.req.cookies['accessToken']
   const authService = container.resolve(AuthService)
-  try {
-    const decodedToken = await authService.verifyAccessToken(accessToken)
-    const userId = decodedToken.userId
-    if (!userId) throw Error()
-    return next({
-      ctx: { ...ctx, userId },
-    })
-  } catch (error) {
-    throw new TRPCError({
-      code: 'UNAUTHORIZED',
-      message: 'Not authenticated, please log in.',
-    })
-  }
+
+  const token = await authService.verifyAccessToken(accessToken)
+  const userId = token.userId
+  return next({
+    ctx: { ...ctx, userId },
+  })
 })
 
 const validateDieticianMiddleware = validateUserMiddleware.unstable_pipe(

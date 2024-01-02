@@ -4,7 +4,8 @@ import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto
 import type { Token } from '@intake24-dietician/common/types/auth'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
-import { protectedProcedure, publicProcedure, router } from '../../trpc'
+import { publicProcedure, router } from '../../trpc'
+import { ClientError } from '@intake24-dietician/api-new/utils/trpc'
 
 @singleton()
 export class AuthDieticianRouter {
@@ -127,26 +128,48 @@ export class AuthDieticianRouter {
         },
       })
       .input(z.undefined())
-      .output(z.boolean())
+      .output(z.void())
       .mutation(async opts => {
         opts.ctx.res.clearCookie('accessToken')
         opts.ctx.res.clearCookie('refreshToken')
         const accessToken = opts.ctx.accessToken
-        if (!accessToken) return false
+        if (!accessToken) return
         return await this.authService.logout(accessToken)
       }),
-    validateSession: protectedProcedure
+    validateSession: publicProcedure
       .meta({
         openapi: {
           method: 'GET',
           path: '/validate-jwt',
           tags: ['auth'],
-          summary: 'Validate current authenticated session',
+          summary: 'Validate and refresh current authenticated session',
         },
       })
       .input(z.undefined())
       .output(z.boolean())
-      .query(() => {
+      .query(async ({ ctx }) => {
+        const { accessToken, refreshToken } = ctx.req.cookies
+        if (!accessToken || !refreshToken) return false
+        const accessTokenResult = await this.authService.safeParseJwtToken(
+          accessToken,
+          'access-token',
+        )
+        if (accessTokenResult.ok) {
+          return true
+        }
+        if (accessTokenResult.error !== 'token_expired') {
+          throw new ClientError('Invalid token.')
+        }
+
+        const newAccessToken =
+          await this.authService.refreshAccessToken(refreshToken)
+        if (!newAccessToken.ok) {
+          return false
+        }
+        const authCookies = this.getAuthCookies(newAccessToken.value, 'access')
+        authCookies.forEach(cookie => {
+          ctx.res.cookie(cookie.name, cookie.value, cookie.options)
+        })
         return true
       }),
   })
