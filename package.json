@@ -40,7 +40,10 @@
   },
   "lint-staged": {
     "*.md": "prettier --write",
-    "*.{ts,vue}": "eslint --fix"
+    "*.{ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@intake24-dietician/common": "*",

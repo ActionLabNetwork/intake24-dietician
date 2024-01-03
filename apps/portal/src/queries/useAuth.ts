@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/vue-query'
-import trpcClient from '../trpc/trpc'
+import { useClientStore } from '../trpc/trpc'
 
 export const useProfile = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['auth'],
-    queryFn: () => trpcClient.dieticianProfile.getProfile.query(),
+    queryFn: () => authenticatedClient.dieticianProfile.getProfile.query(),
   })
 
   return {

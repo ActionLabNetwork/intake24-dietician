@@ -1,11 +1,12 @@
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import trpcClient from '../trpc/trpc'
+import { useClientStore } from '../trpc/trpc'
 
 export const useSurveys = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
-      return trpcClient.dieticianSurvey.getSurveys.query()
+      return authenticatedClient.dieticianSurvey.getSurveys.query()
     },
   })
 
@@ -19,14 +20,16 @@ export const useSurveys = () => {
 }
 
 export const useSurveyById = (id: string) => {
+  const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
 
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: [id],
     queryFn: async () => {
-      const response = await trpcClient.dieticianSurvey.getSurveyById.query({
-        id: Number(id),
-      })
+      const response =
+        await authenticatedClient.dieticianSurvey.getSurveyById.query({
+          id: Number(id),
+        })
 
       return response
     },

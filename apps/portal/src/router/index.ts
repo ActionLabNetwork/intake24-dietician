@@ -2,7 +2,7 @@
 import { env } from '@/config/env'
 import axios from 'axios'
 import { RouteRecordRaw, createRouter, createWebHistory } from 'vue-router'
-import trpcClient from '../trpc/trpc'
+import { useClientStore } from '../trpc/trpc'
 
 const routes = [
   {
@@ -251,7 +251,9 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, _from, next) => {
-  const isAuthenticated = await isUserAuthenticated()
+  const { waitForAuthState } = useClientStore()
+  const authState = await waitForAuthState()
+  const isAuthenticated = authState.type === 'logged_in'
   const hideIfAuthenticated = to.matched.some(
     record => record.meta['hideIfAuthenticated'],
   )
@@ -269,12 +271,5 @@ router.beforeEach(async (to, _from, next) => {
 })
 
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
-const isUserAuthenticated = async () => {
-  try {
-    return await trpcClient.authDietician.validateSession.query()
-  } catch (error) {
-    return false
-  }
-}
 
 export default router

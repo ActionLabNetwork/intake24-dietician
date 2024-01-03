@@ -1,12 +1,13 @@
 import { useQuery } from '@tanstack/vue-query'
 import { Ref } from 'vue'
-import trpcClient from '../trpc/trpc'
+import { useClientStore } from '../trpc/trpc'
 
 export const useRecallById = (recallId: Ref<string>) => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
     queryKey: ['recallId', recallId.value],
     queryFn: async () => {
-      return await trpcClient.dieticianPatient.getRecall.query({
+      return await authenticatedClient.dieticianPatient.getRecall.query({
         id: Number(recallId.value),
       })
     },
@@ -25,10 +26,11 @@ export const useRecallById = (recallId: Ref<string>) => {
 }
 
 export const useRecallsByUserId = (userId: Ref<string>) => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['userId', userId],
     queryFn: async () => {
-      return await trpcClient.dieticianPatient.getRecalls.query({
+      return await authenticatedClient.dieticianPatient.getRecalls.query({
         patientId: Number(userId.value),
       })
     },

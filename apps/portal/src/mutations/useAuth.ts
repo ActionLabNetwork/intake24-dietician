@@ -1,12 +1,13 @@
 import { useMutation } from '@tanstack/vue-query'
-import trpcClient from '../trpc/trpc'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useClientStore } from '../trpc/trpc'
 
 export const useRegister = () => {
+  const { register } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: async (registerBody: { email: string; password: string }) =>
-        trpcClient.authDietician.register.mutate(registerBody),
+        await register(registerBody),
     })
 
   return {
@@ -21,10 +22,11 @@ export const useRegister = () => {
 }
 
 export const useLogin = () => {
+  const { login } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (loginBody: { email: string; password: string }) => {
-        return trpcClient.authDietician.login.mutate(loginBody)
+        return login(loginBody)
       },
     })
 
@@ -40,10 +42,11 @@ export const useLogin = () => {
 }
 
 export const useForgotPassword = () => {
+  const { publicClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (email: { email: string }) =>
-        trpcClient.authDietician.forgotPassword.mutate(email),
+        publicClient.authDietician.forgotPassword.mutate(email),
     })
 
   return {
@@ -58,9 +61,10 @@ export const useForgotPassword = () => {
 }
 
 export const useResetPassword = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (data: { password: string; token: string }) =>
-      trpcClient.authDietician.resetPassword.mutate(data),
+      authenticatedClient.authDietician.resetPassword.mutate(data),
   })
 
   return {
@@ -74,8 +78,9 @@ export const useResetPassword = () => {
 }
 
 export const useLogout = () => {
+  const { logout } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: () => trpcClient.authDietician.logout.mutate(),
+    mutationFn: () => logout(),
   })
 
   return {
@@ -89,6 +94,7 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (updateProfileBody: {
@@ -96,7 +102,7 @@ export const useUpdateProfile = () => {
         dieticianProfile: Partial<DieticianCreateDto>
       }) => {
         const { emailAddress, dieticianProfile } = updateProfileBody
-        return trpcClient.dieticianProfile.updateProfile.mutate({
+        return authenticatedClient.dieticianProfile.updateProfile.mutate({
           email: emailAddress,
           profile: dieticianProfile,
         })
@@ -115,12 +121,13 @@ export const useUpdateProfile = () => {
 }
 
 export const useGenerateToken = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (generateTokenBody: {
       currentEmail: string
       newEmail: string
     }) =>
-      trpcClient.dieticianProfile.generateChangeEmailToken.mutate(
+      authenticatedClient.dieticianProfile.generateChangeEmailToken.mutate(
         generateTokenBody,
       ),
   })
@@ -136,9 +143,10 @@ export const useGenerateToken = () => {
 }
 
 export const useVerifyToken = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (verifyTokenBody: { token: string }) =>
-      trpcClient.dieticianProfile.verifyChangeEmailToken.mutate(
+      authenticatedClient.dieticianProfile.verifyChangeEmailToken.mutate(
         verifyTokenBody,
       ),
   })
@@ -154,11 +162,14 @@ export const useVerifyToken = () => {
 }
 
 export const useUploadAvatar = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (uploadAvatarBody: { avatarBase64: string }) => {
       const formData = new FormData()
       formData.append('fileBase64', uploadAvatarBody.avatarBase64)
-      return trpcClient.dieticianProfile.uploadAvatar.mutate(uploadAvatarBody)
+      return authenticatedClient.dieticianProfile.uploadAvatar.mutate(
+        uploadAvatarBody,
+      )
       // return axios.put(uploadAvatarUri, formData, {
       //   headers: {
       //     'Content-Type': 'multipart/form-data',

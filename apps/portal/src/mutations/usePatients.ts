@@ -1,23 +1,24 @@
 import { useMutation } from '@tanstack/vue-query'
 import axios from 'axios'
 import { env } from '../config/env'
-import trpcClient from '../trpc/trpc'
 import type {
   PatientUpdateDto,
   PatientCreateDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
+import { useClientStore } from '../trpc/trpc'
 
 axios.defaults.withCredentials = true
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddPatient = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: {
       surveyId: string
       email: string
       patient: PatientCreateDto
     }) => {
-      return trpcClient.dieticianPatient.createPatient.mutate({
+      return authenticatedClient.dieticianPatient.createPatient.mutate({
         ...body,
         surveyId: Number(body.surveyId),
       })
@@ -35,6 +36,7 @@ export const useAddPatient = () => {
 }
 
 export const useUpdatePatient = () => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (body: {
@@ -42,7 +44,7 @@ export const useUpdatePatient = () => {
         email: string
         patient: Partial<PatientUpdateDto>
       }) => {
-        return trpcClient.dieticianPatient.updatePatient.mutate(body)
+        return authenticatedClient.dieticianPatient.updatePatient.mutate(body)
       },
     })
 
