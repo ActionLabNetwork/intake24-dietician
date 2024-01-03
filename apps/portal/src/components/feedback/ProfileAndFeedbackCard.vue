@@ -51,12 +51,16 @@
             color="#F1F1F1"
             flat
             :disabled="!!editingDraft && areDraftsEqual"
-            @click="handleSaveDraftClick"
+            @click="
+              () => {
+                !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
+              }
+            "
           >
             {{
               props.editingDraft
                 ? areDraftsEqual
-                  ? 'Editing draft'
+                  ? 'No draft changes'
                   : 'Save draft changes'
                 : 'Save as draft'
             }}
@@ -73,10 +77,16 @@
 import { computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { useSaveDraft } from '@intake24-dietician/portal/mutations/useFeedback'
+import {
+  useEditDraft,
+  useSaveDraft,
+} from '@intake24-dietician/portal/mutations/useFeedback'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useRouter, useRoute } from 'vue-router'
 import isEqual from 'lodash.isequal'
+
+import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-sugar.css'
 
 const props = defineProps<{
   id: string
@@ -96,8 +106,11 @@ const emit = defineEmits<{
 const router = useRouter()
 const route = useRoute()
 
+const $toast = useToast()
+
 // Mutations
 const saveDraftMutation = useSaveDraft()
+const editDraftMutation = useEditDraft()
 
 const allowedDates = computed(() => {
   return props.recallDates.map(date => date.startTime)
@@ -127,6 +140,7 @@ const handleSaveDraftClick = () => {
     },
     {
       onSuccess: () => {
+        $toast.success('Draft saved')
         router.push({
           name: 'Survey Patient Feedback Records',
           params: {
@@ -134,6 +148,25 @@ const handleSaveDraftClick = () => {
             patientId: route.params['patientId'],
           },
         })
+      },
+    },
+  )
+}
+
+const handleEditDraftClick = () => {
+  console.log('Edit draft clicked')
+  console.log({
+    draftId: Number(route.params['feedbackId'] as string),
+    draft: props.draft,
+  })
+  editDraftMutation.mutate(
+    {
+      draftId: Number(route.params['feedbackId'] as string),
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        $toast.success('Draft updated')
       },
     },
   )

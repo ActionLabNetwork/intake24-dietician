@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/vue-query'
 import trpcClient from '../trpc/trpc'
-import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 
 export const useSaveDraft = () => {
@@ -20,10 +19,11 @@ export const useSaveDraft = () => {
   }
 }
 
-export const useUpdateSurveyPreferences = () => {
+export const useEditDraft = () => {
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: { id: number; survey: Partial<SurveyCreateDto> }) =>
-      trpcClient.dieticianSurvey.updateSurvey.mutate(body),
+    mutationFn: (body: { draftId: number; draft: DraftCreateDto }) => {
+      return trpcClient.dieticianFeedback.editDraft.mutate(body)
+    },
   })
 
   return {

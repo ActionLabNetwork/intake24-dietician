@@ -108,6 +108,7 @@ import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feed
 import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
+import cloneDeep from 'lodash.clonedeep'
 
 defineProps<{ draft: DraftDto }>()
 
@@ -290,7 +291,8 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 
   if (initialAllModules.value === undefined) {
-    initialAllModules.value = { ...newValue }
+    // initialAllModules.value = { ...newValue }
+    initialAllModules.value = cloneDeep(newValue)
   }
 
   allModules.value = newValue
@@ -325,8 +327,6 @@ const handleDateUpdate = (_date: Date) => {
 const handleFeedbackUpdate = (feedback: string) => {
   routeToModuleComponentMapping[component.value].feedback = feedback
 
-  if (!selectedModules.value) return
-
   // Update all modules feedback
   const allModule = allModules.value?.modules.find(
     module => module.key === component.value,
@@ -336,7 +336,7 @@ const handleFeedbackUpdate = (feedback: string) => {
   }
 
   // Update selected modules feedback
-  const selectedModule = selectedModules.value.modules.find(
+  const selectedModule = selectedModules.value?.modules.find(
     module => module.key === component.value,
   )
   if (selectedModule) {

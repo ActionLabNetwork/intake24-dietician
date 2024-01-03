@@ -57,6 +57,28 @@ export class DieticianFeedbackRouter {
           opts.input.draft,
         )
       }),
+    editDraft: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'PUT',
+          path: '/feedbacks/draft',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Edit a draft of a tailored feedback',
+        },
+      })
+      .input(
+        z.object({
+          draftId: z.number(),
+          draft: DraftCreateDtoSchema,
+        }),
+      )
+      .output(z.number().nullish())
+      .mutation(async opts => {
+        return await this.feedbackService.editDraft(
+          opts.input.draftId,
+          opts.input.draft,
+        )
+      }),
   })
 
   public constructor(
