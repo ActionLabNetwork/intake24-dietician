@@ -50,7 +50,7 @@
           :summaryKeys="summaryKeys"
           :addButtonLink="addButtonLink"
         />
-        <SurveysList :data="dataQuery.data.value ?? []" />
+        <!-- <SurveysList :data="dataQuery.data.value ?? []" /> -->
       </div>
     </v-container>
     <router-view />
@@ -66,7 +66,7 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import HomeSummary from '@/components/common/HomeSummary.vue'
 import type { Summary, SummaryKeys } from '@/components/common/HomeSummary.vue'
-import SurveysList from '@/components/surveys/SurveysList.vue'
+// import SurveysList from '@/components/surveys/SurveysList.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'

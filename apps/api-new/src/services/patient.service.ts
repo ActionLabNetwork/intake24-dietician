@@ -1,4 +1,8 @@
-import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
+import {
+  ClientError,
+  NotFoundError,
+  UnauthorizedError,
+} from '@intake24-dietician/api-new/utils/trpc'
 import type { IRecall } from '@intake24-dietician/common/types/recall'
 import { RecallRepository } from '@intake24-dietician/db-new/repositories/recall.repository'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
@@ -7,7 +11,7 @@ import { assert } from 'console'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { JwtService } from './jwt.service'
-import type { PatientDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import moment from 'moment'
 
 @singleton()
@@ -22,6 +26,7 @@ export class PatientService {
   public async getPatientById(id: number) {
     const patient = await this.userRepository.getPatient(id)
     if (!patient) throw new NotFoundError('Patient not found')
+
     return await this.attachExtraPatientFields(patient)
   }
 
@@ -87,10 +92,10 @@ export class PatientService {
   }
 
   private async attachExtraPatientFields(
-    patient: Omit<PatientDto, 'startSurveyUrl'> & {
+    patient: Omit<PatientWithUserDto, 'startSurveyUrl'> & {
       survey: { intake24Secret: string; recallSubmissionURL: string }
     },
-  ): Promise<PatientDto> {
+  ): Promise<PatientWithUserDto> {
     const payload = {
       username: patient.id.toString(),
       password: 'super_secret_password', // TODO: should this be created for the user and stored?

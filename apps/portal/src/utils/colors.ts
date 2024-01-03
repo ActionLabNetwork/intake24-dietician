@@ -35,7 +35,7 @@ export function generatePastelPalette(
 }
 
 // Simple hash function
-function simpleHash(str) {
+function simpleHash(str: string) {
   let hash = 0
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash)
@@ -43,19 +43,7 @@ function simpleHash(str) {
   return hash
 }
 
-export function stringToColor(str: string) {
-  hash = simpleHash(str)
-
-  // Convert hash to a color
-  let color = '#'
-  for (let i = 0; i < 3; i++) {
-    let value = (hash >> (i * 8)) & 0xff
-    color += ('00' + value.toString(16)).substr(-2)
-  }
-  return color
-}
-
-export function generateDistinctColors(strings) {
+export function generateDistinctColors(strings: string[]) {
   const colors = []
   const hueStep = 360 / strings.length
 

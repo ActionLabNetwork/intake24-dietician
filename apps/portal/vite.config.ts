@@ -32,8 +32,14 @@ export default defineConfig({
       '@intake24-dietician/db': fileURLToPath(
         new URL('../../packages/db/src', import.meta.url),
       ),
+      '@intake24-dietician/db-new': fileURLToPath(
+        new URL('../../packages/db-new/src', import.meta.url),
+      ),
       '@intake24-dietician/common/': fileURLToPath(
         new URL('../../packages/common/src/*', import.meta.url),
+      ),
+      '@intake24-dietician/api-new/': fileURLToPath(
+        new URL('../apps/api-new/src/*', import.meta.url),
       ),
       '@intake24-dietician/i18n': fileURLToPath(
         new URL('../../packages/i18n/src', import.meta.url),

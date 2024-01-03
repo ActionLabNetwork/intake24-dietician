@@ -1,4 +1,4 @@
-import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import type { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { getTableConfig } from '@intake24-dietician/db/config/env'
 import {
   AutoIncrement,
@@ -6,20 +6,20 @@ import {
   DataType,
   Model,
   PrimaryKey,
-  Table
+  Table,
 } from 'sequelize-typescript'
 
 export interface RecallFrequencyAttributes {
   id: number
   quantity: number
-  unit: ReminderConditions['reminderEvery']['unit']
-  end: ReminderConditions['reminderEnds']
+  unit: ReminderCondition['reminderEvery']['every']
+  end: ReminderCondition['reminderEnds']
   reminderMessage: string
 }
 
 export type RecallFrequencyCreationAttributes = Omit<
   RecallFrequencyAttributes,
-  'id' 
+  'id'
 >
 
 @Table(getTableConfig(RecallFrequency.name, 'recall_frequencies'))
@@ -36,10 +36,10 @@ class RecallFrequency extends Model<
   public declare quantity: number
 
   @Column(DataType.TEXT)
-  public declare unit: ReminderConditions['reminderEvery']['unit']
+  public declare unit: ReminderCondition['reminderEvery']['unit']
 
   @Column(DataType.JSONB)
-  public declare end: ReminderConditions['reminderEnds']
+  public declare end: ReminderCondition['reminderEnds']
 
   @Column(DataType.TEXT)
   public declare reminderMessage: string

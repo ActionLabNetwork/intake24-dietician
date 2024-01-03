@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/vue-query'
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { env } from '../config/env'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
 import trpcClient from '../trpc/trpc'
 import type {
   PatientUpdateDto,
@@ -63,7 +62,7 @@ export const useDeletePatient = () => {
 
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
     unknown,
-    AxiosError<ApiResponseWithError>,
+    unknown,
     number | undefined
   >({
     mutationFn: patientId => {
@@ -92,7 +91,7 @@ export const useRestorePatient = () => {
 
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
     unknown,
-    AxiosError<ApiResponseWithError>,
+    unknown,
     number | undefined
   >({
     mutationFn: patientId => {

@@ -5,7 +5,7 @@ import {
   DraftCreateDtoSchema,
   DraftDtoSchema,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { FeedbackService } from '@/services/feedback.service'
+import { FeedbackService } from '@intake24-dietician/api-new/services/feedback.service'
 
 @singleton()
 export class DieticianFeedbackRouter {

@@ -1,5 +1,5 @@
-import { AuthService } from '@/services/auth.service'
-import { PatientService } from '@/services/patient.service'
+import { AuthService } from '@intake24-dietician/api-new/services/auth.service'
+import { PatientService } from '@intake24-dietician/api-new/services/patient.service'
 import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   PatientUpdateDtoSchema,

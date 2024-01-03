@@ -50,6 +50,7 @@
     "@total-typescript/ts-reset": "^0.5.1",
     "@types/chroma-js": "^2.4.3",
     "@types/jest": "^29.5.8",
+    "@types/lodash.clonedeep": "^4.5.9",
     "@types/lodash.isequal": "^4.5.8",
     "@types/node": "^18.17.15",
     "@types/webfontloader": "^1.6.35",

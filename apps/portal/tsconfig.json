@@ -3,6 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "lib": ["esnext", "dom"],
+    "skipLibCheck": true,
     "types": ["vuetify", "jest"],
     "module": "esnext",
     "paths": {
@@ -10,6 +11,7 @@
       "@intake24-dietician/api-new/*": ["../api-new/src/*"],
       "@intake24-dietician/common/*": ["../../packages/common/src/*"],
       "@intake24-dietician/db/*": ["../../packages/db/src/*"],
+      "@intake24-dietician/db-new/*": ["../../packages/db-new/src/*"],
       "@intake24-dietician/i18n/*": ["../../packages/i18n/src/*"],
       "@intake24-dietician/*": ["../../packages/*/src"],
       "@/*": ["src/*"]
@@ -23,5 +25,5 @@
     "vite.config.ts",
     "src/components/feedback/feedback-builder/commit-counter.mjs"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "../api-new/node_modules/*"]
 }

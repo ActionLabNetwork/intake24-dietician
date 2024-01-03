@@ -5,7 +5,11 @@
  * @summary The authentication service is responsible for handling user authentication and authorization.
  * @packageDocumentation
  */
-import { ClientError, NotFoundError, UnauthorizedError } from '@/utils/trpc'
+import {
+  ClientError,
+  NotFoundError,
+  UnauthorizedError,
+} from '@intake24-dietician/api-new/utils/trpc'
 import type {
   DieticianCreateDto,
   PatientCreateDto,

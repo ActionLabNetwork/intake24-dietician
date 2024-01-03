@@ -1,11 +1,13 @@
 import type RecallFrequency from '@intake24-dietician/db/models/api/recall-frequency.model'
-import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+// import type { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+
+import type { ReminderCondition } from 'src/entities-new/preferences.dto'
 
 export interface RecallFrequencyDTO {
   id?: number
-  quantity: ReminderConditions['reminderEvery']['quantity']
-  unit: ReminderConditions['reminderEvery']['unit']
-  end: ReminderConditions['reminderEnds']
+  quantity: ReminderCondition['reminderEvery']['every']
+  unit: ReminderCondition['reminderEvery']['unit']
+  end: ReminderCondition['reminderEnds']
   reminderMessage: string
   createdAt?: Date
   updatedAt?: Date

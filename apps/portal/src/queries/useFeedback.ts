@@ -1,5 +1,6 @@
 import { useQuery, keepPreviousData } from '@tanstack/vue-query'
 import trpcClient from '../trpc/trpc'
+import { Ref } from 'vue'
 
 export const useFeedbackDraftById = (draftId: number) => {
   const { data, isPending, isError, error, isSuccess } = useQuery({

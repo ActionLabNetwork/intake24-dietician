@@ -1,4 +1,7 @@
-import { NotFoundError, UnauthorizedError } from '@/utils/trpc'
+import {
+  NotFoundError,
+  UnauthorizedError,
+} from '@intake24-dietician/api-new/utils/trpc'
 import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
