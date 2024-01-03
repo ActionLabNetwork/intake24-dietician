@@ -33,12 +33,7 @@
         <!-- Share status -->
         <div class="d-flex flex-column align-center">
           <p class="font-weight-medium mx-auto">Share status</p>
-          <v-chip
-            variant="outlined"
-            :color="items[0]!.type === 'Tailored' ? 'success' : 'warning'"
-            :text="items[0]!.type"
-          >
-          </v-chip>
+          <v-chip variant="outlined" color="success" text="Tailored"> </v-chip>
         </div>
 
         <!-- Action buttons -->
@@ -55,9 +50,16 @@
             class="text-none ml-8"
             color="#F1F1F1"
             flat
+            :disabled="!!editingDraft && areDraftsEqual"
             @click="handleSaveDraftClick"
           >
-            Save as draft
+            {{
+              props.editingDraft
+                ? areDraftsEqual
+                  ? 'Editing draft'
+                  : 'Save draft changes'
+                : 'Save as draft'
+            }}
           </v-btn>
           <v-btn class="text-none ml-3" color="primary" flat>
             Share feedback
@@ -73,6 +75,8 @@ import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useSaveDraft } from '@intake24-dietician/portal/mutations/useFeedback'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { useRouter, useRoute } from 'vue-router'
+import isEqual from 'lodash.isequal'
 
 const props = defineProps<{
   id: string
@@ -81,16 +85,7 @@ const props = defineProps<{
   recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
-  // draft: {
-  //   recallsData: RecallDto[]
-  //   recallDate: Date
-  //   modules: {
-  //     key: ModuleRoute
-  //     component: Component
-  //     feedback: string
-  //     selected: boolean
-  //   }[]
-  // }
+  editingDraft: { originalDraft: DraftCreateDto } | false
   draft: DraftCreateDto
 }>()
 const emit = defineEmits<{
@@ -98,10 +93,8 @@ const emit = defineEmits<{
   'click:preview': []
 }>()
 
-interface SharedItem {
-  shared: string
-  type: 'Tailored' | 'Auto'
-}
+const router = useRouter()
+const route = useRoute()
 
 // Mutations
 const saveDraftMutation = useSaveDraft()
@@ -116,26 +109,34 @@ const handleDateUpdate = (date: Date) => {
   emit('update:date', date)
 }
 
+const areDraftsEqual = computed(() => {
+  if (!props.editingDraft) return false
+
+  return isEqual(props.editingDraft.originalDraft, props.draft)
+})
+
 onMounted(() => {
   date.value = props.initialDate
 })
 
-const items = ref<SharedItem[]>([
-  { shared: 'Real-Time', type: 'Tailored' },
-  { shared: 'Audience', type: 'Tailored' },
-  { shared: 'Conversions', type: 'Auto' },
-])
-
 const handleSaveDraftClick = () => {
-  console.log({
-    patientId: Number(props.id),
-    draft: props.draft,
-  })
-
-  saveDraftMutation.mutate({
-    patientId: Number(props.id),
-    draft: props.draft,
-  })
+  saveDraftMutation.mutate(
+    {
+      patientId: Number(props.id),
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        router.push({
+          name: 'Survey Patient Feedback Records',
+          params: {
+            surveyId: route.params['surveyId'],
+            patientId: route.params['patientId'],
+          },
+        })
+      },
+    },
+  )
 }
 </script>
 

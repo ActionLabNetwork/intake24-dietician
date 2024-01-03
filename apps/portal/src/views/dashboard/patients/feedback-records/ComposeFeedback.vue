@@ -7,7 +7,13 @@
           flat
           class="text-none px-0"
           variant="text"
-          :to="route.path.split('/').slice(0, -1).join('/')"
+          :to="{
+            name: 'Survey Patient Feedback Records',
+            params: {
+              surveyId: route.params['surveyId'],
+              patientId: route.params['patientId'],
+            },
+          }"
         >
           Back to {{ patientName }} records
         </v-btn>
@@ -23,6 +29,7 @@
           :recall-dates="recallDates"
           :initial-date="date"
           :previewing="previewing"
+          :editing-draft="false"
           :draft="allModules"
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
@@ -240,7 +247,12 @@ const handleDateUpdate = (_date: Date) => {
 const handleFeedbackUpdate = (feedback: string) => {
   routeToModuleComponentMapping[component.value].feedback = feedback
 
+  if (!allModules.value) return
   if (!selectedModules.value) return
+
+  allModules.value.modules.find(
+    module => module.key === component.value,
+  )!.feedback = feedback
   selectedModules.value.modules.find(
     module => module.key === component.value,
   )!.feedback = feedback

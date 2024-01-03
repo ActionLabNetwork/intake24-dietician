@@ -2,7 +2,7 @@ import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/fee
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { feedbackDrafts } from '../models/feedback.model'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 
 @singleton()
 export class FeedbackRepository {
@@ -21,6 +21,7 @@ export class FeedbackRepository {
   public async getDraftsByPatientId(patientId: number) {
     return await this.drizzle.query.feedbackDrafts.findMany({
       where: eq(feedbackDrafts.patientId, patientId),
+      orderBy: desc(feedbackDrafts.updatedAt),
     })
   }
 

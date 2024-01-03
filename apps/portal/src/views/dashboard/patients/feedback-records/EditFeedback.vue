@@ -7,13 +7,24 @@
           flat
           class="text-none px-0"
           variant="text"
-          :to="route.path.split('/').slice(0, -1).join('/')"
+          :to="{
+            name: 'Survey Patient Feedback Records',
+            params: {
+              surveyId: route.params['surveyId'],
+              patientId: route.params['patientId'],
+            },
+          }"
         >
           Back to {{ patientName }} records
         </v-btn>
       </div>
       <div
-        v-if="recallsQuery.data.value && allModules"
+        v-if="
+          recallsQuery.data.value &&
+          allModules &&
+          draftQuery.data.value &&
+          initialAllModules
+        "
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
@@ -24,6 +35,7 @@
           :initial-date="date"
           :previewing="previewing"
           :draft="allModules"
+          :editingDraft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
@@ -206,6 +218,19 @@ const feedbackMapping = ref<FeedbackMapping>({
   },
 })
 
+const initialAllModules = ref<
+  | {
+      recallsData: typeof recallsData
+      recallDate: typeof date
+      modules: {
+        key: ModuleRoute
+        component: Component
+        feedback: string
+        selected: boolean
+      }[]
+    }
+  | undefined
+>(undefined)
 const allModules = ref<
   | {
       recallsData: typeof recallsData
@@ -251,7 +276,7 @@ const handleModuleUpdate = (module: ModuleRoute) => {
 }
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
-  allModules.value = {
+  const newValue = {
     recallsData: recallsData.value,
     recallDate: date.value,
     modules: modules.map(module => {
@@ -263,6 +288,12 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
       return { key, component, feedback, selected }
     }),
   }
+
+  if (initialAllModules.value === undefined) {
+    initialAllModules.value = { ...newValue }
+  }
+
+  allModules.value = newValue
 
   selectedModules.value = {
     recallsData: recallsData.value,
@@ -281,15 +312,36 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
 const handleDateUpdate = (_date: Date) => {
   date.value = _date
+
+  if (allModules.value) {
+    allModules.value.recallDate = _date
+  }
+
+  if (selectedModules.value) {
+    selectedModules.value.recallDate = _date
+  }
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
   routeToModuleComponentMapping[component.value].feedback = feedback
 
   if (!selectedModules.value) return
-  selectedModules.value.modules.find(
+
+  // Update all modules feedback
+  const allModule = allModules.value?.modules.find(
     module => module.key === component.value,
-  )!.feedback = feedback
+  )
+  if (allModule) {
+    allModule.feedback = feedback
+  }
+
+  // Update selected modules feedback
+  const selectedModule = selectedModules.value.modules.find(
+    module => module.key === component.value,
+  )
+  if (selectedModule) {
+    selectedModule.feedback = feedback
+  }
 }
 
 const handlePreviewButtonClick = () => {
@@ -321,13 +373,6 @@ watch(
         routeToModuleComponentMapping[module.key].feedback = module.feedback
       })
     }
-  },
-)
-
-watch(
-  () => allModules.value,
-  newSelectedModules => {
-    console.log({ newSelectedModules })
   },
 )
 </script>

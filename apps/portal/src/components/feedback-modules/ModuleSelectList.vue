@@ -120,6 +120,10 @@ const handleModuleSelect = (title: ModuleRoute) => {
   emit('update', item.to)
 }
 
+onMounted(() => {
+  emit('update:modules', items.value)
+})
+
 // Helpers
 const mapPropsToRef = () => {
   items.value.forEach(item => {
