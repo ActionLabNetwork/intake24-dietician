@@ -10,11 +10,25 @@ import { FeedbackService } from '@/services/feedback.service'
 @singleton()
 export class DieticianFeedbackRouter {
   private router = router({
+    getDraftById: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/feedbacks/drafts/:draftId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Get feedback draft by id',
+        },
+      })
+      .input(z.object({ draftId: z.number() }))
+      .output(DraftDtoSchema.nullish())
+      .query(async opts => {
+        return await this.feedbackService.getDraftById(opts.input.draftId)
+      }),
     getPatientDrafts: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
-          path: '/feedbacks/draft',
+          path: '/feedbacks/drafts/patient/:patientId',
           tags: ['dietician', 'surveys', 'feedbacks'],
           summary: 'Get feedback drafts of a patient',
         },

@@ -2,7 +2,6 @@
   <div>
     <v-container>
       <div class="d-print-none">
-        {{ draft }}
         <v-btn
           prepend-icon="mdi-chevron-left"
           flat
@@ -29,10 +28,15 @@
           @update:date="handleDateUpdate"
         />
       </div>
-      <div v-if="recallsQuery.data.value" v-show="!previewing" class="mt-4">
+      <div
+        v-if="recallsQuery.data.value && draftQuery.data.value"
+        v-show="!previewing"
+        class="mt-4"
+      >
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
+              :default-state="feedbackMapping"
               show-switches
               @update="handleModuleUpdate"
               @update:modules="handleModulesUpdate"
@@ -90,6 +94,8 @@ import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall
 import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
+import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 
 defineProps<{ draft: DraftDto }>()
 
@@ -100,6 +106,9 @@ const route = useRoute()
 const $toast = useToast()
 
 // Queries
+const draftQuery = useFeedbackDraftById(
+  Number(route.params['feedbackId'] as string),
+)
 const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
 // const recallsQuery = useRecallsByUserId(
 //   ref(`dietician:survey_id:${route.params['id']}`),
@@ -157,11 +166,44 @@ const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
 })
 const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-  '/meal-diary': { component: MealDiaryModule, feedback: 'Hello' },
-  '/carbs-exchange': { component: CarbsExchangeModule, feedback: 'Hi' },
-  '/energy-intake': { component: EnergyIntakeModule, feedback: 'Yohoo' },
-  '/fibre-intake': { component: FibreIntakeModule, feedback: 'Yay' },
-  '/water-intake': { component: WaterIntakeModule, feedback: 'Clap' },
+  '/meal-diary': { component: MealDiaryModule, feedback: '' },
+  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
+  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
+  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
+  '/water-intake': { component: WaterIntakeModule, feedback: '' },
+})
+
+const feedbackMapping = ref<FeedbackMapping>({
+  '/meal-diary': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  '/carbs-exchange': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  '/energy-intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  '/fibre-intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  '/water-intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
 })
 
 const allModules = ref<
@@ -262,11 +304,24 @@ watch(
   () => recallsQuery.data.value,
   data => {
     if (data) {
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime ?? new Date()
+      // Default to date saved in draft
+      date.value = draftQuery.data.value?.draft.recallDate ?? new Date()
     }
   },
   { immediate: true },
+)
+
+watch(
+  () => draftQuery.data.value,
+  data => {
+    if (data) {
+      date.value = data.draft.recallDate
+      data.draft.modules.forEach(module => {
+        feedbackMapping.value[module.key].isActive = module.selected
+        routeToModuleComponentMapping[module.key].feedback = module.feedback
+      })
+    }
+  },
 )
 
 watch(

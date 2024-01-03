@@ -8,6 +8,10 @@ export class FeedbackService {
     @inject(FeedbackRepository) private feedbackRepository: FeedbackRepository,
   ) {}
 
+  public async getDraftById(id: number) {
+    return await this.feedbackRepository.getDraftById(id)
+  }
+
   public async getDraftsByPatientId(patientId: number) {
     const patients =
       await this.feedbackRepository.getDraftsByPatientId(patientId)

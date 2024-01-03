@@ -12,6 +12,12 @@ export class FeedbackRepository {
     this.drizzle = db.drizzleClient
   }
 
+  public async getDraftById(draftId: number) {
+    return await this.drizzle.query.feedbackDrafts.findFirst({
+      where: eq(feedbackDrafts.id, draftId),
+    })
+  }
+
   public async getDraftsByPatientId(patientId: number) {
     return await this.drizzle.query.feedbackDrafts.findMany({
       where: eq(feedbackDrafts.patientId, patientId),
