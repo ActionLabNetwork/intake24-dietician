@@ -120,14 +120,11 @@ export const useUpdateProfile = () => {
   }
 }
 
-export const useGenerateToken = () => {
+export const useRequestEmailChange = () => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (generateTokenBody: {
-      currentEmail: string
-      newEmail: string
-    }) =>
-      authenticatedClient.dieticianProfile.generateChangeEmailToken.mutate(
+    mutationFn: (generateTokenBody: { newEmail: string }) =>
+      authenticatedClient.dieticianProfile.requestEmailChange.mutate(
         generateTokenBody,
       ),
   })
@@ -142,23 +139,12 @@ export const useGenerateToken = () => {
   }
 }
 
-export const useVerifyToken = () => {
-  const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (verifyTokenBody: { token: string }) =>
-      authenticatedClient.dieticianProfile.verifyChangeEmailToken.mutate(
-        verifyTokenBody,
-      ),
+export const useVerifyEmail = () => {
+  const { publicClient } = useClientStore()
+  return useMutation({
+    mutationFn: (token: string) =>
+      publicClient.dieticianProfile.verifyEmail.mutate({ token }),
   })
-
-  return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
 }
 
 export const useUploadAvatar = () => {

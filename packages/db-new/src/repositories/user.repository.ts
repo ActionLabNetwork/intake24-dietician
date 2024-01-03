@@ -74,6 +74,13 @@ export class UserRepository {
     })
   }
 
+  public async updateUser(
+    id: number,
+    fields: Partial<typeof users.$inferSelect>,
+  ) {
+    return await this.drizzle.update(users).set(fields).where(eq(users.id, id))
+  }
+
   public async checkEmailExists(email: string) {
     return !!(await this.getUserByEmail(email))
   }
@@ -184,26 +191,17 @@ export class UserRepository {
 
   public async updateDietician(
     dieticianId: number,
-    email: string,
     details: Partial<DieticianCreateDto>,
   ) {
     const updateTimestamp = moment().toDate()
     return (
       (
-        await this.drizzle.transaction(async tx => {
-          const dietician = await tx
-            .update(dieticians)
-            .set({ ...details, updatedAt: updateTimestamp })
-            .where(eq(dieticians.id, dieticianId))
-            .returning()
-            .execute()
-          return await tx
-            .update(users)
-            .set({ email })
-            .where(eq(users.id, dietician[0]!.userId))
-            .returning()
-            .execute()
-        })
+        await this.drizzle
+          .update(dieticians)
+          .set({ ...details, updatedAt: updateTimestamp })
+          .where(eq(dieticians.id, dieticianId))
+          .returning()
+          .execute()
       ).length > 0
     )
   }
@@ -260,12 +258,15 @@ export class UserRepository {
       with: {
         patients: {
           where: eq(patients.surveyId, surveyId),
-          with: { user: true, survey: {
-            columns: {
-              intake24Secret: true,
-              recallSubmissionURL: true
-            }
-          } },
+          with: {
+            user: true,
+            survey: {
+              columns: {
+                intake24Secret: true,
+                recallSubmissionURL: true,
+              },
+            },
+          },
         },
       },
     })

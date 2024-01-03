@@ -52,44 +52,15 @@
                     New {{ t('profile.form.contactDetails.email.label') }}
                   </span>
                 </BaseInput>
-                <v-btn
-                  size="small"
-                  type="submit"
-                  color="secondary text-capitalize"
-                  class="mb-10"
-                  :disabled="showVerificationTokenField"
-                  :loading="generateTokenMutation.isPending.value"
-                  @click="handleSendVerificationToken"
-                >
-                  {{
-                    showVerificationTokenField
-                      ? 'Verification token sent'
-                      : 'Send verification token'
-                  }}
-                </v-btn>
-                <v-text-field
-                  v-if="showVerificationTokenField"
-                  v-model="verificationToken"
-                  label="Enter Verification Token"
-                  required
-                ></v-text-field>
-                <v-alert
-                  v-if="errorMsg"
-                  type="error"
-                  dense
-                  border="top"
-                  variant="outlined"
-                >
-                  {{ errorMsg }}
-                </v-alert>
               </v-card-text>
               <v-card-actions>
                 <v-btn
-                  :disabled="!verificationToken"
+                  :disabled="currentEmailAddress === formValues.email"
                   color="primary"
-                  @click="handleVerifyToken"
+                  :loading="requestEmailChangeMutation.isPending.value"
+                  @click="requestEmailChange"
                 >
-                  Verify Token
+                  Request Email Change
                 </v-btn>
                 <v-btn color="grey" @click="() => (changeEmailDialog = false)">
                   Close
@@ -108,13 +79,14 @@ import BaseInput from '@/components/form/BaseInput.vue'
 import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
-import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
+import { useRequestEmailChange } from '@/mutations/useAuth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form, Layout } from './types'
 import {
   DieticianUpdateDto,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
+import { useToast } from 'vue-toast-notification'
 
 export interface ContactDetailsFormValues {
   email: string
@@ -132,8 +104,10 @@ const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
 }>()
 
-const generateTokenMutation = useGenerateToken()
-const verifyTokenMutation = useVerifyToken()
+// const generateTokenMutation = useGenerateToken()
+// const verifyTokenMutation = useVerifyToken()
+const requestEmailChangeMutation = useRequestEmailChange()
+const $toast = useToast()
 
 const { mdAndUp } = useDisplay()
 
@@ -155,9 +129,6 @@ onMounted(() => {
 })
 
 const changeEmailDialog = ref(false)
-const verificationToken = ref('')
-const showVerificationTokenField = ref(false)
-const errorMsg = ref('')
 
 const handleFieldUpdate = (
   fieldName: keyof ContactDetailsFormValues,
@@ -167,46 +138,17 @@ const handleFieldUpdate = (
   emit('update', { ...formValues.value })
 }
 
-const handleSendVerificationToken = () => {
-  generateTokenMutation.mutate(
-    {
-      currentEmail: currentEmailAddress.value,
+const requestEmailChange = async () => {
+  try {
+    await requestEmailChangeMutation.mutate({
       newEmail: formValues.value.email,
-    },
-    {
-      onSuccess() {
-        showVerificationTokenField.value = true
-        errorMsg.value = ''
-      },
-      onError() {
-        errorMsg.value =
-          'Error sending verification token. Please try another email address.'
-      },
-    },
-  )
-}
-
-const handleVerifyToken = () => {
-  verifyTokenMutation.mutate(
-    { token: verificationToken.value },
-    {
-      onSuccess: async () => {
-        try {
-          await props.handleSubmit(false)
-          changeEmailDialog.value = false
-          showVerificationTokenField.value = false
-          verificationToken.value = ''
-          errorMsg.value = ''
-          currentEmailAddress.value = formValues.value.email
-        } catch (error) {
-          errorMsg.value = 'Error updating email address'
-        }
-      },
-      onError() {
-        errorMsg.value = 'Invalid verification token'
-      },
-    },
-  )
+    })
+    $toast.info('Please check your email inbox to verify the email change.')
+  } catch (e) {
+    $toast.info('Failed to request to change the email.')
+  } finally {
+    changeEmailDialog.value = false
+  }
 }
 
 const formConfig: Form<keyof ContactDetailsFormValues> = {

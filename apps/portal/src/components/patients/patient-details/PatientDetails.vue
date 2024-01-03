@@ -192,7 +192,7 @@ const aggregatedData = computed(() => {
 const isFormValid = computed(() => {
   return patientForm.isFormValid({
     id: Number(route.params['patientId']),
-    email: patientQuery.data.value?.user.email ?? '',
+    email: aggregatedData.value.email ?? '',
     patient: aggregatedData.value,
   })
 })
@@ -200,7 +200,7 @@ const isFormValid = computed(() => {
 const handleSubmit = async (): Promise<void> => {
   return await patientForm.handleSubmit({
     id: Number(route.params['patientId']),
-    email: patientQuery.data.value?.user.email ?? '',
+    email: aggregatedData.value.email ?? '',
     patient: aggregatedData.value,
   })
 }

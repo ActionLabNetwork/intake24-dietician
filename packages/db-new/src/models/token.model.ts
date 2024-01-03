@@ -1,7 +1,6 @@
 import {
   boolean,
   integer,
-  pgEnum,
   pgTable,
   serial,
   text,
@@ -10,12 +9,8 @@ import {
 import { timestampFields } from './model.common'
 import { users } from './user.model'
 import { relations } from 'drizzle-orm'
-
-export const tokenTypeEnum = pgEnum('tokenType', [
-  'passwordless-auth',
-  'reset-password',
-  'change-email',
-])
+import { ActionTokenActionSchema } from '@intake24-dietician/common/entities-new/token.dto'
+import { typedJsonbFromSchema } from './modelUtils'
 
 export const tokens = pgTable('token', {
   id: serial('id').primaryKey(),
@@ -23,7 +18,7 @@ export const tokens = pgTable('token', {
     .references(() => users.id)
     .notNull(),
   token: text('token').notNull().unique(),
-  actionType: tokenTypeEnum('action_type').notNull(),
+  action: typedJsonbFromSchema(ActionTokenActionSchema)('action').notNull(),
   expiresAt: timestamp('expires_at', { precision: 6, withTimezone: true }),
   isActive: boolean('is_active').default(true).notNull(),
   ...timestampFields,

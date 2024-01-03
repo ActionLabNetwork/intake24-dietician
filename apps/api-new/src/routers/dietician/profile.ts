@@ -5,7 +5,11 @@ import {
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
-import { protectedDieticianProcedure, router } from '../../trpc'
+import {
+  protectedDieticianProcedure,
+  publicProcedure,
+  router,
+} from '../../trpc'
 
 @singleton()
 export class DieticianProfileRouter {
@@ -44,14 +48,13 @@ export class DieticianProfileRouter {
       .mutation(async opts => {
         const updated = await this.authService.updateDietician(
           opts.ctx.dieticianId,
-          opts.input.email,
           opts.input.profile,
         )
 
         if (!updated) throw new Error('Dietician not updated')
         return updated
       }),
-    generateChangeEmailToken: protectedDieticianProcedure
+    requestEmailChange: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'POST',
@@ -62,24 +65,21 @@ export class DieticianProfileRouter {
       })
       .input(
         z.object({
-          currentEmail: z.string().email(),
           newEmail: z.string().email(),
         }),
       )
-      .output(z.string())
+      .output(z.enum(['ok', 'email_already_exists']))
       .mutation(async opts => {
-        const token = await this.authService.generateUserTokenForChangeEmail(
-          opts.input.currentEmail,
+        return await this.authService.requestEmailChange(
+          opts.ctx.userId,
           opts.input.newEmail,
         )
-        console.log({ token })
-        return token
       }),
-    verifyChangeEmailToken: protectedDieticianProcedure
+    verifyEmail: publicProcedure
       .meta({
         openapi: {
           method: 'POST',
-          path: '/verify-change-email',
+          path: '/verify-email',
           tags: ['dietician', 'profile'],
           summary: 'Verify change email token',
         },
@@ -89,15 +89,9 @@ export class DieticianProfileRouter {
           token: z.string(),
         }),
       )
-      .output(z.boolean())
+      .output(z.void())
       .mutation(async opts => {
-        const isVerified = await this.authService.verifyUserToken(
-          opts.input.token,
-          'change-email',
-          true,
-        )
-
-        return isVerified
+        await this.authService.verifyEmail(opts.input.token)
       }),
     uploadAvatar: protectedDieticianProcedure
       .meta({

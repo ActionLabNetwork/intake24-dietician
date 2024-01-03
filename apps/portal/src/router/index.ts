@@ -19,7 +19,6 @@ const routes = [
       } as const,
     ],
   } as const,
-
   // Auth Pages
   {
     path: '/auth',
@@ -56,6 +55,11 @@ const routes = [
           hideIfAuthenticated: true,
         },
       } as const,
+      {
+        path: 'verify-email',
+        name: 'Verify Email',
+        component: () => import('@/views/VerifyEmail.vue'),
+      },
     ],
   } as const,
   {

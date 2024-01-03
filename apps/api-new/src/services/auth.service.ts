@@ -18,9 +18,12 @@ import type {
 import {
   TokenPayloadSchema,
   type Token,
-  type TokenActionType,
   type TokenPayload,
 } from '@intake24-dietician/common/types/auth'
+import type {
+  ActionTokenAction,
+  ActionTokenActionType,
+} from '@intake24-dietician/common/entities-new/token.dto'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { TokenRepository } from '@intake24-dietician/db-new/repositories/token.repository'
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
@@ -34,6 +37,15 @@ import { HashingService } from './hashing.service'
 import { TokenService } from './token.service'
 import type { Result } from '@intake24-dietician/common/types/utils'
 import { resolveLogger } from '../di/di.config'
+import { EmailService } from './email.service'
+
+interface ActionToken<AT extends ActionTokenActionType> {
+  token: string
+  userId: number
+  action: ActionTokenAction & { type: AT }
+  expiresAt: Date | null
+  isActive: boolean
+}
 
 @singleton()
 export class AuthService {
@@ -45,6 +57,7 @@ export class AuthService {
     @inject(UserRepository) private userRepository: UserRepository,
     @inject(TokenRepository) private tokenRepository: TokenRepository,
     @inject(SurveyRepository) private surveyRepository: SurveyRepository,
+    @inject(EmailService) private emailService: EmailService,
     @inject(Redis) private redis: Redis,
   ) {}
 
@@ -90,11 +103,15 @@ export class AuthService {
   }
 
   public forgotPassword = async (email: string) => {
-    if (!(await this.confirmEmailExists(email))) {
-      throw new NotFoundError('Email not found')
+    const user = await this.userRepository.getUserByEmail(email)
+
+    if (!user) {
+      throw new NotFoundError('User with email not found')
     }
 
-    const token = await this.generateUserToken(email, 'reset-password')
+    const token = await this.generateUserToken(user.id, {
+      type: 'reset-password',
+    })
     if (!token) {
       throw new Error('Token creation failed')
     }
@@ -130,9 +147,8 @@ export class AuthService {
 
   public updateDietician = async (
     dieticianId: number,
-    email: string,
     details: Partial<DieticianCreateDto>,
-  ) => await this.userRepository.updateDietician(dieticianId, email, details)
+  ) => await this.userRepository.updateDietician(dieticianId, details)
 
   public logout = async (accessToken: string): Promise<void> => {
     const decoded = await this.safeParseJwtToken(accessToken, 'access-token')
@@ -148,58 +164,25 @@ export class AuthService {
   }
 
   public generateUserToken = async (
-    email: string,
-    actionType: TokenActionType,
+    userId: number,
+    action: ActionTokenAction,
   ) => {
-    let token = ''
-    const user = await this.userRepository.getUserByEmail(email)
-
-    if (!user) {
-      throw new NotFoundError('User not found')
-    }
-
-    token = crypto.randomBytes(32).toString('hex')
-    this.tokenRepository.createToken({
-      userId: user.id,
+    const token = crypto.randomBytes(32).toString('hex')
+    await this.tokenRepository.createToken({
+      userId: userId,
       token,
-      actionType,
+      action,
       expiresAt: moment().add(1, 'hours').toDate(),
     })
 
     return token
   }
 
-  public verifyUserToken = async (
-    token: string,
-    actionType: TokenActionType,
-    destroyToken = true,
-  ) => {
-    const tokenEntity = await this.tokenRepository.findOne(token)
-
-    if (!tokenEntity) {
-      throw new NotFoundError('Token not found')
-    }
-
-    if (moment().isAfter(moment(tokenEntity.expiresAt))) {
-      throw new UnauthorizedError('Token has expired')
-    }
-
-    if (tokenEntity.actionType !== actionType) {
-      throw new ClientError('Token has the wrong action type')
-    }
-
-    if (destroyToken) {
-      await this.tokenRepository.consumeOne(token)
-    }
-
-    return true
-  }
-
   public verifyUserTokenForPasswordlessAuth = async (
     email: string,
     token: string,
   ) => {
-    const isVerified = await this.verifyUserToken(
+    const isVerified = await this.verifyActionToken(
       token,
       'passwordless-auth',
       false,
@@ -327,10 +310,14 @@ export class AuthService {
   }
 
   public generateUserTokenForPasswordlessAuth = async (email: string) => {
-    const isEmailRegistered = await this.confirmEmailExists(email)
+    // const isEmailRegistered = await this.confirmEmailExists(email)
 
-    if (isEmailRegistered) {
-      return await this.generateUserToken(email, 'passwordless-auth')
+    const user = await this.userRepository.getUserByEmail(email)
+
+    if (user) {
+      return await this.generateUserToken(user.id, {
+        type: 'passwordless-auth',
+      })
     } else {
       // Create a new user temporarily
       const passwordLength = 12
@@ -340,32 +327,50 @@ export class AuthService {
         .slice(0, passwordLength)
       const hashedPassword = await this.hashingService.hash(password)
 
-      await this.register(email, hashedPassword)
-      return await this.generateUserToken(email, 'passwordless-auth')
+      const newUser = await this.register(email, hashedPassword)
+      return await this.generateUserToken(newUser.id, {
+        type: 'passwordless-auth',
+      })
     }
   }
 
-  public generateUserTokenForChangeEmail = async (
-    currentEmail: string,
-    newEmail: string,
-  ) => {
-    const currentEmailIsRegistered = await this.confirmEmailExists(currentEmail)
-    const newEmailIsAvailable =
+  public requestEmailChange = async (userId: number, newEmail: string) => {
+    const user = await this.userRepository.getUserById(userId)
+    if (!user) {
+      throw Error('The user does not exist')
+    }
+
+    if (user.email === newEmail) {
+      throw new ClientError('The email is the same')
+    }
+
+    const isNewEmailAvailable =
       await this.validateNewEmailAvailability(newEmail)
-
-    if (currentEmailIsRegistered && newEmailIsAvailable) {
-      return await this.generateUserToken(currentEmail, 'change-email')
+    if (!isNewEmailAvailable) {
+      return 'email_already_exists'
     }
 
-    if (!currentEmailIsRegistered && newEmailIsAvailable) {
-      throw new ClientError('Invalid current email')
+    const token = await this.generateUserToken(userId, {
+      type: 'verify-email',
+      email: newEmail,
+    })
+    console.log('Token is ', token)
+    return 'ok'
+  }
+
+  public verifyEmail = async (token: string) => {
+    const tokenEntity = await this.verifyActionToken(token, 'verify-email')
+    const action = tokenEntity.action
+
+    const user = this.userRepository.getUserById(tokenEntity.userId)
+    if (!user) {
+      throw new NotFoundError('User cannot be found')
     }
 
-    if (currentEmailIsRegistered && !newEmailIsAvailable) {
-      throw new ClientError('Invalid new email')
-    }
-
-    throw new ClientError('Invalid current and new email')
+    await this.userRepository.updateUser(tokenEntity.userId, {
+      isVerified: true,
+      email: action.email ?? undefined,
+    })
   }
 
   public verifyAccessToken = async (accessToken: string) => {
@@ -426,6 +431,29 @@ export class AuthService {
     }
 
     return true
+  }
+
+  private verifyActionToken = async <AT extends ActionTokenActionType>(
+    token: string,
+    actionType: AT,
+    destroyToken = true,
+  ) => {
+    const tokenEntity = destroyToken
+      ? await this.tokenRepository.findOne(token)
+      : await this.tokenRepository.consumeOne(token)
+
+    if (!tokenEntity) {
+      throw new NotFoundError('Token not found')
+    }
+
+    if (moment().isAfter(moment(tokenEntity.expiresAt))) {
+      throw new UnauthorizedError('Token has expired')
+    }
+
+    if (tokenEntity.action.type !== actionType) {
+      throw new ClientError('Token has the wrong action type')
+    }
+    return tokenEntity as any as ActionToken<AT>
   }
 
   private validateNewEmailAvailability = async (email: string) => {
