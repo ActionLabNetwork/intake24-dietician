@@ -1,6 +1,7 @@
 import { Queue, Worker } from 'bullmq'
-import { deleteExpiredTokens } from '@/jobs/scheduled/deleteExpiredTokens'
-import { env } from '@/config/env'
+import { ScheduledJobToken } from '@intake24-dietician/api-new/jobs/scheduled/token.scheduled'
+import { env } from '@intake24-dietician/api-new/config/env'
+import { container } from 'tsyringe'
 
 const connectionOptions = {
   connection: {
@@ -24,12 +25,13 @@ async function addJobs() {
   )
 }
 
+const scheduledJobToken = container.resolve(ScheduledJobToken)
 const initJobs = async () => await addJobs()
 const worker = new Worker<unknown, unknown, Jobs>(
   'mainWorker',
   async job => {
     if (job.name === 'deleteExpiredTokens') {
-      await deleteExpiredTokens().catch(() => {})
+      await scheduledJobToken.deleteExpiredTokens().catch(() => {})
     }
   },
   connectionOptions,

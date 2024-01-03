@@ -2,7 +2,7 @@ import assert from 'assert'
 import { AppDatabase } from '../database'
 import { tokens } from '../models'
 import { inject, singleton } from 'tsyringe'
-import { eq } from 'drizzle-orm'
+import { eq, lt } from 'drizzle-orm'
 
 @singleton()
 export class TokenRepository {
@@ -37,5 +37,9 @@ export class TokenRepository {
       .returning()
       .execute()
     return tokenEntity
+  }
+
+  public async deleteExpiredTokens() {
+    await this.drizzle.delete(tokens).where(lt(tokens.expiresAt, new Date()))
   }
 }

@@ -10,10 +10,16 @@ import { createApp } from './app'
 import { registerLogger as injectLogger } from './di/di.config'
 import { JwtService } from './services/jwt.service'
 import { EmailService } from './services/email.service'
+import { TokenRepository } from '@intake24-dietician/db-new/repositories'
 // import initJobs from './jobs/queue'
 
 // --- Setup dependencies
-container.register(TokenService, { useValue: new TokenService(env.JWT_SECRET) })
+container.register(TokenService, {
+  useValue: new TokenService(
+    env.JWT_SECRET,
+    container.resolve(TokenRepository),
+  ),
+})
 
 const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_DB_NAME } =
   env

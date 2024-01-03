@@ -1,9 +1,9 @@
-import type { IRecall } from '@intake24-dietician/common/types/recall'
 import assert from 'assert'
 import { eq } from 'drizzle-orm'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { recalls } from '../models'
+import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 @singleton()
 export class RecallRepository {
@@ -29,7 +29,7 @@ export class RecallRepository {
     return _recalls
   }
 
-  public async createRecall(patientId: number, recall: IRecall) {
+  public async createRecall(patientId: number, recall: RecallDto['recall']) {
     const [insertedRecall] = await this.drizzle
       .insert(recalls)
       .values({

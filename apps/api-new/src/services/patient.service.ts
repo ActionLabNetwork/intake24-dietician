@@ -3,7 +3,6 @@ import {
   NotFoundError,
   UnauthorizedError,
 } from '@intake24-dietician/api-new/utils/trpc'
-import type { IRecall } from '@intake24-dietician/common/types/recall'
 import { RecallRepository } from '@intake24-dietician/db-new/repositories/recall.repository'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
@@ -13,6 +12,7 @@ import { z } from 'zod'
 import { JwtService } from './jwt.service'
 import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import moment from 'moment'
+import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 @singleton()
 export class PatientService {
@@ -71,7 +71,11 @@ export class PatientService {
     return await this.recallRepository.getRecallsOfPatient(patientId)
   }
 
-  public async createRecall(surveyId: number, jwt: string, recall: IRecall) {
+  public async createRecall(
+    surveyId: number,
+    jwt: string,
+    recall: RecallDto['recall'],
+  ) {
     const survey = await this.surveyRepository.getSurveyById(surveyId)
     if (!survey)
       throw new NotFoundError(`Survey of ID ${surveyId} is not found`)
