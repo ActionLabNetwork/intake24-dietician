@@ -14,18 +14,18 @@ import { TokenRepository } from '@intake24-dietician/db-new/repositories'
 // import initJobs from './jobs/queue'
 
 // --- Setup dependencies
-container.register(TokenService, {
-  useValue: new TokenService(
-    env.JWT_SECRET,
-    container.resolve(TokenRepository),
-  ),
-})
-
 const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_DB_NAME } =
   env
 const postgresConnectionString = `postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable`
 container.register(AppDatabase, {
   useValue: new AppDatabase(postgresConnectionString),
+})
+
+container.register(TokenService, {
+  useValue: new TokenService(
+    env.JWT_SECRET,
+    container.resolve(TokenRepository),
+  ),
 })
 
 const redis = new Redis({
