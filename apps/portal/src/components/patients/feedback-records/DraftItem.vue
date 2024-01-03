@@ -4,30 +4,32 @@
       <div>
         <p>
           <span class="font-weight-medium">Created:</span>
-          {{ items[0]!.created }}
+          {{ created }}
         </p>
         <p>
           <span class="font-weight-medium">Modified:</span>
-          {{ items[0]!.modified }}
+          {{ modified }}
         </p>
       </div>
       <div>
-        <v-btn class="text-capitalize" color="primary">Edit draft</v-btn>
+        <v-btn
+          class="text-capitalize"
+          color="primary"
+          @click="$emit('buttonClick')"
+        >
+          Edit draft
+        </v-btn>
       </div>
     </div>
   </v-card>
 </template>
-<script setup lang="ts">
-import { ref } from 'vue'
 
+<script setup lang="ts">
 interface DraftItem {
   created: string
   modified: string
 }
 
-const items = ref<DraftItem[]>([
-  { created: new Date().toDateString(), modified: new Date().toDateString() },
-  { created: 'Audience', modified: new Date().toDateString() },
-  { created: 'Conversions', modified: 'mdi-flag' },
-])
+defineProps<DraftItem>()
+defineEmits<{ buttonClick: [] }>()
 </script>

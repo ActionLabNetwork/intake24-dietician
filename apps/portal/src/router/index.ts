@@ -126,6 +126,14 @@ const routes = [
               ),
           },
           {
+            path: 'patient-list/patient-records/:patientId/feedback-records/edit-feedback/:feedbackId',
+            name: 'Survey Patient Edit Draft Feedback',
+            component: () =>
+              import(
+                '@/views/dashboard/patients/feedback-records/EditFeedback.vue'
+              ),
+          },
+          {
             path: 'patient-list/patient-records/:patientId/feedback-records/compose-feedback/preview',
             name: 'Survey Patient Preview feedback',
             component: () =>

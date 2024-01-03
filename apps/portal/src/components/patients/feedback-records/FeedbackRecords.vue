@@ -1,7 +1,5 @@
 <template>
   <v-row>
-    {{ feedbackDraftsQuery.isPending }}
-    {{ feedbackDraftsQuery.data }}
     <v-col class="pt-1">
       <div class="d-flex flex-column flex-sm-row justify-space-between">
         <p class="title mb-3 mb-sm-0">Feedback records</p>
@@ -21,8 +19,10 @@
           }}
         </v-btn>
       </div>
+      <div>
+        <DraftItemList />
+      </div>
 
-      <DraftItemList />
       <v-divider class="my-14" />
       <SharedItemList />
     </v-col>
@@ -34,15 +34,12 @@ import DraftItemList from '@/components/patients/feedback-records/DraftItemList.
 import SharedItemList from './SharedItemList.vue'
 import { useRoute } from 'vue-router'
 import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
-import { useFeedbackDraftsByPatientId } from '@intake24-dietician/portal/queries/useFeedback'
 // import DraftItem from './DraftItem.vue'
 
 const route = useRoute()
 const recallsStore = useRecallsStore()
 
 const patientId = route.params['patientId'] as string
-
-const feedbackDraftsQuery = useFeedbackDraftsByPatientId(Number(patientId))
 
 recallsStore.fetchRecalls(patientId)
 </script>

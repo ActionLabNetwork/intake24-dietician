@@ -2,6 +2,7 @@
   <div>
     <v-container>
       <div class="d-print-none">
+        {{ draft }}
         <v-btn
           prepend-icon="mdi-chevron-left"
           flat
@@ -88,6 +89,9 @@ import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
+import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+
+defineProps<{ draft: DraftDto }>()
 
 // const { t } = useI18n<i18nOptions>()
 

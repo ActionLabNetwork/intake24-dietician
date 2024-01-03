@@ -68,12 +68,11 @@
   </v-card>
 </template>
 <script setup lang="ts">
-import { Component, computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { useSaveDraft } from '@intake24-dietician/portal/mutations/useFeedback'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
-import { ModuleRoute } from '@intake24-dietician/common/types/modules'
+import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 
 const props = defineProps<{
   id: string
@@ -82,16 +81,17 @@ const props = defineProps<{
   recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
-  draft: {
-    recallsData: RecallDto[]
-    recallDate: Date
-    modules: {
-      key: ModuleRoute
-      component: Component
-      feedback: string
-      selected: boolean
-    }[]
-  }
+  // draft: {
+  //   recallsData: RecallDto[]
+  //   recallDate: Date
+  //   modules: {
+  //     key: ModuleRoute
+  //     component: Component
+  //     feedback: string
+  //     selected: boolean
+  //   }[]
+  // }
+  draft: DraftCreateDto
 }>()
 const emit = defineEmits<{
   'update:date': [date: Date]
