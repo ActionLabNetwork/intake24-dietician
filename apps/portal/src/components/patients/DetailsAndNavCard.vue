@@ -25,7 +25,7 @@
             :key="item.value"
             :title="item.title"
             :to="item.to"
-            :active="item.selected.value"
+            :active="item.selected"
             align="center"
           />
         </v-list>
@@ -35,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, toRefs } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { usePatientById } from '@/queries/usePatients'
@@ -64,7 +64,7 @@ const avatar = computed(() => {
   return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
 })
 
-const navItems = [
+const navItems = ref([
   {
     title: 'Feedback records',
     value: 'feedbackRecords',
@@ -95,7 +95,7 @@ const navItems = [
     selected: computed(() => route.path.includes('patient-recalls')),
     show: toRefs(props).hasRecalls.value,
   },
-]
+])
 </script>
 
 <style scoped lang="scss">

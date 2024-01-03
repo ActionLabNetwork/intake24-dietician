@@ -12,7 +12,10 @@
     </span>
     <div v-else-if="feedbackDraftsQuery.data">
       <div v-if="feedbackDraftsQuery.data.value?.length === 0">No drafts</div>
-      <div v-else class="d-flex flex-column">
+      <div
+        v-else
+        class="d-flex flex-column justify-space-between drafts-container"
+      >
         <div v-for="draft in feedbackDraftsQuery.data.value" :key="draft.id">
           <DraftItem
             :created="moment(draft.createdAt).format(dateFormat)"
@@ -72,3 +75,9 @@ const handleDraftItemButtonClick = (draftId: number) => {
   })
 }
 </script>
+
+<style scoped>
+.drafts-container {
+  min-height: 30vh;
+}
+</style>
