@@ -14,7 +14,7 @@
     "types": ["node", "jest", "jest-extended"],
     "outDir": "dist"
   },
-  // "ts-node": { "swc": true },
+  "ts-node": { "swc": true },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "src/**/*.spec.ts", "src/**/*.test.ts"]
 }

@@ -108,13 +108,13 @@ import { useToast } from 'vue-toast-notification'
 import ModuleSelectionAndFeedbackPersonalisation, {
   FeedbackMapping,
 } from './ModuleSelectionAndFeedbackPersonalisation.vue'
-import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities/survey.dto'
-import { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
-  feedbackModules: (FeedbackModuleDTO & {
+  feedbackModules: (FeedbackModuleDto & {
     name: string
     isActive: boolean
     feedbackAboveRecommendedLevel: string

@@ -8,8 +8,8 @@
     "node": ">=16"
   },
   "scripts": {
+    "clean": "rimraf dist",
     "build": "pnpm build:clean && tsc && webpack",
-    "build:clean": "rimraf dist",
     "dev": "nodemon",
     "start": "webpack-dev-server --port 8080 dist/main.js",
     "lint": "eslint . --ext .js,.ts --fix",

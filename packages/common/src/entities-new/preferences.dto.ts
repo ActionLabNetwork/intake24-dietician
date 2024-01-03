@@ -50,3 +50,14 @@ export type SurveyPreference = z.infer<typeof SurveyPreferenceSchema>
 export const PatientPreferenceSchema = CommonPreferenceSchema
 
 export type PatientPreference = z.infer<typeof PatientPreferenceSchema>
+
+// TODO: A FE component still uses this, refactor it and remove this later so it uses new zod schema above
+export interface SurveyPreferencesDTO {
+  id: number
+  theme: string
+  sendAutomatedFeedback: boolean
+  notifyEmail: boolean
+  notifySms: boolean
+  surveyId: number
+  recallFrequencyId: number
+}

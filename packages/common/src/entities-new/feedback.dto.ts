@@ -21,3 +21,9 @@ export const DraftDtoSchema = z.object({
   updatedAt: z.coerce.date(),
 })
 export type DraftDto = z.infer<typeof DraftDtoSchema>
+
+export const FeedbackModuleDtoSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+})
+export type FeedbackModuleDto = z.infer<typeof FeedbackModuleDtoSchema>
