@@ -2,7 +2,7 @@ import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/fee
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { feedbackDrafts } from '../models/feedback.model'
-import { desc, eq } from 'drizzle-orm'
+import { desc, eq, count } from 'drizzle-orm'
 
 @singleton()
 export class FeedbackRepository {
@@ -18,11 +18,22 @@ export class FeedbackRepository {
     })
   }
 
-  public async getDraftsByPatientId(patientId: number) {
+  public async getDraftsByPatientId(patientId: number, page = 1, limit = 3) {
     return await this.drizzle.query.feedbackDrafts.findMany({
       where: eq(feedbackDrafts.patientId, patientId),
       orderBy: desc(feedbackDrafts.updatedAt),
+      limit: limit,
+      offset: (page - 1) * limit,
     })
+  }
+
+  public async getDraftsCountByPatientId(patientId: number) {
+    const [_count] = await this.drizzle
+      .select({ value: count() })
+      .from(feedbackDrafts)
+      .where(eq(feedbackDrafts.patientId, patientId))
+
+    return _count?.value ?? 0
   }
 
   public async saveDraft(patientId: number, draft: DraftCreateDto) {

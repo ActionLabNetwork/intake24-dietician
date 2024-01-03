@@ -12,11 +12,22 @@ export class FeedbackService {
     return await this.feedbackRepository.getDraftById(id)
   }
 
-  public async getDraftsByPatientId(patientId: number) {
-    const patients =
-      await this.feedbackRepository.getDraftsByPatientId(patientId)
+  public async getDraftsByPatientId(
+    patientId: number,
+    page?: number,
+    limit?: number,
+  ) {
+    const patients = await this.feedbackRepository.getDraftsByPatientId(
+      patientId,
+      page,
+      limit,
+    )
 
     return patients
+  }
+
+  public async getDraftsCountByPatientId(patientId: number) {
+    return await this.feedbackRepository.getDraftsCountByPatientId(patientId)
   }
 
   public async saveDraft(patientId: number, draft: DraftCreateDto) {

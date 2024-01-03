@@ -33,10 +33,38 @@ export class DieticianFeedbackRouter {
           summary: 'Get feedback drafts of a patient',
         },
       })
-      .input(z.object({ patientId: z.number() }))
+      .input(
+        z.object({
+          patientId: z.number(),
+          page: z.number().optional(),
+          limit: z.number().optional(),
+        }),
+      )
       .output(z.array(DraftDtoSchema))
       .query(async opts => {
         return await this.feedbackService.getDraftsByPatientId(
+          opts.input.patientId,
+          opts.input.page,
+          opts.input.limit,
+        )
+      }),
+    getPatientDraftsCount: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/feedbacks/drafts/patient/count/:patientId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Get feedback drafts count of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number(),
+        }),
+      )
+      .output(z.number())
+      .query(async opts => {
+        return await this.feedbackService.getDraftsCountByPatientId(
           opts.input.patientId,
         )
       }),
