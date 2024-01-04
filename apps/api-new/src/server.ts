@@ -1,18 +1,20 @@
 import 'reflect-metadata'
 // --- imported before everything else
 
-import { env } from './config/env'
-import { container } from 'tsyringe'
-import { TokenService } from './services/token.service'
 import { AppDatabase } from '@intake24-dietician/db-new/database'
 import Redis from 'ioredis'
+import { container } from 'tsyringe'
 import { createApp } from './app'
+import { env } from './config/env'
 import { registerLogger as injectLogger } from './di/di.config'
-import { JwtService } from './services/jwt.service'
 import { EmailService } from './services/email.service'
+import { JwtService } from './services/jwt.service'
+import { TokenService } from './services/token.service'
 // import initJobs from './jobs/queue'
 
 // --- Setup dependencies
+injectLogger()
+
 const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_PORT, POSTGRES_DB_NAME } =
   env
 export const postgresConnectionString = `postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB_NAME}?sslmode=disable`
@@ -48,10 +50,10 @@ container.register(EmailService, {
         pass: env.MAILTRAP_PASS,
       },
     },
+    fromAddress: env.MAIL_FROM_ADDRESS,
+    portalBaseUrl: env.PORTAL_APP_BASE_URL,
   }),
 })
-
-injectLogger()
 
 // --- Initialize app
 const app = createApp()

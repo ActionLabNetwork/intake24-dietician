@@ -11,12 +11,15 @@ export const env = createEnv({
     HOST: withDevDefault(z.string(), 'http://localhost'),
     API_PORT: withDevDefault(z.string(), '8080'),
     API_EXTERNAL_HOST: withDevDefault(z.string(), 'http://localhost'),
-    PORTAL_APP_HOST: withDevDefault(z.string(), 'http://localhost'),
-    PORTAL_APP_PORT: withDevDefault(z.string(), '3001'),
+    PORTAL_APP_BASE_URL: withDevDefault(z.string(), 'http://localhost:3001'),
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
     JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
     JWT_SECRET: withDevDefault(z.string(), 'super_secret_jwt'),
     JWT_API_INTEGRATION_ISSUER: withDevDefault(z.string(), 'intake24'),
+    MAIL_FROM_ADDRESS: withDevDefault(
+      z.string(),
+      '"Intake24-Dietician" <intake24-dietician@example.com>',
+    ),
     MAILTRAP_HOST: withDevDefault(z.string(), 'sandbox.smtp.mailtrap.io'),
     MAILTRAP_PORT: withDevDefault(z.coerce.number(), 2525),
     MAILTRAP_USER: z.string(),

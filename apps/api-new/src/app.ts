@@ -22,13 +22,10 @@ import { registerIntegrationEndpoints } from './routers/integration.controller'
 export function createApp() {
   const app = express()
 
-  const HOST = env.HOST || 'http://localhost'
-  const PORT = env.PORTAL_APP_PORT || '3001'
-
   // Register global middlewares
   app.use(
     cors({
-      origin: [`${HOST}:${PORT}`, `${env.PORTAL_APP_HOST}`],
+      origin: [env.PORTAL_APP_BASE_URL],
       allowedHeaders:
         'Content-Type, Authorization, X-Requested-With, Set-Cookie, Cookie',
       exposedHeaders: 'x-access-token,x-refresh-token,set-cookie,content-type',

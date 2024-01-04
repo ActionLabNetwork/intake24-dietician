@@ -71,6 +71,15 @@ export class AuthService {
     )
     const { jti, token } = await this.generateToken(newUser, 'both')
 
+    const emailVerificationToken = await this.generateUserToken(newUser.id, {
+      type: 'verify-email',
+      email: null,
+    })
+    await this.emailService.sendEmailVerificationEmail(
+      email,
+      emailVerificationToken,
+    )
+
     return {
       ...newUser,
       token: token as Token,
@@ -116,11 +125,7 @@ export class AuthService {
       throw new Error('Token creation failed')
     }
 
-    const resetUrl = `${env.HOST}:${env.PORTAL_APP_PORT}/auth/reset-password?token=${token}`
-    console.log({ resetUrl })
-
-    // INFO: Uncomment this to test out mail sending
-    // _emailService.sendPasswordResetEmail(email, resetUrl)
+    this.emailService.sendPasswordResetEmail(email, token)
 
     return true
   }
@@ -350,19 +355,20 @@ export class AuthService {
       return 'email_already_exists'
     }
 
-    const token = await this.generateUserToken(userId, {
+    const actionToken = await this.generateUserToken(userId, {
       type: 'verify-email',
       email: newEmail,
     })
-    console.log('Token is ', token)
+    await this.emailService.sendEmailChangeEmail(newEmail, actionToken)
     return 'ok'
   }
 
+  // currently this function is dual use (for new signup and for email change)
   public verifyEmail = async (token: string) => {
     const tokenEntity = await this.verifyActionToken(token, 'verify-email')
     const action = tokenEntity.action
 
-    const user = this.userRepository.getUserById(tokenEntity.userId)
+    const user = await this.userRepository.getUserById(tokenEntity.userId)
     if (!user) {
       throw new NotFoundError('User cannot be found')
     }
@@ -371,6 +377,10 @@ export class AuthService {
       isVerified: true,
       email: action.email ?? undefined,
     })
+
+    if (action.email === null) {
+      this.emailService.sendWelcomeEmail(user.email)
+    }
   }
 
   public verifyAccessToken = async (accessToken: string) => {
