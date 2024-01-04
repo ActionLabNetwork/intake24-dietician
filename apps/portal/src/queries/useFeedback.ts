@@ -1,12 +1,13 @@
 import { useQuery, keepPreviousData } from '@tanstack/vue-query'
-import trpcClient from '../trpc/trpc'
 import { Ref } from 'vue'
+import { useClientStore } from '../trpc/trpc'
 
 export const useFeedbackDraftById = (draftId: number) => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['drafts', draftId],
     queryFn: async () => {
-      return trpcClient.dieticianFeedback.getDraftById.query({
+      return authenticatedClient.dieticianFeedback.getDraftById.query({
         draftId,
       })
     },
@@ -26,11 +27,12 @@ export const useFeedbackDraftsByPatientId = (
   patientId: number,
   page: Ref<number>,
 ) => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, isPlaceholderData } =
     useQuery({
       queryKey: ['drafts', patientId, page],
       queryFn: async () => {
-        return trpcClient.dieticianFeedback.getPatientDrafts.query({
+        return authenticatedClient.dieticianFeedback.getPatientDrafts.query({
           patientId: patientId,
           limit: 3,
           page: page.value,
@@ -51,10 +53,11 @@ export const useFeedbackDraftsByPatientId = (
 }
 
 export const useFeedbackDraftsCountByPatientId = (patientId: number) => {
+  const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['drafts', patientId],
     queryFn: async () => {
-      return trpcClient.dieticianFeedback.getPatientDraftsCount.query({
+      return authenticatedClient.dieticianFeedback.getPatientDraftsCount.query({
         patientId: patientId,
       })
     },
