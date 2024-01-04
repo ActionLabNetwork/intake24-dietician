@@ -1,13 +1,12 @@
 import type { Result } from '@intake24-dietician/common/types/utils'
-import { TokenRepository } from '@intake24-dietician/db-new/repositories'
+// import { TokenRepository } from '@intake24-dietician/db-new/repositories'
 import * as jwt from 'jsonwebtoken'
-import { inject, singleton } from 'tsyringe'
+import { singleton } from 'tsyringe'
 
 @singleton()
 export class TokenService {
   public constructor(
-    private secret: string,
-    @inject(TokenRepository) private tokenRepository: TokenRepository,
+    private secret: string, // @inject(TokenRepository) private tokenRepository: TokenRepository,
   ) {}
 
   public sign(
@@ -34,7 +33,7 @@ export class TokenService {
     }
   }
 
-  public async deleteExpiredTokens() {
-    return await this.tokenRepository.deleteExpiredTokens()
-  }
+  // public async deleteExpiredTokens() {
+  //   return await this.tokenRepository.deleteExpiredTokens()
+  // }
 }

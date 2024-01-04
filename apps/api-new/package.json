@@ -9,9 +9,9 @@
   },
   "scripts": {
     "clean": "rimraf dist",
-    "build": "pnpm build:clean && tsc && webpack",
+    "build": "pnpm clean && tsc && webpack",
     "dev": "nodemon",
-    "start": "webpack-dev-server --port 8080 dist/main.js",
+    "start": "webpack-dev-server dist/main.js",
     "lint": "eslint . --ext .js,.ts --fix",
     "test:build": "pnpm build:clean && webpack --env NODE_ENV=test",
     "test:unit": "DOTENV_CONFIG_PATH=.env.test NODE_ENV=test jest --logHeapUsage",

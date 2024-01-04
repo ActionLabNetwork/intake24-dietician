@@ -1,3 +1,5 @@
+import 'reflect-metadata'
+
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
 import type { OnErrorFunction } from '@trpc/server/dist/internals/types'
 import bodyParser from 'body-parser'
