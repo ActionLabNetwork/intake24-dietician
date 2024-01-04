@@ -4,12 +4,11 @@
     "baseUrl": ".",
     "paths": {
       "@intake24-dietician/common/*": ["../common/src/*"],
-      "@intake24-dietician/db-new/*": ["src/*"],
-      "@intake24-dietician/*": ["../*/src"]
     },
     "emitDecoratorMetadata": true,
-    "outDir": "dist"
+    "module": "Node16",
+    "moduleResolution": "Node16",
   },
-  "include": ["src/**/*.ts", "__tests__/**/*.ts", "scripts/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules"]
 }

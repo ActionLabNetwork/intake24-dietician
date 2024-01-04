@@ -5,17 +5,21 @@
   "description": "Intake24 Dietician database layer",
   "author": "",
   "license": "ISC",
-  "main": "src/index.ts",
+  "exports": {
+    "./*": "./dist/*.js"
+  },
   "engines": {
     "node": ">=16"
   },
   "scripts": {
+    "clean": "rimraf dist",
     "push": "drizzle-kit push:pg",
     "studio": "drizzle-kit studio",
-    "seed": "tsx scripts/seed/seed.ts"
+    "seed": "ts-node scripts/seed/seed.ts",
+    "build": "pnpm clean && tsc -p tsconfig.build.json"
   },
   "dependencies": {
-    "@intake24-dietician/common": "*",
+    "@intake24-dietician/common": "workspace:*",
     "drizzle-orm": "^0.29.1",
     "drizzle-zod": "^0.5.1",
     "ioredis": "^5.3.2",
@@ -31,11 +35,7 @@
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
+    "reflect-metadata": "0.2.1",
     "tsyringe": "^4.8.0"
-  },
-  "bundledDependencies": [
-    "@intake24-dietician/api",
-    "@intake24-dietician/common",
-    "@intake24-dietician/i18n"
-  ]
+  }
 }
