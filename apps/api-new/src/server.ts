@@ -25,10 +25,7 @@ container.register(AppDatabase, {
 container.register('token_secret', { useValue: env.JWT_SECRET })
 
 container.register(TokenService, {
-  useValue: new TokenService(
-    env.JWT_SECRET,
-    // container.resolve(TokenRepository),
-  ),
+  useValue: new TokenService(env.JWT_SECRET),
 })
 
 const redis = new Redis({

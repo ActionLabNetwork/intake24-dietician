@@ -1,11 +1,10 @@
 import 'reflect-metadata'
 
 import { createExpressMiddleware } from '@trpc/server/adapters/express'
-import type { OnErrorFunction } from '@trpc/server/dist/internals/types'
 import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
-import type { Response, Request } from 'express'
+import type { Response } from 'express'
 import express from 'express'
 import multer from 'multer'
 import swaggerUi from 'swagger-ui-express'
@@ -18,6 +17,7 @@ import { createAppRouter } from './routers/app'
 import { createContext } from './trpc'
 import { resolveLogger } from './di/di.config'
 import { registerIntegrationEndpoints } from './routers/integration.controller'
+import type { TRPCError } from '@trpc/server'
 
 export function createApp() {
   const app = express()
@@ -39,7 +39,7 @@ export function createApp() {
   const appRouter = createAppRouter()
 
   const logger = resolveLogger()
-  const onError: OnErrorFunction<typeof appRouter, Request> = ({ error }) => {
+  const onError = ({ error }: { error: TRPCError }) => {
     if (error.code === 'INTERNAL_SERVER_ERROR') {
       logger.error(error.cause)
     }
