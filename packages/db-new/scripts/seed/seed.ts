@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-import { AppDatabase } from '@intake24-dietician/db-new/database'
+import { AppDatabase } from '../../src/database'
 import {
   dieticians,
   feedbackModules,
@@ -8,16 +8,13 @@ import {
   recalls,
   surveys,
   users,
-} from '@intake24-dietician/db-new/models'
+} from '../../src/models'
 import * as argon2 from 'argon2'
 import fs from 'fs'
 import path from 'path'
 import { container } from 'tsyringe'
 import type { IRecall } from '@intake24-dietician/common/types/recall'
-import {
-  nutrientTypes,
-  nutrientUnits,
-} from '@intake24-dietician/db-new/models/nutrient.model'
+import { nutrientTypes, nutrientUnits } from '../../src/models/nutrient.model'
 import { eq } from 'drizzle-orm'
 
 async function readJsonFile(filename: string) {

@@ -6,7 +6,7 @@ import {
   SurveyDtoSchema,
   SurveyPlainDtoSchema,
 } from '@intake24-dietician/common/entities-new/survey.dto'
-import { SurveyService } from '@intake24-dietician/api-new/services/survey.service'
+import { SurveyService } from '../../services/survey.service'
 
 @singleton()
 export class DieticianSurveyRouter {

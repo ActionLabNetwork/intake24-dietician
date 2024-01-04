@@ -58,6 +58,7 @@ export function createApp() {
   // Handle OpenAPI requests
   app.use(
     '/api',
+    // @ts-expect-error
     createOpenApiExpressMiddleware({
       router: appRouter,
       createContext,

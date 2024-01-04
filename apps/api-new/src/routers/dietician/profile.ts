@@ -1,4 +1,4 @@
-import { AuthService } from '@intake24-dietician/api-new/services/auth.service'
+import { AuthService } from '../../services/auth.service'
 import {
   DieticianCreateDto,
   DieticianWithUserDto,

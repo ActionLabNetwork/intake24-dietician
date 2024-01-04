@@ -1,7 +1,7 @@
 import { publicProcedure, router } from '../../trpc'
 import { z } from 'zod'
 import { inject, singleton } from 'tsyringe'
-import { AuthService } from '@intake24-dietician/api-new/services/auth.service'
+import { AuthService } from '../../services/auth.service'
 import type { Token } from '@intake24-dietician/common/types/auth'
 
 @singleton()

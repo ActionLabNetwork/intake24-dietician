@@ -1,8 +1,4 @@
-import {
-  ClientError,
-  NotFoundError,
-  UnauthorizedError,
-} from '@intake24-dietician/api-new/utils/trpc'
+import { ClientError, NotFoundError, UnauthorizedError } from '../utils/trpc'
 import { RecallRepository } from '@intake24-dietician/db-new/repositories/recall.repository'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'

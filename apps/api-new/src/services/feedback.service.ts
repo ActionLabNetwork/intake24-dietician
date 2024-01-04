@@ -1,5 +1,5 @@
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { FeedbackRepository } from '@intake24-dietician/db-new/repositories'
+import { FeedbackRepository } from '@intake24-dietician/db-new/repositories/feedback.repository'
 import { inject, singleton } from 'tsyringe'
 
 @singleton()

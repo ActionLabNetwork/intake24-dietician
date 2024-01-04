@@ -1,11 +1,11 @@
-import { AuthService } from '@intake24-dietician/api-new/services/auth.service'
+import { AuthService } from '../../services/auth.service'
 import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
 import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 import type { Token } from '@intake24-dietician/common/types/auth'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { publicProcedure, router } from '../../trpc'
-import { ClientError } from '@intake24-dietician/api-new/utils/trpc'
+import { ClientError } from '../../utils/trpc'
 
 @singleton()
 export class AuthDieticianRouter {
