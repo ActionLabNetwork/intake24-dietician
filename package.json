@@ -6,6 +6,7 @@
   "packageManager": "pnpm@8.9.2",
   "scripts": {
     "preinstall": "npx -y only-allow pnpm",
+    "precommit-build": "pnpm --filter ./apps/api-new build && pnpm --filter ./apps/portal build",
     "prepare": "pnpm simple-git-hooks",
     "clean": "rimraf --glob **/coverage **/dist **/node_modules",
     "build": "pnpm --filter ./apps build",
@@ -35,7 +36,7 @@
     "packages/*"
   ],
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged",
+    "pre-commit": "pnpm lint-staged && pnpm precommit-build",
     "commit-msg": "pnpm tsx scripts/verify-commit.ts $1"
   },
   "lint-staged": {
