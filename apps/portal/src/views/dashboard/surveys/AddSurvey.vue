@@ -1,20 +1,6 @@
 <template>
   <v-main class="wrapper">
     <v-container>
-      <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
-        <template v-slot:divider>
-          <v-icon icon="mdi-chevron-right"></v-icon>
-        </template>
-      </v-breadcrumbs>
-      <v-btn
-        prepend-icon="mdi-chevron-left"
-        flat
-        class="text-none px-0 mt-10"
-        variant="text"
-        to="/dashboard/my-surveys"
-      >
-        {{ t('surveys.backToSurveyList') }}
-      </v-btn>
       <SurveyConfiguration
         :default-state="surveyConfigFormValues"
         mode="Add"
@@ -29,8 +15,8 @@
 import { ref } from 'vue'
 
 import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
-import { useI18n } from 'vue-i18n'
-import type { i18nOptions } from '@intake24-dietician/i18n'
+// import { useI18n } from 'vue-i18n'
+// import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
@@ -42,22 +28,9 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 
 const $toast = useToast()
-const { t } = useI18n<i18nOptions>()
+// const { t } = useI18n<i18nOptions>()
 
 const addSurveyMutation = useAddSurvey()
-
-const breadcrumbItems = ref([
-  {
-    title: 'My Surveys',
-    disabled: false,
-    href: '/dashboard/my-surveys',
-  },
-  {
-    title: 'Add new Survey',
-    disabled: true,
-    href: '/dashboard/my-surveys/add-survey',
-  },
-])
 
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',

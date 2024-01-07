@@ -108,6 +108,7 @@ watch(
 
     currentWorkspace.value = _currentWorkspace
   },
+  { immediate: true },
 )
 </script>
 

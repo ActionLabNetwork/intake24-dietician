@@ -1,6 +1,7 @@
 <template>
   <div class="wrapper">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+      <BackButton class="ml-4" />
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
@@ -45,6 +46,7 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 
 const $toast = useToast()
 const route = useRoute()

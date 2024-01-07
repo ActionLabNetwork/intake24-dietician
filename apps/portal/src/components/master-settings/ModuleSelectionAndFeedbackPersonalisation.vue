@@ -3,6 +3,7 @@
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
         :default-state="defaultState"
+        show-switches
         @update="handleModuleChange"
         @update:modules="handleModulesChange"
       />

@@ -5,11 +5,15 @@
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
         <div>
-          <h1 class="text heading">Feedback module setup</h1>
+          <h1 class="text heading">
+            Master setup for {{ workspaceStore.currentWorkspace?.surveyName }}
+          </h1>
           <h3 class="text subheading">
-            Choose guidelines appropriate to your country of practise, a visual
-            theme for your patients, different modules important to you, and, if
-            necessary, tailor the feedback messages.
+            Personalise your patient experience by choosing a visual theme,
+            select and tailor feedback modules to suit your preferences. Set a
+            default recall frequency to gather timely recall data, and customise
+            notification preferences for real-time updates when patients
+            complete their recall.
           </h3>
         </div>
         <div class="alert-text">
@@ -111,6 +115,7 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -162,6 +167,8 @@ type ModuleName =
   | 'Energy intake'
   | 'Fibre intake'
   | 'Water intake'
+
+const workspaceStore = useWorkspaceStore()
 
 const findFeedbackModel = (name: ModuleName) => {
   return props.defaultState.feedbackModules.find(module => module.name === name)

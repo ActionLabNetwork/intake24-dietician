@@ -2,12 +2,9 @@
   <v-main class="wrapper">
     <v-container>
       <v-row class="ml-4">
-        <SurveyWorkplaceDetails />
+        <SurveyWorkplaceDetails v-if="!hideSurveyDetails" />
       </v-row>
       <v-row>
-        <!-- <v-col cols="12" md="3"> -->
-        <!-- <NavCard class="mx-sm-0 mx-auto mb-10" /> -->
-        <!-- </v-col> -->
         <v-col cols="12" md="12">
           <router-view />
         </v-col>
@@ -22,8 +19,17 @@
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import NavCard from '@/components/surveys/NavCard.vue'
 import SurveyWorkplaceDetails from '@/components/surveys/SurveyWorkspaceDetails.vue'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 // const { t } = useI18n<i18nOptions>()
+
+const route = useRoute()
+
+const hideSurveyDetails = computed(() => {
+  const routeNames = ['Survey Master Settings']
+  return routeNames.includes(route.name as string)
+})
 </script>
 
 <style scoped lang="scss">
