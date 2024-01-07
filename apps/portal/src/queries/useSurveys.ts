@@ -3,6 +3,8 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useSurveys = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
@@ -10,12 +12,18 @@ export const useSurveys = () => {
     },
   })
 
+  const invalidateSurveysQuery = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['surveys'] })
+    await queryClient.refetchQueries({ queryKey: ['surveys'] })
+  }
+
   return {
     data,
     isPending,
     isError,
     error,
     isSuccess,
+    invalidateSurveysQuery,
   }
 }
 
@@ -24,7 +32,7 @@ export const useSurveyById = (id: string) => {
   const queryClient = useQueryClient()
 
   const { data, isPending, isError, error, isSuccess } = useQuery({
-    queryKey: [id],
+    queryKey: ['surveys', id],
     queryFn: async () => {
       const response =
         await authenticatedClient.dieticianSurvey.getSurveyById.query({
@@ -36,8 +44,8 @@ export const useSurveyById = (id: string) => {
   })
 
   const invalidateSurveyByIdQuery = async () => {
-    await queryClient.invalidateQueries({ queryKey: [id] })
-    await queryClient.refetchQueries({ queryKey: [id] })
+    await queryClient.invalidateQueries({ queryKey: ['surveys', id] })
+    await queryClient.refetchQueries({ queryKey: ['surveys', id] })
   }
 
   return {

@@ -72,7 +72,6 @@ export class SurveyRepository {
       feedbackModules: SurveyFeedbackModuleCreateDto[]
     },
   ) {
-    console.log({ dieticianId, surveyDto })
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
       const [insertedSurvey] = await tx

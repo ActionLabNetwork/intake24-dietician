@@ -25,11 +25,17 @@ import router from '@intake24-dietician/portal/router'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
+  SurveyDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
+import { useQueryClient } from '@tanstack/vue-query'
+import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
 
+const workspaceStore = useWorkspaceStore()
+
+const queryClient = useQueryClient()
 const addSurveyMutation = useAddSurvey()
 
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
@@ -49,7 +55,6 @@ const handleSurveyConfigUpdate = (
 
 const handleSubmit = async () => {
   return new Promise((resolve, reject) => {
-    console.log('surveyConfigFormValues', surveyConfigFormValues.value)
     // Validate with zod
     const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
@@ -62,10 +67,20 @@ const handleSubmit = async () => {
     addSurveyMutation.mutate(
       { survey: surveyConfigFormValues.value },
       {
-        onSuccess: () => {
+        onSuccess: async surveyId => {
           $toast.success('Survey added to records')
+          await queryClient.invalidateQueries({ queryKey: ['surveys'] })
+          const allClinics = queryClient.getQueryData([
+            'surveys',
+          ]) as SurveyDto[]
+          const newClinic = allClinics.find(clinic => clinic.id === surveyId)
+          console.log({ newClinic })
+          workspaceStore.switchCurrentWorkspace(surveyId)
           resolve('Survey added to records')
-          router.push('/dashboard/my-surveys')
+          router.push({
+            name: 'Survey Master Settings',
+            params: { surveyId },
+          })
         },
         onError: () => {
           $toast.error(DEFAULT_ERROR_MESSAGE)

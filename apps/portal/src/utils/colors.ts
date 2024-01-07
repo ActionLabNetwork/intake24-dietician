@@ -50,7 +50,7 @@ export function generateDistinctColors(strings: string[]) {
   for (const str of strings) {
     const hash = simpleHash(str)
     const hue = (hash % strings.length) * hueStep
-    const color = chroma.hsl(hue, 0.9, 0.5).hex()
+    const color = chroma.hsl(hue, 0.5, 0.5).hex()
     colors.push(color)
   }
 

@@ -35,7 +35,6 @@
               @click="
                 () => {
                   currentWorkspace = workspace
-                  console.log({ workspace })
                   router.push({
                     name: 'Survey Patient List',
                     params: { surveyId: currentWorkspace.id },
@@ -61,55 +60,16 @@
 </template>
 
 <script setup lang="ts">
-import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
-import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
-import { generateDistinctColors } from '@intake24-dietician/portal/utils/colors'
 import WorkspaceMenuItem from './WorkspaceMenuItem.vue'
-import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const route = useRoute()
 
-const surveysQuery = useSurveys()
 const workspaceStore = useWorkspaceStore()
-const { currentWorkspace } = storeToRefs(workspaceStore)
-
-const workspaces = ref<(SurveyPlainDto & { avatarColor: string })[]>([])
-const otherWorkspaces = computed(() =>
-  workspaces.value.filter(
-    workspace => workspace.id !== currentWorkspace.value?.id,
-  ),
-)
-
-watch(
-  () => surveysQuery.data.value,
-  newSurveysQueryData => {
-    if (!newSurveysQueryData || newSurveysQueryData.length === 0) return
-
-    const surveys = newSurveysQueryData
-    const colors = generateDistinctColors(
-      surveys.map(survey => survey.surveyName),
-    )
-
-    const surveysWithAvatarColors = surveys.map((survey, index) => ({
-      ...survey,
-      avatarColor: colors[index]!,
-    }))
-
-    workspaces.value = surveysWithAvatarColors
-    const currentWorkspaceId = Number(route.params['surveyId'] as string)
-    const _currentWorkspace =
-      surveysWithAvatarColors.find(
-        survey => survey.id === currentWorkspaceId,
-      ) || workspaces.value[0]
-
-    currentWorkspace.value = _currentWorkspace
-  },
-  { immediate: true },
-)
+const { currentWorkspace, workspaces, otherWorkspaces } =
+  storeToRefs(workspaceStore)
 </script>
 
 <style scoped lang="scss">
