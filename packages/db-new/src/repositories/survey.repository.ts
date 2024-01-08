@@ -129,4 +129,11 @@ export class SurveyRepository {
       })
     })
   }
+
+  public async deleteSurvey(surveyId: number) {
+    return await this.drizzle
+      .delete(surveys)
+      .where(eq(surveys.id, surveyId))
+      .execute()
+  }
 }

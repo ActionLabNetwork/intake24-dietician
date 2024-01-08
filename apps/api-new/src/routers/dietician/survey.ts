@@ -93,6 +93,27 @@ export class DieticianSurveyRouter {
           opts.input.survey,
         )
       }),
+    deleteSurvey: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'DELETE',
+          path: '/surveys/{id}',
+          tags: ['dietician', 'surveys'],
+          summary: 'Delete a survey',
+        },
+      })
+      .input(
+        z.object({
+          id: z.number().int(),
+        }),
+      )
+      .output(z.void())
+      .mutation(async opts => {
+        return await this.surveyService.deleteSurvey(
+          opts.input.id,
+          opts.ctx.dieticianId,
+        )
+      }),
   })
 
   public constructor(

@@ -43,3 +43,20 @@ export const useUpdateSurveyPreferences = () => {
     mutate,
   }
 }
+
+export const useDeleteSurvey = () => {
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (body: { id: number }) =>
+      authenticatedClient.dieticianSurvey.deleteSurvey.mutate(body),
+  })
+
+  return {
+    data,
+    isPending,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}

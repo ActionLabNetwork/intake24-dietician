@@ -58,4 +58,15 @@ export class SurveyService {
     }
     await this.surveyRepository.updateSurvey(surveyId, surveyDto)
   }
+
+  public async deleteSurvey(surveyId: number, dieticianId: number) {
+    const survey = await this.surveyRepository.getSurveyById(surveyId)
+    if (!survey) {
+      throw new NotFoundError('Survey does not exist')
+    }
+    if (survey.dieticianId !== dieticianId) {
+      throw new UnauthorizedError('You are not allowed to access this survey')
+    }
+    await this.surveyRepository.deleteSurvey(surveyId)
+  }
 }

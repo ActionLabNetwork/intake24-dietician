@@ -7,11 +7,13 @@
         </span>
       </v-avatar>
     </template>
-    <div v-if="workspace">
-      <div class="font-weight-medium text-black">
-        {{ workspace.surveyName }}
+    <div v-if="workspace" class="d-flex align-center">
+      <div>
+        <div class="font-weight-medium text-black">
+          {{ workspace.surveyName }}
+        </div>
+        <div>ID: {{ workspace.id }}</div>
       </div>
-      <div>ID: {{ workspace.id }}</div>
     </div>
   </v-list-item>
 </template>

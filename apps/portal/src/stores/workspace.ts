@@ -18,6 +18,13 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     ),
   )
 
+  const switchToFirstWorkspace = () => {
+    const firstWorkspace = workspaces.value[0]
+    if (!firstWorkspace) return
+
+    currentWorkspace.value = firstWorkspace
+  }
+
   const switchCurrentWorkspace = (id: number) => {
     const _currentWorkspace = workspaces.value.find(
       workspace => workspace.id === id,
@@ -72,6 +79,7 @@ export const useWorkspaceStore = defineStore('workspace', () => {
     workspaces,
     otherWorkspaces,
     refetchWorkspaces,
+    switchToFirstWorkspace,
     switchCurrentWorkspace,
     navigateToSurveyPatientList,
   }

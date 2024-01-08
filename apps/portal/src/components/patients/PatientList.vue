@@ -141,9 +141,6 @@ import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
-// import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
-// import { computed } from 'vue'
-// import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>

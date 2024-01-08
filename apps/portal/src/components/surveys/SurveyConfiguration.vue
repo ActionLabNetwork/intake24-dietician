@@ -8,61 +8,67 @@
       </h3>
     </div>
     <v-divider class="my-10"></v-divider>
-    <div
-      :width="mdAndUp ? '100%' : '100%'"
-      class="mt-5"
-      style="background: inherit; border: 0"
-    >
-      <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
-        <div v-if="config.type === 'input'" class="mb-5">
-          <BaseInput
-            :type="config.inputType"
-            :name="config.key"
-            :rules="config.rules"
-            :autocomplete="config.autocomplete"
-            :value="formValues[fieldName]"
-            bordered
-            :suffix-icon="config.suffixIcon"
-            :handle-icon-click="config.handleSuffixIconClick"
-            :class="config.class"
-            :required="config.required"
-            @update="config.handleUpdate"
-          >
-            <div>
-              <span class="input-label">
-                {{ config.label }}
-              </span>
-              <span v-if="config.labelSuffix" class="input-label suffix">
-                {{ config.labelSuffix }}
-              </span>
-            </div>
-            <div class="input-label description">
-              {{ config.description }}
-            </div>
-          </BaseInput>
+    <v-form>
+      <div
+        :width="mdAndUp ? '100%' : '100%'"
+        class="mt-5"
+        style="background: inherit; border: 0"
+      >
+        <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
+          <div v-if="config.type === 'input'" class="mb-5">
+            <BaseInput
+              :type="config.inputType"
+              :name="config.key"
+              :rules="config.rules"
+              :autocomplete="config.autocomplete"
+              :value="formValues[fieldName]"
+              bordered
+              :suffix-icon="config.suffixIcon"
+              :handle-icon-click="config.handleSuffixIconClick"
+              :class="config.class"
+              :required="config.required"
+              @update="config.handleUpdate"
+            >
+              <div>
+                <span class="input-label">
+                  {{ config.label }}
+                </span>
+                <span v-if="config.labelSuffix" class="input-label suffix">
+                  {{ config.labelSuffix }}
+                </span>
+              </div>
+              <div class="input-label description">
+                {{ config.description }}
+              </div>
+            </BaseInput>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="mt-5">
-      <v-btn class="text-none" variant="outlined" @click="submitDialog = true">
-        Cancel and go back
-      </v-btn>
-      <BaseButton
-        class="mt-3 mt-sm-0 ml-5"
-        :disabled="false"
-        type="submit"
-        @click.prevent="handleSubmit"
-      >
-        Continue with setup
-      </BaseButton>
-    </div>
-    <div>
-      <BaseDialog v-model="submitDialog" :on-confirm="handleDialogConfirm">
-        <template v-slot:title> Attention! </template>
-        Are you sure you want to cancel and go back? Any changes made to the new
-        workspace will get deleted.
-      </BaseDialog>
-    </div>
+      <div class="mt-5">
+        <v-btn
+          class="text-none"
+          variant="outlined"
+          @click="submitDialog = true"
+        >
+          Cancel and go back
+        </v-btn>
+        <BaseButton
+          class="mt-3 mt-sm-0 ml-5"
+          :disabled="false"
+          type="submit"
+          @click.prevent="handleSubmit"
+        >
+          Continue with setup
+        </BaseButton>
+      </div>
+      <div>
+        <BaseDialog v-model="submitDialog" :on-confirm="handleDialogConfirm">
+          <template v-slot:title> Attention! </template>
+          Are you sure you want to cancel and go back? Any changes made to the
+          new workspace will get deleted.
+        </BaseDialog>
+      </div>
+    </v-form>
   </v-container>
 </template>
 
