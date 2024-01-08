@@ -3,7 +3,7 @@
     <v-app-bar-title>
       <div class="d-flex align-center">
         <v-img max-width="10rem" src="@/assets/logo.svg" class="ml-16" />
-        <WorkspaceMenu class="ml-14" />
+        <ClinicMenu class="ml-14" />
       </div>
     </v-app-bar-title>
     <template v-slot:append>
@@ -35,7 +35,7 @@ import BaseAvatar from '@/components/common/BaseAvatar.vue'
 import NavigationDrawer from '@/components/app-bar/NavigationDrawer.vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
 import { ref } from 'vue'
-import WorkspaceMenu from '@intake24-dietician/portal/components/app-bar/WorkspaceMenu.vue'
+import ClinicMenu from '@intake24-dietician/portal/components/app-bar/ClinicMenu.vue'
 
 const { mdAndUp } = useDisplay()
 const drawer = ref(false)

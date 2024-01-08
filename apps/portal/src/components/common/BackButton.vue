@@ -11,15 +11,15 @@
 </template>
 
 <script setup lang="ts">
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
-const workspaceStore = useWorkspaceStore()
+const clinicStore = useClinicStore()
 
 const handleBackButtonClick = () => {
   if (window.history.length > 1) {
     window.history.back()
   } else {
-    workspaceStore.navigateToSurveyPatientList()
+    clinicStore.navigateToSurveyPatientList()
   }
 }
 </script>

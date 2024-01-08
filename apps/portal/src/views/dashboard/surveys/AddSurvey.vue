@@ -28,12 +28,12 @@ import {
   SurveyDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
 
-const workspaceStore = useWorkspaceStore()
+const clinicStore = useClinicStore()
 
 const queryClient = useQueryClient()
 const addSurveyMutation = useAddSurvey()
@@ -75,7 +75,7 @@ const handleSubmit = async () => {
           ]) as SurveyDto[]
           const newClinic = allClinics.find(clinic => clinic.id === surveyId)
           console.log({ newClinic })
-          workspaceStore.switchCurrentWorkspace(surveyId)
+          clinicStore.switchCurrentClinic(surveyId)
           resolve('Survey added to records')
           router.push({
             name: 'Survey Master Settings',

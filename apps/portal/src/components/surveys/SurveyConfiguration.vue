@@ -65,7 +65,7 @@
         <BaseDialog v-model="submitDialog" :on-confirm="handleDialogConfirm">
           <template v-slot:title> Attention! </template>
           Are you sure you want to cancel and go back? Any changes made to the
-          new workspace will get deleted.
+          new clinic will get deleted.
         </BaseDialog>
       </div>
     </v-form>
@@ -87,7 +87,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import BaseButton from '../common/BaseButton.vue'
 import BaseDialog from '../common/BaseDialog.vue'
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 // import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
 type FormField = keyof Omit<
@@ -107,7 +107,7 @@ const emit = defineEmits<{
 const { t } = useI18n<i18nOptions>()
 const { mdAndUp } = useDisplay()
 
-const workspaceStore = useWorkspaceStore()
+const clinicStore = useClinicStore()
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
@@ -125,7 +125,7 @@ const handleDialogConfirm = () => {
   if (window.history.length > 1) {
     window.history.back()
   } else {
-    workspaceStore.navigateToSurveyPatientList()
+    clinicStore.navigateToSurveyPatientList()
   }
 }
 

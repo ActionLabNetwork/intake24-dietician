@@ -23,7 +23,7 @@ export const surveys = {
       name: {
         label: 'Clinic name',
         description:
-          'This is the name of your new workspace where you can add new patients and manage their recalls.',
+          'This is the name of your new clinic where you can add new patients and manage their recalls.',
       },
       alias: {
         label: 'Alias',
@@ -42,7 +42,7 @@ export const surveys = {
       },
     },
     subtitle:
-      'Your practise, your space. Create and tailor the new workspace according to your work needs.',
+      'Your practise, your space. Create and tailor the new clinic according to your work needs.',
     dismiss: 'Dismiss',
   },
 }

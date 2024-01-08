@@ -3,41 +3,41 @@
     <v-menu transition="slide-y-transition" bottom>
       <template v-slot:activator="{ props }">
         <v-btn class="text-none" v-bind="props">
-          Workspace <v-icon class="ml-2" icon="mdi-chevron-down" />
+          Clinics <v-icon class="ml-2" icon="mdi-chevron-down" />
         </v-btn>
       </template>
 
       <v-card class="my-menu pa-2">
-        <div v-if="workspaces.length === 0" class="pa-2">
-          <p class="text-center text-body-1">No workspaces...</p>
+        <div v-if="clinics.length === 0" class="pa-2">
+          <p class="text-center text-body-1">No clinics...</p>
         </div>
         <div v-else>
-          <v-list v-if="currentWorkspace" style="overflow: hidden">
-            <v-list-subheader>Current Workspace</v-list-subheader>
-            <WorkspaceMenuItem
-              :workspace="currentWorkspace"
+          <v-list v-if="currentClinic" style="overflow: hidden">
+            <v-list-subheader>Current Clinic</v-list-subheader>
+            <ClinicMenuItem
+              :clinic="currentClinic"
               @click="
                 router.push({
                   name: 'Survey Patient List',
-                  params: { surveyId: currentWorkspace.id },
+                  params: { surveyId: currentClinic.id },
                 })
               "
             />
           </v-list>
-          <v-list v-if="workspaces.length > 1">
-            <v-list-subheader>Other Workspaces</v-list-subheader>
-            <WorkspaceMenuItem
-              v-for="workspace in otherWorkspaces"
-              :key="workspace.id"
-              :value="workspace"
-              :workspace="workspace"
+          <v-list v-if="clinics.length > 1">
+            <v-list-subheader>Other Clinics</v-list-subheader>
+            <ClinicMenuItem
+              v-for="clinic in otherClinics"
+              :key="clinic.id"
+              :value="clinic"
+              :clinic="clinic"
               variant="plain"
               @click="
                 () => {
-                  currentWorkspace = workspace
+                  currentClinic = clinic
                   router.push({
                     name: 'Survey Patient List',
-                    params: { surveyId: currentWorkspace.id },
+                    params: { surveyId: currentClinic.id },
                   })
                 }
               "
@@ -51,7 +51,7 @@
             class="text-none"
             href="/dashboard/my-surveys/add-survey"
           >
-            Add new workspace <v-icon class="ml-2" icon="mdi-plus" />
+            Add new clinic <v-icon class="ml-2" icon="mdi-plus" />
           </v-btn>
         </div>
       </v-card>
@@ -60,16 +60,15 @@
 </template>
 
 <script setup lang="ts">
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
-import WorkspaceMenuItem from './WorkspaceMenuItem.vue'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
+import ClinicMenuItem from './ClinicMenuItem.vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
-const workspaceStore = useWorkspaceStore()
-const { currentWorkspace, workspaces, otherWorkspaces } =
-  storeToRefs(workspaceStore)
+const clinicStore = useClinicStore()
+const { currentClinic, clinics, otherClinics } = storeToRefs(clinicStore)
 </script>
 
 <style scoped lang="scss">

@@ -4,18 +4,18 @@
   >
     <div class="d-flex align-center">
       <div>
-        <v-avatar v-if="workspace" :color="workspace.avatarColor">
+        <v-avatar v-if="clinic" :color="clinic.avatarColor">
           <span class="text-h5">
-            {{ workspace.surveyName[0]?.toLocaleUpperCase() }}
+            {{ clinic.surveyName[0]?.toLocaleUpperCase() }}
           </span>
         </v-avatar>
       </div>
       <div class="ml-4">
-        <p class="text-h6 font-weight-bold">{{ workspace?.surveyName }}</p>
-        <p class="text-subtitle-1">ID: {{ workspace?.id }}</p>
+        <p class="text-h6 font-weight-bold">{{ clinic?.surveyName }}</p>
+        <p class="text-subtitle-1">ID: {{ clinic?.id }}</p>
       </div>
     </div>
-    <div v-if="workspace?.intake24SurveyId">
+    <div v-if="clinic?.intake24SurveyId">
       <v-icon
         icon="mdi-cog-outline"
         class="hoverable"
@@ -60,7 +60,7 @@
           <p>Attention:</p>
         </v-card-title>
         <v-card-text>
-          <p>Are you sure you want to delete {{ workspace?.surveyName }}?</p>
+          <p>Are you sure you want to delete {{ clinic?.surveyName }}?</p>
           <p>This action is irreversible</p>
         </v-card-text>
         <v-card-actions class="d-flex justify-end">
@@ -76,13 +76,13 @@
 
 <script setup lang="ts">
 import { useDeleteSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
-const workspaceStore = useWorkspaceStore()
-const { currentWorkspace: workspace } = storeToRefs(workspaceStore)
+const clinicStore = useClinicStore()
+const { currentClinic: clinic } = storeToRefs(clinicStore)
 
 const router = useRouter()
 const route = useRoute()
@@ -93,13 +93,13 @@ const dialog = ref({
   confirmHandler: () => {
     dialog.value.show = false
 
-    if (!workspace.value) return
+    if (!clinic.value) return
     deleteSurveyMutation.mutate(
-      { id: workspace.value.id },
+      { id: clinic.value.id },
       {
         onSuccess: async () => {
-          await workspaceStore.refetchWorkspaces()
-          workspaceStore.switchToFirstWorkspace()
+          await clinicStore.refetchClinics()
+          clinicStore.switchToFirstClinic()
         },
       },
     )

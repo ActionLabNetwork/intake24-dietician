@@ -7,7 +7,7 @@
       >
         <div>
           <h1 class="text heading">
-            Master setup for {{ workspaceStore.currentWorkspace?.surveyName }}
+            Master setup for {{ clinicStore.currentClinic?.surveyName }}
           </h1>
           <h3 class="text subheading">
             Personalise your patient experience by choosing a visual theme,
@@ -93,9 +93,9 @@ import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
-const workspaceStore = useWorkspaceStore()
+const clinicStore = useClinicStore()
 
 const $toast = useToast()
 const route = useRoute()

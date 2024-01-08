@@ -2,7 +2,7 @@
   <v-main class="wrapper">
     <v-container>
       <v-row class="ml-4">
-        <SurveyWorkplaceDetails v-if="!hideSurveyDetails" />
+        <SurveyClinicDetails v-if="!hideSurveyDetails" />
       </v-row>
       <v-row>
         <v-col cols="12" md="12">
@@ -18,7 +18,7 @@
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import NavCard from '@/components/surveys/NavCard.vue'
-import SurveyWorkplaceDetails from '@/components/surveys/SurveyWorkspaceDetails.vue'
+import SurveyClinicDetails from '@/components/surveys/SurveyClinicDetails.vue'
 import { useRoute } from 'vue-router'
 import { computed } from 'vue'
 
