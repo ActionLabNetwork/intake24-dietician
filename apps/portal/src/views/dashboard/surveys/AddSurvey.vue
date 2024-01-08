@@ -1,20 +1,6 @@
 <template>
   <v-main class="wrapper">
     <v-container>
-      <v-breadcrumbs :items="breadcrumbItems" class="pa-0">
-        <template v-slot:divider>
-          <v-icon icon="mdi-chevron-right"></v-icon>
-        </template>
-      </v-breadcrumbs>
-      <v-btn
-        prepend-icon="mdi-chevron-left"
-        flat
-        class="text-none px-0 mt-10"
-        variant="text"
-        to="/dashboard/my-surveys"
-      >
-        {{ t('surveys.backToSurveyList') }}
-      </v-btn>
       <SurveyConfiguration
         :default-state="surveyConfigFormValues"
         mode="Add"
@@ -28,54 +14,49 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import SurveyConfiguration, {
-  SurveyConfigurationFormValues,
-} from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
-import { useI18n } from 'vue-i18n'
-import type { i18nOptions } from '@intake24-dietician/i18n'
+import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
+// import { useI18n } from 'vue-i18n'
+// import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
-import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import router from '@intake24-dietician/portal/router'
+import {
+  SurveyCreateDto,
+  SurveyCreateDtoSchema,
+  SurveyDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
+import { useQueryClient } from '@tanstack/vue-query'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const $toast = useToast()
-const { t } = useI18n<i18nOptions>()
+// const { t } = useI18n<i18nOptions>()
 
+const clinicStore = useClinicStore()
+
+const queryClient = useQueryClient()
 const addSurveyMutation = useAddSurvey()
 
-const breadcrumbItems = ref([
-  {
-    title: 'My Surveys',
-    disabled: false,
-    href: '/dashboard/my-surveys',
-  },
-  {
-    title: 'Add new Survey',
-    disabled: true,
-    href: '/dashboard/my-patients/add-survey',
-  },
-])
-
-const surveyConfigFormValues = ref<SurveyConfigurationFormValues>({
-  name: '',
+const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+  surveyName: '',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',
-  recallSubmissionUrl: '',
+  recallSubmissionURL: '',
+  isActive: true,
 })
 
-const handleSurveyConfigUpdate = (values: SurveyConfigurationFormValues) => {
+const handleSurveyConfigUpdate = (
+  values: Omit<SurveyCreateDto, 'surveyPreference'>,
+) => {
   surveyConfigFormValues.value = values
 }
 
 const handleSubmit = async () => {
   return new Promise((resolve, reject) => {
     // Validate with zod
-    const result = SurveyConfigurationSchemaDetails.zodSchema.safeParse(
-      surveyConfigFormValues.value,
-    )
+    const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
@@ -83,16 +64,29 @@ const handleSubmit = async () => {
       return
     }
 
-    addSurveyMutation.mutate(surveyConfigFormValues.value, {
-      onSuccess: () => {
-        $toast.success('Survey added to records')
-        resolve('Survey added to records')
-        router.push('/dashboard/my-surveys')
+    addSurveyMutation.mutate(
+      { survey: surveyConfigFormValues.value },
+      {
+        onSuccess: async surveyId => {
+          $toast.success('Survey added to records')
+          await queryClient.invalidateQueries({ queryKey: ['surveys'] })
+          const allClinics = queryClient.getQueryData([
+            'surveys',
+          ]) as SurveyDto[]
+          const newClinic = allClinics.find(clinic => clinic.id === surveyId)
+          console.log({ newClinic })
+          clinicStore.switchCurrentClinic(surveyId)
+          resolve('Survey added to records')
+          router.push({
+            name: 'Survey Master Settings',
+            params: { surveyId },
+          })
+        },
+        onError: () => {
+          $toast.error(DEFAULT_ERROR_MESSAGE)
+        },
       },
-      onError: err => {
-        $toast.error(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-      },
-    })
+    )
   })
 }
 </script>

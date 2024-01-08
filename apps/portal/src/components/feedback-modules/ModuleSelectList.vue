@@ -26,7 +26,7 @@
                     <div><v-icon icon="mdi-drag"></v-icon></div>
                     <div>{{ element.title }}</div>
                   </div>
-                  <div>
+                  <div v-if="showSwitches">
                     <v-switch
                       v-model:model-value="element.selected"
                       class="d-flex align-center"
@@ -58,7 +58,15 @@ export interface ModuleItem {
   to: ModuleRoute
 }
 
-const props = defineProps<{ defaultState?: FeedbackMapping }>()
+const props = withDefaults(
+  defineProps<{
+    defaultState?: FeedbackMapping
+    showSwitches: boolean
+  }>(),
+  {
+    showSwitches: false,
+  },
+)
 
 const emit = defineEmits<{
   update: [value: ModuleRoute]
@@ -111,6 +119,10 @@ const handleModuleSelect = (title: ModuleRoute) => {
   selectedModule.value = item.value
   emit('update', item.to)
 }
+
+onMounted(() => {
+  emit('update:modules', items.value)
+})
 
 // Helpers
 const mapPropsToRef = () => {

@@ -60,7 +60,7 @@
           <td class="text-left">
             <div class="d-flex align-center">
               <v-avatar
-                :image="item.raw.avatar ?? getDefaultAvatar(item.raw.email)"
+                :image="item.raw.avatar || getDefaultAvatar(item.raw.email)"
               />
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
@@ -70,7 +70,10 @@
               color="primary"
               class="text-capitalize"
               min-width="50%"
-              :to="`/dashboard/my-patients/patient-records/${item.raw.id}/feedback-records`"
+              :to="{
+                name: 'Survey Patient Feedback Records',
+                params: { patientId: item.raw.id },
+              }"
             >
               View
             </v-btn>
@@ -118,9 +121,9 @@
               icon="mdi-content-copy"
               size="medium"
               variant="plain"
-              @click="generateSurveyLink(item.raw.id)"
+              @click="generateSurveyLink(item.raw.surveyURL)"
             />
-            {{ item.raw.surveyURL }}
+            <!-- {{ item.raw.surveyURL }} -->
           </td>
         </tr>
       </template>
@@ -133,15 +136,11 @@
 </template>
 
 <script setup lang="ts">
-import * as jose from 'jose'
 import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
-// import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
-// import { computed } from 'vue'
-// import { usePatients } from '@intake24-dietician/portal/queries/usePatients'
+import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -151,7 +150,7 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
-  patientsData: (PatientProfileValues & { id: number; isArchived: boolean })[]
+  patientsData: PatientWithUserDto[]
 }>()
 const headerTitles = [
   'Id',
@@ -186,7 +185,7 @@ interface KeyValueTypes {
   }
   patientStatus: 'Active' | 'Archived'
   lastReminderSent: string
-  surveyURL: null
+  surveyURL: string
 }
 
 type SpecificPatientTableColumns = {
@@ -236,27 +235,6 @@ const headers = ref<PatientTableHeaders[]>([
   },
 ])
 
-// const recallsQuery = useRecallsByUserId(ref('4072'))
-// const latestRecallsByPatient = computed(() => {
-//   const latestRecall =
-//     recallsQuery.data.value?.data.ok &&
-//     recallsQuery.data.value?.data.value
-//       .map(recall => recall.endTime)
-//       .toSorted()
-//       .at(-1)
-
-//   if (latestRecall) {
-//     const date = new Date(latestRecall)
-//     return date.toLocaleDateString('en-AU', {
-//       day: 'numeric',
-//       month: 'short',
-//       year: 'numeric',
-//     })
-//   }
-
-//   return undefined
-// })
-
 const search = ref('')
 
 const randomDate = (start: Date, end: Date) => {
@@ -276,22 +254,9 @@ const patients = ref<SpecificPatientTableColumns[]>([])
 
 const snackbar = ref(false)
 
-const generateSurveyLink = async (userId: number) => {
-  const externalUsername = `dietician:survey_id:${userId}`
-  const secret = 'super_secret_jwt'
-  const payload = {
-    username: externalUsername,
-    password: 'super_secret_password',
-    redirectUrl: 'https://google.com',
-  }
-  const token = await new jose.SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('2h')
-    .sign(new TextEncoder().encode(secret))
-  const url = `https://survey.intake24.dev/demo/create-user/${token}`
+const generateSurveyLink = async (link: string) => {
   try {
-    await navigator.clipboard.writeText(url)
+    await navigator.clipboard.writeText(link)
     snackbar.value = true
   } catch (err) {
     console.error('Failed to copy URL: ', err)
@@ -306,18 +271,20 @@ watch(
       newPatients.map(patient => {
         return {
           id: patient.id,
-          email: patient.emailAddress,
+          email: patient.user.email,
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
           lastRecall: getRandomDate(),
           lastFeedbackSent: {
             date: getRandomDate(),
-            type: patient.sendAutomatedFeedback ? 'Auto' : 'Tailored',
+            type: patient.patientPreference.sendAutomatedFeedback
+              ? 'Auto'
+              : 'Tailored',
           },
           patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: getRandomDate(),
-          surveyURL: null,
+          surveyURL: patient.startSurveyUrl,
         }
       }) ?? []
   },

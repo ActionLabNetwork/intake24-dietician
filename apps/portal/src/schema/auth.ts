@@ -10,11 +10,6 @@ export const RegisterSchema = createFormSchema(
   },
 )
 
-export const LoginSchema = createFormSchema(['email', 'password'] as const, {
-  email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-})
-
 export const ForgotPasswordSchema = createFormSchema(['email'] as const, {
   email: z.string().email(),
 })

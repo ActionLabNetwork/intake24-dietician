@@ -88,7 +88,7 @@
 import { ref, watch } from 'vue'
 import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
-import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
+import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -98,7 +98,7 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
-  data: SurveyDTO[]
+  data: SurveyDto[]
 }>()
 const headerTitles = [
   'Name',
@@ -170,10 +170,10 @@ watch(
       newSurvey.map(survey => {
         return {
           id: survey.id,
-          name: survey.name,
+          name: survey.surveyName,
           surveyDetails: undefined,
           alias: survey.alias,
-          recallSubmissionUrl: survey.recallSubmissionUrl ?? '',
+          recallSubmissionUrl: survey.recallSubmissionURL ?? '',
         }
       }) ?? []
   },

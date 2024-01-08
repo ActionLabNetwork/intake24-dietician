@@ -1,9 +1,9 @@
-import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import type { Component } from 'vue'
 import { modules, moduleRoutes } from '@intake24-dietician/common/types/modules'
+import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 export interface FeedbackModulesProps {
-  recallsData?: IRecallExtended[]
+  recallsData?: RecallDto[]
   recallDate?: Date
   feedback: string
   mode: 'preview' | 'edit' | 'view'
@@ -25,7 +25,7 @@ export type ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels = Record<
   ModuleRoute,
   {
     component: Component
-    id: number
+    name: string
     feedbackAbove: string
     feedbackBelow: string
     isActive: boolean

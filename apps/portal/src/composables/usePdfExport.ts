@@ -12,7 +12,7 @@ export function usePdfExport() {
         format: 'a2',
         orientation: 'portrait',
         compress: true,
-        encryption: { userPassword: 'i24-d' },
+        // encryption: { userPassword: 'i24-d' },
       },
     }
     html2pdf().set(opt).from(element).save()

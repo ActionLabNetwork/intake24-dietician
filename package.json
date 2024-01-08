@@ -6,6 +6,7 @@
   "packageManager": "pnpm@8.9.2",
   "scripts": {
     "preinstall": "npx -y only-allow pnpm",
+    "precommit-build": "pnpm --filter ./apps/api-new build && pnpm --filter ./apps/portal build",
     "prepare": "pnpm simple-git-hooks",
     "clean": "rimraf --glob **/coverage **/dist **/node_modules",
     "build": "pnpm --filter ./apps build",
@@ -35,14 +36,18 @@
     "packages/*"
   ],
   "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged",
+    "pre-commit": "pnpm lint-staged && pnpm precommit-build",
     "commit-msg": "pnpm tsx scripts/verify-commit.ts $1"
   },
   "lint-staged": {
     "*.md": "prettier --write",
-    "*.{ts,vue}": "eslint --fix"
+    "*.{ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "dependencies": {
+    "@intake24-dietician/common": "*",
     "zod": "^3.22.4"
   },
   "devDependencies": {
@@ -55,6 +60,7 @@
     "@vue/eslint-config-typescript": "^11.0.3",
     "eslint": "^8.51.0",
     "eslint-config-alloy": "^5.1.2",
+    "eslint-plugin-unused-imports": "^3.0.0",
     "jest": "^29.7.0",
     "jest-extended": "^4.0.2",
     "lint-staged": "^14.0.1",

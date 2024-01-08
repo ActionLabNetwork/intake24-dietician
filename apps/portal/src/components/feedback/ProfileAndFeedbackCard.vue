@@ -33,12 +33,7 @@
         <!-- Share status -->
         <div class="d-flex flex-column align-center">
           <p class="font-weight-medium mx-auto">Share status</p>
-          <v-chip
-            variant="outlined"
-            :color="items[0]!.type === 'Tailored' ? 'success' : 'warning'"
-            :text="items[0]!.type"
-          >
-          </v-chip>
+          <v-chip variant="outlined" color="success" text="Tailored"> </v-chip>
         </div>
 
         <!-- Action buttons -->
@@ -51,8 +46,24 @@
           >
             {{ previewing ? 'Edit' : 'Preview' }}
           </v-btn>
-          <v-btn class="text-none ml-8" color="#F1F1F1" flat>
-            Save as draft
+          <v-btn
+            class="text-none ml-8"
+            color="#F1F1F1"
+            flat
+            :disabled="!!editingDraft && areDraftsEqual"
+            @click="
+              () => {
+                !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
+              }
+            "
+          >
+            {{
+              props.editingDraft
+                ? areDraftsEqual
+                  ? 'No draft changes'
+                  : 'Save draft changes'
+                : 'Save as draft'
+            }}
           </v-btn>
           <v-btn class="text-none ml-3" color="primary" flat>
             Share feedback
@@ -66,24 +77,40 @@
 import { computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import {
+  useEditDraft,
+  useSaveDraft,
+} from '@intake24-dietician/portal/mutations/useFeedback'
+import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { useRouter, useRoute } from 'vue-router'
+import isEqual from 'lodash.isequal'
+
+import { useToast } from 'vue-toast-notification'
+import 'vue-toast-notification/dist/theme-sugar.css'
 
 const props = defineProps<{
   id: string
   fullName: string
   avatar: string
-  recallDates: { id: string; startTime: Date; endTime: Date }[]
+  recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
+  editingDraft: { originalDraft: DraftCreateDto } | false
+  draft: DraftCreateDto
 }>()
 const emit = defineEmits<{
   'update:date': [date: Date]
   'click:preview': []
 }>()
 
-interface SharedItem {
-  shared: string
-  type: 'Tailored' | 'Auto'
-}
+const router = useRouter()
+const route = useRoute()
+
+const $toast = useToast()
+
+// Mutations
+const saveDraftMutation = useSaveDraft()
+const editDraftMutation = useEditDraft()
 
 const allowedDates = computed(() => {
   return props.recallDates.map(date => date.startTime)
@@ -95,15 +122,55 @@ const handleDateUpdate = (date: Date) => {
   emit('update:date', date)
 }
 
+const areDraftsEqual = computed(() => {
+  if (!props.editingDraft) return false
+
+  return isEqual(props.editingDraft.originalDraft, props.draft)
+})
+
 onMounted(() => {
   date.value = props.initialDate
 })
 
-const items = ref<SharedItem[]>([
-  { shared: 'Real-Time', type: 'Tailored' },
-  { shared: 'Audience', type: 'Tailored' },
-  { shared: 'Conversions', type: 'Auto' },
-])
+const handleSaveDraftClick = () => {
+  saveDraftMutation.mutate(
+    {
+      patientId: Number(props.id),
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        $toast.success('Draft saved')
+        router.push({
+          name: 'Survey Patient Feedback Records',
+          params: {
+            surveyId: route.params['surveyId'],
+            patientId: route.params['patientId'],
+          },
+        })
+      },
+    },
+  )
+}
+
+const handleEditDraftClick = () => {
+  console.log('Edit draft clicked')
+  console.log({
+    draftId: Number(route.params['feedbackId'] as string),
+    draft: props.draft,
+  })
+  editDraftMutation.mutate(
+    {
+      draftId: Number(route.params['feedbackId'] as string),
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        $toast.success('Draft updated')
+      },
+    },
+  )
+}
 </script>
 
 <style scoped lang="scss">

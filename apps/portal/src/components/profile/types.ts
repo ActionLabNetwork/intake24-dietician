@@ -44,6 +44,7 @@ interface FormInput {
 
   // Display properties
   label: string
+  description?: string
   labelSuffix?: string
   class?: string
   suffixIcon?: string

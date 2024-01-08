@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url'
 import vue from '@vitejs/plugin-vue'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import VueDevTools from 'vite-plugin-vue-devtools'
 
 // Utilities
 import { defineConfig } from 'vite'
@@ -24,6 +25,7 @@ export default defineConfig({
         configFile: 'src/styles/settings.scss',
       },
     }),
+    VueDevTools(),
   ],
   define: { 'process.env': {} },
   resolve: {
@@ -32,16 +34,19 @@ export default defineConfig({
       '@intake24-dietician/db': fileURLToPath(
         new URL('../../packages/db/src', import.meta.url),
       ),
+      '@intake24-dietician/db-new': fileURLToPath(
+        new URL('../../packages/db-new/src', import.meta.url),
+      ),
       '@intake24-dietician/common/': fileURLToPath(
         new URL('../../packages/common/src/*', import.meta.url),
+      ),
+      '@intake24-dietician/api-new/': fileURLToPath(
+        new URL('../apps/api-new/src/*', import.meta.url),
       ),
       '@intake24-dietician/i18n': fileURLToPath(
         new URL('../../packages/i18n/src', import.meta.url),
       ),
     },
     extensions: ['.js', '.json', '.jsx', '.mjs', '.ts', '.tsx', '.vue'],
-  },
-  server: {
-    port: 3001,
   },
 })

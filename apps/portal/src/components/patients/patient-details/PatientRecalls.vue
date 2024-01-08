@@ -12,31 +12,33 @@ import moment from 'moment'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-console.log({ p: route.params })
 
 const recallId = ref('')
-// const recallsQuery = useRecallsByUserId(ref('4072'))
 const recallsQuery = useRecallsByUserId(
-  ref(`dietician:survey_id:${route.params['id']}`),
+  ref(route.params['patientId'] as string),
 )
+// const recallsQuery = useRecallsByUserId(
+//   ref(`dietician:survey_id:${route.params['id']}`),
+// )
 
 const date = ref<Date>()
 const recallDates = ref<{ id: string; startTime: Date; endTime: Date }[]>([])
 
 watch(
-  () => recallsQuery.data.value?.data,
+  () => recallsQuery.data,
   data => {
-    if (data?.ok) {
-      recallDates.value = data.value.map(recall => ({
-        id: recall.id,
-        startTime: recall.startTime,
-        endTime: recall.endTime,
-      }))
+    if (!data.value) return
 
-      // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime
-    }
+    recallDates.value = data.value.map(recall => ({
+      id: recall.recall.id,
+      startTime: recall.recall.startTime,
+      endTime: recall.recall.endTime,
+    }))
+
+    // Default to latest recall date
+    date.value = recallDates.value.at(-1)?.startTime
   },
+  { immediate: true },
 )
 
 watch(date, newDate => {

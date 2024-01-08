@@ -16,20 +16,33 @@ export const surveys = {
   },
   backToSurveyList: 'Back to survey list',
   addNewSurvey: {
-    title: 'Add new survey',
+    title: 'Create your new clinic',
     save: 'Save',
     surveyDetails: {
       title: 'Survey details',
-      name: 'Name',
-      alias: 'Alias',
+      name: {
+        label: 'Clinic name',
+        description:
+          'This is the name of your new clinic where you can add new patients and manage their recalls.',
+      },
+      alias: {
+        label: 'Alias',
+        description: 'This is the alias of the survey in Intake24.',
+      },
       type: 'Type',
       status: 'Status',
       recallSubmissionUrl: 'Recall submission URL',
-      intake24SurveyId: 'Intake24 survey ID',
-      intake24Secret: 'Intake24 secret',
+      intake24SurveyId: {
+        label: 'Intake24 Survey ID',
+        description: 'This is the ID of the survey in Intake24.',
+      },
+      intake24Secret: {
+        label: 'Intake24 secret',
+        description: 'This is the secret of the survey in Intake24.',
+      },
     },
     subtitle:
-      'This is the page for you to add a survey. You can base its configuration on Template or define it differently.',
+      'Your practise, your space. Create and tailor the new clinic according to your work needs.',
     dismiss: 'Dismiss',
   },
 }

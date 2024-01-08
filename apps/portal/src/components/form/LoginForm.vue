@@ -11,7 +11,7 @@
         <h1>{{ t('login.title') }}</h1>
         <h2>{{ t('login.subtitle') }}</h2>
       </div>
-      <div v-show="errorAlert" class="pt-10">
+      <div v-show="loginMutation.isError" class="pt-10">
         <v-alert
           v-model="errorAlert"
           closable
@@ -35,6 +35,7 @@
             :autocomplete="input.autocomplete"
             :name="input.key"
             :rules="input.rules"
+            :data-cy="input.dataCy"
             :suffix-icon="input.suffixIcon"
             :handle-icon-click="input.handleSuffixIconClick"
             @update="newVal => (formValues[field] = newVal)"
@@ -65,9 +66,9 @@
             type="submit"
             :disabled="
               !loginForm.isFormValid(formValues) ||
-              loginMutation.isLoading.value
+              loginMutation.isPending.value
             "
-            :loading="loginMutation.isLoading.value"
+            :loading="loginMutation.isPending.value"
           >
             {{ t('login.form.login') }}
           </v-btn>
@@ -103,12 +104,10 @@ import type { i18nOptions } from '@intake24-dietician/i18n'
 
 import router from '@/router'
 import { useForm } from '@intake24-dietician/portal/composables/useForm'
-import { LoginSchema } from '@intake24-dietician/portal/schema/auth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import type { Form } from '@/types/form.types'
 import BaseProgressCircular from '../common/BaseProgressCircular.vue'
-
-// Stores
+import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 
 // i18n
 const { t } = useI18n<i18nOptions>()
@@ -127,7 +126,7 @@ const passwordVisible = ref(false)
 
 const loginForm = useForm<typeof formValues, typeof formValues>({
   initialValues: formValues,
-  schema: LoginSchema.zodSchema,
+  schema: LoginDtoSchema,
   mutationFn: loginMutation.mutateAsync,
   onSuccess: () => {
     router.push('/dashboard/my-profile')
@@ -138,7 +137,7 @@ const loginForm = useForm<typeof formValues, typeof formValues>({
   },
 })
 
-const formConfig: Ref<Form<(typeof LoginSchema.fields)[number]>> = ref({
+const formConfig: Ref<Form<['email', 'password'][number]>> = ref({
   email: {
     type: 'input',
     inputType: 'text',
@@ -146,7 +145,8 @@ const formConfig: Ref<Form<(typeof LoginSchema.fields)[number]>> = ref({
     label: t('login.form.email.label'),
     autocomplete: 'username',
     key: 'email',
-    rules: [(v: string) => validateWithZod(LoginSchema.schema.email, v)],
+    dataCy: 'email',
+    rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.email, v)],
   },
   password: {
     type: 'input',
@@ -159,10 +159,10 @@ const formConfig: Ref<Form<(typeof LoginSchema.fields)[number]>> = ref({
       passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
     ),
     handleSuffixIconClick: () => {
-      console.log('CLICKED')
       passwordVisible.value = !passwordVisible.value
     },
-    rules: [(v: string) => validateWithZod(LoginSchema.schema.password, v)],
+    dataCy: 'password',
+    rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.password, v)],
   },
 })
 

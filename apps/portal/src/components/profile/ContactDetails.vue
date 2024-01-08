@@ -45,51 +45,22 @@
                 </BaseInput>
                 <BaseInput
                   type="email"
-                  :value="formValues.emailAddress"
-                  @update="newVal => handleFieldUpdate('emailAddress', newVal)"
+                  :value="formValues.email"
+                  @update="newVal => handleFieldUpdate('email', newVal)"
                 >
                   <span class="input-label">
                     New {{ t('profile.form.contactDetails.email.label') }}
                   </span>
                 </BaseInput>
-                <v-btn
-                  size="small"
-                  type="submit"
-                  color="secondary text-capitalize"
-                  class="mb-10"
-                  :disabled="showVerificationTokenField"
-                  :loading="generateTokenMutation.isLoading.value"
-                  @click="handleSendVerificationToken"
-                >
-                  {{
-                    showVerificationTokenField
-                      ? 'Verification token sent'
-                      : 'Send verification token'
-                  }}
-                </v-btn>
-                <v-text-field
-                  v-if="showVerificationTokenField"
-                  v-model="verificationToken"
-                  label="Enter Verification Token"
-                  required
-                ></v-text-field>
-                <v-alert
-                  v-if="errorMsg"
-                  type="error"
-                  dense
-                  border="top"
-                  variant="outlined"
-                >
-                  {{ errorMsg }}
-                </v-alert>
               </v-card-text>
               <v-card-actions>
                 <v-btn
-                  :disabled="!verificationToken"
+                  :disabled="currentEmailAddress === formValues.email"
                   color="primary"
-                  @click="handleVerifyToken"
+                  :loading="requestEmailChangeMutation.isPending.value"
+                  @click="requestEmailChange"
                 >
-                  Verify Token
+                  Request Email Change
                 </v-btn>
                 <v-btn color="grey" @click="() => (changeEmailDialog = false)">
                   Close
@@ -108,13 +79,17 @@ import BaseInput from '@/components/form/BaseInput.vue'
 import { useDisplay } from 'vuetify'
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
-import { useGenerateToken, useVerifyToken } from '@/mutations/useAuth'
+import { useRequestEmailChange } from '@/mutations/useAuth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { Form, Layout } from './types'
-import { contactDetailsSchema } from '@intake24-dietician/portal/schema/profile'
+import {
+  DieticianUpdateDto,
+  UserCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
+import { useToast } from 'vue-toast-notification'
 
 export interface ContactDetailsFormValues {
-  emailAddress: string
+  email: string
   mobileNumber: string
   businessNumber: string
   businessAddress: string
@@ -129,8 +104,10 @@ const emit = defineEmits<{
   update: [value: ContactDetailsFormValues]
 }>()
 
-const generateTokenMutation = useGenerateToken()
-const verifyTokenMutation = useVerifyToken()
+// const generateTokenMutation = useGenerateToken()
+// const verifyTokenMutation = useVerifyToken()
+const requestEmailChangeMutation = useRequestEmailChange()
+const $toast = useToast()
 
 const { mdAndUp } = useDisplay()
 
@@ -152,9 +129,6 @@ onMounted(() => {
 })
 
 const changeEmailDialog = ref(false)
-const verificationToken = ref('')
-const showVerificationTokenField = ref(false)
-const errorMsg = ref('')
 
 const handleFieldUpdate = (
   fieldName: keyof ContactDetailsFormValues,
@@ -164,53 +138,21 @@ const handleFieldUpdate = (
   emit('update', { ...formValues.value })
 }
 
-const handleSendVerificationToken = () => {
-  generateTokenMutation.mutate(
-    {
-      currentEmail: currentEmailAddress.value,
-      newEmail: formValues.value.emailAddress,
-    },
-    {
-      onSuccess() {
-        showVerificationTokenField.value = true
-        errorMsg.value = ''
-      },
-      onError() {
-        errorMsg.value =
-          'Error sending verification token. Please try another email address.'
-      },
-    },
-  )
+const requestEmailChange = async () => {
+  try {
+    requestEmailChangeMutation.mutate({
+      newEmail: formValues.value.email,
+    })
+    $toast.info('Please check your email inbox to verify the email change.')
+  } catch (e) {
+    $toast.info('Failed to request to change the email.')
+  } finally {
+    changeEmailDialog.value = false
+  }
 }
 
-const handleVerifyToken = () => {
-  verifyTokenMutation.mutate(
-    { token: verificationToken.value },
-    {
-      onSuccess: async () => {
-        try {
-          await props.handleSubmit(false)
-          changeEmailDialog.value = false
-          showVerificationTokenField.value = false
-          verificationToken.value = ''
-          errorMsg.value = ''
-          currentEmailAddress.value = formValues.value.emailAddress
-        } catch (error) {
-          errorMsg.value = 'Error updating email address'
-        }
-      },
-      onError() {
-        errorMsg.value = 'Invalid verification token'
-      },
-    },
-  )
-}
-
-const fields = contactDetailsSchema.fields
-type Field = (typeof fields)[number]
-
-const formConfig: Form<Field> = {
-  emailAddress: {
+const formConfig: Form<keyof ContactDetailsFormValues> = {
+  email: {
     key: 'emailAddress',
     autocomplete: 'email',
     label: t('profile.form.contactDetails.email.label'),
@@ -221,9 +163,9 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.emailAddress, value),
+        validateWithZod(UserCreateDtoSchema.shape.email, value),
     ],
-    handleUpdate: val => handleFieldUpdate('emailAddress', val),
+    handleUpdate: val => handleFieldUpdate('email', val),
     layout: { cols: 12, md: 4 },
     suffixIcon: 'mdi-mail',
     handleSuffixIconClick: () => {
@@ -240,7 +182,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.mobileNumber, value),
+        validateWithZod(DieticianUpdateDto.shape.mobileNumber, value),
     ],
     handleUpdate: val => handleFieldUpdate('mobileNumber', val),
     layout: { cols: 12, md: 4 },
@@ -253,7 +195,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.businessNumber, value),
+        validateWithZod(DieticianUpdateDto.shape.businessNumber, value),
     ],
     handleUpdate: val => handleFieldUpdate('businessNumber', val),
     layout: { cols: 12, md: 4 },
@@ -267,7 +209,7 @@ const formConfig: Form<Field> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(contactDetailsSchema.schema.businessAddress, value),
+        validateWithZod(DieticianUpdateDto.shape.businessAddress, value),
     ],
     handleUpdate: val => handleFieldUpdate('businessAddress', val),
     layout: { cols: 12 },

@@ -57,6 +57,7 @@
             >
               <div
                 v-if="fieldConfig.element === 'textarea'"
+                style="background: inherit"
                 class="survey-id-input"
               >
                 <v-textarea
@@ -97,8 +98,7 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import { INPUT_DEBOUNCE_TIME } from '@/constants/index'
 import { useDebounceFn } from '@vueuse/core'
 import UpdateRecallFrequency from '../patients/patient-details/UpdateRecallFrequency.vue'
-import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
+import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 // const { t } = useI18n<i18nOptions>()
 
 type CSSClass = string | string[] | object
@@ -126,11 +126,16 @@ interface FormConfig {
 }
 
 const props = defineProps<{
-  defaultState: RecallFrequencyDTO
+  defaultState: {
+    reminderCondition: ReminderCondition
+    reminderMessage: string
+  }
 }>()
 
 const emit = defineEmits<{
-  update: [value: RecallFrequencyDTO]
+  update: [
+    value: { reminderCondition: ReminderCondition; reminderMessage: string },
+  ]
 }>()
 
 const form = ref()
@@ -138,13 +143,9 @@ const frequencyReminderMessage = ref(
   toRefs(props).defaultState.value.reminderMessage,
 )
 // eslint-disable-next-line vue/no-setup-props-destructure
-const recallReminder = ref<ReminderConditions>({
-  reminderEvery: {
-    quantity: props.defaultState.quantity,
-    unit: props.defaultState.unit,
-  },
-  reminderEnds: props.defaultState.end,
-})
+const recallReminder = ref<ReminderCondition>(
+  props.defaultState.reminderCondition,
+)
 
 const debouncedFrequencyReminderMessage = computed({
   get: () => frequencyReminderMessage.value,
@@ -173,13 +174,11 @@ onMounted(() => {
       },
       value: undefined,
       column: 2,
-      onUpdate: (newRecallReminder: ReminderConditions) => {
+      onUpdate: (newRecallReminder: ReminderCondition) => {
         recallReminder.value = newRecallReminder
         emit('update', {
+          reminderCondition: recallReminder.value,
           reminderMessage: frequencyReminderMessage.value,
-          quantity: recallReminder.value.reminderEvery.quantity,
-          unit: recallReminder.value.reminderEvery.unit,
-          end: recallReminder.value.reminderEnds,
         })
       },
     },
@@ -205,16 +204,17 @@ watch(
   aggregatedData,
   newAggregatedData => {
     const { recallReminder, frequencyReminderMessage } = newAggregatedData
-    const formData: RecallFrequencyDTO = {
+    const formData: {
+      reminderCondition: ReminderCondition
+      reminderMessage: string
+    } = {
+      reminderCondition: recallReminder,
       reminderMessage: frequencyReminderMessage,
-      quantity: recallReminder.reminderEvery.quantity,
-      unit: recallReminder.reminderEvery.unit,
-      end: recallReminder.reminderEnds,
     }
 
     emit('update', formData)
   },
-  { immediate: true },
+  { immediate: true, deep: true },
 )
 </script>
 

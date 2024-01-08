@@ -17,7 +17,7 @@
     <div>
       <div class="grid-container">
         <!-- Loading state -->
-        <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+        <BaseProgressCircular v-if="recallQuery.isPending.value" />
         <!-- Error state -->
         <div v-if="recallQuery.isError.value" class="mt-10">
           <v-alert
@@ -61,7 +61,6 @@ import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { ref, watch, reactive } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
@@ -77,6 +76,7 @@ import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.t
 import SummarizedCard, {
   type SummarizedCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -138,7 +138,7 @@ const getImageSrc = (name: string) => {
   return mealImages[mealName] || MidSnacks
 }
 
-const calculateMealEnergy = (meal: IRecallMeal) => {
+const calculateMealEnergy = (meal: RecallMeal) => {
   const mealEnergy = meal.foods.reduce((total: any, food: any) => {
     return total + Math.floor(calculateFoodEnergy(food))
   }, 0)
@@ -163,22 +163,21 @@ watch(
 )
 
 watch(
-  () => recallQuery.data.value?.data,
+  () => recallQuery.data.value,
   data => {
-    // TODO: Improve typings, remove uses of any
-    if (data?.ok && data.value) {
-      Object.keys(mealCards).forEach(key => {
-        delete mealCards[key]
-      })
+    if (!data) return
 
-      colorPalette.value = generatePastelPalette(
-        data.value.meals.length + 1,
-        data.value.meals.map(meal => meal.hours),
-      )
-      totalEnergy.value = data.value.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealEnergy(meal)
-      }, 0)
-    }
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
+    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
+      return totalEnergy + calculateMealEnergy(meal)
+    }, 0)
   },
   { immediate: true },
 )

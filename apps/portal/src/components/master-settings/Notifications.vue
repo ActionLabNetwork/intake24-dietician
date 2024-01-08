@@ -47,7 +47,6 @@
 </template>
 
 <script lang="ts" setup>
-import { SurveyPreferenceFeedbackModules } from '@intake24-dietician/common/types/survey'
 import { ref, toRefs } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
@@ -58,28 +57,14 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 
 type NotificationChannel = 'sms' | 'email'
 
-const props = defineProps<{ defaultState: SurveyPreferenceFeedbackModules }>()
+const props = defineProps<{
+  defaultState: { notifyEmail: boolean; notifySms: boolean }
+}>()
 const emit = defineEmits<{
   update: [channels: { email: boolean; sms: boolean }]
 }>()
 
 const form = ref()
-// const notificationChannels = ref<
-//   {
-//     label: NotificationChannel
-//     selected: boolean
-//   }[]
-// >([
-//   {
-//     label: 'SMS',
-//     selected: toRefs(props).defaultState.value.notifySms,
-//   },
-//   {
-//     label: 'Email',
-//     selected: toRefs(props).defaultState.value.notifyEmail,
-//   },
-// ])
-
 const notificationChannels = ref({
   email: {
     label: 'Email',
@@ -101,7 +86,6 @@ function handleSwitchUpdate(
     sms: notificationChannels.value.sms.selected,
   })
 
-  console.log({ NEW: notificationChannels.value })
 }
 </script>
 

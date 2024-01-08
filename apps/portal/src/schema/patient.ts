@@ -1,89 +1,58 @@
-import { z } from 'zod'
-import { MobileNumberSchema } from './common'
-import { createFormSchema } from '../types/validation.types'
+// import { z } from 'zod'
 
 export const genders = ['Male', 'Female', 'Other'] as const
 export const reminderUnits = ['days', 'weeks', 'months'] as const
 
 export type Gender = (typeof genders)[number]
 
-export const ContactDetailsSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  middleName: z.string(),
-  lastName: z.string(),
-  avatar: z.string(),
-  mobileNumber: MobileNumberSchema,
-  emailAddress: z.string().email('Invalid email address'),
-  address: z.string(),
-})
+// const PersonalDetailsSchema = z.object({
+//   age: z.number(),
+//   gender: z.enum(genders),
+//   weight: z.number(),
+//   height: z.number(),
+//   additionalNotes: z.string(),
+//   patientGoal: z.string(),
+// })
 
-export const contactDetailsSchemaName = createFormSchema(
-  ['firstName', 'middleName', 'lastName'] as const,
-  {
-    firstName: z.string().min(1, 'First name is required'),
-    middleName: z.string(),
-    lastName: z.string(),
-  },
-)
+// const ReminderEverySchema = z.object({
+//   quantity: z.number(),
+//   unit: z.enum(reminderUnits),
+// })
 
-export const contactDetailsSchemaContact = createFormSchema(
-  ['mobileNumber', 'emailAddress', 'address'] as const,
-  {
-    mobileNumber: MobileNumberSchema,
-    emailAddress: z.string().email(),
-    address: z.string(),
-  },
-)
+// const ReminderEndsNeverSchema = z.object({
+//   type: z.literal('never'),
+// })
 
-const PersonalDetailsSchema = z.object({
-  age: z.number(),
-  gender: z.enum(genders),
-  weight: z.number(),
-  height: z.number(),
-  additionalNotes: z.string(),
-  patientGoal: z.string(),
-})
+// const ReminderEndsOnSchema = z.object({
+//   type: z.literal('on'),
+//   date: z.string().datetime(),
+// })
 
-const ReminderEverySchema = z.object({
-  quantity: z.number(),
-  unit: z.enum(reminderUnits),
-})
+// const ReminderEndsAfterSchema = z.object({
+//   type: z.literal('after'),
+//   occurrences: z.number(),
+// })
 
-const ReminderEndsNeverSchema = z.object({
-  type: z.literal('never'),
-})
+// const ReminderEndsSchema = z.union([
+//   ReminderEndsNeverSchema,
+//   ReminderEndsOnSchema,
+//   ReminderEndsAfterSchema,
+// ])
 
-const ReminderEndsOnSchema = z.object({
-  type: z.literal('on'),
-  date: z.string().datetime(),
-})
+// const ReminderSchema = z.object({
+//   reminderEvery: ReminderEverySchema,
+//   reminderEnds: ReminderEndsSchema,
+// })
 
-const ReminderEndsAfterSchema = z.object({
-  type: z.literal('after'),
-  occurrences: z.number(),
-})
+// const ThemeSchema = z.enum(['Classic', 'Fun'])
 
-const ReminderEndsSchema = z.union([
-  ReminderEndsNeverSchema,
-  ReminderEndsOnSchema,
-  ReminderEndsAfterSchema,
-])
-
-const ReminderSchema = z.object({
-  reminderEvery: ReminderEverySchema,
-  reminderEnds: ReminderEndsSchema,
-})
-
-const ThemeSchema = z.enum(['Classic', 'Fun'])
-
-export const PatientSchema = z
-  .object({
-    theme: ThemeSchema,
-    sendAutomatedFeedback: z.boolean(),
-    recallFrequency: ReminderSchema,
-    createdAt: z.date(),
-    updatedAt: z.date(),
-  })
-  .merge(ContactDetailsSchema)
-  .merge(PersonalDetailsSchema)
-  .strict()
+// export const PatientSchema = z
+//   .object({
+//     theme: ThemeSchema,
+//     sendAutomatedFeedback: z.boolean(),
+//     recallFrequency: ReminderSchema,
+//     createdAt: z.date(),
+//     updatedAt: z.date(),
+//   })
+//   .merge(PersonalDetailsSchema)
+//   .strict()

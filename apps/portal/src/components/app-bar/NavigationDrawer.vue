@@ -8,9 +8,9 @@
     <v-list-item
       class="py-5"
       :prepend-avatar="
-        user?.dieticianProfile.avatar ?? getDefaultAvatar(user?.email ?? '')
+        profile?.avatar ?? getDefaultAvatar(profile?.user.email ?? '')
       "
-      :title="`${user?.dieticianProfile.firstName} ${user?.dieticianProfile.lastName}`"
+      :title="`${profile?.firstName} ${profile?.lastName}`"
     ></v-list-item>
     <v-divider></v-divider>
     <v-list nav color="primary">
@@ -48,13 +48,13 @@ queryClient.invalidateQueries({ queryKey: ['auth'] })
 
 const profileQuery = useProfile()
 const logoutMutation = useLogout()
-const user = ref(profileQuery.data.value?.data.data.user)
+const profile = ref(profileQuery.data.value)
 
 const navItems = [
   {
     title: 'My patients',
     value: 'myPatients',
-    to: '/dashboard/my-patients',
+    to: '/dashboard/my-profile',
   },
   {
     title: 'My surveys',
@@ -62,7 +62,7 @@ const navItems = [
     to: '/dashboard/my-surveys',
   },
   {
-    title: 'My Profile',
+    title: 'My profile',
     value: 'myProfile',
     to: '/dashboard/my-profile',
   },
@@ -87,13 +87,10 @@ watch(
   () => profileQuery.data.value,
   newData => {
     if (!newData) return
-    const {
-      firstName,
-      lastName,
-      emailAddress: email,
-    } = newData.data.data.user.dieticianProfile
+    const { firstName, lastName } = newData
+    const email = newData.user.email
 
-    user.value = newData.data.data.user
+    profile.value = newData
 
     _user.value.initials = getInitials(firstName, lastName)
     _user.value.fullName = getFullName(firstName, lastName)
@@ -105,25 +102,19 @@ watch(
   () => profileQuery.isError.value,
   isError => {
     if (!isError) return
-    logoutMutation.mutate(
-      {},
-      {
-        onSuccess: () => {
-          router.push({ path: '/auth/login' })
-        },
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        router.push({ path: '/auth/login' })
       },
-    )
+    })
   },
 )
 
 const handleLogout = () => {
-  logoutMutation.mutate(
-    {},
-    {
-      onSuccess: () => {
-        router.push({ path: '/auth/login' })
-      },
+  logoutMutation.mutate(undefined, {
+    onSuccess: () => {
+      router.push({ path: '/auth/login' })
     },
-  )
+  })
 }
 </script>

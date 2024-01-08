@@ -44,8 +44,8 @@
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form || forgotPasswordMutation.isLoading.value"
-            :loading="forgotPasswordMutation.isLoading.value"
+            :disabled="!form || forgotPasswordMutation.isPending.value"
+            :loading="forgotPasswordMutation.isPending.value"
           >
             {{ t('forgotPassword.form.resetPassword') }}
           </v-btn>

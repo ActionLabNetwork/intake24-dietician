@@ -1,34 +1,18 @@
 import { useMutation } from '@tanstack/vue-query'
-import axios, { AxiosError, AxiosResponse } from 'axios'
-import { env } from '../config/env'
-import {
-  AuthRequest,
-  AuthResponse,
-  DieticianProfileValues,
-  UserAttributes,
-} from '@intake24-dietician/common/types/auth'
-import {
-  ApiResponseWithData,
-  ApiResponseWithError,
-} from '@intake24-dietician/common/types/api'
-
-axios.defaults.withCredentials = true
+import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useClientStore } from '../trpc/trpc'
 
 export const useRegister = () => {
-  const registerUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_REGISTER_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<AuthResponse>,
-      AxiosError<ApiResponseWithError>,
-      AuthRequest
-    >({
-      mutationFn: async registerBody => axios.post(registerUri, registerBody),
+  const { register } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: async (registerBody: { email: string; password: string }) =>
+        await register(registerBody),
     })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -38,25 +22,17 @@ export const useRegister = () => {
 }
 
 export const useLogin = () => {
-  const loginUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGIN_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<
-        ApiResponseWithData<{
-          email: string
-          jti: string
-        }>
-      >,
-      AxiosError<ApiResponseWithError>,
-      AuthRequest
-    >({
-      mutationFn: loginBody => axios.post(loginUri, loginBody),
+  const { login } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (loginBody: { email: string; password: string }) => {
+        return login(loginBody)
+      },
     })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -66,21 +42,16 @@ export const useLogin = () => {
 }
 
 export const useForgotPassword = () => {
-  const forgotPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_FORGOT_PASSWORD_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate, mutateAsync } =
-    useMutation<
-      AxiosResponse<AuthResponse>,
-      AxiosError<ApiResponseWithError>,
-      { email: string }
-    >({
-      mutationFn: forgotPasswordBody =>
-        axios.post(forgotPasswordUri, forgotPasswordBody),
+  const { publicClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (email: { email: string }) =>
+        publicClient.authDietician.forgotPassword.mutate(email),
     })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -90,27 +61,15 @@ export const useForgotPassword = () => {
 }
 
 export const useResetPassword = () => {
-  const resetPasswordUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_RESET_PASSWORD_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<AuthResponse>,
-    AxiosError<ApiResponseWithError>,
-    { token: string; password: string }
-  >({
-    mutationFn: resetPasswordBody => {
-      return axios.post(
-        resetPasswordUri,
-        { password: resetPasswordBody.password },
-        {
-          params: { token: resetPasswordBody.token },
-        },
-      )
-    },
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (data: { password: string; token: string }) =>
+      authenticatedClient.authDietician.resetPassword.mutate(data),
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -119,19 +78,14 @@ export const useResetPassword = () => {
 }
 
 export const useLogout = () => {
-  const logoutUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_LOGOUT_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse,
-    AxiosError<ApiResponseWithError>,
-    {}
-  >({
-    mutationFn: () => axios.post(logoutUri),
+  const { logout } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: () => logout(),
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -140,90 +94,79 @@ export const useLogout = () => {
 }
 
 export const useUpdateProfile = () => {
-  const profileUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_PROFILE_URI}`
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (updateProfileBody: {
+        emailAddress: string
+        dieticianProfile: Partial<DieticianCreateDto>
+      }) => {
+        const { emailAddress, dieticianProfile } = updateProfileBody
+        return authenticatedClient.dieticianProfile.updateProfile.mutate({
+          email: emailAddress,
+          profile: dieticianProfile,
+        })
+      },
+    })
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ user: UserAttributes }>>,
-    AxiosError<ApiResponseWithError>,
-    { dieticianProfile: DieticianProfileValues }
-  >({
-    mutationFn: profileBody => {
-      return axios.put(profileUri, profileBody)
+  return {
+    data,
+    isPending,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+    mutateAsync,
+  }
+}
+
+export const useRequestEmailChange = () => {
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (generateTokenBody: { newEmail: string }) =>
+      authenticatedClient.dieticianProfile.requestEmailChange.mutate(
+        generateTokenBody,
+      ),
+  })
+
+  return {
+    data,
+    isPending,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useVerifyEmail = () => {
+  const { publicClient } = useClientStore()
+  return useMutation({
+    mutationFn: (token: string) =>
+      publicClient.dieticianProfile.verifyEmail.mutate({ token }),
+  })
+}
+
+export const useUploadAvatar = () => {
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (uploadAvatarBody: { avatarBase64: string }) => {
+      const formData = new FormData()
+      formData.append('fileBase64', uploadAvatarBody.avatarBase64)
+      return authenticatedClient.dieticianProfile.uploadAvatar.mutate(
+        uploadAvatarBody,
+      )
+      // return axios.put(uploadAvatarUri, formData, {
+      //   headers: {
+      //     'Content-Type': 'multipart/form-data',
+      //   },
+      // })
     },
   })
 
   return {
     data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
-
-export const useGenerateToken = () => {
-  const generateTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_GENERATE_TOKEN_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ token: string }>>,
-    AxiosError<ApiResponseWithError>,
-    { currentEmail: string; newEmail: string }
-  >(generateTokenBody => {
-    return axios.post(generateTokenUri, generateTokenBody)
-  })
-
-  return {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
-
-export const useVerifyToken = () => {
-  const verifyTokenUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_VERIFY_TOKEN_URI}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ tokenVerified: boolean }>>,
-    AxiosError<ApiResponseWithError>,
-    { token: string }
-  >(verifyTokenBody => {
-    return axios.post(verifyTokenUri, verifyTokenBody)
-  })
-
-  return {
-    data,
-    isLoading,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
-
-export const useUploadAvatar = () => {
-  const uploadAvatarUri = `${env.VITE_AUTH_API_HOST}${env.VITE_AUTH_API_UPLOAD_AVATAR}`
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    AxiosResponse<ApiResponseWithData<{ avatarBlob: string }>>,
-    AxiosError<ApiResponseWithError>,
-    { avatarBase64: string }
-  >(uploadAvatarBody => {
-    const formData = new FormData()
-    formData.append('fileBase64', uploadAvatarBody.avatarBase64)
-    return axios.put(uploadAvatarUri, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  })
-
-  return {
-    data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
