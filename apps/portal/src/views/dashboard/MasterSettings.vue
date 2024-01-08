@@ -1,7 +1,48 @@
 <template>
   <div class="wrapper">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-      <BackButton class="ml-4" />
+      <BackButton class="mb-5" />
+      <div
+        class="d-flex flex-column flex-sm-row justify-space-between align-center"
+      >
+        <div>
+          <h1 class="text heading">
+            Master setup for {{ workspaceStore.currentWorkspace?.surveyName }}
+          </h1>
+          <h3 class="text subheading">
+            Personalise your patient experience by choosing a visual theme,
+            select and tailor feedback modules to suit your preferences. Set a
+            default recall frequency to gather timely recall data, and customise
+            notification preferences for real-time updates when patients
+            complete their recall.
+          </h3>
+        </div>
+        <div class="alert-text">
+          <div v-if="formHasChanged" class="d-flex align-center">
+            <div>
+              <v-icon icon="mdi-alert-outline" size="large" start />
+            </div>
+            <div>
+              There are changes made in master module setup, review and confirm
+              changes before proceeding!
+            </div>
+          </div>
+          <div class="align-self-center">
+            <v-btn
+              color="primary text-none"
+              class="mt-3 mt-sm-0"
+              type="submit"
+              :disabled="!formHasChanged"
+              @click.prevent="handleSubmit"
+            >
+              Review and confirm changes
+            </v-btn>
+          </div>
+        </div>
+      </div>
+
+      <v-divider class="my-10" />
+
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
@@ -17,17 +58,22 @@
         :default-state="notificationsProps"
         @update="handleNotificationsUpdate"
       />
-    </div>
-    <div class="mt-10 ml-4">
-      <p class="font-weight-medium">Review and save changes</p>
-      <div class="text subheading">
-        You have made changes to the master module setup. Review and confirm the
-        changes before you proceed with adding patients or reviewing recall
-        feedback
+      <div class="mt-10 ml-4">
+        <p class="font-weight-medium">Review and save changes</p>
+        <div v-if="formHasChanged" class="text subheading">
+          You have made changes to the master module setup. Review and confirm
+          the changes before you proceed with adding patients or reviewing
+          recall feedback
+        </div>
+        <v-btn
+          color="primary"
+          class="text-none mt-4"
+          :disabled="!formHasChanged"
+          @click="handleSubmit"
+        >
+          Review and confirm changes
+        </v-btn>
       </div>
-      <v-btn color="primary" class="text-none mt-4" @click="handleSubmit">
-        Review and confirm changes
-      </v-btn>
     </div>
   </div>
 </template>
@@ -47,12 +93,16 @@ import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
+import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
+
+const workspaceStore = useWorkspaceStore()
 
 const $toast = useToast()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
+const initialFormData = ref<SurveyDto>()
 const formData = ref<SurveyDto>()
 
 const surveyQueryData = computed(() => {
@@ -89,6 +139,12 @@ const notificationsProps = computed(() => {
   }
 
   return undefined
+})
+
+const formHasChanged = computed(() => {
+  return (
+    JSON.stringify(initialFormData.value) !== JSON.stringify(formData.value)
+  )
 })
 
 const handleFeedbackModulesUpdate = (value: SurveyDto) => {
@@ -156,10 +212,18 @@ const handleSubmit = async (): Promise<void> => {
   )
 }
 
-watch(surveyQueryData, newSurveyQueryData => {
-  if (!newSurveyQueryData?.surveyPreference) return
-  formData.value = newSurveyQueryData
-})
+watch(
+  surveyQueryData,
+  newSurveyQueryData => {
+    if (!initialFormData.value) {
+      initialFormData.value = newSurveyQueryData
+    }
+
+    if (!newSurveyQueryData?.surveyPreference) return
+    formData.value = newSurveyQueryData
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">
@@ -181,5 +245,54 @@ watch(surveyQueryData, newSurveyQueryData => {
     rgba(255, 255, 255, 1) 100%
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
+}
+
+.text {
+  max-width: 100%;
+  padding-bottom: 0.5rem;
+  font-family: Roboto;
+  font-style: normal;
+  line-height: normal;
+
+  &.heading {
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &.subheading {
+    color: #555;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 140%; /* 19.6px */
+    letter-spacing: 0.14px;
+    max-width: 40vw;
+  }
+
+  &.section-heading {
+    color: #000;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  &.section-heading-2 {
+    color: #000;
+    font-size: 16px;
+    font-weight: 500;
+  }
+
+  &.section-subheading {
+    color: #555;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 140%; /* 19.6px */
+    letter-spacing: 0.14px;
+  }
+}
+.alert-text {
+  display: flex;
+  flex-direction: column;
+  max-width: 30vw;
+  gap: 0.5rem;
 }
 </style>

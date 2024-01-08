@@ -25,6 +25,7 @@
       <v-row class="mt-6">
         <v-col cols="12" md="3">
           <DetailsAndNavCard
+            v-if="!recallsQuery.isPending.value"
             :has-recalls="hasRecalls"
             class="mx-sm-0 mx-auto mb-10"
           />

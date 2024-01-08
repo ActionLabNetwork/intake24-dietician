@@ -1,48 +1,6 @@
 <template>
   <div>
     <v-container>
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">
-            Master setup for {{ workspaceStore.currentWorkspace?.surveyName }}
-          </h1>
-          <h3 class="text subheading">
-            Personalise your patient experience by choosing a visual theme,
-            select and tailor feedback modules to suit your preferences. Set a
-            default recall frequency to gather timely recall data, and customise
-            notification preferences for real-time updates when patients
-            complete their recall.
-          </h3>
-        </div>
-        <div class="alert-text">
-          <div>
-            <div class="d-flex align-center">
-              <div>
-                <v-icon icon="mdi-alert-outline" size="large" start />
-              </div>
-              <div>
-                There are changes made in master module setup, review and
-                confirm changes before proceeding!
-              </div>
-            </div>
-          </div>
-          <div class="align-self-center">
-            <v-btn
-              color="primary text-none"
-              class="mt-3 mt-sm-0"
-              type="submit"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
-        </div>
-      </div>
-
-      <v-divider class="my-10" />
-
       <div>
         <v-form ref="form">
           <v-row
@@ -115,7 +73,6 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
-import { useWorkspaceStore } from '@intake24-dietician/portal/stores/workspace'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -167,8 +124,6 @@ type ModuleName =
   | 'Energy intake'
   | 'Fibre intake'
   | 'Water intake'
-
-const workspaceStore = useWorkspaceStore()
 
 const findFeedbackModel = (name: ModuleName) => {
   return props.defaultState.feedbackModules.find(module => module.name === name)
@@ -260,10 +215,6 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
     ...feedbackModuleSetup.value,
     feedbackModules: updatedFeedbackModules,
   }
-}
-
-const handleSubmit = async (): Promise<void> => {
-  await props.submit()
 }
 
 let formConfig: FormConfig
@@ -381,18 +332,5 @@ const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
     line-height: 140%; /* 19.6px */
     letter-spacing: 0.14px;
   }
-}
-
-.alert-text {
-  display: flex;
-  flex-direction: column;
-  max-width: 30vw;
-  gap: 0.5rem;
-}
-
-.survey-id-input {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
 }
 </style>
