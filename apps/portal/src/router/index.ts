@@ -103,6 +103,7 @@ const routes = [
         path: 'my-surveys/survey-details/:surveyId?',
         name: 'Survey Details',
         component: () => import('@/views/dashboard/surveys/SurveyDetails.vue'),
+        redirect: { name: 'Survey Patient List' },
         children: [
           {
             path: 'master-settings',
@@ -138,18 +139,11 @@ const routes = [
               ),
           },
           {
-            path: 'patient-list/patient-records/:patientId/feedback-records/compose-feedback/preview',
-            name: 'Survey Patient Preview feedback',
-            component: () =>
-              import(
-                '@/components/feedback/feedback-builder/FeedbackPreview.vue'
-              ),
-          },
-          {
             path: 'patient-list/patient-records/:patientId',
             name: 'Survey Patient Records',
             component: () =>
               import('@/views/dashboard/patients/PatientRecords.vue'),
+            redirect: { name: 'Survey Patient Feedback Records' },
             children: [
               {
                 path: 'feedback-records',
@@ -176,6 +170,7 @@ const routes = [
               {
                 path: 'patient-recalls',
                 name: 'Survey Patient Recalls',
+                redirect: { name: 'Survey Patient Meal Diary' },
                 component: () =>
                   import(
                     '@/components/patients/patient-details/PatientRecalls.vue'
