@@ -12,8 +12,9 @@ export const env = createEnv({
     API_PORT: withDevDefault(z.string(), '8080'),
     API_EXTERNAL_HOST: withDevDefault(z.string(), 'http://localhost'),
     PORTAL_APP_BASE_URL: withDevDefault(z.string(), 'http://localhost:4173'),
-    JWT_ACCESS_TOKEN_TTL: withDevDefault(z.coerce.number(), 60 * 60), // 1 hour
-    JWT_REFRESH_TOKEN_TTL: withDevDefault(z.coerce.number(), 60 * 60 * 24), // 1 day
+    API_EXTERNAL_PORT: withDevDefault(z.string(), '443'),
+    JWT_ACCESS_TOKEN_TTL: withDevDefault(z.number(), 60 * 60), // 1 hour
+    JWT_REFRESH_TOKEN_TTL: withDevDefault(z.number(), 60 * 60 * 24), // 1 day
     JWT_SECRET: withDevDefault(z.string(), 'super_secret_jwt'),
     JWT_API_INTEGRATION_ISSUER: withDevDefault(z.string(), 'intake24'),
     MAIL_FROM_ADDRESS: withDevDefault(
