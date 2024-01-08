@@ -26,7 +26,12 @@
           })
         "
       />
-      <v-btn variant="flat" class="ml-6 hoverable" style="background: inherit">
+      <v-btn
+        v-show="false"
+        variant="flat"
+        class="ml-6 hoverable"
+        style="background: inherit"
+      >
         <v-icon icon="mdi-dots-horizontal"></v-icon>
         <v-menu activator="parent">
           <v-list

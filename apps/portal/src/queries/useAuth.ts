@@ -3,7 +3,7 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useProfile = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess } = useQuery({
+  const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
     queryKey: ['auth'],
     queryFn: () => authenticatedClient.dieticianProfile.getProfile.query(),
   })
@@ -14,5 +14,6 @@ export const useProfile = () => {
     isError,
     error,
     isSuccess,
+    refetch,
   }
 }

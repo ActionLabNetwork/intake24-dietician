@@ -33,6 +33,7 @@
               class="mt-3 mt-sm-0"
               type="submit"
               :disabled="!formHasChanged"
+              :loading="updateSurveyPreferencesMutation.isPending.value"
               @click.prevent="handleSubmit"
             >
               Review and confirm changes
@@ -69,6 +70,7 @@
           color="primary"
           class="text-none mt-4"
           :disabled="!formHasChanged"
+          :loading="updateSurveyPreferencesMutation.isPending.value"
           @click="handleSubmit"
         >
           Review and confirm changes
@@ -204,6 +206,7 @@ const handleSubmit = async (): Promise<void> => {
     {
       onSuccess: () => {
         $toast.success('Survey preferences updated')
+        initialFormData.value = formData.value
       },
       onError: () => {
         $toast.error(DEFAULT_ERROR_MESSAGE)

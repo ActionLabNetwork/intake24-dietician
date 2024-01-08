@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import axios from 'axios'
 import { env } from '../config/env'
 import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
@@ -29,9 +29,15 @@ export const useAddSurvey = () => {
 
 export const useUpdateSurveyPreferences = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { id: number; survey: Partial<SurveyCreateDto> }) =>
       authenticatedClient.dieticianSurvey.updateSurvey.mutate(body),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries()
+      await queryClient.refetchQueries()
+    },
   })
 
   return {

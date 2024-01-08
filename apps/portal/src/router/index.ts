@@ -100,7 +100,7 @@ const routes = [
         },
       },
       {
-        path: 'my-surveys/survey-details/:surveyId',
+        path: 'my-surveys/survey-details/:surveyId?',
         name: 'Survey Details',
         component: () => import('@/views/dashboard/surveys/SurveyDetails.vue'),
         children: [

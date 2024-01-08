@@ -67,7 +67,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import PersonalDetails, {
   PersonalDetailsFormValues,
 } from '@/components/profile/PersonalDetails.vue'
@@ -84,8 +84,12 @@ import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import { pick, keys, isEqual } from 'radash'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  DieticianCreateDto,
+  DieticianUpdateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { useForm } from '@intake24-dietician/portal/composables/useForm'
+import { useQueryClient } from '@tanstack/vue-query'
 
 // Types
 type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
@@ -102,11 +106,18 @@ const defaultValue = {
   avatar: null,
 }
 
+onMounted(async () => {
+  await authStore.refetch()
+  await queryClient.invalidateQueries()
+  await queryClient.refetchQueries()
+})
+
 // i18n
 const { t } = useI18n<i18nOptions>()
 
 // Stores
 const authStore = useAuthStore()
+
 const { profile, isProfileLoading, profileQuerySucceeded } =
   storeToRefs(authStore)
 
@@ -116,6 +127,7 @@ const uploadAvatarMutation = useUploadAvatar()
 
 // Composables
 const $toast = useToast()
+const queryClient = useQueryClient()
 
 // Refs
 const form = ref()
@@ -124,7 +136,7 @@ const profileForm = useForm<
   { emailAddress: string; dieticianProfile: Partial<DieticianCreateDto> }
 >({
   initialValues: defaultValue,
-  schema: DieticianCreateDto,
+  schema: DieticianUpdateDto,
   $toast,
   mutationFn: updateProfileMutation.mutateAsync,
   onSuccess: () => {
@@ -153,6 +165,8 @@ const handleProfileDetailsUpdate = (
 }
 
 const handleSubmit = async (): Promise<void> => {
+  await form.value.validate()
+
   const { emailAddress, ...dieticianProfile } = profileFormValues.value
 
   profileForm.handleSubmit(profileFormValues.value, {
@@ -167,27 +181,6 @@ const handleSubmit = async (): Promise<void> => {
     })
   }
 }
-
-// TODO: Refactor this convoluted logic
-// const disableSubmitButton = computed(() => {
-//   const errors: any[] = form.value?.['errors']
-
-//   if (errors?.length > 0) return true
-//   if (!user.value) return true
-
-//   const hasBeenUpdatedSinceCreation =
-//     user.value.createdAt !== user.value.updatedAt
-
-//   const hasBeenUpdated = !isEqual(profileFormValues.value, {
-//     ...pick(
-//       user.value,
-//       keys(profileFormValues.value) as (keyof DieticianProfileValues)[],
-//     ),
-//     emailAddress: user.value?.email,
-//   })
-
-//   return !hasBeenUpdated || (!hasBeenUpdatedSinceCreation && !hasBeenUpdated)
-// })
 
 watch(
   profile,

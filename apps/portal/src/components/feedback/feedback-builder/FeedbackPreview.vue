@@ -75,6 +75,7 @@ defineProps<Props>()
 const { exportToPdf } = usePdfExport()
 
 const exportContentToPdf = () => {
+  console.log("Export let's go")
   const element = document.querySelector('#print-content') as HTMLElement
   exportToPdf(element, 'feedback.pdf')
 }

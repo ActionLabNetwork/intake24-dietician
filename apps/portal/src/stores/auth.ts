@@ -7,6 +7,7 @@ export const useAuthStore = defineStore('auth', () => {
     data,
     isPending: isProfileLoading,
     isSuccess: profileQuerySucceeded,
+    refetch,
   } = useProfile()
   const profile = ref(data.value)
 
@@ -16,5 +17,5 @@ export const useAuthStore = defineStore('auth', () => {
     }
   })
 
-  return { profile, isProfileLoading, profileQuerySucceeded }
+  return { profile, isProfileLoading, profileQuerySucceeded, refetch }
 })

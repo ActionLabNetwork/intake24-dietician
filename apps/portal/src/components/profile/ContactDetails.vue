@@ -140,7 +140,7 @@ const handleFieldUpdate = (
 
 const requestEmailChange = async () => {
   try {
-    await requestEmailChangeMutation.mutate({
+    requestEmailChangeMutation.mutate({
       newEmail: formValues.value.email,
     })
     $toast.info('Please check your email inbox to verify the email change.')

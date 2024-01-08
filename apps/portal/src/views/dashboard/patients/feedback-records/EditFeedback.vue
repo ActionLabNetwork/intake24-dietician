@@ -41,6 +41,9 @@
           @update:date="handleDateUpdate"
         />
       </div>
+      <div v-else>
+        <BaseProgressCircular />
+      </div>
       <div
         v-if="recallsQuery.data.value && draftQuery.data.value && isDataLoaded"
         v-show="!previewing"
@@ -110,6 +113,7 @@ import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
+import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 
 defineProps<{ draft: DraftDto }>()
 

@@ -3,7 +3,9 @@
     <!-- Menu -->
     <v-menu location="bottom">
       <template v-slot:activator="{ props }">
+        <!-- TODO: Fix this -->
         <v-btn
+          v-show="false"
           color="neutral"
           v-bind="props"
           class="text-none"
