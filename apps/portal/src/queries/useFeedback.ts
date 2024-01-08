@@ -11,7 +11,6 @@ export const useFeedbackDraftById = (draftId: number) => {
         draftId,
       })
     },
-    enabled: !!draftId,
   })
 
   return {

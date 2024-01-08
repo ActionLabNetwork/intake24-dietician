@@ -32,7 +32,7 @@ export function createApp() {
       credentials: true,
     }),
   )
-  app.use(bodyParser.json({ limit: '50mb' }))
+  app.use(bodyParser.json({ limit: '100mb' }))
   app.use(cookieParser())
   app.use(multer().single('file'))
 

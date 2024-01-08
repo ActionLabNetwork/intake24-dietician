@@ -160,11 +160,11 @@ const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
 })
 const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-  '/meal-diary': { component: MealDiaryModule, feedback: 'Hello' },
-  '/carbs-exchange': { component: CarbsExchangeModule, feedback: 'Hi' },
-  '/energy-intake': { component: EnergyIntakeModule, feedback: 'Yohoo' },
-  '/fibre-intake': { component: FibreIntakeModule, feedback: 'Yay' },
-  '/water-intake': { component: WaterIntakeModule, feedback: 'Clap' },
+  '/meal-diary': { component: MealDiaryModule, feedback: '' },
+  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
+  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
+  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
+  '/water-intake': { component: WaterIntakeModule, feedback: '' },
 })
 
 const allModules = ref<

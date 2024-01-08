@@ -21,9 +21,10 @@
       <div
         v-if="
           recallsQuery.data.value &&
-          allModules &&
           draftQuery.data.value &&
-          initialAllModules
+          allModules &&
+          initialAllModules &&
+          isDataLoaded
         "
         class="d-print-none mt-4"
       >
@@ -41,7 +42,7 @@
         />
       </div>
       <div
-        v-if="recallsQuery.data.value && draftQuery.data.value"
+        v-if="recallsQuery.data.value && draftQuery.data.value && isDataLoaded"
         v-show="!previewing"
         class="mt-4"
       >
@@ -134,6 +135,7 @@ const recallsQuery = useRecallsByUserId(
 const date = ref<Date>(new Date())
 const component = ref<ModuleRoute>('/meal-diary')
 const previewing = ref<boolean>(false)
+const isDataLoaded = ref<boolean>(false)
 
 // Computed properties
 const moduleFeedback = computed(() => {
@@ -357,7 +359,7 @@ watch(
   data => {
     if (data) {
       // Default to date saved in draft
-      date.value = draftQuery.data.value?.draft.recallDate ?? new Date()
+      date.value = draftQuery.data.value?.draft?.recallDate ?? new Date()
     }
   },
   { immediate: true },
@@ -366,14 +368,19 @@ watch(
 watch(
   () => draftQuery.data.value,
   data => {
-    if (data) {
-      date.value = data.draft.recallDate
-      data.draft.modules.forEach(module => {
-        feedbackMapping.value[module.key].isActive = module.selected
-        routeToModuleComponentMapping[module.key].feedback = module.feedback
-      })
-    }
+    if (!data?.draft) return
+
+    console.log({ abc: data })
+    date.value = data.draft.recallDate
+
+    data.draft.modules.forEach(module => {
+      feedbackMapping.value[module.key].isActive = module.selected
+      routeToModuleComponentMapping[module.key].feedback = module.feedback
+    })
+
+    isDataLoaded.value = true
   },
+  { immediate: true },
 )
 </script>
 

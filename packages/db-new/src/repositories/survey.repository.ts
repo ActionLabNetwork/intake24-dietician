@@ -31,15 +31,29 @@ export class SurveyRepository {
     const queryResult = await this.drizzle.transaction(async tx => {
       const survey = await tx.query.surveys.findFirst({
         where: eq(surveys.id, id),
+        with: {
+          patients: true,
+        },
       })
       if (!survey) return undefined
-      const queriedFeedbackModules = await this.drizzle
+
+      const surveyWithPatientsCount = {
+        ...survey,
+        patients: survey.patients.reduce(acc => {
+          return acc + 1
+        }, 0),
+      }
+
+      const queriedFeedbackModules = await tx
         .select()
         .from(surveyToFeedbackModules)
         .rightJoin(
           feedbackModules,
           eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
         )
+
+      console.log({ surveyWithPatientsCount })
+
       return { survey, queriedFeedbackModules }
     })
     if (!queryResult) return undefined
@@ -136,4 +150,6 @@ export class SurveyRepository {
       .where(eq(surveys.id, surveyId))
       .execute()
   }
+
+  private getSurveyPatients() {}
 }
