@@ -4,8 +4,6 @@ import { ToastPluginApi } from 'vue-toast-notification'
 import type { ZodType } from 'zod'
 import { DEFAULT_ERROR_MESSAGE } from '../constants'
 import { MutateFunction } from '@tanstack/vue-query'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import { AxiosError } from 'axios'
 
 /**
  * Custom hook for handling form logic.
@@ -20,7 +18,7 @@ import { AxiosError } from 'axios'
  * @param {Function} [options.onError] - The callback function to be called when an error occurs during form submission.
  * @returns {Object} - An object containing the form values, form validation function, form update function, and form submission function.
  */
-export const useForm = <T extends {}, TSubmit>({
+export const useForm = <TInitial extends {}, TSubmit>({
   initialValues,
   schema,
   $toast,
@@ -28,19 +26,14 @@ export const useForm = <T extends {}, TSubmit>({
   onSuccess,
   onError,
 }: {
-  initialValues: T
+  initialValues: TInitial
   schema: ZodType
   $toast?: ToastPluginApi
-  mutationFn: MutateFunction<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    TSubmit,
-    unknown
-  >
+  mutationFn: MutateFunction<unknown, unknown, TSubmit, unknown>
   onSuccess?: () => void
   onError?: (err: string) => void
 }) => {
-  const formValues = ref<T>(initialValues)
+  const formValues = ref<TInitial>(initialValues)
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
     return schema.safeParse(validationData).success
@@ -53,35 +46,36 @@ export const useForm = <T extends {}, TSubmit>({
     formValues.value[property] = value
   }
 
-  const handleSubmit = async (
+  interface SubmitHandler {
+    (validationData: TSubmit): Promise<void>
+    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
+  }
+
+  const handleSubmit: SubmitHandler = async (
     validationData: Partial<TSubmit>,
-    submissionData: TSubmit,
+    submissionData?: TSubmit,
   ): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // Validate with zod
-      const result = schema.safeParse(validationData)
+    // If submissionData is not provided, use validationData as submissionData
+    // eslint-disable-next-line no-param-reassign
+    submissionData = submissionData ?? (validationData as TSubmit)
 
-      if (!result.success) {
-        $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-        onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-        reject(new Error('Form validation failed'))
-        return
-      }
+    // Validate with zod
+    const result = schema.safeParse(validationData)
 
-      mutationFn(submissionData, {
-        onSuccess: () => {
-          onSuccess?.()
-          resolve()
-        },
-        onError: err => {
-          $toast?.error(
-            err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE,
-          )
-          onError?.(err.response?.data.error.detail ?? DEFAULT_ERROR_MESSAGE)
-        },
-      })
+    if (!result.success) {
+      $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      return
+    }
 
-      resolve()
+    mutationFn(submissionData, {
+      onSuccess: () => {
+        onSuccess?.()
+      },
+      onError: () => {
+        $toast?.error(DEFAULT_ERROR_MESSAGE)
+        onError?.(DEFAULT_ERROR_MESSAGE)
+      },
     })
   }
 

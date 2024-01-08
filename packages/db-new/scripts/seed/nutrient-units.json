@@ -1,0 +1,26 @@
+[
+  {
+    "description": "Gram",
+    "symbol": "g"
+  },
+  {
+    "description": "Milligram",
+    "symbol": "mg"
+  },
+  {
+    "description": "Microgram",
+    "symbol": "µg"
+  },
+  {
+    "description": "Kilocalorie",
+    "symbol": "kcal"
+  },
+  {
+    "description": "Kilojoule",
+    "symbol": "kJ"
+  },
+  {
+    "description": "International Units",
+    "symbol": "IU"
+  }
+]

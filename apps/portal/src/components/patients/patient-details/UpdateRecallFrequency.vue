@@ -8,11 +8,16 @@
           <BaseInput
             type="number"
             name="recallFrequency"
-            :value="reminderConditions.reminderEvery.quantity.toString()"
+            :value="reminderConditions.reminderEvery.every.toString()"
             @update="
               newVal => {
-                reminderConditions.reminderEvery.quantity = Number(newVal)
-                $emit('update', reminderConditions)
+                reminderConditions = {
+                  ...reminderConditions,
+                  reminderEvery: {
+                    every: Number(newVal),
+                    unit: reminderConditions.reminderEvery.unit,
+                  },
+                }
               }
             "
           >
@@ -21,15 +26,20 @@
         </div>
         <div class="v-col pt-10">
           <v-select
-            :items="units"
+            :items="ReminderEverySchema.shape.unit.options"
             variant="solo-filled"
             flat
             :model-value="reminderConditions.reminderEvery.unit"
             density="comfortable"
             @update:model-value="
               newVal => {
-                reminderConditions.reminderEvery.unit = newVal
-                $emit('update', reminderConditions)
+                reminderConditions = {
+                  ...reminderConditions,
+                  reminderEvery: {
+                    every: reminderConditions.reminderEvery.every,
+                    unit: newVal,
+                  },
+                }
               }
             "
           ></v-select>
@@ -87,20 +97,20 @@ import { capitalize } from 'radash'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  ReminderConditions,
-  reminderEndsTypes,
-  units,
-} from '@intake24-dietician/common/types/reminder'
+  ReminderEverySchema,
+  ReminderCondition,
+  ReminderEndCondition,
+} from '@intake24-dietician/common/entities-new/preferences.dto'
 
 const props = withDefaults(
-  defineProps<{ defaultState: ReminderConditions; hideLabel?: boolean }>(),
+  defineProps<{ defaultState: ReminderCondition; hideLabel?: boolean }>(),
   { hideLabel: false },
 )
-const emit = defineEmits<{ update: [reminderConditions: ReminderConditions] }>()
+const emit = defineEmits<{ update: [reminderConditions: ReminderCondition] }>()
 
-const reminderConditions = ref<ReminderConditions>({
+const reminderConditions = ref<ReminderCondition>({
   reminderEvery: {
-    quantity: 5,
+    every: 5,
     unit: 'days',
   },
   reminderEnds: {
@@ -112,9 +122,9 @@ onMounted(() => {
   emit('update', reminderConditions.value)
 })
 
-const frequencyEndOptions = reminderEndsTypes.map(type => ({
-  label: capitalize(type),
-  value: type,
+const frequencyEndOptions = ReminderEndCondition.options.map(type => ({
+  label: capitalize(type.shape.type.value),
+  value: type.shape.type.value,
 }))
 
 const frequencyRadio = ref<(typeof frequencyEndOptions)[number]['value']>(
@@ -158,9 +168,13 @@ const handleOccurrencesCountUpdate = (newVal: string) => {
   }
 }
 
-watch(reminderConditions, newVal => {
-  emit('update', newVal)
-})
+watch(
+  () => reminderConditions.value,
+  newVal => {
+    emit('update', newVal)
+  },
+  { deep: true },
+)
 
 watch(
   () => props.defaultState,

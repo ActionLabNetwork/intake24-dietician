@@ -80,12 +80,11 @@ const isEditing = ref(false)
 const localFeedback = ref('')
 
 const fullName = computed(() => {
-  return `${auth.user?.dieticianProfile.firstName} ${auth.user?.dieticianProfile.lastName}`
+  return `${auth.profile?.firstName} ${auth.profile?.lastName}`
 })
 const avatar = computed(
   () =>
-    auth.user?.dieticianProfile.avatar ||
-    getDefaultAvatar(auth.user?.email ?? ''),
+    auth.profile?.avatar || getDefaultAvatar(auth.profile?.user.email ?? ''),
 )
 
 const toggleEdit = () => {

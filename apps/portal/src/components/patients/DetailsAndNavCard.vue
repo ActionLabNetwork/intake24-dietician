@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="patientQuery.isLoading.value">
+  <v-card :loading="patientQuery.isPending.value">
     <template v-slot:loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
@@ -21,10 +21,11 @@
         <v-list nav>
           <v-list-item
             v-for="item in navItems"
+            v-show="item.show"
             :key="item.value"
             :title="item.title"
             :to="item.to"
-            :active="item.selected.value"
+            :active="item.selected"
             align="center"
           />
         </v-list>
@@ -34,58 +35,67 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 import { useRoute } from 'vue-router'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { usePatientById } from '@/queries/usePatients'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
+const props = defineProps<{ hasRecalls: boolean }>()
+
 const route = useRoute()
-const patientQuery = usePatientById(route.params['id'] as string)
+const patientQuery = usePatientById(route.params['patientId'] as string)
 
 const paddedId = computed(() => {
-  return ((route.params['id'] as string) ?? '').padStart(
+  return ((route.params['patientId'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )
 })
 
 const fullName = computed(() => {
-  const firstName =
-    patientQuery.data.value?.data.data.patientProfile?.firstName ?? ''
-  const lastName =
-    patientQuery.data.value?.data.data.patientProfile?.lastName ?? ''
+  const firstName = patientQuery.data.value?.firstName ?? ''
+  const lastName = patientQuery.data.value?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
 
 const avatar = computed(() => {
-  return (
-    patientQuery.data.value?.data.data.patientProfile?.avatar ??
-    getDefaultAvatar('')
-  )
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
 })
 
-const navItems = [
+const navItems = ref([
   {
     title: 'Feedback records',
     value: 'feedbackRecords',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/feedback-records`,
+    to: {
+      name: 'Survey Patient Feedback Records',
+      params: { patientId: route.params['patientId'] },
+    },
     selected: computed(() => route.path.includes('feedback-records')),
+    show: true,
   },
   {
     title: 'Patient details',
     value: 'patientDetails',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-details`,
+    to: {
+      name: 'Survey Patient Details',
+      params: { patientId: route.params['patientId'] },
+    },
     selected: computed(() => route.path.includes('patient-details')),
+    show: true,
   },
   {
     title: 'Patient recalls',
     value: 'patientRecalls',
-    to: `/dashboard/my-patients/patient-records/${route.params['id']}/patient-recalls/meal-diary`,
+    to: {
+      name: 'Survey Patient Meal Diary',
+      params: { patientId: route.params['patientId'] },
+    },
     selected: computed(() => route.path.includes('patient-recalls')),
+    show: toRefs(props).hasRecalls.value,
   },
-]
+])
 </script>
 
 <style scoped lang="scss">

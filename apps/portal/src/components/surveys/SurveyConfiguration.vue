@@ -1,190 +1,223 @@
 <template>
   <v-container>
+    <BackButton class="mb-5" />
     <div>
-      <div>
-        <h1 class="text heading">{{ t('surveys.addNewSurvey.title') }}</h1>
-        <h3 class="text subheading">
-          {{ t('surveys.addNewSurvey.subtitle') }}
-        </h3>
-      </div>
-      <div class="mt-5">
-        <v-btn
-          color="primary text-none"
-          class="mt-3 mt-sm-0"
-          :disabled="false"
-          type="submit"
-          @click.prevent="handleSubmit"
-        >
-          {{ t('surveys.addNewSurvey.save') }}
-        </v-btn>
-      </div>
+      <h1 class="text heading">{{ t('surveys.addNewSurvey.title') }}</h1>
+      <h3 class="text subheading">
+        {{ t('surveys.addNewSurvey.subtitle') }}
+      </h3>
     </div>
     <v-divider class="my-10"></v-divider>
-    <div>
-      <p class="font-weight-medium">
-        {{ t('surveys.addNewSurvey.surveyDetails.title') }}
-      </p>
-      <v-card :width="mdAndUp ? '100%' : '100%'" class="mt-5">
-        <v-col>
-          <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
-            <div v-if="config.type === 'input'">
-              <BaseInput
-                :type="config.inputType"
-                :name="config.key"
-                :rules="config.rules"
-                :autocomplete="config.autocomplete"
-                :value="formValues[fieldName]"
-                :suffix-icon="config.suffixIcon"
-                :handle-icon-click="config.handleSuffixIconClick"
-                :class="config.class"
-                :required="config.required"
-                @update="config.handleUpdate"
-              >
+    <v-form>
+      <div
+        :width="mdAndUp ? '100%' : '100%'"
+        class="mt-5"
+        style="background: inherit; border: 0"
+      >
+        <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
+          <div v-if="config.type === 'input'" class="mb-5">
+            <BaseInput
+              :type="config.inputType"
+              :name="config.key"
+              :rules="config.rules"
+              :autocomplete="config.autocomplete"
+              :value="formValues[fieldName]"
+              bordered
+              :suffix-icon="config.suffixIcon"
+              :handle-icon-click="config.handleSuffixIconClick"
+              :class="config.class"
+              :required="config.required"
+              @update="config.handleUpdate"
+            >
+              <div>
                 <span class="input-label">
                   {{ config.label }}
                 </span>
                 <span v-if="config.labelSuffix" class="input-label suffix">
                   {{ config.labelSuffix }}
                 </span>
-              </BaseInput>
-            </div>
+              </div>
+              <div class="input-label description">
+                {{ config.description }}
+              </div>
+            </BaseInput>
           </div>
-        </v-col>
-      </v-card>
-    </div>
+        </div>
+      </div>
+      <div class="mt-5">
+        <v-btn
+          class="text-none"
+          variant="outlined"
+          @click="submitDialog = true"
+        >
+          Cancel and go back
+        </v-btn>
+        <BaseButton
+          class="mt-3 mt-sm-0 ml-5"
+          :disabled="false"
+          type="submit"
+          @click.prevent="handleSubmit"
+        >
+          Continue with setup
+        </BaseButton>
+      </div>
+      <div>
+        <BaseDialog v-model="submitDialog" :on-confirm="handleDialogConfirm">
+          <template v-slot:title> Attention! </template>
+          Are you sure you want to cancel and go back? Any changes made to the
+          new clinic will get deleted.
+        </BaseDialog>
+      </div>
+    </v-form>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
+import BackButton from '../common/BackButton.vue'
 import { ref } from 'vue'
 import type { Form } from '../profile/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-import { SurveyConfigurationSchemaDetails } from '@intake24-dietician/portal/schema/survey'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
+import {
+  SurveyCreateDto,
+  SurveyCreateDtoSchema,
+} from '@intake24-dietician/common/entities-new/survey.dto'
+import BaseButton from '../common/BaseButton.vue'
+import BaseDialog from '../common/BaseDialog.vue'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 // import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
-export interface SurveyConfigurationFormValues {
-  name: string
-  intake24SurveyId: string
-  intake24Secret: string
-  alias: string
-  recallSubmissionUrl: string
-}
+type FormField = keyof Omit<
+  SurveyCreateDto,
+  'isActive' | 'surveyPreference' | 'feedbackModules'
+>
 
 const props = defineProps<{
-  defaultState: SurveyConfigurationFormValues
+  defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
-  update: [value: SurveyConfigurationFormValues]
+  update: [value: Omit<SurveyCreateDto, 'surveyPreference'>]
 }>()
 
 const { t } = useI18n<i18nOptions>()
 const { mdAndUp } = useDisplay()
 
+const clinicStore = useClinicStore()
+
 // eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<SurveyConfigurationFormValues>({
+const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   ...props.defaultState,
 })
 
-const handleFieldUpdate = (
-  fieldName: keyof SurveyConfigurationFormValues,
-  newVal: string,
-) => {
+const submitDialog = ref(false)
+
+const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   formValues.value[fieldName] = newVal
   emit('update', { ...formValues.value })
 }
 
-const formSurveyConfig: Form<
-  (typeof SurveyConfigurationSchemaDetails.fields)[number]
-> = {
-  name: {
-    key: 'name',
-    label: t('surveys.addNewSurvey.surveyDetails.name'),
+const handleDialogConfirm = () => {
+  if (window.history.length > 1) {
+    window.history.back()
+  } else {
+    clinicStore.navigateToSurveyPatientList()
+  }
+}
+
+const formSurveyConfig: Form<FormField> = {
+  surveyName: {
+    key: 'surveyName',
+    label: t('surveys.addNewSurvey.surveyDetails.name.label'),
+    description: t('surveys.addNewSurvey.surveyDetails.name.description'),
     required: true,
     labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurationSchemaDetails.schema.name, value),
+        validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('name', val),
+    handleUpdate: val => handleFieldUpdate('surveyName', val),
   },
   intake24SurveyId: {
     key: 'intake24SurveyId',
-    label: 'Intake24 Survey ID',
+    label: t('surveys.addNewSurvey.surveyDetails.intake24SurveyId.label'),
+    description: t(
+      'surveys.addNewSurvey.surveyDetails.intake24SurveyId.description',
+    ),
     required: true,
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.intake24SurveyId,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.intake24SurveyId, value),
     ],
     handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
   },
   intake24Secret: {
     key: 'intake24Secret',
-    label: 'Intake24 Secret',
+    label: t('surveys.addNewSurvey.surveyDetails.intake24Secret.label'),
+    description: t(
+      'surveys.addNewSurvey.surveyDetails.intake24Secret.description',
+    ),
     required: true,
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.intake24Secret,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.intake24Secret, value),
     ],
     handleUpdate: val => handleFieldUpdate('intake24Secret', val),
   },
   alias: {
     key: 'alias',
-    label: t('surveys.addNewSurvey.surveyDetails.alias'),
+    label: t('surveys.addNewSurvey.surveyDetails.alias.label'),
+    description: t('surveys.addNewSurvey.surveyDetails.alias.description'),
     required: true,
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(SurveyConfigurationSchemaDetails.schema.alias, value),
+        validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
   },
-  recallSubmissionUrl: {
-    key: 'recallSubmissionUrl',
+  recallSubmissionURL: {
+    key: 'recallSubmissionURL',
     label: 'Recall Submission URL',
+    description: t('surveys.addNewSurvey.surveyDetails.name.description'),
     required: true,
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(
-          SurveyConfigurationSchemaDetails.schema.recallSubmissionUrl,
-          value,
-        ),
+        validateWithZod(SurveyCreateDtoSchema.shape.recallSubmissionURL, value),
     ],
-    handleUpdate: val => handleFieldUpdate('recallSubmissionUrl', val),
+    handleUpdate: val => handleFieldUpdate('recallSubmissionURL', val),
   },
 }
 </script>
 
 <style scoped lang="scss">
 .input-label {
-  color: #555555;
+  font-size: 1.01rem;
 
+  &.description {
+    color: #555555;
+    font-size: 0.85rem;
+  }
   &.suffix {
     color: #ee672d;
+    font-size: 0.95rem;
   }
 }
 

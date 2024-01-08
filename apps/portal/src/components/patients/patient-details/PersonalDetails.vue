@@ -102,7 +102,10 @@ import { useDisplay } from 'vuetify'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
-import { Gender, genders } from '@/schema/patient'
+import {
+  Gender,
+  genders,
+} from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface PersonalDetailsFormValues {
   age: number

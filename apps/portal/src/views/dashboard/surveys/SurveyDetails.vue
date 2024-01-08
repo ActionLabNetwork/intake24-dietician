@@ -1,28 +1,10 @@
 <template>
   <v-main class="wrapper">
     <v-container>
-      <v-row>
-        <v-breadcrumbs :items="breadcrumbItems">
-          <template v-slot:divider>
-            <v-icon icon="mdi-chevron-right"></v-icon>
-          </template>
-        </v-breadcrumbs>
+      <v-row class="ml-4">
+        <SurveyClinicDetails v-if="!hideSurveyDetails" />
       </v-row>
       <v-row>
-        <v-btn
-          prepend-icon="mdi-chevron-left"
-          flat
-          class="text-none"
-          variant="text"
-          to="/dashboard/my-surveys"
-        >
-          Back to survey list
-        </v-btn>
-      </v-row>
-      <v-row class="mt-6">
-        <!-- <v-col cols="12" md="3"> -->
-        <!-- <NavCard class="mx-sm-0 mx-auto mb-10" /> -->
-        <!-- </v-col> -->
         <v-col cols="12" md="12">
           <router-view />
         </v-col>
@@ -32,41 +14,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import NavCard from '@/components/surveys/NavCard.vue'
-// import { useRoute } from 'vue-router'
+import SurveyClinicDetails from '@/components/surveys/SurveyClinicDetails.vue'
+import { useRoute } from 'vue-router'
+import { computed } from 'vue'
 
 // const { t } = useI18n<i18nOptions>()
 
-// const router = useRouter()
-// const route = useRoute()
+const route = useRoute()
 
-const breadcrumbItems = ref([
-  {
-    title: 'My Surveys',
-    disabled: false,
-    href: '/dashboard/my-surveys',
-  },
-  {
-    title: 'Survey settings',
-    disabled: true,
-    href: '',
-  },
-])
-
-// const component = ref()
-
-// const handleModuleUpdate = (module: ReturnType<typeof defineComponent>) => {
-//   const segments = route.path.split('/')
-//   segments.pop()
-//   const path = segments.join('/')
-
-//   component.value = module
-//   router.push(`${path}${module}`)
-// }
+const hideSurveyDetails = computed(() => {
+  const routeNames = ['Survey Master Settings']
+  return routeNames.includes(route.name as string)
+})
 </script>
 
 <style scoped lang="scss">

@@ -60,6 +60,9 @@ interface FormInput {
 
   // Layout
   layout?: Layout
+
+  // Testing
+  dataCy?: string
 }
 
 export type FormEntry = FormInput

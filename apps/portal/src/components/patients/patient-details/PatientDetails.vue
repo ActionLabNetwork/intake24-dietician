@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div>
     <div
       class="d-flex flex-column flex-sm-row justify-space-between align-center"
     >
@@ -12,8 +12,8 @@
           <span class="text patient-status">Patient status: </span>
           <v-chip
             variant="flat"
-            :color="!!patient?.deletionDate ? 'neutral' : 'success'"
-            :text="!!patient?.deletionDate ? 'Archived' : 'Active'"
+            :color="patient?.isArchived ? 'neutral' : 'success'"
+            :text="patient?.isArchived ? 'Archived' : 'Active'"
           >
           </v-chip>
         </div>
@@ -70,15 +70,13 @@
         />
       </div>
       <div>
-        <v-btn
-          color="primary"
-          class="text-none mt-4"
-          type="submit"
+        <BaseButton
           :disabled="!isFormValid"
+          type="submit"
           @click.prevent="handleSubmit"
         >
           Update patient details
-        </v-btn>
+        </BaseButton>
       </div>
     </v-form>
   </div>
@@ -99,21 +97,25 @@ import PersonalDetails, {
 import VisualThemeSelector from '@intake24-dietician/portal/components/patients/patient-details/VisualThemeSelector.vue'
 import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/patients/patient-details/SendAutomatedFeedbackToggle.vue'
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
-import { ReminderConditions } from '@intake24-dietician/common/types/reminder'
 import { Theme } from '@intake24-dietician/common/types/theme'
-import { Gender, PatientSchema } from '@/schema/patient'
 import { useToast } from 'vue-toast-notification'
 import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
 import { useForm } from '@/composables/useForm'
-import { PatientProfileValues } from '@intake24-dietician/common/types/auth'
+import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
+import {
+  PatientUpdateDto,
+  PatientUpdateDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
+import BaseButton from '@/components/common/BaseButton.vue'
+import { z } from 'zod'
 
 // const { t } = useI18n<i18nOptions>()
 
 const route = useRoute()
-const patientQuery = usePatientById(route.params['id'] as string)
+const patientQuery = usePatientById(route.params['patientId'] as string)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
@@ -126,7 +128,7 @@ const formValues = ref({
     lastName: '',
     avatar: '',
     mobileNumber: '',
-    emailAddress: '',
+    email: '',
     address: '',
   }),
   personalDetailsFormValues: ref<PersonalDetailsFormValues>({
@@ -139,9 +141,9 @@ const formValues = ref({
   }),
   theme: ref<Theme>('Classic'),
   sendAutomatedFeedback: ref<boolean>(false),
-  recallFrequency: ref<ReminderConditions>({
+  recallFrequency: ref<ReminderCondition>({
     reminderEvery: {
-      quantity: 5,
+      every: 5,
       unit: 'days',
     },
     reminderEnds: {
@@ -152,12 +154,23 @@ const formValues = ref({
 
 const patientForm = useForm<
   typeof formValues,
-  PatientProfileValues & { patientId: number }
+  {
+    id: number
+    email: string
+    patient: Partial<PatientUpdateDto>
+  }
 >({
   initialValues: formValues,
-  schema: PatientSchema,
+  schema: z.object({
+    id: z.number(),
+    email: z.string(),
+    patient: PatientUpdateDtoSchema.partial(),
+  }),
   $toast: $toast,
   mutationFn: updatePatientMutation.mutateAsync,
+  onSuccess: () => {
+    $toast.success('Patient details updated successfully')
+  },
 })
 
 const aggregatedData = computed(() => {
@@ -167,38 +180,43 @@ const aggregatedData = computed(() => {
   return {
     ...contactDetailsFormValues,
     ...personalDetailsFormValues,
-    ...rest,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    patientPreference: {
+      theme: rest.theme,
+      sendAutomatedFeedback: rest.sendAutomatedFeedback,
+      reminderCondition: rest.recallFrequency,
+      reminderMessage: '',
+    },
   }
 })
 
 const isFormValid = computed(() => {
-  return patientForm.isFormValid(aggregatedData.value)
+  return patientForm.isFormValid({
+    id: Number(route.params['patientId']),
+    email: aggregatedData.value.email ?? '',
+    patient: aggregatedData.value,
+  })
 })
 
 const handleSubmit = async (): Promise<void> => {
-  return await patientForm.handleSubmit(aggregatedData.value, {
-    ...aggregatedData.value,
-    patientId: Number(route.params['id']),
+  return await patientForm.handleSubmit({
+    id: Number(route.params['patientId']),
+    email: aggregatedData.value.email ?? '',
+    patient: aggregatedData.value,
   })
 }
 
 const patient = computed(() => {
-  return patientQuery.data.value?.data.data
+  return patientQuery.data.value
 })
 
+const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
+  return newValue ?? formValue
+}
+
 watch(
-  () => patientQuery.data.value?.data.data,
+  () => patientQuery.data.value,
   newData => {
     if (!newData) return
-
-    const updateFormValue = <T,>(
-      formValue: T,
-      newValue: T | null | undefined,
-    ) => {
-      return newValue ?? formValue
-    }
 
     const contactDetails = patientForm.formValues.value.contactDetailsFormValues
     const personalDetails =
@@ -206,81 +224,56 @@ watch(
 
     patientForm.formValues.value = {
       contactDetailsFormValues: {
-        firstName: updateFormValue(
-          contactDetails.firstName,
-          newData.patientProfile?.firstName,
-        ),
+        firstName: updateFormValue(contactDetails.firstName, newData.firstName),
         middleName: updateFormValue(
           contactDetails.middleName,
-          newData.patientProfile?.middleName,
+          newData.middleName,
         ),
-        lastName: updateFormValue(
-          contactDetails.lastName,
-          newData.patientProfile?.lastName,
-        ),
-        avatar: updateFormValue(
-          contactDetails.avatar,
-          newData.patientProfile?.avatar,
-        ),
+        lastName: updateFormValue(contactDetails.lastName, newData.lastName),
+        avatar: updateFormValue(contactDetails.avatar, newData.avatar),
         mobileNumber: updateFormValue(
           contactDetails.mobileNumber,
-          newData.patientProfile?.mobileNumber,
+          newData.mobileNumber,
         ),
-        emailAddress: updateFormValue(
-          contactDetails.emailAddress,
-          newData.email,
-        ),
-        address: updateFormValue(
-          contactDetails.address,
-          newData.patientProfile?.address,
-        ),
+        email: updateFormValue(contactDetails.email, newData.user.email),
+        address: updateFormValue(contactDetails.address, newData.address),
       },
       personalDetailsFormValues: {
-        age: updateFormValue(personalDetails.age, newData.patientProfile?.age),
-        gender: updateFormValue(
-          personalDetails.gender,
-          newData.patientProfile?.gender,
-        ) as Gender,
-        weight: updateFormValue(
-          personalDetails.weight,
-          newData.patientProfile?.weight,
-        ),
-        height: updateFormValue(
-          personalDetails.height,
-          newData.patientProfile?.height,
-        ),
+        age: updateFormValue(personalDetails.age, newData.age),
+        gender: updateFormValue(personalDetails.gender, newData.gender),
+        weight: updateFormValue(personalDetails.weight, newData.weight),
+        height: updateFormValue(personalDetails.height, newData.height),
         additionalNotes: updateFormValue(
           personalDetails.additionalNotes,
-          newData.patientProfile?.additionalNotes,
+          newData.additionalNotes,
         ),
         patientGoal: updateFormValue(
           personalDetails.patientGoal,
-          newData.patientProfile?.patientGoal,
+          newData.patientGoal,
         ),
       },
       theme: updateFormValue(
         patientForm.formValues.value.theme,
-        newData.patientProfile?.patientPreferences?.theme,
+        newData.patientPreference?.theme,
       ) as Theme,
       sendAutomatedFeedback: updateFormValue(
         patientForm.formValues.value.sendAutomatedFeedback,
-        newData.patientProfile?.patientPreferences?.sendAutomatedFeedback,
+        newData.patientPreference?.sendAutomatedFeedback,
       ),
       recallFrequency: {
         reminderEvery: {
-          quantity: updateFormValue(
-            patientForm.formValues.value.recallFrequency.reminderEvery.quantity,
-            newData.patientProfile?.patientPreferences?.recallFrequency
-              ?.quantity,
+          every: updateFormValue(
+            patientForm.formValues.value.recallFrequency.reminderEvery.every,
+            newData.patientPreference.reminderCondition.reminderEvery.every,
           ),
           unit: updateFormValue(
             patientForm.formValues.value.recallFrequency.reminderEvery.unit,
-            newData.patientProfile?.patientPreferences?.recallFrequency?.unit,
+            newData.patientPreference.reminderCondition.reminderEvery.unit,
           ),
         },
         reminderEnds: updateFormValue(
           patientForm.formValues.value.recallFrequency.reminderEnds,
-          newData.patientProfile?.patientPreferences?.recallFrequency?.end,
+          newData.patientPreference.reminderCondition.reminderEnds,
         ),
       },
     }
@@ -290,25 +283,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
 .text {
   padding-bottom: 0.5rem;
 

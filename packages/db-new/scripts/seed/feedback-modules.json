@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "name": "Meal diary"
+  },
+  {
+    "id": 2,
+    "name": "Carbs exchange"
+  },
+  {
+    "id": 3,
+    "name": "Energy intake"
+  },
+  {
+    "id": 4,
+    "name": "Fibre intake"
+  },
+  {
+    "id": 5,
+    "name": "Water intake"
+  }
+]

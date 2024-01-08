@@ -1,17 +1,16 @@
 // useRecallShared.ts
 import { computed, nextTick, ref, watch } from 'vue'
 import moment from 'moment'
-import { IRecallExtended } from '@intake24-dietician/common/types/recall'
 import { useRecallById } from '@/queries/useRecall'
+import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 interface Props {
-  recallsData?: IRecallExtended[] | undefined
+  recallsData?: RecallDto[] | undefined
   recallDate?: Date | undefined
   feedback: string
 }
 
 export default function useRecallShared({ recallsData, recallDate }: Props) {
-  console.log({ recallDate })
   // Refs
   const recallId = ref('')
   const recallQuery = useRecallById(recallId)
@@ -23,11 +22,7 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
     recallDates.value.map(date => date.startTime),
   )
 
-  const recallData = computed(() => {
-    return recallQuery.data.value?.data.ok
-      ? recallQuery.data.value?.data.value
-      : null
-  })
+  const recallData = computed(() => recallQuery.data.value ?? null)
 
   // Methods
   const updateRecallData = async (newDate: Date) => {
@@ -36,19 +31,17 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
       moment(range.startTime).isSame(newDate, 'day'),
     )
 
-    console.log({ recallDates, matchingRecall })
-
     if (matchingRecall) {
       recallId.value = matchingRecall.id
       recallQuery.refetch()
     }
   }
 
-  const initializeRecallDates = (recalls: IRecallExtended[]) => {
-    recallDates.value = recalls.map(({ id, startTime, endTime }) => ({
-      id,
-      startTime,
-      endTime,
+  const initializeRecallDates = (recalls: RecallDto[]) => {
+    recallDates.value = recalls.map(recall => ({
+      id: recall.id.toString(),
+      startTime: recall.recall.startTime,
+      endTime: recall.recall.endTime,
     }))
     selectedDate.value = recallDates.value.at(-1)?.startTime
   }

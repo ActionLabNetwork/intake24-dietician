@@ -3,6 +3,7 @@
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
         :default-state="defaultState"
+        show-switches
         @update="handleModuleChange"
         @update:modules="handleModulesChange"
       />
@@ -78,7 +79,7 @@ import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-mod
 
 export type FeedbackMapping = {
   [K in keyof typeof routeToModuleComponentMapping]: {
-    id: number
+    name: string
     feedbackBelow: (typeof routeToModuleComponentMapping)[K]['feedbackBelow']
     feedbackAbove: (typeof routeToModuleComponentMapping)[K]['feedbackAbove']
     isActive: boolean
@@ -99,34 +100,34 @@ const routeToModuleComponentMapping: ComponentMappingWithFeedbackAboveAndBelowRe
   reactive({
     '/meal-diary': {
       component: MealDiaryModule,
-      id: 0,
+      name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     '/carbs-exchange': {
-      id: 0,
+      name: '',
       component: CarbsExchangeModule,
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     '/energy-intake': {
-      id: 0,
+      name: '',
       component: EnergyIntakeModule,
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     '/fibre-intake': {
-      id: 0,
+      name: '',
       component: FibreIntakeModule,
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     '/water-intake': {
-      id: 0,
+      name: '',
       component: WaterIntakeModule,
       feedbackBelow: '',
       feedbackAbove: '',
@@ -136,11 +137,9 @@ const routeToModuleComponentMapping: ComponentMappingWithFeedbackAboveAndBelowRe
 
 const handleModuleChange = (module: ModuleRoute) => {
   selectedModule.value = module
-  console.log({ module })
 }
 
 const handleModulesChange = (modules: ModuleItem[]) => {
-  console.log({ modules })
   modules.forEach(module => {
     routeToModuleComponentMapping[module.to].isActive = module.selected
   })
@@ -151,7 +150,7 @@ watch(routeToModuleComponentMapping, newFeedbacks => {
     Object.entries(newFeedbacks).map(([key, value]) => [
       key,
       {
-        id: value.id,
+        name: value.name,
         feedbackBelow: value.feedbackBelow,
         feedbackAbove: value.feedbackAbove,
         isActive: value.isActive,
@@ -166,7 +165,7 @@ watch(
   newDefaultState => {
     Object.entries(newDefaultState).forEach(([key, value]) => {
       const routeKey = key as keyof typeof routeToModuleComponentMapping
-      routeToModuleComponentMapping[routeKey].id = value.id
+      routeToModuleComponentMapping[routeKey].name = value.name
       routeToModuleComponentMapping[routeKey].feedbackBelow =
         value.feedbackBelow
       routeToModuleComponentMapping[routeKey].feedbackAbove =

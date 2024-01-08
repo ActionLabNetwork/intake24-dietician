@@ -1,5 +1,5 @@
 <template>
-<v-main v-if="isProfileLoading" align="center">
+  <v-main v-if="isProfileLoading" align="center">
     <v-container>
       <v-progress-circular indeterminate></v-progress-circular>
     </v-container>
@@ -13,10 +13,19 @@
           >
             <div>
               <h1 class="text heading">
-                {{ t('surveys.disclaimerNotrifications.title', { username: user?.dieticianProfile.firstName}) }}
+                {{
+                  t('surveys.disclaimerNotrifications.title', {
+                    username: profile?.firstName,
+                  })
+                }}
               </h1>
               <h3 class="text subheading">
-                {{ t('surveys.disclaimerNotrifications.subtitle', {newSurveysNumber: 3, templatesNumber: 1}) }}
+                {{
+                  t('surveys.disclaimerNotrifications.subtitle', {
+                    newSurveysNumber: 3,
+                    templatesNumber: 1,
+                  })
+                }}
               </h3>
             </div>
             <div>
@@ -27,7 +36,7 @@
                 density="comfortable"
                 @click="welcomeAlert = false"
               >
-                {{t('surveys.disclaimerNotrifications.dismiss')}}
+                {{ t('surveys.disclaimerNotrifications.dismiss') }}
               </v-btn>
             </div>
           </div>
@@ -36,14 +45,16 @@
 
       <div class="my-10"></div>
       <div>
-        <HomeSummary :summary="summary" :summaryKeys="summaryKeys" :addButtonLink="addButtonLink" />
-        <SurveysList
-          :data="dataQuery.data.value?.data.ok === true ? dataQuery.data.value?.data.value : []"
+        <HomeSummary
+          :summary="summary"
+          :summaryKeys="summaryKeys"
+          :addButtonLink="addButtonLink"
         />
+        <!-- <SurveysList :data="dataQuery.data.value ?? []" /> -->
       </div>
     </v-container>
+    <router-view />
   </v-main>
-  <router-view />
 </template>
 
 <script lang="ts" setup>
@@ -55,14 +66,14 @@ import { storeToRefs } from 'pinia'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import HomeSummary from '@/components/common/HomeSummary.vue'
 import type { Summary, SummaryKeys } from '@/components/common/HomeSummary.vue'
-import SurveysList from '@/components/surveys/SurveysList.vue'
+// import SurveysList from '@/components/surveys/SurveysList.vue'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useSurveys } from '@intake24-dietician/portal/queries/useSurveys'
 
 const { t } = useI18n<i18nOptions>()
 const authStore = useAuthStore()
-const { user, isProfileLoading } = storeToRefs(authStore)
+const { profile, isProfileLoading } = storeToRefs(authStore)
 
 const welcomeAlert = ref(true)
 
@@ -71,11 +82,11 @@ const dataQuery = useSurveys()
 const addButtonLink = '/dashboard/my-surveys/add-survey'
 
 const summary = computed((): Summary => {
-  const data = dataQuery.data.value?.data
-  if (data === undefined || !data.ok) return { total: 0, active: 0, archived: 0 }
+  const data = dataQuery.data.value
+  if (data === undefined) return { total: 0, active: 0, archived: 0 }
 
-  return data.value.reduce(
-    (counts) => {
+  return data.reduce(
+    counts => {
       counts.total++
       counts.active++
       return counts

@@ -42,7 +42,7 @@ export interface IRecallUser {
   disabledAt?: Date | null
   createdAt?: Date | null
   updatedAt?: Date | null
-  aliases: IUserAliases
+  aliases: IUserAliases[]
   customFields: IRecordOfAny[] | null
 }
 

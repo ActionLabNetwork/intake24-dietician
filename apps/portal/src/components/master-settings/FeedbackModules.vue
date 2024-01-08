@@ -1,44 +1,6 @@
 <template>
   <div>
     <v-container>
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">Feedback module setup</h1>
-          <h3 class="text subheading">
-            Choose guidelines appropriate to your country of practise, a visual
-            theme for your patients, different modules important to you, and, if
-            necessary, tailor the feedback messages.
-          </h3>
-        </div>
-        <div class="alert-text">
-          <div>
-            <div class="d-flex align-center">
-              <div>
-                <v-icon icon="mdi-alert-outline" size="large" start />
-              </div>
-              <div>
-                There are changes made in master module setup, review and
-                confirm changes before proceeding!
-              </div>
-            </div>
-          </div>
-          <div class="align-self-center">
-            <v-btn
-              color="primary text-none"
-              class="mt-3 mt-sm-0"
-              type="submit"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
-        </div>
-      </div>
-
-      <v-divider class="my-10" />
-
       <div>
         <v-form ref="form">
           <v-row
@@ -108,12 +70,13 @@ import { useToast } from 'vue-toast-notification'
 import ModuleSelectionAndFeedbackPersonalisation, {
   FeedbackMapping,
 } from './ModuleSelectionAndFeedbackPersonalisation.vue'
-import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities/survey.dto'
-import { FeedbackModuleDTO } from '@intake24-dietician/common/entities/feedback-module.dto'
+import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
+import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
-  feedbackModules: (FeedbackModuleDTO & {
+  feedbackModules: (FeedbackModuleDto & {
     name: string
     isActive: boolean
     feedbackAboveRecommendedLevel: string
@@ -122,12 +85,12 @@ export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
 }
 
 const props = defineProps<{
-  defaultState: SurveyPreferenceFeedbackModules
+  defaultState: SurveyDto
   submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  update: [value: SurveyPreferenceFeedbackModules]
+  update: [value: SurveyDto]
 }>()
 
 type CSSClass = string | string[] | object
@@ -172,7 +135,7 @@ const createFeedbackEntry = (key: ModuleName) => {
   if (!feedbackModel) {
     $toast.error('Failed to load feedback modules')
     return {
-      id: 0,
+      name: 'N/A',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
@@ -180,7 +143,7 @@ const createFeedbackEntry = (key: ModuleName) => {
   }
 
   return {
-    id: feedbackModel.id,
+    name: feedbackModel.name,
     feedbackBelow: feedbackModel.feedbackBelowRecommendedLevel,
     feedbackAbove: feedbackModel.feedbackAboveRecommendedLevel,
     isActive: feedbackModel.isActive,
@@ -189,13 +152,13 @@ const createFeedbackEntry = (key: ModuleName) => {
 
 const $toast = useToast()
 
-const feedbackModuleSetup = ref<SurveyPreferenceFeedbackModules>(
-  toRefs(props).defaultState.value,
-)
+const feedbackModuleSetup = ref(toRefs(props).defaultState.value)
 
-const theme = ref<Theme>(toRefs(props).defaultState.value.theme as Theme)
+const theme = ref<Theme>(
+  toRefs(props).defaultState.value.surveyPreference.theme as Theme,
+)
 const sendAutomatedFeedback = ref<boolean>(
-  toRefs(props).defaultState.value.sendAutomatedFeedback,
+  toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
 )
 const feedbackMapping = ref<FeedbackMapping>({
   '/meal-diary': createFeedbackEntry('Meal diary'),
@@ -208,7 +171,10 @@ const feedbackMapping = ref<FeedbackMapping>({
 const handleVisualThemeUpdate = (_theme: Theme) => {
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
-    theme: _theme,
+    surveyPreference: {
+      ...feedbackModuleSetup.value.surveyPreference,
+      theme: _theme,
+    },
   }
   theme.value = _theme
 }
@@ -216,7 +182,10 @@ const handleVisualThemeUpdate = (_theme: Theme) => {
 const handleSendAutomatedFeedback = (automatedFeedback: boolean) => {
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
-    sendAutomatedFeedback: automatedFeedback,
+    surveyPreference: {
+      ...feedbackModuleSetup.value.surveyPreference,
+      sendAutomatedFeedback: automatedFeedback,
+    },
   }
   sendAutomatedFeedback.value = automatedFeedback
 }
@@ -225,7 +194,7 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
   const updatedFeedbackModules = Object.values(feedbackMapping).reduce(
     (acc, updatedModule) => {
       const feedbackModule = feedbackModuleSetup.value.feedbackModules.find(
-        module => module.id === updatedModule.id,
+        module => module.name === updatedModule.name,
       )
 
       if (feedbackModule) {
@@ -246,10 +215,6 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
     ...feedbackModuleSetup.value,
     feedbackModules: updatedFeedbackModules,
   }
-}
-
-const handleSubmit = async (): Promise<void> => {
-  await props.submit()
 }
 
 let formConfig: FormConfig
@@ -367,18 +332,5 @@ const smColOptions = (column: 1 | 2) => (column === 1 ? 12 : 5)
     line-height: 140%; /* 19.6px */
     letter-spacing: 0.14px;
   }
-}
-
-.alert-text {
-  display: flex;
-  flex-direction: column;
-  max-width: 30vw;
-  gap: 0.5rem;
-}
-
-.survey-id-input {
-  background-color: white;
-  padding: 1rem;
-  border-radius: 0.5rem;
 }
 </style>

@@ -1,28 +1,25 @@
-import { useMutation } from '@tanstack/vue-query'
-import axios, { AxiosError } from 'axios'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
+import axios from 'axios'
 import { env } from '../config/env'
-import { ApiResponseWithError } from '@intake24-dietician/common/types/api'
-import { SurveyDTO } from '@intake24-dietician/common/entities/survey.dto'
-import { WithoutIDAndTimestamps } from '@intake24-dietician/db/types/utils'
-import { SurveyPreference } from '@intake24-dietician/common/types/survey'
+import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import { useClientStore } from '../trpc/trpc'
 
 axios.defaults.withCredentials = true
 axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddSurvey = () => {
-  const addSurveyUri = env.VITE_API_SURVEY
-
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    Omit<WithoutIDAndTimestamps<SurveyDTO>, 'ownerId'>
-  >({
-    mutationFn: body => axios.post(addSurveyUri, body),
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (body: {
+      survey: Omit<SurveyCreateDto, 'surveyPreference'>
+    }) => {
+      return authenticatedClient.dieticianSurvey.createSurvey.mutate(body)
+    },
   })
 
   return {
     data,
-    isLoading,
+    isPending,
     isError,
     error,
     isSuccess,
@@ -31,19 +28,38 @@ export const useAddSurvey = () => {
 }
 
 export const useUpdateSurveyPreferences = () => {
-  const updateSurveyPreferenceUri = '/surveys/preferences'
+  const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
 
-  const { data, isLoading, isError, error, isSuccess, mutate } = useMutation<
-    unknown,
-    AxiosError<ApiResponseWithError>,
-    SurveyPreference
-  >({
-    mutationFn: body => axios.put(updateSurveyPreferenceUri, body),
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (body: { id: number; survey: Partial<SurveyCreateDto> }) =>
+      authenticatedClient.dieticianSurvey.updateSurvey.mutate(body),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries()
+      await queryClient.refetchQueries()
+    },
   })
 
   return {
     data,
-    isLoading,
+    isPending,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useDeleteSurvey = () => {
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (body: { id: number }) =>
+      authenticatedClient.dieticianSurvey.deleteSurvey.mutate(body),
+  })
+
+  return {
+    data,
+    isPending,
     isError,
     error,
     isSuccess,

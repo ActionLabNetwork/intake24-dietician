@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@intake24-dietician/common/*": ["../../packages/common/src/*"],
+      "@intake24-dietician/db-new/*": ["../../packages/db-new/src/*"],
+    },
+    "types": ["node", "jest", "jest-extended"],
+    "module": "Node16",
+    "moduleResolution": "Node16",
+  },
+  "ts-node": { "swc": true },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "src/**/*.spec.ts", "src/**/*.test.ts"]
+}

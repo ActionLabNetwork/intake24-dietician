@@ -12,7 +12,7 @@
       @update:selected-date="selectedDate = $event"
     />
     <div>
-      <BaseProgressCircular v-if="recallQuery.isLoading.value" />
+      <BaseProgressCircular v-if="recallQuery.isPending.value" />
       <div v-if="recallQuery.isError.value" class="mt-10">
         <v-alert
           type="error"
@@ -78,7 +78,6 @@
 
 <script setup lang="ts">
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import { IRecallMeal } from '@intake24-dietician/common/types/recall'
 import { computed, ref, watch } from 'vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
@@ -97,6 +96,7 @@ import MascotWithBackground from '@/components/feedback-modules/standard/water-i
 import chroma from 'chroma-js'
 import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -137,10 +137,8 @@ watch(
 )
 
 watch(
-  () => recallQuery.data.value?.data,
+  () => recallQuery.data.value,
   data => {
-    // TODO: Improve typings, remove uses of any
-
     const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
         (
@@ -158,7 +156,7 @@ watch(
       )
     }
 
-    const calculateMealWaterContent = (meal: IRecallMeal) => {
+    const calculateMealWaterContent = (meal: RecallMeal) => {
       const mealEnergy = meal.foods.reduce((total: any, food: any) => {
         return total + calculateFoodWaterContent(food)
       }, 0)
@@ -166,13 +164,12 @@ watch(
       return mealEnergy
     }
 
-    if (data?.ok && data.value) {
-      totalWaterIntake.value = Math.floor(
-        data.value.meals.reduce((totalEnergy, meal) => {
-          return totalEnergy + calculateMealWaterContent(meal)
-        }, 0),
-      )
-    }
+    if (!data) return
+    totalWaterIntake.value = Math.floor(
+      data.recall.meals.reduce((totalEnergy, meal) => {
+        return totalEnergy + calculateMealWaterContent(meal)
+      }, 0),
+    )
   },
   { immediate: true },
 )

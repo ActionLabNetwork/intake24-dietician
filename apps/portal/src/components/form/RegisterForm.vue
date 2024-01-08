@@ -48,8 +48,8 @@
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form || registerMutation.isLoading.value"
-            :loading="registerMutation.isLoading.value"
+            :disabled="!form || registerMutation.isPending.value"
+            :loading="registerMutation.isPending.value"
           >
             {{ t('register.form.createAccount') }}
           </v-btn>
@@ -85,12 +85,10 @@ import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
 import router from '@intake24-dietician/portal/router'
 import { useForm } from '@intake24-dietician/portal/composables/useForm'
-import {
-  LoginSchema,
-  RegisterSchema,
-} from '@intake24-dietician/portal/schema/auth'
+import { RegisterSchema } from '@intake24-dietician/portal/schema/auth'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import type { Form } from '@/types/form.types'
+import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -122,52 +120,55 @@ const registerForm = useForm<
   },
 })
 
-const formConfig: Ref<Form<(typeof RegisterSchema.fields)[number]>> = ref({
-  email: {
-    type: 'input',
-    inputType: 'text',
-    placeholder: t('login.form.email.placeholder'),
-    label: t('login.form.email.label'),
-    autocomplete: 'username',
-    key: 'email',
-    rules: [(v: string) => validateWithZod(LoginSchema.schema.email, v)],
-  },
-  password: {
-    type: 'input',
-    inputType: computed(() => (passwordVisible.value ? 'text' : 'password')),
-    placeholder: t('login.form.password.placeholder'),
-    label: t('login.form.password.label'),
-    autocomplete: 'new-password',
-    key: 'password',
-    suffixIcon: computed(() =>
-      passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
-    ),
-    handleSuffixIconClick: () => {
-      passwordVisible.value = !passwordVisible.value
+const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =
+  ref({
+    email: {
+      type: 'input',
+      inputType: 'text',
+      placeholder: t('register.form.email.placeholder'),
+      label: t('register.form.email.label'),
+      autocomplete: 'username',
+      key: 'email',
+      rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.email, v)],
     },
-    rules: [(v: string) => validateWithZod(RegisterSchema.schema.password, v)],
-  },
-  confirmPassword: {
-    type: 'input',
-    inputType: computed(() =>
-      confirmPasswordVisible.value ? 'text' : 'password',
-    ),
-    placeholder: t('register.form.confirmPassword.placeholder'),
-    label: t('register.form.confirmPassword.label'),
-    autocomplete: 'new-password',
-    key: 'confirmPassword',
-    suffixIcon: computed(() =>
-      confirmPasswordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
-    ),
-    handleSuffixIconClick: () => {
-      confirmPasswordVisible.value = !confirmPasswordVisible.value
+    password: {
+      type: 'input',
+      inputType: computed(() => (passwordVisible.value ? 'text' : 'password')),
+      placeholder: t('login.form.password.placeholder'),
+      label: t('login.form.password.label'),
+      autocomplete: 'new-password',
+      key: 'password',
+      suffixIcon: computed(() =>
+        passwordVisible.value ? 'mdi-eye-outline' : 'mdi-eye-off-outline',
+      ),
+      handleSuffixIconClick: () => {
+        passwordVisible.value = !passwordVisible.value
+      },
+      rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.password, v)],
     },
-    rules: [
-      (confirmPwd: string) =>
-        confirmPasswordValidator(formValues.password, confirmPwd),
-    ],
-  },
-})
+    confirmPassword: {
+      type: 'input',
+      inputType: computed(() =>
+        confirmPasswordVisible.value ? 'text' : 'password',
+      ),
+      placeholder: t('register.form.confirmPassword.placeholder'),
+      label: t('register.form.confirmPassword.label'),
+      autocomplete: 'new-password',
+      key: 'confirmPassword',
+      suffixIcon: computed(() =>
+        confirmPasswordVisible.value
+          ? 'mdi-eye-outline'
+          : 'mdi-eye-off-outline',
+      ),
+      handleSuffixIconClick: () => {
+        confirmPasswordVisible.value = !confirmPasswordVisible.value
+      },
+      rules: [
+        (confirmPwd: string) =>
+          confirmPasswordValidator(formValues.password, confirmPwd),
+      ],
+    },
+  })
 
 const handleSubmit = () => {
   registerForm.handleSubmit(
@@ -198,4 +199,3 @@ h2 {
   width: 90%;
 }
 </style>
-../validators/auth

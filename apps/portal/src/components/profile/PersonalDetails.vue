@@ -63,7 +63,7 @@ import { getDefaultAvatar } from '@/utils/profile'
 import { Form } from './types'
 import ImageUpload from './ImageUpload.vue'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
-import { personalDetailsSchema } from '@intake24-dietician/portal/schema/profile'
+import { DieticianUpdateDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface PersonalDetailsFormValues {
   firstName: string
@@ -95,7 +95,7 @@ const handleFieldUpdate = (
   emit('update', { ...formValues.value })
 }
 
-const formConfig: Form<(typeof personalDetailsSchema.fields)[number]> = {
+const formConfig: Form<keyof Omit<PersonalDetailsFormValues, 'avatar'>> = {
   firstName: {
     key: 'firstName',
     label: t('profile.form.personalDetails.firstName.label'),
@@ -105,7 +105,7 @@ const formConfig: Form<(typeof personalDetailsSchema.fields)[number]> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(personalDetailsSchema.schema.firstName, value),
+        validateWithZod(DieticianUpdateDto.shape.firstName, value),
     ],
     handleUpdate: val => handleFieldUpdate('firstName', val),
   },
@@ -117,7 +117,7 @@ const formConfig: Form<(typeof personalDetailsSchema.fields)[number]> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(personalDetailsSchema.schema.middleName, value),
+        validateWithZod(DieticianUpdateDto.shape.middleName, value),
     ],
     handleUpdate: val => handleFieldUpdate('middleName', val),
   },
@@ -129,7 +129,7 @@ const formConfig: Form<(typeof personalDetailsSchema.fields)[number]> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(personalDetailsSchema.schema.lastName, value),
+        validateWithZod(DieticianUpdateDto.shape.lastName, value),
     ],
     handleUpdate: val => handleFieldUpdate('lastName', val),
   },

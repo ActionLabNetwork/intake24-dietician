@@ -3,26 +3,33 @@
     <div :class="['form-label pb-2', labelClass]">
       <slot />
     </div>
-    <v-text-field
-      flat
-      :required="required ?? false"
-      :type="type ?? 'text'"
-      :placeholder="placeholder ?? ''"
-      :autocomplete="autocomplete ?? 'off'"
-      variant="solo-filled"
-      density="comfortable"
-      :append-inner-icon="suffixIcon"
-      :append-icon="suffixIconOuter"
-      :name="name"
-      :model-value="value"
-      :rules="rules ?? []"
-      :readonly="readonly ?? false"
-      :suffix="suffix"
-      @input="updateValue"
-      @click:append-inner="handleIconClick"
-      @click:append="handleOuterIconClick"
+    <div
+      :style="bordered ? 'background: white' : ''"
+      :class="{ 'pa-3 my-2 d-flex rounded-lg elevation-1': bordered }"
     >
-    </v-text-field>
+      <v-text-field
+        flat
+        :required="required ?? false"
+        :type="type ?? 'text'"
+        :placeholder="placeholder ?? ''"
+        :autocomplete="autocomplete ?? 'off'"
+        variant="solo-filled"
+        density="comfortable"
+        :append-inner-icon="suffixIcon"
+        :append-icon="suffixIconOuter"
+        :name="name"
+        :model-value="value"
+        :rules="rules ?? []"
+        :readonly="readonly ?? false"
+        :suffix="suffix"
+        :bordered="bordered"
+        :data-cy="dataCy"
+        @input="updateValue"
+        @click:append-inner="handleIconClick"
+        @click:append="handleOuterIconClick"
+      >
+      </v-text-field>
+    </div>
   </div>
 </template>
 
@@ -43,6 +50,8 @@ defineProps<{
   readonly?: boolean
   labelClass?: string
   required?: boolean
+  bordered?: boolean
+  dataCy?: string
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()

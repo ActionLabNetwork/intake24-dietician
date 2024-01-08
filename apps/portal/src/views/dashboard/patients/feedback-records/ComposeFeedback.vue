@@ -1,18 +1,27 @@
 <template>
-  <div class="wrapper">
+  <div>
     <v-container>
       <div class="d-print-none">
         <v-btn
           prepend-icon="mdi-chevron-left"
           flat
-          class="text-none px-0 mt-10"
+          class="text-none px-0"
           variant="text"
-          :to="route.path.split('/').slice(0, -1).join('/')"
+          :to="{
+            name: 'Survey Patient Feedback Records',
+            params: {
+              surveyId: route.params['surveyId'],
+              patientId: route.params['patientId'],
+            },
+          }"
         >
           Back to {{ patientName }} records
         </v-btn>
       </div>
-      <div v-if="recallsQuery.data.value?.data" class="d-print-none mt-4">
+      <div
+        v-if="recallsQuery.data.value && allModules"
+        class="d-print-none mt-4"
+      >
         <ProfileAndFeedbackCard
           :id="paddedId"
           :avatar="avatar"
@@ -20,18 +29,17 @@
           :recall-dates="recallDates"
           :initial-date="date"
           :previewing="previewing"
+          :editing-draft="false"
+          :draft="allModules"
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
       </div>
-      <div
-        v-if="recallsQuery.data.value?.data"
-        v-show="!previewing"
-        class="mt-4"
-      >
+      <div v-if="recallsQuery.data.value" v-show="!previewing" class="mt-4">
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
+              show-switches
               @update="handleModuleUpdate"
               @update:modules="handleModulesUpdate"
             />
@@ -56,9 +64,7 @@
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
       :patient-name="fullName"
-      :dialog="previewDialog"
       class="mt-0"
-      @click:close="() => (previewDialog = false)"
     />
   </div>
 </template>
@@ -97,16 +103,17 @@ const route = useRoute()
 const $toast = useToast()
 
 // Queries
-const patientQuery = usePatientById(route.params['id']?.toString() ?? '')
+const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
+// const recallsQuery = useRecallsByUserId(
+//   ref(`dietician:survey_id:${route.params['id']}`),
+// )
 const recallsQuery = useRecallsByUserId(
-  ref(`dietician:survey_id:${route.params['id']}`),
+  ref(route.params['patientId'] as string),
 )
-// const recallsQuery = useRecallsByUserId(ref('4072'))
 
 // Refs
 const date = ref<Date>(new Date())
 const component = ref<ModuleRoute>('/meal-diary')
-const previewDialog = ref<boolean>(false)
 const previewing = ref<boolean>(false)
 
 // Computed properties
@@ -114,27 +121,26 @@ const moduleFeedback = computed(() => {
   return routeToModuleComponentMapping[component.value].feedback
 })
 const recallDates = computed(() => {
-  const data = recallsQuery.data.value?.data
-  if (data?.ok) {
-    return data.value.map(recall => ({
-      id: recall.id,
-      startTime: recall.startTime,
-      endTime: recall.endTime,
-    }))
-  }
-  return []
+  const data = recallsQuery.data
+
+  if (!data.value) return []
+  return data.value?.map(recall => ({
+    id: recall.id,
+    startTime: recall.recall.startTime,
+    endTime: recall.recall.endTime,
+  }))
 })
 const patientQueryData = computed(() => {
-  return patientQuery.data.value?.data.data
+  return patientQuery.data.value
 })
 const paddedId = computed(() => {
-  return ((route.params['id'] as string) ?? '').padStart(
+  return ((route.params['patientId'] as string) ?? '').padStart(
     DISPLAY_ID_ZERO_PADDING,
     '0',
   )
 })
 const patientName = computed(() => {
-  const firstName = patientQueryData.value?.patientProfile?.firstName
+  const firstName = patientQueryData.value?.firstName
 
   if (!firstName) {
     return ''
@@ -142,21 +148,16 @@ const patientName = computed(() => {
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
 })
 const fullName = computed(() => {
-  const firstName = patientQueryData.value?.patientProfile?.firstName ?? ''
-  const lastName = patientQueryData.value?.patientProfile?.lastName ?? ''
+  const firstName = patientQueryData.value?.firstName ?? ''
+  const lastName = patientQueryData.value?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
 const avatar = computed(() => {
-  return (
-    patientQuery.data.value?.data.data.patientProfile?.avatar ??
-    getDefaultAvatar('')
-  )
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
 })
 const recallsData = computed(() => {
-  return recallsQuery.data.value?.data.ok
-    ? recallsQuery.data.value?.data.value
-    : []
+  return recallsQuery.data.value ?? []
 })
 const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
   '/meal-diary': { component: MealDiaryModule, feedback: '' },
@@ -164,6 +165,37 @@ const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
   '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
   '/water-intake': { component: WaterIntakeModule, feedback: '' },
+})
+
+const allModules = ref<
+  | {
+      recallsData: typeof recallsData
+      recallDate: typeof date
+      modules: {
+        key: ModuleRoute
+        component: Component
+        feedback: string
+        selected: boolean
+      }[]
+    }
+  | undefined
+>({
+  recallsData: recallsData,
+  recallDate: date,
+  modules: Object.entries(routeToModuleComponentMapping).map(
+    ([key, module]) => {
+      const component = module.component
+      const feedback = module.feedback
+      const selected = false
+
+      return {
+        key: key as keyof typeof routeToModuleComponentMapping,
+        component,
+        feedback,
+        selected,
+      }
+    },
+  ),
 })
 
 const selectedModules = ref<
@@ -180,6 +212,19 @@ const handleModuleUpdate = (module: ModuleRoute) => {
 }
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
+  allModules.value = {
+    recallsData: recallsData.value,
+    recallDate: date.value,
+    modules: modules.map(module => {
+      const key = module.to
+      const component = routeToModuleComponentMapping[module.to].component
+      const feedback = routeToModuleComponentMapping[module.to].feedback
+      const selected = module.selected
+
+      return { key, component, feedback, selected }
+    }),
+  }
+
   selectedModules.value = {
     recallsData: recallsData.value,
     recallDate: date.value,
@@ -202,7 +247,12 @@ const handleDateUpdate = (_date: Date) => {
 const handleFeedbackUpdate = (feedback: string) => {
   routeToModuleComponentMapping[component.value].feedback = feedback
 
+  if (!allModules.value) return
   if (!selectedModules.value) return
+
+  allModules.value.modules.find(
+    module => module.key === component.value,
+  )!.feedback = feedback
   selectedModules.value.modules.find(
     module => module.key === component.value,
   )!.feedback = feedback
@@ -213,43 +263,29 @@ const handlePreviewButtonClick = () => {
     $toast.warning('Please select at least one module to preview')
     return
   }
-  previewDialog.value = true
   previewing.value = !previewing.value
 }
 
 watch(
-  () => recallsQuery.data.value?.data,
+  () => recallsQuery.data.value,
   data => {
-    if (data?.ok) {
+    if (data) {
       // Default to latest recall date
       date.value = recallDates.value.at(-1)?.startTime ?? new Date()
     }
   },
   { immediate: true },
 )
+
+watch(
+  () => allModules.value,
+  newSelectedModules => {
+    console.log({ newSelectedModules })
+  },
+)
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
-
 @media print {
   .wrapper {
     background: white;
