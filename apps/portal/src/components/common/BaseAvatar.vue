@@ -26,11 +26,13 @@
 <script setup lang="ts">
 import BasePreferences from './BasePreferences.vue'
 import { useLogout } from '@/mutations/useAuth'
+import { useClinicStore } from '@/stores/clinic'
 import { useProfile } from '@/queries/useAuth'
 import router from '@/router'
 import { ref, watch } from 'vue'
 import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
+const clinicStore = useClinicStore()
 const { data, isPending: isProfileLoading } = useProfile()
 
 const user = ref(data.value)
@@ -61,6 +63,7 @@ const logoutMutation = useLogout()
 const handleLogout = () => {
   logoutMutation.mutate(undefined, {
     onSuccess: () => {
+      clinicStore.reset()
       router.push({ path: '/auth/login' })
     },
   })

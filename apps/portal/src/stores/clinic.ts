@@ -33,11 +33,14 @@ export const useClinicStore = defineStore('clinic', () => {
   }
 
   const refetchClinics = async () => {
-    currentClinic.value = undefined
-    clinics.value = []
-
     await surveysQuery.invalidateSurveysQuery()
   }
+
+  const reset = () => {
+    currentClinic.value = undefined
+    clinics.value = []
+  }
+
   const navigateToSurveyPatientList = () => {
     if (!currentClinic.value) return
 
@@ -46,6 +49,14 @@ export const useClinicStore = defineStore('clinic', () => {
       params: { surveyId: currentClinic.value.id },
     })
   }
+
+  watch(
+    route,
+    async () => {
+      await refetchClinics()
+    },
+    { immediate: true },
+  )
 
   watch(
     () => surveysQuery.data.value,
@@ -70,13 +81,11 @@ export const useClinicStore = defineStore('clinic', () => {
 
       currentClinic.value = _currentClinic
     },
+    { immediate: true },
   )
 
-  watch(route, async () => {
-    await refetchClinics()
-  })
-
   return {
+    surveysQuery,
     currentClinic,
     clinics,
     otherClinics,
@@ -84,5 +93,6 @@ export const useClinicStore = defineStore('clinic', () => {
     switchToFirstClinic,
     switchCurrentClinic,
     navigateToSurveyPatientList,
+    reset,
   }
 })
