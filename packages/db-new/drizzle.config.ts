@@ -1,7 +1,9 @@
 import type { Config } from 'drizzle-kit'
+import { env } from './config/env'
+
 export default {
   dbCredentials: {
-    connectionString: "postgresql://postgres:postgres@localhost:5433/intake24-dietician-db",
+    connectionString: env.PG_CONNECTION_STRING,
   },
   schema: './src/models/**.ts',
   verbose: true,
