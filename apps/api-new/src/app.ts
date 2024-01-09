@@ -73,7 +73,7 @@ export function createApp() {
     title: 'Intake24 Dietician API',
     description: 'OpenAPI compliant REST API built using tRPC with Express',
     version: '1.0.0',
-    baseUrl: 'http://localhost:8080/api',
+    baseUrl: `${env.HOST}:${env.API_PORT}/api`,
     tags: ['auth'],
   })
   app.use('/docs', swaggerUi.serve)

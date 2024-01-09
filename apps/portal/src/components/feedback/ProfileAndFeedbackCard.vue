@@ -154,11 +154,6 @@ const handleSaveDraftClick = () => {
 }
 
 const handleEditDraftClick = () => {
-  console.log('Edit draft clicked')
-  console.log({
-    draftId: Number(route.params['feedbackId'] as string),
-    draft: props.draft,
-  })
   editDraftMutation.mutate(
     {
       draftId: Number(route.params['feedbackId'] as string),

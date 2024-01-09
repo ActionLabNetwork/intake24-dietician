@@ -7,7 +7,7 @@
         </v-btn>
       </template>
 
-      <v-card class="my-menu pa-2">
+      <v-card v-if="!clinicStore.surveysQuery.isPending" class="my-menu pa-2">
         <div v-if="clinics.length === 0" class="pa-2">
           <p class="text-center text-body-1">No clinics...</p>
         </div>
@@ -71,7 +71,7 @@ const route = useRoute()
 const clinicStore = useClinicStore()
 const { currentClinic, clinics, otherClinics } = storeToRefs(clinicStore)
 
-clinicStore.$subscribe(() => {
+clinicStore.$subscribe(async () => {
   clinicStore.switchCurrentClinic(Number(route.params.surveyId))
 })
 </script>

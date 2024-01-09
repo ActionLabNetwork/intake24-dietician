@@ -1,14 +1,9 @@
 import { useMutation } from '@tanstack/vue-query'
-import axios from 'axios'
-import { env } from '../config/env'
 import type {
   PatientUpdateDto,
   PatientCreateDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { useClientStore } from '../trpc/trpc'
-
-axios.defaults.withCredentials = true
-axios.defaults.baseURL = env.VITE_AUTH_API_HOST
 
 export const useAddPatient = () => {
   const { authenticatedClient } = useClientStore()
@@ -59,60 +54,61 @@ export const useUpdatePatient = () => {
   }
 }
 
-export const useDeletePatient = () => {
-  const deletePatientUri = env.VITE_AUTH_API_DELETE_PATIENT
+// TODO: Implement delete and restore patient
+// export const useDeletePatient = () => {
+//   const deletePatientUri = env.VITE_AUTH_API_DELETE_PATIENT
 
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
-    unknown,
-    unknown,
-    number | undefined
-  >({
-    mutationFn: patientId => {
-      if (!patientId) {
-        throw new Error('patientId is undefined')
-      }
+//   const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
+//     unknown,
+//     unknown,
+//     number | undefined
+//   >({
+//     mutationFn: patientId => {
+//       if (!patientId) {
+//         throw new Error('patientId is undefined')
+//       }
 
-      return axios.delete(
-        deletePatientUri.replace('{userId}', patientId.toString()),
-      )
-    },
-  })
+//       return axios.delete(
+//         deletePatientUri.replace('{userId}', patientId.toString()),
+//       )
+//     },
+//   })
 
-  return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
+//   return {
+//     data,
+//     isPending,
+//     isError,
+//     error,
+//     isSuccess,
+//     mutate,
+//   }
+// }
 
-export const useRestorePatient = () => {
-  const restorePatientUri = env.VITE_AUTH_API_RESTORE_PATIENT
+// export const useRestorePatient = () => {
+//   const restorePatientUri = env.VITE_AUTH_API_RESTORE_PATIENT
 
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
-    unknown,
-    unknown,
-    number | undefined
-  >({
-    mutationFn: patientId => {
-      if (!patientId) {
-        throw new Error('patientId is undefined')
-      }
+//   const { data, isPending, isError, error, isSuccess, mutate } = useMutation<
+//     unknown,
+//     unknown,
+//     number | undefined
+//   >({
+//     mutationFn: patientId => {
+//       if (!patientId) {
+//         throw new Error('patientId is undefined')
+//       }
 
-      return axios.put(
-        restorePatientUri.replace('{userId}', patientId.toString()),
-      )
-    },
-  })
+//       return axios.put(
+//         restorePatientUri.replace('{userId}', patientId.toString()),
+//       )
+//     },
+//   })
 
-  return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
-  }
-}
+//   return {
+//     data,
+//     isPending,
+//     isError,
+//     error,
+//     isSuccess,
+//     mutate,
+//   }
+// }

@@ -374,7 +374,6 @@ watch(
   data => {
     if (!data?.draft) return
 
-    console.log({ abc: data })
     date.value = data.draft.recallDate
 
     data.draft.modules.forEach(module => {
