@@ -5,7 +5,7 @@ export const useSurveys = () => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
 
-  const { data, isPending, isError, error, isSuccess } = useQuery({
+  const surveysQuery = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
       return authenticatedClient.dieticianSurvey.getSurveys.query()
@@ -13,16 +13,13 @@ export const useSurveys = () => {
   })
 
   const invalidateSurveysQuery = async () => {
+    surveysQuery.data.value = []
     await queryClient.invalidateQueries({ queryKey: ['surveys'] })
     await queryClient.refetchQueries({ queryKey: ['surveys'] })
   }
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
+    ...surveysQuery,
     invalidateSurveysQuery,
   }
 }

@@ -1,13 +1,14 @@
 import { defineStore } from 'pinia'
 import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { computed, ref, watch } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useSurveys } from '../queries/useSurveys'
 import { generateDistinctColors } from '../utils/colors'
 
 export const useClinicStore = defineStore('clinic', () => {
+  const isFetching = ref(false)
+
   const router = useRouter()
-  const route = useRoute()
   const surveysQuery = useSurveys()
 
   const currentClinic = ref<SurveyPlainDto & { avatarColor: string }>()
@@ -33,10 +34,14 @@ export const useClinicStore = defineStore('clinic', () => {
   }
 
   const refetchClinics = async () => {
+    surveysQuery.data.value = []
     await surveysQuery.invalidateSurveysQuery()
+    await surveysQuery.refetch()
+    updateClinics()
   }
 
   const reset = () => {
+    surveysQuery.data.value = []
     currentClinic.value = undefined
     clinics.value = []
   }
@@ -50,13 +55,21 @@ export const useClinicStore = defineStore('clinic', () => {
     })
   }
 
-  watch(
-    route,
-    async () => {
-      await refetchClinics()
-    },
-    { immediate: true },
-  )
+  const updateClinics = () => {
+    if (!surveysQuery.data.value) return
+
+    const surveys = surveysQuery.data.value
+    const colors = generateDistinctColors(
+      surveys.map(survey => survey.id.toString()),
+    )
+
+    const surveysWithAvatarColors = surveys.map((survey, index) => ({
+      ...survey,
+      avatarColor: colors[index]!,
+    }))
+
+    clinics.value = surveysWithAvatarColors
+  }
 
   watch(
     () => surveysQuery.data.value,
@@ -85,6 +98,7 @@ export const useClinicStore = defineStore('clinic', () => {
   )
 
   return {
+    isFetching,
     surveysQuery,
     currentClinic,
     clinics,
