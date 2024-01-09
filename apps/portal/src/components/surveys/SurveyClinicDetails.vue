@@ -20,10 +20,13 @@
         icon="mdi-cog-outline"
         class="hoverable"
         @click="
-          router.push({
-            name: 'Survey Master Settings',
-            params: { surveyId: route.params['surveyId'] as string },
-          })
+          () => {
+            console.log(route.params['surveyId'] as string)
+            router.push({
+              name: 'Survey Master Settings',
+              params: { surveyId: route.params['surveyId'] as string },
+            })
+          }
         "
       />
       <v-btn

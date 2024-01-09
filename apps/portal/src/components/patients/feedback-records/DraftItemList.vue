@@ -71,7 +71,11 @@ const paginationLength = computed(() => {
 const handleDraftItemButtonClick = (draftId: number) => {
   router.push({
     name: 'Survey Patient Edit Draft Feedback',
-    params: { patientId, feedbackId: draftId },
+    params: {
+      surveyId: route.params['surveyId'],
+      patientId,
+      feedbackId: draftId,
+    },
   })
 }
 </script>
