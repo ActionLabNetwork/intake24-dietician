@@ -83,15 +83,15 @@
 import { useDeleteSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
-const clinicStore = useClinicStore()
-const { currentClinic: clinic } = storeToRefs(clinicStore)
 
 const router = useRouter()
 const route = useRoute()
 const deleteSurveyMutation = useDeleteSurvey()
+
+const clinicStore = useClinicStore()
+const { currentClinic: clinic } = storeToRefs(clinicStore)
 
 const dialog = ref({
   show: false,
@@ -128,6 +128,10 @@ type Action = (typeof actions.value)[number]
 const handleMenuItemClick = ({ action }: { action: Action }) => {
   action?.handler()
 }
+
+watch(route, newRoute => {
+  clinicStore.switchCurrentClinic(Number(newRoute.params['surveyId']))
+})
 </script>
 
 <style scoped>

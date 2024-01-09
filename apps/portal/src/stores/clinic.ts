@@ -1,12 +1,13 @@
 import { defineStore } from 'pinia'
 import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { computed, ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useSurveys } from '../queries/useSurveys'
 import { generateDistinctColors } from '../utils/colors'
 
 export const useClinicStore = defineStore('clinic', () => {
   const router = useRouter()
+  const route = useRoute()
   const surveysQuery = useSurveys()
 
   const currentClinic = ref<SurveyPlainDto & { avatarColor: string }>()
@@ -32,6 +33,9 @@ export const useClinicStore = defineStore('clinic', () => {
   }
 
   const refetchClinics = async () => {
+    currentClinic.value = undefined
+    clinics.value = []
+
     await surveysQuery.invalidateSurveysQuery()
   }
   const navigateToSurveyPatientList = () => {
@@ -66,8 +70,11 @@ export const useClinicStore = defineStore('clinic', () => {
 
       currentClinic.value = _currentClinic
     },
-    { immediate: true },
   )
+
+  watch(route, async () => {
+    await refetchClinics()
+  })
 
   return {
     currentClinic,

@@ -218,7 +218,6 @@ watch(
       }
     }
   },
-  { immediate: true },
 )
 </script>
 
