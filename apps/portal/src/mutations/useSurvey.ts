@@ -22,6 +22,22 @@ export const useAddSurvey = () => {
   }
 }
 
+export const useUpdateSurvey = () => {
+  const { authenticatedClient } = useClientStore()
+  const mutation = useMutation({
+    mutationFn: (body: {
+      id: number
+      survey: Omit<SurveyCreateDto, 'surveyPreference'>
+    }) => {
+      return authenticatedClient.dieticianSurvey.updateSurvey.mutate(body)
+    },
+  })
+
+  return {
+    ...mutation,
+  }
+}
+
 export const useUpdateSurveyPreferences = () => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()

@@ -47,6 +47,7 @@ export class SurveyRepository {
       const queriedFeedbackModules = await tx
         .select()
         .from(surveyToFeedbackModules)
+        .where(eq(surveyToFeedbackModules.surveyId, id))
         .rightJoin(
           feedbackModules,
           eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
