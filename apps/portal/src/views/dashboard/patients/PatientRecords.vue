@@ -1,13 +1,13 @@
 <template>
   <v-main class="wrapper">
     <v-container>
-      <v-row>
+      <!-- <v-row>
         <v-breadcrumbs :items="breadcrumbItems">
           <template v-slot:divider>
             <v-icon icon="mdi-chevron-right"></v-icon>
           </template>
         </v-breadcrumbs>
-      </v-row>
+      </v-row> -->
       <v-row>
         <v-btn
           prepend-icon="mdi-chevron-left"
@@ -57,18 +57,18 @@ import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall
 const router = useRouter()
 const route = useRoute()
 
-const breadcrumbItems = ref([
-  {
-    title: 'My Patients',
-    disabled: false,
-    href: '/dashboard/my-patients',
-  },
-  {
-    title: 'Patient records',
-    disabled: true,
-    href: '/dashboard/patient-records',
-  },
-])
+// const breadcrumbItems = ref([
+//   {
+//     title: 'My Patients',
+//     disabled: false,
+//     href: '/dashboard/my-patients',
+//   },
+//   {
+//     title: 'Patient records',
+//     disabled: true,
+//     href: '/dashboard/patient-records',
+//   },
+// ])
 
 const component = ref()
 
