@@ -70,11 +70,7 @@
         />
       </div>
       <div>
-        <BaseButton
-          :disabled="!isFormValid"
-          type="submit"
-          @click.prevent="handleSubmit"
-        >
+        <BaseButton type="submit" @click.prevent="handleSubmit">
           Update patient details
         </BaseButton>
       </div>
@@ -189,13 +185,13 @@ const aggregatedData = computed(() => {
   }
 })
 
-const isFormValid = computed(() => {
-  return patientForm.isFormValid({
-    id: Number(route.params['patientId']),
-    email: aggregatedData.value.email ?? '',
-    patient: aggregatedData.value,
-  })
-})
+// const isFormValid = computed(() => {
+//   return patientForm.isFormValid({
+//     id: Number(route.params['patientId']),
+//     email: aggregatedData.value.email ?? '',
+//     patient: aggregatedData.value,
+//   })
+// })
 
 const handleSubmit = async (): Promise<void> => {
   return await patientForm.handleSubmit({

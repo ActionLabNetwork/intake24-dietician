@@ -133,9 +133,13 @@ const handleMenuItemClick = ({ action }: { action: Action }) => {
   action?.handler()
 }
 
-watch(route, newRoute => {
-  clinicStore.switchCurrentClinic(Number(newRoute.params['surveyId']))
-})
+watch(
+  route,
+  newRoute => {
+    clinicStore.switchCurrentClinic(Number(newRoute.params['surveyId']))
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

@@ -6,6 +6,7 @@ import {
   feedbackModules,
   patients,
   recalls,
+  surveyToFeedbackModules,
   surveys,
   users,
 } from '../../src/models'
@@ -215,6 +216,23 @@ async function seedFeedbackModules(
     .values(feedbackModulesData.map(module => ({ ...module })))
 }
 
+async function seedSurveyToFeedbackModules(
+  drizzle: ReturnType<typeof initDrizzle>['drizzle'],
+  survey: Awaited<ReturnType<typeof seedSurvey>>['survey'],
+) {
+  const defaultFeedbackModules = await drizzle.query.feedbackModules.findMany()
+  await drizzle.insert(surveyToFeedbackModules).values(
+    defaultFeedbackModules.map(module => {
+      const { id, ...moduleWithoutId } = module
+      return {
+        ...moduleWithoutId,
+        surveyId: survey!.id,
+        feedbackModuleId: module.id,
+      }
+    }),
+  )
+}
+
 async function main() {
   const database = new AppDatabase(
     'postgres://postgres:postgres@localhost:5433/intake24-dietician-db',
@@ -230,6 +248,7 @@ async function main() {
   await seedNutrientUnits(drizzle)
   await seedNutrientTypes(drizzle)
   await seedFeedbackModules(drizzle)
+  await seedSurveyToFeedbackModules(drizzle, survey)
 
   database.close()
   process.exit(0)

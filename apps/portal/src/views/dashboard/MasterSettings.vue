@@ -44,6 +44,15 @@
 
       <v-divider class="my-10" />
 
+      <div>
+        <SurveyConfiguration
+          :default-state="surveyConfigFormValues"
+          mode="Edit"
+          :handle-submit="handleSubmit"
+          @update="handleSurveyConfigUpdate"
+        />
+      </div>
+
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
@@ -84,16 +93,23 @@
 import FeedbackModules from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
 import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
+import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 // import { RecallFrequencyDTO } from '@intake24-dietician/common/entities/recall-frequency.dto'
-import { useUpdateSurveyPreferences } from '@intake24-dietician/portal/mutations/useSurvey'
+import {
+  useUpdateSurvey,
+  useUpdateSurveyPreferences,
+} from '@intake24-dietician/portal/mutations/useSurvey'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
-import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import {
+  SurveyCreateDto,
+  SurveyDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
@@ -102,10 +118,26 @@ const clinicStore = useClinicStore()
 const $toast = useToast()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
+const updateSurveyMutation = useUpdateSurvey()
 const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
 const initialFormData = ref<SurveyDto>()
 const formData = ref<SurveyDto>()
+
+const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+  surveyName: '',
+  intake24SurveyId: '',
+  intake24Secret: '',
+  alias: '',
+  recallSubmissionURL: '',
+  isActive: true,
+})
+
+const handleSurveyConfigUpdate = (
+  values: Omit<SurveyCreateDto, 'surveyPreference'>,
+) => {
+  surveyConfigFormValues.value = values
+}
 
 const surveyQueryData = computed(() => {
   return surveyQuery.data.value
@@ -199,13 +231,28 @@ const handleSubmit = async (): Promise<void> => {
   }
 
   const { id, ...survey } = formData.value
+  console.log({ surveyConfigFormValues })
 
-  // TODO: Add zod validation
+  updateSurveyMutation.mutate(
+    {
+      id,
+      survey: {
+        ...survey,
+        ...surveyConfigFormValues.value,
+      },
+    },
+    {
+      onError: () => {
+        $toast.error(DEFAULT_ERROR_MESSAGE)
+      },
+    },
+  )
+
   updateSurveyPreferencesMutation.mutate(
     { id, survey },
     {
       onSuccess: () => {
-        $toast.success('Survey preferences updated')
+        $toast.success(`Survey preferences with ID ${id} updated`)
         initialFormData.value = formData.value
       },
       onError: () => {
@@ -218,10 +265,22 @@ const handleSubmit = async (): Promise<void> => {
 watch(
   surveyQueryData,
   newSurveyQueryData => {
+    console.log({ newSurveyQueryData })
     if (!initialFormData.value) {
       initialFormData.value = newSurveyQueryData
     }
 
+    // Prefill clinic details
+    surveyConfigFormValues.value = {
+      surveyName: newSurveyQueryData?.surveyName ?? '',
+      intake24SurveyId: newSurveyQueryData?.intake24SurveyId ?? '',
+      intake24Secret: newSurveyQueryData?.intake24Secret ?? '',
+      alias: newSurveyQueryData?.alias ?? '',
+      recallSubmissionURL: newSurveyQueryData?.recallSubmissionURL ?? '',
+      isActive: newSurveyQueryData?.isActive ?? true,
+    }
+
+    // Prefill clinic preferences details
     if (!newSurveyQueryData?.surveyPreference) return
     formData.value = newSurveyQueryData
   },

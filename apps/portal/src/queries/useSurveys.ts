@@ -13,7 +13,6 @@ export const useSurveys = () => {
   })
 
   const invalidateSurveysQuery = async () => {
-    surveysQuery.data.value = []
     await queryClient.invalidateQueries({ queryKey: ['surveys'] })
     await queryClient.refetchQueries({ queryKey: ['surveys'] })
   }

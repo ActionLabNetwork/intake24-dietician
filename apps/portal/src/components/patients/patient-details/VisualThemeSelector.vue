@@ -67,9 +67,19 @@ const themes = ref<ThemeRef[]>([
   },
 ])
 
+type ImportedImages = Record<string, { default: string }>
+const themeImages = import.meta.glob('../../../assets/dashboard/themes/*.png', {
+  eager: true,
+}) as ImportedImages
 const getImage = (imgName: string) => {
-  return new URL('../../../assets/dashboard/themes/' + imgName, import.meta.url)
-    .href
+  const path = `../../../assets/dashboard/themes/${imgName}`
+  const imageModule = themeImages[path]
+  if (!imageModule) {
+    console.error(`Image not found: ${imgName}`)
+    return ''
+  }
+
+  return imageModule.default
 }
 
 const handleSwitchUpdate = (value: boolean, theme: string) => {

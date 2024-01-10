@@ -31,7 +31,10 @@ export const surveys = {
       },
       type: 'Type',
       status: 'Status',
-      recallSubmissionUrl: 'Recall submission URL',
+      recallSubmissionUrl: {
+        label: 'Recall submission URL',
+        description: 'This is the URL where Intake24 will send the recall to.',
+      },
       intake24SurveyId: {
         label: 'Intake24 survey ID',
         description: 'This is the ID of the survey in Intake24.',
