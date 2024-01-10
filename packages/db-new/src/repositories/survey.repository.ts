@@ -5,7 +5,7 @@ import type {
   SurveyFeedbackModuleCreateDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
@@ -101,18 +101,32 @@ export class SurveyRepository {
       assert(insertedSurvey)
 
       if (feedbackModules.length === 0) {
+        const lastSurveyToFeedbackModules =
+          await tx.query.surveyToFeedbackModules.findMany({
+            orderBy: desc(surveyToFeedbackModules.id),
+            limit: 1,
+          })
+
         // Initialize with default feedback modules
         const defaultFeedbackModules = await tx.query.feedbackModules.findMany()
-
-        await tx.insert(surveyToFeedbackModules).values(
-          defaultFeedbackModules.map(module => {
+        const feedbackModulesToBeInserted = defaultFeedbackModules.map(
+          module => {
+            const { id, ...moduleWithoutId } = module
             return {
-              ...module,
+              id: (lastSurveyToFeedbackModules[0]?.id || 1) + 1 || 1,
+              ...moduleWithoutId,
               surveyId: insertedSurvey.id,
               feedbackModuleId: module.id,
             }
-          }),
+          },
         )
+
+        console.log({ feedbackModulesToBeInserted })
+
+        feedbackModulesToBeInserted.forEach(async module => {
+          const { id, ...withoutId } = module
+          await tx.insert(surveyToFeedbackModules).values(withoutId)
+        })
       }
 
       return insertedSurvey.id

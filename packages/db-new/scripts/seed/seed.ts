@@ -223,8 +223,9 @@ async function seedSurveyToFeedbackModules(
   const defaultFeedbackModules = await drizzle.query.feedbackModules.findMany()
   await drizzle.insert(surveyToFeedbackModules).values(
     defaultFeedbackModules.map(module => {
+      const { id, ...moduleWithoutId } = module
       return {
-        ...module,
+        ...moduleWithoutId,
         surveyId: survey!.id,
         feedbackModuleId: module.id,
       }
