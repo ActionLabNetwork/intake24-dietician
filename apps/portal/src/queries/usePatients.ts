@@ -37,7 +37,7 @@ export const usePatientById = (userId: string) => {
           id: Number(userId),
         })
 
-      const avatar = response.avatar || getDefaultAvatar(response.user.email)
+      const avatar = response.avatar || getDefaultAvatar()
 
       response.avatar = avatar
       return response

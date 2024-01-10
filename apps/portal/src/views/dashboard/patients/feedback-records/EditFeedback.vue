@@ -179,7 +179,7 @@ const fullName = computed(() => {
   return `${firstName} ${lastName}`
 })
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
 })
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []

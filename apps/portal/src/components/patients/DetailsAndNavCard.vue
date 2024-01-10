@@ -61,7 +61,7 @@ const fullName = computed(() => {
 })
 
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
 })
 
 const navItems = ref([

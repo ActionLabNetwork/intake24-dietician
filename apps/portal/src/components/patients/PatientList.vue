@@ -59,9 +59,7 @@
         <tr class="text-center">
           <td class="text-left">
             <div class="d-flex align-center">
-              <v-avatar
-                :image="item.raw.avatar || getDefaultAvatar(item.raw.email)"
-              />
+              <v-avatar :image="item.raw.avatar || getDefaultAvatar()" />
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>

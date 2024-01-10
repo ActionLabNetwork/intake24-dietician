@@ -78,9 +78,7 @@ const getImage = (imgName: string) => {
     console.error(`Image not found: ${imgName}`)
     return ''
   }
-  console.log({ imageModule })
 
-  // Return the URL of the image
   return imageModule.default
 }
 
