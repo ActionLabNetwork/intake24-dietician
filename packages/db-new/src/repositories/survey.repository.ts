@@ -89,6 +89,7 @@ export class SurveyRepository {
   ) {
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
+      console.log({ feedbackModules })
       const [insertedSurvey] = await tx
         .insert(surveys)
         .values({
@@ -99,17 +100,21 @@ export class SurveyRepository {
         .execute()
       assert(insertedSurvey)
 
-      if (feedbackModules.length === 0) return insertedSurvey.id
+      if (feedbackModules.length === 0) {
+        // Initialize with default feedback modules
+        const defaultFeedbackModules = await tx.query.feedbackModules.findMany()
 
-      await tx
-        .insert(surveyToFeedbackModules)
-        .values(
-          feedbackModules.map(module => ({
-            ...module,
-            surveyId: insertedSurvey.id,
-          })),
+        await tx.insert(surveyToFeedbackModules).values(
+          defaultFeedbackModules.map(module => {
+            return {
+              ...module,
+              surveyId: insertedSurvey.id,
+              feedbackModuleId: module.id,
+            }
+          }),
         )
-        .execute()
+      }
+
       return insertedSurvey.id
     })
   }
