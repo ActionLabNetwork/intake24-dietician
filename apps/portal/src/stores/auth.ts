@@ -11,7 +11,7 @@ export const useAuthStore = defineStore('auth', () => {
   } = useProfile()
   const profile = ref(data.value)
 
-  watch(data, newVal => {
+  watch(data, async newVal => {
     if (newVal) {
       profile.value = newVal
     }

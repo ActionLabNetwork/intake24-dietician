@@ -179,7 +179,7 @@ const fullName = computed(() => {
   return `${firstName} ${lastName}`
 })
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
 })
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
@@ -374,7 +374,6 @@ watch(
   data => {
     if (!data?.draft) return
 
-    console.log({ abc: data })
     date.value = data.draft.recallDate
 
     data.draft.modules.forEach(module => {

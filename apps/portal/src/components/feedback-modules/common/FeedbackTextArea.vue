@@ -39,7 +39,15 @@
       :style="{ 'background-color': bgColor, color: textColor }"
     >
       <div class="mr-4">
-        <v-avatar size="x-large" :image="avatar" class="d-block" />
+        <img
+          :src="avatar"
+          height="80"
+          width="80"
+          class="d-block"
+          eager
+          alt="avatar"
+          crossorigin="anonymous"
+        />
       </div>
       <div>
         <div class="font-weight-bold">{{ fullName }}</div>
@@ -82,10 +90,7 @@ const localFeedback = ref('')
 const fullName = computed(() => {
   return `${auth.profile?.firstName} ${auth.profile?.lastName}`
 })
-const avatar = computed(
-  () =>
-    auth.profile?.avatar || getDefaultAvatar(auth.profile?.user.email ?? ''),
-)
+const avatar = computed(() => auth.profile?.avatar || getDefaultAvatar())
 
 const toggleEdit = () => {
   isEditing.value = !isEditing.value

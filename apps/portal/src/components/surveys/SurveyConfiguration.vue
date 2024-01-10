@@ -1,13 +1,16 @@
 <template>
   <v-container>
-    <BackButton class="mb-5" />
-    <div>
-      <h1 class="text heading">{{ t('surveys.addNewSurvey.title') }}</h1>
-      <h3 class="text subheading">
-        {{ t('surveys.addNewSurvey.subtitle') }}
-      </h3>
+    <div v-if="mode === 'Add'">
+      <BackButton class="mb-5" />
+      <div>
+        <h1 class="text heading">{{ t('surveys.addNewSurvey.title') }}</h1>
+        <h3 class="text subheading">
+          {{ t('surveys.addNewSurvey.subtitle') }}
+        </h3>
+      </div>
+      <v-divider class="my-10"></v-divider>
     </div>
-    <v-divider class="my-10"></v-divider>
+
     <v-form>
       <div
         :width="mdAndUp ? '100%' : '100%'"
@@ -44,7 +47,7 @@
           </div>
         </div>
       </div>
-      <div class="mt-5">
+      <div v-if="mode === 'Add'" class="mt-5">
         <v-btn
           class="text-none"
           variant="outlined"
@@ -192,8 +195,10 @@ const formSurveyConfig: Form<FormField> = {
   },
   recallSubmissionURL: {
     key: 'recallSubmissionURL',
-    label: 'Recall Submission URL',
-    description: t('surveys.addNewSurvey.surveyDetails.name.description'),
+    label: t('surveys.addNewSurvey.surveyDetails.recallSubmissionUrl.label'),
+    description: t(
+      'surveys.addNewSurvey.surveyDetails.recallSubmissionUrl.description',
+    ),
     required: true,
     labelSuffix: ' (required)',
     type: 'input',

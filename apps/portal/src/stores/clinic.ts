@@ -6,6 +6,8 @@ import { useSurveys } from '../queries/useSurveys'
 import { generateDistinctColors } from '../utils/colors'
 
 export const useClinicStore = defineStore('clinic', () => {
+  const isFetching = ref(false)
+
   const router = useRouter()
   const surveysQuery = useSurveys()
 
@@ -32,8 +34,18 @@ export const useClinicStore = defineStore('clinic', () => {
   }
 
   const refetchClinics = async () => {
+    surveysQuery.data.value = []
     await surveysQuery.invalidateSurveysQuery()
+    await surveysQuery.refetch()
+    updateClinics()
   }
+
+  const reset = () => {
+    surveysQuery.data.value = []
+    currentClinic.value = undefined
+    clinics.value = []
+  }
+
   const navigateToSurveyPatientList = () => {
     if (!currentClinic.value) return
 
@@ -41,6 +53,22 @@ export const useClinicStore = defineStore('clinic', () => {
       name: 'Survey Patient List',
       params: { surveyId: currentClinic.value.id },
     })
+  }
+
+  const updateClinics = () => {
+    if (!surveysQuery.data.value) return
+
+    const surveys = surveysQuery.data.value
+    const colors = generateDistinctColors(
+      surveys.map(survey => survey.id.toString()),
+    )
+
+    const surveysWithAvatarColors = surveys.map((survey, index) => ({
+      ...survey,
+      avatarColor: colors[index]!,
+    }))
+
+    clinics.value = surveysWithAvatarColors
   }
 
   watch(
@@ -70,6 +98,8 @@ export const useClinicStore = defineStore('clinic', () => {
   )
 
   return {
+    isFetching,
+    surveysQuery,
     currentClinic,
     clinics,
     otherClinics,
@@ -77,5 +107,6 @@ export const useClinicStore = defineStore('clinic', () => {
     switchToFirstClinic,
     switchCurrentClinic,
     navigateToSurveyPatientList,
+    reset,
   }
 })

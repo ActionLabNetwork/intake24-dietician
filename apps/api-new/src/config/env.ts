@@ -10,7 +10,6 @@ export const env = createEnv({
   server: {
     HOST: withDevDefault(z.string(), 'http://localhost'),
     API_PORT: withDevDefault(z.string(), '8080'),
-    API_EXTERNAL_HOST: withDevDefault(z.string(), 'http://localhost'),
     PORTAL_APP_BASE_URL: withDevDefault(z.string(), 'http://localhost:4173'),
     API_EXTERNAL_PORT: withDevDefault(z.string(), '443'),
     JWT_ACCESS_TOKEN_TTL: withDevDefault(z.coerce.number(), 60 * 60), // 1 hour

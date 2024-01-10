@@ -61,7 +61,7 @@ const fullName = computed(() => {
 })
 
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar('')
+  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
 })
 
 const navItems = ref([
@@ -70,7 +70,10 @@ const navItems = ref([
     value: 'feedbackRecords',
     to: {
       name: 'Survey Patient Feedback Records',
-      params: { patientId: route.params['patientId'] },
+      params: {
+        surveyId: route.params['surveyId'],
+        patientId: route.params['patientId'],
+      },
     },
     selected: computed(() => route.path.includes('feedback-records')),
     show: true,
@@ -80,7 +83,10 @@ const navItems = ref([
     value: 'patientDetails',
     to: {
       name: 'Survey Patient Details',
-      params: { patientId: route.params['patientId'] },
+      params: {
+        surveyId: route.params['surveyId'],
+        patientId: route.params['patientId'],
+      },
     },
     selected: computed(() => route.path.includes('patient-details')),
     show: true,
@@ -90,7 +96,10 @@ const navItems = ref([
     value: 'patientRecalls',
     to: {
       name: 'Survey Patient Meal Diary',
-      params: { patientId: route.params['patientId'] },
+      params: {
+        surveyId: route.params['surveyId'],
+        patientId: route.params['patientId'],
+      },
     },
     selected: computed(() => route.path.includes('patient-recalls')),
     show: toRefs(props).hasRecalls.value,

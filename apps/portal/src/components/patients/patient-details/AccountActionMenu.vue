@@ -73,10 +73,10 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import {
-  useRestorePatient,
-  useDeletePatient,
-} from '@intake24-dietician/portal/mutations/usePatients'
+// import {
+//   useRestorePatient,
+//   useDeletePatient,
+// } from '@intake24-dietician/portal/mutations/usePatients'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 
 const props = defineProps<{
@@ -85,8 +85,8 @@ const props = defineProps<{
 
 const emit = defineEmits<{ update: [null] }>()
 
-const activatePatientMutation = useRestorePatient()
-const deletePatientMutation = useDeletePatient()
+// const activatePatientMutation = useRestorePatient()
+// const deletePatientMutation = useDeletePatient()
 
 const archiveOrActivateLabel = computed(() => {
   return activateOrDelete.value === 'activate'
@@ -126,11 +126,11 @@ const dialog = ref({
   show: false,
   confirmHandler: () => {
     if (activateOrDelete.value === 'activate') {
-      activatePatientMutation.mutate(props.patient?.user.id)
+      // activatePatientMutation.mutate(props.patient?.user.id)
       emit('update', null)
       dialog.value.show = false
     } else {
-      deletePatientMutation.mutate(props.patient?.user.id)
+      // deletePatientMutation.mutate(props.patient?.user.id)
       emit('update', null)
       dialog.value.show = false
     }

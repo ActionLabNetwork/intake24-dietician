@@ -89,7 +89,6 @@ import {
   DieticianUpdateDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import { useForm } from '@intake24-dietician/portal/composables/useForm'
-import { useQueryClient } from '@tanstack/vue-query'
 
 // Types
 type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
@@ -108,8 +107,6 @@ const defaultValue = {
 
 onMounted(async () => {
   await authStore.refetch()
-  await queryClient.invalidateQueries()
-  await queryClient.refetchQueries()
 })
 
 // i18n
@@ -127,7 +124,6 @@ const uploadAvatarMutation = useUploadAvatar()
 
 // Composables
 const $toast = useToast()
-const queryClient = useQueryClient()
 
 // Refs
 const form = ref()
@@ -218,7 +214,6 @@ watch(
       }
     }
   },
-  { immediate: true },
 )
 </script>
 

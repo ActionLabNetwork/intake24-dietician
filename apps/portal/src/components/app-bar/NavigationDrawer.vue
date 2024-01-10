@@ -7,9 +7,7 @@
   >
     <v-list-item
       class="py-5"
-      :prepend-avatar="
-        profile?.avatar ?? getDefaultAvatar(profile?.user.email ?? '')
-      "
+      :prepend-avatar="profile?.avatar ?? getDefaultAvatar()"
       :title="`${profile?.firstName} ${profile?.lastName}`"
     ></v-list-item>
     <v-divider></v-divider>

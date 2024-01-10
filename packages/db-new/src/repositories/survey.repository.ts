@@ -5,7 +5,7 @@ import type {
   SurveyFeedbackModuleCreateDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
-import { eq } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
@@ -47,6 +47,7 @@ export class SurveyRepository {
       const queriedFeedbackModules = await tx
         .select()
         .from(surveyToFeedbackModules)
+        .where(eq(surveyToFeedbackModules.surveyId, id))
         .rightJoin(
           feedbackModules,
           eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
@@ -88,6 +89,7 @@ export class SurveyRepository {
   ) {
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
+      console.log({ feedbackModules })
       const [insertedSurvey] = await tx
         .insert(surveys)
         .values({
@@ -98,17 +100,35 @@ export class SurveyRepository {
         .execute()
       assert(insertedSurvey)
 
-      if (feedbackModules.length === 0) return insertedSurvey.id
+      if (feedbackModules.length === 0) {
+        const lastSurveyToFeedbackModules =
+          await tx.query.surveyToFeedbackModules.findMany({
+            orderBy: desc(surveyToFeedbackModules.id),
+            limit: 1,
+          })
 
-      await tx
-        .insert(surveyToFeedbackModules)
-        .values(
-          feedbackModules.map(module => ({
-            ...module,
-            surveyId: insertedSurvey.id,
-          })),
+        // Initialize with default feedback modules
+        const defaultFeedbackModules = await tx.query.feedbackModules.findMany()
+        const feedbackModulesToBeInserted = defaultFeedbackModules.map(
+          module => {
+            const { id, ...moduleWithoutId } = module
+            return {
+              id: (lastSurveyToFeedbackModules[0]?.id || 1) + 1 || 1,
+              ...moduleWithoutId,
+              surveyId: insertedSurvey.id,
+              feedbackModuleId: module.id,
+            }
+          },
         )
-        .execute()
+
+        console.log({ feedbackModulesToBeInserted })
+
+        feedbackModulesToBeInserted.forEach(async module => {
+          const { id, ...withoutId } = module
+          await tx.insert(surveyToFeedbackModules).values(withoutId)
+        })
+      }
+
       return insertedSurvey.id
     })
   }

@@ -7,9 +7,7 @@
       <v-menu rounded :close-on-content-click="false">
         <template v-slot:activator="{ props }">
           <v-btn class="mr-16 mr-3" v-bind="props">
-            <v-avatar
-              :image="user?.avatar || getDefaultAvatar(user?.user.email ?? '')"
-            ></v-avatar>
+            <v-avatar :image="user?.avatar || getDefaultAvatar()"></v-avatar>
             <v-icon icon="mdi-chevron-down" size="large" />
           </v-btn>
         </template>
@@ -26,11 +24,13 @@
 <script setup lang="ts">
 import BasePreferences from './BasePreferences.vue'
 import { useLogout } from '@/mutations/useAuth'
+import { useClinicStore } from '@/stores/clinic'
 import { useProfile } from '@/queries/useAuth'
 import router from '@/router'
 import { ref, watch } from 'vue'
 import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
 
+const clinicStore = useClinicStore()
 const { data, isPending: isProfileLoading } = useProfile()
 
 const user = ref(data.value)
@@ -61,6 +61,7 @@ const logoutMutation = useLogout()
 const handleLogout = () => {
   logoutMutation.mutate(undefined, {
     onSuccess: () => {
+      clinicStore.reset()
       router.push({ path: '/auth/login' })
     },
   })

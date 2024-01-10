@@ -63,12 +63,27 @@
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import ClinicMenuItem from './ClinicMenuItem.vue'
 import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { watch } from 'vue'
 
 const router = useRouter()
+const route = useRoute()
 
 const clinicStore = useClinicStore()
 const { currentClinic, clinics, otherClinics } = storeToRefs(clinicStore)
+
+watch(
+  () => route,
+  async () => {
+    await clinicStore.refetchClinics()
+    clinicStore.switchToFirstClinic()
+  },
+  { immediate: true },
+)
+
+clinicStore.$subscribe(async () => {
+  clinicStore.switchCurrentClinic(Number(route.params.surveyId))
+})
 </script>
 
 <style scoped lang="scss">

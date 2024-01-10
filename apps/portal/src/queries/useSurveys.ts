@@ -5,7 +5,7 @@ export const useSurveys = () => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
 
-  const { data, isPending, isError, error, isSuccess } = useQuery({
+  const surveysQuery = useQuery({
     queryKey: ['surveys'],
     queryFn: () => {
       return authenticatedClient.dieticianSurvey.getSurveys.query()
@@ -18,11 +18,7 @@ export const useSurveys = () => {
   }
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
+    ...surveysQuery,
     invalidateSurveysQuery,
   }
 }

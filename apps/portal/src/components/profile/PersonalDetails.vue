@@ -10,9 +10,7 @@
             <v-col :cols="mdAndUp ? 2 : 3" align="center">
               <div class="d-flex flex-column">
                 <ImageUpload
-                  :default-state="
-                    defaultState.avatar || getDefaultAvatar(email)
-                  "
+                  :default-state="defaultState.avatar || getDefaultAvatar()"
                   @update="value => handleFieldUpdate('avatar', value)"
                 />
               </div>

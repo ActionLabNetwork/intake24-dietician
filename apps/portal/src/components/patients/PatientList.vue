@@ -59,9 +59,7 @@
         <tr class="text-center">
           <td class="text-left">
             <div class="d-flex align-center">
-              <v-avatar
-                :image="item.raw.avatar || getDefaultAvatar(item.raw.email)"
-              />
+              <v-avatar :image="item.raw.avatar || getDefaultAvatar()" />
               <span class="ml-5 text-left">{{ item.raw.name }}</span>
             </div>
           </td>
@@ -72,7 +70,10 @@
               min-width="50%"
               :to="{
                 name: 'Survey Patient Feedback Records',
-                params: { patientId: item.raw.id },
+                params: {
+                  surveyId: route.params['surveyId'],
+                  patientId: item.raw.id,
+                },
               }"
             >
               View
@@ -141,6 +142,7 @@ import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useRoute } from 'vue-router'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -234,6 +236,8 @@ const headers = ref<PatientTableHeaders[]>([
     sortable: false,
   },
 ])
+
+const route = useRoute()
 
 const search = ref('')
 

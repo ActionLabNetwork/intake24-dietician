@@ -1,5 +1,6 @@
 <template>
   <v-container
+    v-if="clinic"
     class="d-flex justify-space-between align-center w-100 pa-0 pr-6"
   >
     <div class="d-flex align-center">
@@ -11,19 +12,22 @@
         </v-avatar>
       </div>
       <div class="ml-4">
-        <p class="text-h6 font-weight-bold">{{ clinic?.surveyName }}</p>
-        <p class="text-subtitle-1">ID: {{ clinic?.id }}</p>
+        <p class="text-h6 font-weight-bold">{{ clinic.surveyName }}</p>
+        <p class="text-subtitle-1">ID: {{ clinic.id }}</p>
       </div>
     </div>
-    <div v-if="clinic?.intake24SurveyId">
+    <div v-if="clinic.intake24SurveyId">
       <v-icon
         icon="mdi-cog-outline"
         class="hoverable"
         @click="
-          router.push({
-            name: 'Survey Master Settings',
-            params: { surveyId: route.params['surveyId'] as string },
-          })
+          () => {
+            console.log(route.params['surveyId'] as string)
+            router.push({
+              name: 'Survey Master Settings',
+              params: { surveyId: route.params['surveyId'] as string },
+            })
+          }
         "
       />
       <v-btn
@@ -83,15 +87,15 @@
 import { useDeleteSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-
-const clinicStore = useClinicStore()
-const { currentClinic: clinic } = storeToRefs(clinicStore)
 
 const router = useRouter()
 const route = useRoute()
 const deleteSurveyMutation = useDeleteSurvey()
+
+const clinicStore = useClinicStore()
+const { currentClinic: clinic } = storeToRefs(clinicStore)
 
 const dialog = ref({
   show: false,
@@ -128,6 +132,14 @@ type Action = (typeof actions.value)[number]
 const handleMenuItemClick = ({ action }: { action: Action }) => {
   action?.handler()
 }
+
+watch(
+  route,
+  newRoute => {
+    clinicStore.switchCurrentClinic(Number(newRoute.params['surveyId']))
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped>

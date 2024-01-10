@@ -1,10 +1,5 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div class="my-5 ml-4 d-print-none">
-    <v-btn class="text-none" color="secondary" flat @click="exportContentToPdf">
-      Export to PDF
-    </v-btn>
-  </div>
   <div id="print-content" justify="center" elevation="2">
     <v-card flat>
       <div v-if="modules && modules.length > 0">
@@ -21,8 +16,19 @@
               <p class="text-h3 font-weight-medium">Hi {{ patientName }}</p>
               <p class="w-50 mt-4">
                 Great job on completing your recall. Below, you can find a quick
-                feedback based on your recall data submitted on Aug 1, 2023
+                feedback based on your recall data submitted on
+                {{ recallDate.toLocaleDateString() }}
               </p>
+            </div>
+            <div class="my-5 ml-0 d-print-none">
+              <v-btn
+                class="text-none"
+                color="secondary"
+                flat
+                @click="exportContentToPdf"
+              >
+                Export to PDF
+              </v-btn>
             </div>
           </div>
           <component
@@ -75,7 +81,6 @@ defineProps<Props>()
 const { exportToPdf } = usePdfExport()
 
 const exportContentToPdf = () => {
-  console.log("Export let's go")
   const element = document.querySelector('#print-content') as HTMLElement
   exportToPdf(element, 'feedback.pdf')
 }
