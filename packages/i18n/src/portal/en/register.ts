@@ -4,7 +4,7 @@ export const register = {
   form: {
     email: {
       label: 'Work email*',
-      placeholder: 'name@email.com',
+      placeholder: 'Type in your email address',
     },
     password: {
       label: 'Password',
