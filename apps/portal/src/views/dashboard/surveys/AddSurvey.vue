@@ -40,10 +40,10 @@ const addSurveyMutation = useAddSurvey()
 
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
+  intake24Host: '',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',
-  recallSubmissionURL: '',
   isActive: true,
 })
 

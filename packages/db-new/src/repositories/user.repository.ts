@@ -263,7 +263,8 @@ export class UserRepository {
             survey: {
               columns: {
                 intake24Secret: true,
-                recallSubmissionURL: true,
+                intake24Host: true,
+                intake24SurveyId: true,
               },
             },
           },

@@ -4,11 +4,11 @@ import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey
 import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
 import { assert } from 'console'
 import { inject, singleton } from 'tsyringe'
-import { z } from 'zod'
 import { JwtService } from './jwt.service'
 import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import moment from 'moment'
 import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 @singleton()
 export class PatientService {
@@ -68,24 +68,33 @@ export class PatientService {
   }
 
   public async createRecall(
-    surveyId: number,
+    alias: string,
     jwt: string,
     recall: RecallDto['recall'],
   ) {
-    const survey = await this.surveyRepository.getSurveyById(surveyId)
+    const survey = await this.surveyRepository.getSurveyByAlias(alias)
     if (!survey)
-      throw new NotFoundError(`Survey of ID ${surveyId} is not found`)
-    const secret = survey?.intake24Secret
-    await this.jwtService.validate(jwt, secret !== '' ? undefined : secret)
+      throw new NotFoundError(`Survey of alias ${alias} is not found`)
+    const secret = survey.intake24Secret
+    await this.jwtService.validate(jwt, secret)
+    if (recall.survey.slug !== survey.intake24SurveyId) {
+      throw new ClientError('Wrong slug')
+    }
 
     const patientUser = await recall.user.aliases[0]
     assert(patientUser)
     if (!patientUser) throw new ClientError('Patient cannot be extracted')
     // we are using our user ID for Intake's username
-    const patientId = z.coerce.number().int().parse(patientUser.username)
+    const patientIdMatch = /^dietician:(\d+)$/.exec(patientUser.username)
+    const patientId = patientIdMatch?.[1]
+      ? parseInt(patientIdMatch[1], 10)
+      : null // patientId will be null if no match is found
+    if (!patientId || isNaN(patientId)) {
+      throw new ClientError('Failed to extract patient ID')
+    }
     const patient = await this.userRepository.getPatient(patientId)
     if (!patient) throw new NotFoundError('Patient cannot be found')
-    if (patient.surveyId !== surveyId)
+    if (patient.surveyId !== survey.id)
       throw new ClientError('The client does not belong to the survey')
 
     await this.recallRepository.createRecall(patientId, recall)
@@ -93,23 +102,28 @@ export class PatientService {
 
   private async attachExtraPatientFields(
     patient: Omit<PatientWithUserDto, 'startSurveyUrl'> & {
-      survey: { intake24Secret: string; recallSubmissionURL: string }
+      survey: Pick<
+        SurveyDto,
+        'intake24Host' | 'intake24SurveyId' | 'intake24Secret'
+      >
     },
   ): Promise<PatientWithUserDto> {
     const payload = {
-      username: patient.id.toString(),
+      username: `dietician:${patient.id}`,
       password: 'super_secret_password', // TODO: should this be created for the user and stored?
       redirectUrl: 'https://google.com', // TODO: what should this be set to
     }
     const jwt = await this.jwtService.sign(
       payload,
       moment().add(5, 'days').toDate(),
-      patient.survey.intake24Secret && undefined,
+      patient.survey.intake24Secret,
     )
+    const survey = patient.survey
+    const startSurveyUrl = new URL(survey.intake24Host)
+    startSurveyUrl.pathname = `${survey.intake24SurveyId}/create-user/${jwt}`
     return {
       ...patient,
-      startSurveyUrl:
-        patient.survey.recallSubmissionURL + `/create-user/${jwt}`,
+      startSurveyUrl: startSurveyUrl.toString(),
     }
   }
 }

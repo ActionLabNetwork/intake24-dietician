@@ -25,15 +25,12 @@ export const surveys = {
         description:
           'This is the name of your new clinic where you can add new patients and manage their recalls.',
       },
-      alias: {
-        label: 'Alias',
-        description: 'This is the alias of the survey in Intake24.',
-      },
       type: 'Type',
       status: 'Status',
-      recallSubmissionUrl: {
-        label: 'Recall submission URL',
-        description: 'This is the URL where Intake24 will send the recall to.',
+      intake24SurveyHost: {
+        label: 'Intake24 survey host',
+        description:
+          'Host URL of the Intake24 instance (e.g. https://survey.intake24.dev)',
       },
       intake24SurveyId: {
         label: 'Intake24 survey ID',
@@ -42,6 +39,11 @@ export const surveys = {
       intake24Secret: {
         label: 'Intake24 secret',
         description: 'This is the secret of the survey in Intake24.',
+      },
+      alias: {
+        label: 'Alias',
+        description:
+          'This is an alias that you can choose to identify this clinic in the Intake24 system.',
       },
     },
     subtitle:

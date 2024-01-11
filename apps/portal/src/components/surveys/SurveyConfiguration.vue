@@ -163,6 +163,22 @@ const formSurveyConfig: Form<FormField> = {
     ],
     handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
   },
+  intake24Host: {
+    key: 'intake24SurveyHost',
+    label: t('surveys.addNewSurvey.surveyDetails.intake24SurveyHost.label'),
+    description: t(
+      'surveys.addNewSurvey.surveyDetails.intake24SurveyHost.description',
+    ),
+    required: true,
+    labelSuffix: t('general.form.requiredSuffix'),
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(SurveyCreateDtoSchema.shape.intake24Host, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('intake24Host', val),
+  },
   intake24Secret: {
     key: 'intake24Secret',
     label: t('surveys.addNewSurvey.surveyDetails.intake24Secret.label'),
@@ -192,22 +208,6 @@ const formSurveyConfig: Form<FormField> = {
         validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
-  },
-  recallSubmissionURL: {
-    key: 'recallSubmissionURL',
-    label: t('surveys.addNewSurvey.surveyDetails.recallSubmissionUrl.label'),
-    description: t(
-      'surveys.addNewSurvey.surveyDetails.recallSubmissionUrl.description',
-    ),
-    required: true,
-    labelSuffix: ' (required)',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.recallSubmissionURL, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('recallSubmissionURL', val),
   },
 }
 </script>

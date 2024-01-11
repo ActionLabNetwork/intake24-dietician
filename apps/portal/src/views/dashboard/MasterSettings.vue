@@ -126,10 +126,10 @@ const formData = ref<SurveyDto>()
 
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
+  intake24Host: '',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',
-  recallSubmissionURL: '',
   isActive: true,
 })
 
@@ -273,10 +273,10 @@ watch(
     // Prefill clinic details
     surveyConfigFormValues.value = {
       surveyName: newSurveyQueryData?.surveyName ?? '',
+      intake24Host: newSurveyQueryData?.intake24Host ?? '',
       intake24SurveyId: newSurveyQueryData?.intake24SurveyId ?? '',
       intake24Secret: newSurveyQueryData?.intake24Secret ?? '',
       alias: newSurveyQueryData?.alias ?? '',
-      recallSubmissionURL: newSurveyQueryData?.recallSubmissionURL ?? '',
       isActive: newSurveyQueryData?.isActive ?? true,
     }
 

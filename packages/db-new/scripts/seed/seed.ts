@@ -104,11 +104,11 @@ async function seedSurvey(
     .insert(surveys)
     .values({
       dieticianId: dietician!.id,
-      surveyName: 'Test survey',
-      intake24SurveyId: 'test',
-      intake24Secret: 'intake24_survey_secret',
-      alias: 'test',
-      recallSubmissionURL: 'https://survey.intake24.dev/demo',
+      surveyName: 'Demo survey',
+      intake24Host: 'https://survey.intake24.dev',
+      intake24SurveyId: 'demo',
+      intake24Secret: 'super_secret_jwt',
+      alias: 'demo_clinic',
       surveyPreference: preference,
     })
     .returning()
@@ -223,7 +223,7 @@ async function seedSurveyToFeedbackModules(
   const defaultFeedbackModules = await drizzle.query.feedbackModules.findMany()
   await drizzle.insert(surveyToFeedbackModules).values(
     defaultFeedbackModules.map(module => {
-      const { id, ...moduleWithoutId } = module
+      const { id: _, ...moduleWithoutId } = module
       return {
         ...moduleWithoutId,
         surveyId: survey!.id,
