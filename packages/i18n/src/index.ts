@@ -12,7 +12,7 @@ export type LanguageCode = (typeof languages)[number]['code']
 const options = {
   legacy: false,
   locale: 'en',
-  fallbackLocale: 'id',
+  fallbackLocale: 'en',
   messages: messages,
 } as const
 export type i18nOptions = typeof options
