@@ -67,6 +67,20 @@ export class PatientService {
     return await this.recallRepository.getRecallsOfPatient(patientId)
   }
 
+  public async getRecallDatesOfPatient(patientId: number, dieticianId: number) {
+    if (
+      !(await this.userRepository.isPatientDieticians({
+        patientId,
+        dieticianId,
+      }))
+    ) {
+      throw new UnauthorizedError(
+        'You are not authorized to access this recall',
+      )
+    }
+    return await this.recallRepository.getRecallDatesOfPatient(patientId)
+  }
+
   public async createRecall(
     surveyId: number,
     jwt: string,

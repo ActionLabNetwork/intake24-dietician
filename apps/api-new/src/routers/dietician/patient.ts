@@ -5,7 +5,10 @@ import {
   PatientUpdateDtoSchema,
   PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
-import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
+import {
+  RecallDatesDtoSchema,
+  RecallDtoSchema,
+} from '@intake24-dietician/common/entities-new/recall.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 
@@ -114,13 +117,34 @@ export class DieticianPatientRouter {
       .input(
         z.object({
           patientId: z.number().int(),
-          fields: z.string().optional(),
         }),
       )
       .output(z.array(RecallDtoSchema))
       .query(async opts => {
-        console.log({ opts })
         const recalls = await this.patientService.getRecallsOfPatient(
+          opts.input.patientId,
+          opts.ctx.dieticianId,
+        )
+
+        return recalls
+      }),
+    getRecallDates: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/patients/{patientId}/recalls/dates',
+          tags: ['patients', 'recalls'],
+          summary: 'Get the recall dates of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number().int(),
+        }),
+      )
+      .output(z.array(RecallDatesDtoSchema))
+      .query(async opts => {
+        const recalls = await this.patientService.getRecallDatesOfPatient(
           opts.input.patientId,
           opts.ctx.dieticianId,
         )

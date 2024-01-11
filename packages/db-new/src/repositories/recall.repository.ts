@@ -29,6 +29,29 @@ export class RecallRepository {
     return _recalls
   }
 
+  public async getRecallDatesOfPatient(patientId: number) {
+    const _recalls = await this.drizzle.query.recalls
+      .findMany({
+        where: eq(recalls.patientId, patientId),
+      })
+      .execute()
+
+    const mappedRecalls = _recalls.map(recall => {
+      const { recall: _recall } = recall
+
+      return {
+        ...recall,
+        recall: {
+          id: _recall.id,
+          startTime: _recall.startTime,
+          endTime: _recall.endTime,
+        },
+      }
+    })
+
+    return mappedRecalls
+  }
+
   public async createRecall(patientId: number, recall: RecallDto['recall']) {
     const [insertedRecall] = await this.drizzle
       .insert(recalls)

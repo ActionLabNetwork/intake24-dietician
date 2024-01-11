@@ -2,11 +2,7 @@
   <div>
     <v-container>
       <div class="d-print-none">
-        <v-btn
-          prepend-icon="mdi-chevron-left"
-          flat
-          class="text-none px-0"
-          variant="text"
+        <BackButton
           :to="{
             name: 'Survey Patient Feedback Records',
             params: {
@@ -16,7 +12,7 @@
           }"
         >
           Back to {{ patientName }} records
-        </v-btn>
+        </BackButton>
       </div>
       <div
         v-if="recallsQuery.data.value && allModules"
@@ -70,31 +66,35 @@
 </template>
 
 <script lang="ts" setup>
-import { type Component, computed, ref, watch, reactive } from 'vue'
+import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
+import { computed, reactive, ref, watch, type Component } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
-import 'vue-toast-notification/dist/theme-sugar.css'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
-import { useRoute } from 'vue-router'
 import { usePatientById } from '@/queries/usePatients'
-import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import ModuleSelectList, {
-  ModuleItem,
-} from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
-import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
-import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
-import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
-import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
-import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import type {
   ComponentMappingWithFeedback,
   ModuleRoute,
 } from '@/types/modules.types'
-import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
+import ModuleSelectList, {
+  ModuleItem,
+} from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
+import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
+import {
+  useRecallDatesByUserId,
+  useRecallsByUserId,
+} from '@intake24-dietician/portal/queries/useRecall'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { useRoute } from 'vue-router'
+import 'vue-toast-notification/dist/theme-sugar.css'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
-import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
+import { useToast } from 'vue-toast-notification'
 
 // const { t } = useI18n<i18nOptions>()
 
@@ -104,9 +104,9 @@ const $toast = useToast()
 
 // Queries
 const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
-// const recallsQuery = useRecallsByUserId(
-//   ref(`dietician:survey_id:${route.params['id']}`),
-// )
+const recallDatesQuery = useRecallDatesByUserId(
+  ref(route.params['patientId'] as string),
+)
 const recallsQuery = useRecallsByUserId(
   ref(route.params['patientId'] as string),
 )
@@ -121,10 +121,10 @@ const moduleFeedback = computed(() => {
   return routeToModuleComponentMapping[component.value].feedback
 })
 const recallDates = computed(() => {
-  const data = recallsQuery.data
+  const data = recallDatesQuery.data
 
   if (!data.value) return []
-  return data.value?.map(recall => ({
+  return data.value.map(recall => ({
     id: recall.id,
     startTime: recall.recall.startTime,
     endTime: recall.recall.endTime,

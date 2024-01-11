@@ -15,7 +15,9 @@ import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { useRouter } from 'vue-router'
 
 const props = defineProps<{
-  to?: string | { name: string; params?: Record<string, string | string[]> }
+  to?:
+    | string
+    | { name: string; params?: Record<string, string | string[] | undefined> }
 }>()
 
 const clinicStore = useClinicStore()
