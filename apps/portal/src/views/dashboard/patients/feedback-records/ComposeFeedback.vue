@@ -71,7 +71,6 @@ import { computed, reactive, ref, watch, type Component } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
-import { usePatientById } from '@/queries/usePatients'
 import type {
   ComponentMappingWithFeedback,
   ModuleRoute,
@@ -95,15 +94,20 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 
 // const { t } = useI18n<i18nOptions>()
+
+// Stores
+const patientStore = usePatientStore()
 
 // Composables
 const route = useRoute()
 const $toast = useToast()
 
 // Queries
-const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
+const patientQuery = computed(() => patientStore.patientQuery)
+
 const recallDatesQuery = useRecallDatesByUserId(
   ref(route.params['patientId'] as string),
 )
@@ -131,7 +135,7 @@ const recallDates = computed(() => {
   }))
 })
 const patientQueryData = computed(() => {
-  return patientQuery.data.value
+  return patientQuery.value.data
 })
 const paddedId = computed(() => {
   return ((route.params['patientId'] as string) ?? '').padStart(
@@ -154,7 +158,7 @@ const fullName = computed(() => {
   return `${firstName} ${lastName}`
 })
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
+  return patientQuery.value.data?.avatar ?? getDefaultAvatar()
 })
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []

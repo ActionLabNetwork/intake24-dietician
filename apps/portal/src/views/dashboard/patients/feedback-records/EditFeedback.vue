@@ -90,7 +90,6 @@ import { type Component, computed, ref, watch, reactive } from 'vue'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { useRoute } from 'vue-router'
-import { usePatientById } from '@/queries/usePatients'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import ModuleSelectList, {
@@ -114,10 +113,14 @@ import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeed
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 
 defineProps<{ draft: DraftDto }>()
 
 // const { t } = useI18n<i18nOptions>()
+
+// Stores
+const patientStore = usePatientStore()
 
 // Composables
 const route = useRoute()
@@ -127,10 +130,7 @@ const $toast = useToast()
 const draftQuery = useFeedbackDraftById(
   Number(route.params['feedbackId'] as string),
 )
-const patientQuery = usePatientById(route.params['patientId']?.toString() ?? '')
-// const recallsQuery = useRecallsByUserId(
-//   ref(`dietician:survey_id:${route.params['id']}`),
-// )
+const patientQuery = computed(() => patientStore.patientQuery)
 const recallsQuery = useRecallsByUserId(
   ref(route.params['patientId'] as string),
 )
@@ -156,7 +156,7 @@ const recallDates = computed(() => {
   }))
 })
 const patientQueryData = computed(() => {
-  return patientQuery.data.value
+  return patientQuery.value.data
 })
 const paddedId = computed(() => {
   return ((route.params['patientId'] as string) ?? '').padStart(
@@ -179,7 +179,7 @@ const fullName = computed(() => {
   return `${firstName} ${lastName}`
 })
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
+  return patientQuery.value.data?.avatar ?? getDefaultAvatar()
 })
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []

@@ -1,5 +1,5 @@
 <template>
-  <v-card :loading="patientQuery.isPending.value">
+  <v-card v-if="patientQuery" :loading="patientQuery.isPending">
     <template v-slot:loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
@@ -23,14 +23,18 @@
 <script setup lang="ts">
 import PatientProfileSummary from '@/components/patients/PatientProfileSummary.vue'
 import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
-import { usePatientById } from '@/queries/usePatients'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import PatientNavItems from './PatientNavItems.vue'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 
 const route = useRoute()
-const patientQuery = usePatientById(route.params['patientId'] as string)
+
+const patientStore = usePatientStore()
+patientStore.patientId = route.params['patientId'] as string
+
+const patientQuery = computed(() => patientStore.patientQuery)
 
 const paddedId = computed(() => {
   return ((route.params['patientId'] as string) ?? '').padStart(
@@ -40,13 +44,13 @@ const paddedId = computed(() => {
 })
 
 const fullName = computed(() => {
-  const firstName = patientQuery.data.value?.firstName ?? ''
-  const lastName = patientQuery.data.value?.lastName ?? ''
+  const firstName = patientQuery.value.data?.firstName ?? ''
+  const lastName = patientQuery.value.data?.lastName ?? ''
 
   return `${firstName} ${lastName}`
 })
 
 const avatar = computed(() => {
-  return patientQuery.data.value?.avatar ?? getDefaultAvatar()
+  return patientQuery.value.data?.avatar ?? getDefaultAvatar()
 })
 </script>
