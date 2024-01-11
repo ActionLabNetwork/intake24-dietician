@@ -8,29 +8,12 @@
           :key="index"
           :class="{ 'page-break': index > 1 }"
         >
-          <div
+          <FeedbackIntroText
             v-if="index === 0"
-            class="text-wrapper d-flex align-center justify-space-between flex-wrap"
-          >
-            <div class="">
-              <p class="text-h3 font-weight-medium">Hi {{ patientName }}</p>
-              <p class="w-50 mt-4">
-                Great job on completing your recall. Below, you can find a quick
-                feedback based on your recall data submitted on
-                {{ recallDate.toLocaleDateString() }}
-              </p>
-            </div>
-            <div class="my-5 ml-0 d-print-none">
-              <v-btn
-                class="text-none"
-                color="secondary"
-                flat
-                @click="exportContentToPdf"
-              >
-                Export to PDF
-              </v-btn>
-            </div>
-          </div>
+            :patient-name="patientName"
+            :recall-date="recallDate.toLocaleDateString()"
+            :export-content-to-pdf="exportContentToPdf"
+          />
           <component
             :is="module.component"
             :feedback="module.feedback"
@@ -69,6 +52,7 @@ import type { Component } from 'vue'
 import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
 
 interface Props {
   patientName: string
@@ -87,17 +71,7 @@ const exportContentToPdf = () => {
 </script>
 
 <style scoped lang="scss">
-.text-wrapper {
-  padding: 4.5rem 4.5rem;
-}
-
 .page-break {
   page-break-inside: avoid;
-}
-
-@media print {
-  .text-wrapper {
-    padding: 0 4.5rem;
-  }
 }
 </style>

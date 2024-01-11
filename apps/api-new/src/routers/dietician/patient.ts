@@ -107,17 +107,19 @@ export class DieticianPatientRouter {
         openapi: {
           method: 'GET',
           path: '/patients/{patientId}/recalls',
-          tags: ['patients'],
+          tags: ['patients', 'recalls'],
           summary: 'Get recalls of a patient',
         },
       })
       .input(
         z.object({
           patientId: z.number().int(),
+          fields: z.string().optional(),
         }),
       )
       .output(z.array(RecallDtoSchema))
       .query(async opts => {
+        console.log({ opts })
         const recalls = await this.patientService.getRecallsOfPatient(
           opts.input.patientId,
           opts.ctx.dieticianId,
@@ -130,7 +132,7 @@ export class DieticianPatientRouter {
         openapi: {
           method: 'GET',
           path: '/recalls/{id}',
-          tags: ['patients'],
+          tags: ['patients', 'recalls'],
           summary: 'Get recall by id',
         },
       })
