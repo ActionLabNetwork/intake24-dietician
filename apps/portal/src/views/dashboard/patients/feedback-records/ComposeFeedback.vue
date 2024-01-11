@@ -2,6 +2,8 @@
   <div>
     <v-container>
       <div class="d-print-none">
+        {{ patientQuery.data }}
+        {{ patientQueryData }}
         <BackButton
           :to="{
             name: 'Survey Patient Feedback Records',
