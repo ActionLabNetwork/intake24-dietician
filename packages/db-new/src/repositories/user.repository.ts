@@ -322,4 +322,15 @@ export class UserRepository {
         .execute()
     })
   }
+
+  public async updatePatientLastReminderSent(
+    patientId: number,
+    lastReminderSent: Date,
+  ) {
+    return await this.drizzle
+      .update(patients)
+      .set({ lastReminderSent })
+      .where(eq(patients.id, patientId))
+      .execute()
+  }
 }

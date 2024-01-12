@@ -63,6 +63,15 @@ export class EmailService {
     })
   }
 
+  public sendReminderEmail = async (email: string, startSurveyUrl: string) => {
+    await this.sendEmail({
+      to: email,
+      subject: 'Reminder to complete your recall on Intake24',
+      text: `Hello, please click the following link to complete your daily recall: ${startSurveyUrl}`,
+      html: `<p>Hello, please click the following link to complete your daily recall: <a href="${startSurveyUrl}">Start Survey</a></p>`,
+    })
+  }
+
   private sendEmail = async (args: {
     to: string
     subject: string

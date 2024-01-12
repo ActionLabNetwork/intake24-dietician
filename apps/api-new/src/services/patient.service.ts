@@ -9,6 +9,8 @@ import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new
 import moment from 'moment'
 import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import { recallReminderCooldown } from '@intake24-dietician/common/constants/settings-contants'
+import { EmailService } from './email.service'
 
 @singleton()
 export class PatientService {
@@ -17,6 +19,7 @@ export class PatientService {
     @inject(RecallRepository) private recallRepository: RecallRepository,
     @inject(SurveyRepository) private surveyRepository: SurveyRepository,
     @inject(JwtService) private jwtService: JwtService,
+    @inject(EmailService) private emailService: EmailService,
   ) {}
 
   public async getPatientById(id: number) {
@@ -98,6 +101,39 @@ export class PatientService {
       throw new ClientError('The client does not belong to the survey')
 
     await this.recallRepository.createRecall(patientId, recall)
+  }
+
+  public async sendRecallReminder(patientId: number, dieticianId: number) {
+    const patient = await this.userRepository.getPatient(patientId)
+    if (!patient) {
+      throw new NotFoundError('Patient cannot be found')
+    }
+    if (patient?.survey.dieticianId !== dieticianId) {
+      throw new UnauthorizedError('Dietician has access to this patient')
+    }
+
+    const patientWithExtraFields = await this.attachExtraPatientFields(patient)
+    if (
+      patientWithExtraFields.lastReminderSent &&
+      moment().isBefore(
+        moment(patientWithExtraFields.lastReminderSent).add(
+          recallReminderCooldown,
+        ),
+      )
+    ) {
+      throw new ClientError(
+        `Last email was sent under ${recallReminderCooldown.humanize()} ago`,
+      )
+    }
+
+    await this.emailService.sendReminderEmail(
+      patientWithExtraFields.user.email,
+      patientWithExtraFields.startSurveyUrl,
+    )
+    await this.userRepository.updatePatientLastReminderSent(
+      patientId,
+      moment().toDate(),
+    )
   }
 
   private async attachExtraPatientFields(
