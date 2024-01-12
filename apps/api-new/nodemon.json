@@ -1,5 +1,5 @@
 {
-  "watch": ["src"],
+  "watch": ["src", "../../packages/db-new/src", "../../packages/common/src"],
   "ext": ".ts,.js",
   "ignore": ["src/**/*.spec.ts"],
   "exec": "DOTENV_CONFIG_PATH=.env.development ts-node -r dotenv/config -r tsconfig-paths/register src/server.ts"
