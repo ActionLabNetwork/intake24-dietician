@@ -2,8 +2,6 @@
   <div>
     <v-container>
       <div class="d-print-none">
-        {{ patientQuery.data }}
-        {{ patientQueryData }}
         <BackButton
           :to="{
             name: 'Survey Patient Feedback Records',
@@ -17,14 +15,11 @@
         </BackButton>
       </div>
       <div
-        v-if="recallsQuery.data.value && allModules"
+        v-if="recallStore.recalls && recallStore.recallDates && allModules"
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
-          :id="paddedId"
-          :avatar="avatar"
-          :fullName="fullName"
-          :recall-dates="recallDates"
+          :recall-dates="recallStore.recallDates"
           :initial-date="date"
           :previewing="previewing"
           :editing-draft="false"
@@ -33,7 +28,7 @@
           @update:date="handleDateUpdate"
         />
       </div>
-      <div v-if="recallsQuery.data.value" v-show="!previewing" class="mt-4">
+      <div v-if="recallStore.recalls" v-show="!previewing" class="mt-4">
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
@@ -44,7 +39,7 @@
           </v-col>
           <v-col cols="9">
             <component
-              :is="routeToModuleComponentMapping[component].component"
+              :is="moduleNameToModuleComponentMapping[component].component"
               :recalls-data="recallsData"
               :recall-date="date"
               :feedback="moduleFeedback"
@@ -61,7 +56,7 @@
       :recalls-data="selectedModules?.recallsData"
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
-      :patient-name="fullName"
+      :patient-name="patientStore.fullName"
       class="mt-0"
     />
   </div>
@@ -72,10 +67,9 @@ import BackButton from '@intake24-dietician/portal/components/common/BackButton.
 import { computed, reactive, ref, watch, type Component } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
-import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import type {
-  ComponentMappingWithFeedback,
-  ModuleRoute,
+  ModuleName,
+  ModuleNameToComponentMappingWithFeedback,
 } from '@/types/modules.types'
 import ModuleSelectList, {
   ModuleItem,
@@ -86,64 +80,43 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
-import {
-  useRecallDatesByUserId,
-  useRecallsByUserId,
-} from '@intake24-dietician/portal/queries/useRecall'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { useRoute } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
-import { useToast } from 'vue-toast-notification'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { useToast } from 'vue-toast-notification'
+// import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 // const { t } = useI18n<i18nOptions>()
-
-// Stores
-const patientStore = usePatientStore()
-
 // Composables
 const route = useRoute()
 const $toast = useToast()
 
-// Queries
-const patientQuery = computed(() => patientStore.patientQuery)
+// Stores
+const patientStore = usePatientStore()
+const recallStore = useRecallStore()
 
-const recallDatesQuery = useRecallDatesByUserId(
-  ref(route.params['patientId'] as string),
-)
-const recallsQuery = useRecallsByUserId(
-  ref(route.params['patientId'] as string),
-)
+// Queries
+// const clinicQuery = useSurveyById(route.params['surveyId'] as string)
+const patientQuery = computed(() => patientStore.patientQuery)
+// const recallsQuery = useRecallsByUserId(
+// ref(route.params['patientId'] as string),
+// )
 
 // Refs
 const date = ref<Date>(new Date())
-const component = ref<ModuleRoute>('/meal-diary')
+const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(false)
 
 // Computed properties
 const moduleFeedback = computed(() => {
-  return routeToModuleComponentMapping[component.value].feedback
+  return moduleNameToModuleComponentMapping[component.value].feedback
 })
-const recallDates = computed(() => {
-  const data = recallDatesQuery.data
 
-  if (!data.value) return []
-  return data.value.map(recall => ({
-    id: recall.id,
-    startTime: recall.recall.startTime,
-    endTime: recall.recall.endTime,
-  }))
-})
 const patientQueryData = computed(() => {
   return patientQuery.value.data
-})
-const paddedId = computed(() => {
-  return ((route.params['patientId'] as string) ?? '').padStart(
-    DISPLAY_ID_ZERO_PADDING,
-    '0',
-  )
 })
 const patientName = computed(() => {
   const firstName = patientQueryData.value?.firstName
@@ -153,32 +126,32 @@ const patientName = computed(() => {
   }
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
 })
-const fullName = computed(() => {
-  const firstName = patientQueryData.value?.firstName ?? ''
-  const lastName = patientQueryData.value?.lastName ?? ''
-
-  return `${firstName} ${lastName}`
-})
-const avatar = computed(() => {
-  return patientQuery.value.data?.avatar ?? getDefaultAvatar()
-})
 const recallsData = computed(() => {
-  return recallsQuery.data.value ?? []
+  return recallStore.recalls ?? []
 })
-const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-  '/meal-diary': { component: MealDiaryModule, feedback: '' },
-  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
-  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
-  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
-  '/water-intake': { component: WaterIntakeModule, feedback: '' },
-})
+// const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
+//   '/meal-diary': { component: MealDiaryModule, feedback: '' },
+//   '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
+//   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
+//   '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
+//   '/water-intake': { component: WaterIntakeModule, feedback: '' },
+// })
+
+const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
+  reactive({
+    'Meal diary': { component: MealDiaryModule, feedback: '' },
+    'Carbs exchange': { component: CarbsExchangeModule, feedback: '' },
+    'Energy intake': { component: EnergyIntakeModule, feedback: '' },
+    'Fibre intake': { component: FibreIntakeModule, feedback: '' },
+    'Water intake': { component: WaterIntakeModule, feedback: '' },
+  })
 
 const allModules = ref<
   | {
       recallsData: typeof recallsData
       recallDate: typeof date
       modules: {
-        key: ModuleRoute
+        key: ModuleName
         component: Component
         feedback: string
         selected: boolean
@@ -188,14 +161,14 @@ const allModules = ref<
 >({
   recallsData: recallsData,
   recallDate: date,
-  modules: Object.entries(routeToModuleComponentMapping).map(
+  modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
       const feedback = module.feedback
       const selected = false
 
       return {
-        key: key as keyof typeof routeToModuleComponentMapping,
+        key: key as keyof typeof moduleNameToModuleComponentMapping,
         component,
         feedback,
         selected,
@@ -208,12 +181,12 @@ const selectedModules = ref<
   | {
       recallsData: typeof recallsData
       recallDate: typeof date
-      modules: { key: ModuleRoute; component: Component; feedback: string }[]
+      modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
 >(undefined)
 
-const handleModuleUpdate = (module: ModuleRoute) => {
+const handleModuleUpdate = (module: ModuleName) => {
   component.value = module
 }
 
@@ -222,9 +195,9 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     recallsData: recallsData.value,
     recallDate: date.value,
     modules: modules.map(module => {
-      const key = module.to
-      const component = routeToModuleComponentMapping[module.to].component
-      const feedback = routeToModuleComponentMapping[module.to].feedback
+      const key = module.title
+      const component = moduleNameToModuleComponentMapping[key].component
+      const feedback = moduleNameToModuleComponentMapping[key].feedback
       const selected = module.selected
 
       return { key, component, feedback, selected }
@@ -237,9 +210,9 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     modules: modules
       .filter(module => module.selected)
       .map(module => {
-        const key = module.to
-        const component = routeToModuleComponentMapping[module.to].component
-        const feedback = routeToModuleComponentMapping[module.to].feedback
+        const key = module.title
+        const component = moduleNameToModuleComponentMapping[key].component
+        const feedback = moduleNameToModuleComponentMapping[key].feedback
 
         return { key, component, feedback }
       }),
@@ -251,7 +224,7 @@ const handleDateUpdate = (_date: Date) => {
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
-  routeToModuleComponentMapping[component.value].feedback = feedback
+  moduleNameToModuleComponentMapping[component.value].feedback = feedback
 
   if (!allModules.value) return
   if (!selectedModules.value) return
@@ -273,11 +246,11 @@ const handlePreviewButtonClick = () => {
 }
 
 watch(
-  () => recallsQuery.data.value,
+  () => recallStore.recalls,
   data => {
     if (data) {
       // Default to latest recall date
-      date.value = recallDates.value.at(-1)?.startTime ?? new Date()
+      date.value = recallStore.recallDates.at(-1)?.startTime ?? new Date()
     }
   },
   { immediate: true },

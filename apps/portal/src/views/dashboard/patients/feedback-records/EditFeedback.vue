@@ -60,7 +60,7 @@
           </v-col>
           <v-col cols="9">
             <component
-              :is="routeToModuleComponentMapping[component].component"
+              :is="moduleNameToModuleComponentMapping[component].component"
               :recalls-data="recallsData"
               :recall-date="date"
               :feedback="moduleFeedback"
@@ -101,8 +101,8 @@ import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-m
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import type {
-  ComponentMappingWithFeedback,
-  ModuleRoute,
+  ModuleNameToComponentMappingWithFeedback,
+  ModuleName,
 } from '@/types/modules.types'
 import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
@@ -137,13 +137,13 @@ const recallsQuery = useRecallsByUserId(
 
 // Refs
 const date = ref<Date>(new Date())
-const component = ref<ModuleRoute>('/meal-diary')
+const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(false)
 const isDataLoaded = ref<boolean>(false)
 
 // Computed properties
 const moduleFeedback = computed(() => {
-  return routeToModuleComponentMapping[component.value].feedback
+  return moduleNameToModuleComponentMapping[component.value].feedback
 })
 const recallDates = computed(() => {
   const data = recallsQuery.data
@@ -184,40 +184,49 @@ const avatar = computed(() => {
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
 })
-const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-  '/meal-diary': { component: MealDiaryModule, feedback: '' },
-  '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
-  '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
-  '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
-  '/water-intake': { component: WaterIntakeModule, feedback: '' },
-})
+// const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
+//   '/meal-diary': { component: MealDiaryModule, feedback: '' },
+//   '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
+//   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
+//   '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
+//   '/water-intake': { component: WaterIntakeModule, feedback: '' },
+// })
+
+const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
+  reactive({
+    'Meal diary': { component: MealDiaryModule, feedback: '' },
+    'Carbs exchange': { component: CarbsExchangeModule, feedback: '' },
+    'Energy intake': { component: EnergyIntakeModule, feedback: '' },
+    'Fibre intake': { component: FibreIntakeModule, feedback: '' },
+    'Water intake': { component: WaterIntakeModule, feedback: '' },
+  })
 
 const feedbackMapping = ref<FeedbackMapping>({
-  '/meal-diary': {
+  'Meal diary': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
     isActive: false,
   },
-  '/carbs-exchange': {
+  'Carbs exchange': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
     isActive: false,
   },
-  '/energy-intake': {
+  'Energy intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
     isActive: false,
   },
-  '/fibre-intake': {
+  'Fibre intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
     isActive: false,
   },
-  '/water-intake': {
+  'Water intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
@@ -230,7 +239,7 @@ const initialAllModules = ref<
       recallsData: typeof recallsData
       recallDate: typeof date
       modules: {
-        key: ModuleRoute
+        key: ModuleName
         component: Component
         feedback: string
         selected: boolean
@@ -243,7 +252,7 @@ const allModules = ref<
       recallsData: typeof recallsData
       recallDate: typeof date
       modules: {
-        key: ModuleRoute
+        key: ModuleName
         component: Component
         feedback: string
         selected: boolean
@@ -253,14 +262,14 @@ const allModules = ref<
 >({
   recallsData: recallsData,
   recallDate: date,
-  modules: Object.entries(routeToModuleComponentMapping).map(
+  modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
       const feedback = module.feedback
       const selected = false
 
       return {
-        key: key as keyof typeof routeToModuleComponentMapping,
+        key: key as keyof typeof moduleNameToModuleComponentMapping,
         component,
         feedback,
         selected,
@@ -273,12 +282,12 @@ const selectedModules = ref<
   | {
       recallsData: typeof recallsData
       recallDate: typeof date
-      modules: { key: ModuleRoute; component: Component; feedback: string }[]
+      modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
 >(undefined)
 
-const handleModuleUpdate = (module: ModuleRoute) => {
+const handleModuleUpdate = (module: ModuleName) => {
   component.value = module
 }
 
@@ -287,9 +296,10 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     recallsData: recallsData.value,
     recallDate: date.value,
     modules: modules.map(module => {
-      const key = module.to
-      const component = routeToModuleComponentMapping[module.to].component
-      const feedback = routeToModuleComponentMapping[module.to].feedback
+      const key = module.title
+      const component =
+        moduleNameToModuleComponentMapping[module.title].component
+      const feedback = moduleNameToModuleComponentMapping[module.title].feedback
       const selected = module.selected
 
       return { key, component, feedback, selected }
@@ -309,9 +319,11 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     modules: modules
       .filter(module => module.selected)
       .map(module => {
-        const key = module.to
-        const component = routeToModuleComponentMapping[module.to].component
-        const feedback = routeToModuleComponentMapping[module.to].feedback
+        const key = module.title
+        const component =
+          moduleNameToModuleComponentMapping[module.title].component
+        const feedback =
+          moduleNameToModuleComponentMapping[module.title].feedback
 
         return { key, component, feedback }
       }),
@@ -331,7 +343,7 @@ const handleDateUpdate = (_date: Date) => {
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
-  routeToModuleComponentMapping[component.value].feedback = feedback
+  moduleNameToModuleComponentMapping[component.value].feedback = feedback
 
   // Update all modules feedback
   const allModule = allModules.value?.modules.find(
@@ -378,7 +390,7 @@ watch(
 
     data.draft.modules.forEach(module => {
       feedbackMapping.value[module.key].isActive = module.selected
-      routeToModuleComponentMapping[module.key].feedback = module.feedback
+      moduleNameToModuleComponentMapping[module.key].feedback = module.feedback
     })
 
     isDataLoaded.value = true

@@ -161,11 +161,11 @@ const sendAutomatedFeedback = ref<boolean>(
   toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
 )
 const feedbackMapping = ref<FeedbackMapping>({
-  '/meal-diary': createFeedbackEntry('Meal diary'),
-  '/carbs-exchange': createFeedbackEntry('Carbs exchange'),
-  '/energy-intake': createFeedbackEntry('Energy intake'),
-  '/fibre-intake': createFeedbackEntry('Fibre intake'),
-  '/water-intake': createFeedbackEntry('Water intake'),
+  'Meal diary': createFeedbackEntry('Meal diary'),
+  'Carbs exchange': createFeedbackEntry('Carbs exchange'),
+  'Energy intake': createFeedbackEntry('Energy intake'),
+  'Fibre intake': createFeedbackEntry('Fibre intake'),
+  'Water intake': createFeedbackEntry('Water intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {

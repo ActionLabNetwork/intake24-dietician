@@ -265,7 +265,6 @@ const handleSubmit = async (): Promise<void> => {
 watch(
   surveyQueryData,
   newSurveyQueryData => {
-    console.log({ newSurveyQueryData })
     if (!initialFormData.value) {
       initialFormData.value = newSurveyQueryData
     }

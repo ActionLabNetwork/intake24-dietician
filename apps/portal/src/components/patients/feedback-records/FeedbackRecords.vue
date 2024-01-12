@@ -33,11 +33,11 @@
 import DraftItemList from '@/components/patients/feedback-records/DraftItemList.vue'
 import SharedItemList from './SharedItemList.vue'
 import { useRoute } from 'vue-router'
-import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 // import DraftItem from './DraftItem.vue'
 
 const route = useRoute()
-const recallsStore = useRecallsStore()
+const recallsStore = useRecallStore()
 
 const patientId = route.params['patientId'] as string
 

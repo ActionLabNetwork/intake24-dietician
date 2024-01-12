@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { usePatientById } from '../queries/usePatients'
 import { useRoute } from 'vue-router'
 
@@ -8,6 +8,12 @@ export const usePatientStore = defineStore('patient', () => {
   const patientId = ref('')
 
   const patientQuery = usePatientById(patientId)
+
+  const fullName = computed(() => {
+    if (!patientQuery.data.value) return ''
+
+    return `${patientQuery.data.value.firstName} ${patientQuery.data.value.lastName}`
+  })
 
   watch(patientId, async () => {
     patientQuery.invalidatePatientByIdQuery()
@@ -26,5 +32,5 @@ export const usePatientStore = defineStore('patient', () => {
     { immediate: true },
   )
 
-  return { patientId, patientQuery }
+  return { patientId, patientQuery, fullName }
 })

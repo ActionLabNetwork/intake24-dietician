@@ -49,7 +49,7 @@
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import type { Component } from 'vue'
-import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
@@ -58,7 +58,7 @@ interface Props {
   patientName: string
   recallsData: RecallDto[]
   recallDate: Date
-  modules: { key: ModuleRoute; component: Component; feedback: string }[]
+  modules: { key: ModuleName; component: Component; feedback: string }[]
 }
 
 defineProps<Props>()

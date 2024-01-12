@@ -33,11 +33,11 @@
             class="pl-4 pt-4"
             text-area-label="Feedback for below recommended level"
             :feedback="
-              routeToModuleComponentMapping[selectedModule].feedbackBelow
+              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
             "
             editable
             @update:feedback="
-              routeToModuleComponentMapping[selectedModule].feedbackBelow =
+              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow =
                 $event
             "
           />
@@ -47,11 +47,11 @@
             class="pl-4 pt-4"
             text-area-label="Feedback for above recommended level"
             :feedback="
-              routeToModuleComponentMapping[selectedModule].feedbackAbove
+              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove
             "
             editable
             @update:feedback="
-              routeToModuleComponentMapping[selectedModule].feedbackAbove =
+              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove =
                 $event
             "
           />
@@ -63,8 +63,8 @@
 
 <script setup lang="ts">
 import {
-  ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
-  ModuleRoute,
+  ModuleName,
+  ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
 } from '@intake24-dietician/portal/types/modules.types'
 import ModuleSelectList, {
   ModuleItem,
@@ -78,10 +78,10 @@ import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
 
 export type FeedbackMapping = {
-  [K in keyof typeof routeToModuleComponentMapping]: {
+  [K in keyof typeof moduleNameToModuleComponentMapping]: {
     name: string
-    feedbackBelow: (typeof routeToModuleComponentMapping)[K]['feedbackBelow']
-    feedbackAbove: (typeof routeToModuleComponentMapping)[K]['feedbackAbove']
+    feedbackBelow: (typeof moduleNameToModuleComponentMapping)[K]['feedbackBelow']
+    feedbackAbove: (typeof moduleNameToModuleComponentMapping)[K]['feedbackAbove']
     isActive: boolean
   }
 }
@@ -92,60 +92,60 @@ const emit = defineEmits<{
   update: [presetModulesFeedbacks: FeedbackMapping]
 }>()
 
-const selectedModule = ref<ModuleRoute>('/meal-diary')
+const selectedModule = ref<ModuleName>('Meal diary')
 // const component = ref<ModuleRoute>('/meal-diary')
 
 // TODO: Figure out a way to show preview of the modules. Maybe use a test data for sample?
-const routeToModuleComponentMapping: ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =
+const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =
   reactive({
-    '/meal-diary': {
+    'Meal diary': {
       component: MealDiaryModule,
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
-    '/carbs-exchange': {
-      name: '',
+    'Carbs exchange': {
       component: CarbsExchangeModule,
+      name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
-    '/energy-intake': {
-      name: '',
+    'Energy intake': {
       component: EnergyIntakeModule,
+      name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
-    '/fibre-intake': {
-      name: '',
+    'Fibre intake': {
       component: FibreIntakeModule,
+      name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
-    '/water-intake': {
-      name: '',
+    'Water intake': {
       component: WaterIntakeModule,
+      name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
   })
 
-const handleModuleChange = (module: ModuleRoute) => {
+const handleModuleChange = (module: ModuleName) => {
   selectedModule.value = module
 }
 
 const handleModulesChange = (modules: ModuleItem[]) => {
   modules.forEach(module => {
-    routeToModuleComponentMapping[module.to].isActive = module.selected
+    moduleNameToModuleComponentMapping[module.title].isActive = module.selected
   })
 }
 
-watch(routeToModuleComponentMapping, newFeedbacks => {
+watch(moduleNameToModuleComponentMapping, newFeedbacks => {
   const feedbackMapping = Object.fromEntries(
     Object.entries(newFeedbacks).map(([key, value]) => [
       key,
@@ -164,13 +164,13 @@ watch(
   () => props.defaultState,
   newDefaultState => {
     Object.entries(newDefaultState).forEach(([key, value]) => {
-      const routeKey = key as keyof typeof routeToModuleComponentMapping
-      routeToModuleComponentMapping[routeKey].name = value.name
-      routeToModuleComponentMapping[routeKey].feedbackBelow =
+      const routeKey = key as keyof typeof moduleNameToModuleComponentMapping
+      moduleNameToModuleComponentMapping[routeKey].name = value.name
+      moduleNameToModuleComponentMapping[routeKey].feedbackBelow =
         value.feedbackBelow
-      routeToModuleComponentMapping[routeKey].feedbackAbove =
+      moduleNameToModuleComponentMapping[routeKey].feedbackAbove =
         value.feedbackAbove
-      routeToModuleComponentMapping[routeKey].isActive = value.isActive
+      moduleNameToModuleComponentMapping[routeKey].isActive = value.isActive
     })
   },
   { immediate: true },

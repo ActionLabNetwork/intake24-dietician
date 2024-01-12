@@ -1,14 +1,17 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="mx-auto py-2 px-5">
+  <v-card v-if="patient" class="mx-auto py-2 px-5">
     <div class="d-flex justify-space-between align-center">
       <div class="flex-container">
         <!-- Profile avatar, name and id -->
         <div class="d-flex align-center">
-          <v-avatar size="x-large" :image="avatar" />
+          <v-avatar
+            size="x-large"
+            :image="patient.avatar ?? getDefaultAvatar()"
+          />
           <div class="ml-3">
-            <div class="font-weight-bold">{{ fullName }}</div>
-            <div>ID: {{ id }}</div>
+            <div class="font-weight-bold">{{ patientStore.fullName }}</div>
+            <div>ID: {{ patient.id }}</div>
           </div>
         </div>
 
@@ -87,11 +90,10 @@ import isEqual from 'lodash.isequal'
 
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 const props = defineProps<{
-  id: string
-  fullName: string
-  avatar: string
   recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
@@ -107,6 +109,10 @@ const router = useRouter()
 const route = useRoute()
 
 const $toast = useToast()
+
+const patientStore = usePatientStore()
+
+const patient = computed(() => patientStore.patientQuery.data)
 
 // Mutations
 const saveDraftMutation = useSaveDraft()
@@ -135,7 +141,7 @@ onMounted(() => {
 const handleSaveDraftClick = () => {
   saveDraftMutation.mutate(
     {
-      patientId: Number(props.id),
+      patientId: Number(patient.value?.id),
       draft: props.draft,
     },
     {

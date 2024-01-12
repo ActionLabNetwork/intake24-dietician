@@ -1,11 +1,11 @@
 import { z } from 'zod'
-import { moduleRoutes } from '../types/modules'
+import { moduleNames } from '../types/modules'
 
 export const DraftCreateDtoSchema = z.object({
   recallDate: z.coerce.date(),
   modules: z.array(
     z.object({
-      key: z.enum(moduleRoutes),
+      key: z.enum(moduleNames),
       feedback: z.string(),
       selected: z.boolean(),
     }),
