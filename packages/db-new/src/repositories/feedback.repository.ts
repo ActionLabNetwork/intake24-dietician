@@ -47,10 +47,9 @@ export class FeedbackRepository {
   }
 
   public async editDraft(draftId: number, draft: DraftCreateDto) {
-    console.log({ draftId })
     const [updatedDraft] = await this.drizzle
       .update(feedbackDrafts)
-      .set({ draft: draft })
+      .set({ draft: draft, updatedAt: new Date() })
       .where(eq(feedbackDrafts.id, draftId))
       .returning()
       .execute()

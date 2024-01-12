@@ -58,7 +58,7 @@ export interface ModuleItem {
   selected: boolean
 }
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     defaultState?: FeedbackMapping
     showSwitches: boolean
@@ -80,29 +80,6 @@ const drag = ref(false)
 
 const items = ref<ModuleItem[]>([])
 
-// const items = ref<ModuleItem[]>([
-//   {
-//     title: 'Meal diary',
-//     value: 1,
-//     selected: false,
-//     to: '/meal-diary',
-//   },
-//   {
-//     title: 'Carbs exchange',
-//     value: 2,
-//     selected: false,
-//     to: '/carbs-exchange',
-//   },
-//   {
-//     title: 'Energy intake',
-//     value: 3,
-//     selected: false,
-//     to: '/energy-intake',
-//   },
-//   { title: 'Fibre intake', value: 4, selected: false, to: '/fibre-intake' },
-//   { title: 'Water intake', value: 5, selected: false, to: '/water-intake' },
-// ])
-
 const selectedModule = ref(1)
 
 const handleModuleSelect = (title: ModuleName) => {
@@ -113,22 +90,46 @@ const handleModuleSelect = (title: ModuleName) => {
   emit('update', item.title)
 }
 
-// onMounted(() => {
-//   emit('update:modules', items.value)
-// })
+const initWithDefaultValues = () => {
+  if (!props.defaultState) return
+
+  items.value = Object.entries(props.defaultState).map(
+    ([key, value], index) => {
+      return {
+        title: key as ModuleName,
+        value: index + 1,
+        selected: value.isActive,
+      }
+    },
+  )
+}
+
+const initWithValuesFromClinicSettings = () => {
+  if (!surveyQuery.data.value) return
+
+  const feedbackModules = surveyQuery.data.value.feedbackModules ?? []
+  items.value = feedbackModules.map((module, index) => {
+    return {
+      title: module.name as ModuleName,
+      value: index + 1,
+      selected: module.isActive,
+    }
+  })
+}
 
 watch(
-  () => surveyQuery.data,
+  () => surveyQuery.data.value,
   newData => {
-    if (!newData.value) return
-    const feedbackModules = newData.value?.feedbackModules ?? []
-    items.value = feedbackModules.map((module, index) => {
-      return {
-        title: module.name as ModuleName,
-        value: index + 1,
-        selected: module.isActive,
-      }
-    })
+    // We are using default state
+    if (props.defaultState) {
+      initWithDefaultValues()
+      emit('update:modules', items.value)
+      return
+    }
+
+    if (!newData) return // No data yet
+    // Otherwise, we are using the clinic settings
+    initWithValuesFromClinicSettings()
     emit('update:modules', items.value)
   },
   { immediate: true },

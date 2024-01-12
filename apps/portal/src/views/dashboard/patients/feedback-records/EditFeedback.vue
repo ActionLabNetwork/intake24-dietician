@@ -2,11 +2,7 @@
   <div>
     <v-container>
       <div class="d-print-none">
-        <v-btn
-          prepend-icon="mdi-chevron-left"
-          flat
-          class="text-none px-0"
-          variant="text"
+        <BackButton
           :to="{
             name: 'Survey Patient Feedback Records',
             params: {
@@ -16,7 +12,7 @@
           }"
         >
           Back to {{ patientName }} records
-        </v-btn>
+        </BackButton>
       </div>
       <div
         v-if="
@@ -29,9 +25,6 @@
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
-          :id="paddedId"
-          :avatar="avatar"
-          :fullName="fullName"
           :recall-dates="recallDates"
           :initial-date="date"
           :previewing="previewing"
@@ -88,10 +81,8 @@ import { type Component, computed, ref, watch, reactive } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { DISPLAY_ID_ZERO_PADDING } from '@/constants/index'
 import { useRoute } from 'vue-router'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import ModuleSelectList, {
   ModuleItem,
 } from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
@@ -114,6 +105,7 @@ import { FeedbackMapping } from '@intake24-dietician/portal/components/master-se
 import cloneDeep from 'lodash.clonedeep'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 
 defineProps<{ draft: DraftDto }>()
 
@@ -158,12 +150,7 @@ const recallDates = computed(() => {
 const patientQueryData = computed(() => {
   return patientQuery.value.data
 })
-const paddedId = computed(() => {
-  return ((route.params['patientId'] as string) ?? '').padStart(
-    DISPLAY_ID_ZERO_PADDING,
-    '0',
-  )
-})
+
 const patientName = computed(() => {
   const firstName = patientQueryData.value?.firstName
 
@@ -177,9 +164,6 @@ const fullName = computed(() => {
   const lastName = patientQueryData.value?.lastName ?? ''
 
   return `${firstName} ${lastName}`
-})
-const avatar = computed(() => {
-  return patientQuery.value.data?.avatar ?? getDefaultAvatar()
 })
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []

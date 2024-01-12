@@ -52,6 +52,7 @@ const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['surv
 
 const summary = computed((): Summary => {
   const patients = patientsQuery.data.value ?? []
+  console.log({ patients })
 
   return patients.reduce(
     (counts, patient) => {

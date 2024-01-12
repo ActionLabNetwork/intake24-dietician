@@ -99,11 +99,7 @@ const patientStore = usePatientStore()
 const recallStore = useRecallStore()
 
 // Queries
-// const clinicQuery = useSurveyById(route.params['surveyId'] as string)
 const patientQuery = computed(() => patientStore.patientQuery)
-// const recallsQuery = useRecallsByUserId(
-// ref(route.params['patientId'] as string),
-// )
 
 // Refs
 const date = ref<Date>(new Date())
@@ -129,13 +125,6 @@ const patientName = computed(() => {
 const recallsData = computed(() => {
   return recallStore.recalls ?? []
 })
-// const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-//   '/meal-diary': { component: MealDiaryModule, feedback: '' },
-//   '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
-//   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
-//   '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
-//   '/water-intake': { component: WaterIntakeModule, feedback: '' },
-// })
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
