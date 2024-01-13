@@ -121,18 +121,18 @@ const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
 }
 
 const calculateMealCarbsExchange = (meal: RecallMeal) => {
-  const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+  const mealCarbsExchange = meal.foods.reduce((total, food: any) => {
     return total + calculateFoodCarbsExchange(food)
   }, 0)
 
   mealCards[meal.name] = {
     label: meal.name,
-    foods: meal.foods.map(f => ({
-      name: f['englishName'],
-      servingWeight: f['portionSizes']?.find(
+    foods: meal.foods.map(food => ({
+      name: food['englishName'],
+      servingWeight: food['portionSizes']?.find(
         (item: { name: string }) => item.name === 'servingWeight',
       )?.value,
-      value: Math.floor(calculateFoodCarbsExchange(f as any)),
+      value: Math.floor(calculateFoodCarbsExchange(food as any)),
     })),
     mascot: Mascot,
   }
@@ -159,6 +159,7 @@ watch(
       data.recall.meals.map(meal => meal.hours),
     )
 
+    // Reset meal cards
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })

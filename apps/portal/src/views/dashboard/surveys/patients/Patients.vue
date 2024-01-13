@@ -34,6 +34,7 @@ import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
+import { isArray } from 'radash'
 
 const { t } = useI18n<i18nOptions>()
 
@@ -53,6 +54,10 @@ const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['surv
 const summary = computed((): Summary => {
   const patients = patientsQuery.data.value ?? []
   console.log({ patients })
+
+  if (!isArray(patients)) {
+    return { total: 0, active: 0, archived: 0 }
+  }
 
   return patients.reduce(
     (counts, patient) => {

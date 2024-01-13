@@ -85,6 +85,7 @@ export const RecallMealFoodSchema = z.object({
   portionSizes: z.array(RecallPotionSizeSchema),
   nutrients: z.array(RecallNutrientSchema),
 })
+export type RecallMealFood = z.infer<typeof RecallMealFoodSchema>
 
 export const RecallSchema = z.object({
   id: z.string(),

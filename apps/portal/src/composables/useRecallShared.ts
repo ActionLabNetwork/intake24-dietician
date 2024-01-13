@@ -27,7 +27,7 @@ export default function useRecallShared({ recallsData, recallDate }: Props) {
   // Methods
   const updateRecallData = async (newDate: Date) => {
     await nextTick()
-    const matchingRecall = recallDates.value.find(range =>
+    const matchingRecall = recallDates.value.findLast(range =>
       moment(range.startTime).isSame(newDate, 'day'),
     )
 

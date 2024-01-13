@@ -1,16 +1,16 @@
-import { AuthService } from '../../services/auth.service'
-import { PatientService } from '../../services/patient.service'
-import { protectedDieticianProcedure, router } from '../../trpc'
-import {
-  PatientUpdateDtoSchema,
-  PatientWithUserDto,
-} from '@intake24-dietician/common/entities-new/user.dto'
 import {
   RecallDatesDtoSchema,
   RecallDtoSchema,
 } from '@intake24-dietician/common/entities-new/recall.dto'
+import {
+  PatientUpdateDtoSchema,
+  PatientWithUserDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
+import { AuthService } from '../../services/auth.service'
+import { PatientService } from '../../services/patient.service'
+import { protectedDieticianProcedure, router } from '../../trpc'
 
 @singleton()
 export class DieticianPatientRouter {
@@ -43,7 +43,13 @@ export class DieticianPatientRouter {
         },
       })
       .input(z.object({ surveyId: z.number() }))
-      .output(z.array(PatientWithUserDto))
+      .output(
+        z.array(
+          PatientWithUserDto.extend({
+            recallDates: z.array(RecallDatesDtoSchema),
+          }),
+        ),
+      )
       .query(async opts => {
         return await this.patientService.getPatients(
           opts.input.surveyId,

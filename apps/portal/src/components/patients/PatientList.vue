@@ -143,6 +143,7 @@ import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useRoute } from 'vue-router'
+import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -152,7 +153,7 @@ type DT = InstanceType<typeof VDataTable>
 type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
-  patientsData: PatientWithUserDto[]
+  patientsData: (PatientWithUserDto & { recallDates: RecallDatesDto[] })[]
 }>()
 const headerTitles = [
   'Id',
@@ -270,16 +271,19 @@ const generateSurveyLink = async (link: string) => {
 watch(
   () => props.patientsData,
   newPatients => {
-    // TODO: Update reminder related fields once implemented
     patients.value =
       newPatients.map(patient => {
+        const recallDates = patient.recallDates
+          .map(date => date.recall.startTime)
+          .sort((a, b) => b.getTime() - a.getTime())
+
         return {
           id: patient.id,
           email: patient.user.email,
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
-          lastRecall: getRandomDate(),
+          lastRecall: recallDates[0]?.toLocaleDateString() ?? 'N/A',
           lastFeedbackSent: {
             date: getRandomDate(),
             type: patient.patientPreference.sendAutomatedFeedback
@@ -294,16 +298,6 @@ watch(
   },
   { immediate: true },
 )
-
-// watch(
-//   () => recallsQuery.data.value?.data,
-//   () => {
-//     patients.value = patients.value.map(patient => ({
-//       ...patient,
-//       lastRecall: latestRecallsByPatient.value ?? 'N/A',
-//     }))
-//   },
-// )
 </script>
 <style scoped lang="scss">
 .table-header {

@@ -8,7 +8,10 @@ import { z } from 'zod'
 import { JwtService } from './jwt.service'
 import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import moment from 'moment'
-import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import type {
+  RecallDatesDto,
+  RecallDto,
+} from '@intake24-dietician/common/entities-new/recall.dto'
 
 @singleton()
 export class PatientService {
@@ -92,7 +95,7 @@ export class PatientService {
     const secret = survey?.intake24Secret
     await this.jwtService.validate(jwt, secret !== '' ? undefined : secret)
 
-    const patientUser = await recall.user.aliases[0]
+    const patientUser = recall.user.aliases[0]
     assert(patientUser)
     if (!patientUser) throw new ClientError('Patient cannot be extracted')
     // we are using our user ID for Intake's username
@@ -109,7 +112,7 @@ export class PatientService {
     patient: Omit<PatientWithUserDto, 'startSurveyUrl'> & {
       survey: { intake24Secret: string; recallSubmissionURL: string }
     },
-  ): Promise<PatientWithUserDto> {
+  ): Promise<PatientWithUserDto & { recallDates: RecallDatesDto[] }> {
     const payload = {
       username: patient.id.toString(),
       password: 'super_secret_password', // TODO: should this be created for the user and stored?
@@ -120,10 +123,16 @@ export class PatientService {
       moment().add(5, 'days').toDate(),
       patient.survey.intake24Secret && undefined,
     )
+
+    const recallDates = await this.recallRepository.getRecallDatesOfPatient(
+      patient.id,
+    )
+
     return {
       ...patient,
       startSurveyUrl:
         patient.survey.recallSubmissionURL + `/create-user/${jwt}`,
+      recallDates,
     }
   }
 }

@@ -80,7 +80,7 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
@@ -91,6 +91,7 @@ import { useToast } from 'vue-toast-notification'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables
+const router = useRouter()
 const route = useRoute()
 const $toast = useToast()
 
@@ -104,7 +105,7 @@ const patientQuery = computed(() => patientStore.patientQuery)
 // Refs
 const date = ref<Date>(new Date())
 const component = ref<ModuleName>('Meal diary')
-const previewing = ref<boolean>(false)
+const previewing = ref<boolean>(route.query['preview'] === 'true' || false)
 
 // Computed properties
 const moduleFeedback = computed(() => {
@@ -231,6 +232,11 @@ const handlePreviewButtonClick = () => {
     $toast.warning('Please select at least one module to preview')
     return
   }
+
+  const previewValue = previewing.value ? 'false' : 'true'
+  router.push({
+    query: { ...router.currentRoute.value.query, preview: previewValue },
+  })
   previewing.value = !previewing.value
 }
 
