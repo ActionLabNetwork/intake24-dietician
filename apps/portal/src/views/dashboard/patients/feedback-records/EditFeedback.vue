@@ -16,7 +16,8 @@
       </div>
       <div
         v-if="
-          recallsQuery.data.value &&
+          recallStore.recallDates &&
+          recallStore.selectedRecallDate &&
           draftQuery.data.value &&
           allModules &&
           initialAllModules &&
@@ -25,8 +26,8 @@
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
-          :recall-dates="recallDates"
-          :initial-date="date"
+          :recall-dates="recallStore.recallDates"
+          :initial-date="recallStore.selectedRecallDate"
           :previewing="previewing"
           :draft="allModules"
           :editingDraft="{ originalDraft: initialAllModules }"
@@ -38,7 +39,7 @@
         <BaseProgressCircular />
       </div>
       <div
-        v-if="recallsQuery.data.value && draftQuery.data.value && isDataLoaded"
+        v-if="recallStore.hasRecalls && draftQuery.data.value && isDataLoaded"
         v-show="!previewing"
         class="mt-4"
       >
@@ -54,7 +55,6 @@
           <v-col cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
-              :recalls-data="recallsData"
               :recall-date="date"
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
@@ -95,7 +95,6 @@ import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
 } from '@/types/modules.types'
-import { useRecallsByUserId } from '@intake24-dietician/portal/queries/useRecall'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
@@ -125,9 +124,6 @@ const draftQuery = useFeedbackDraftById(
   Number(route.params['feedbackId'] as string),
 )
 const patientQuery = computed(() => patientStore.patientQuery)
-const recallsQuery = useRecallsByUserId(
-  ref(route.params['patientId'] as string),
-)
 
 // Refs
 const date = ref<Date>(new Date())
@@ -138,16 +134,6 @@ const isDataLoaded = ref<boolean>(false)
 // Computed properties
 const moduleFeedback = computed(() => {
   return moduleNameToModuleComponentMapping[component.value].feedback
-})
-const recallDates = computed(() => {
-  const data = recallsQuery.data
-
-  if (!data.value) return []
-  return data.value?.map(recall => ({
-    id: recall.id,
-    startTime: recall.recall.startTime,
-    endTime: recall.recall.endTime,
-  }))
 })
 const patientQueryData = computed(() => {
   return patientQuery.value.data
@@ -160,9 +146,6 @@ const patientName = computed(() => {
     return ''
   }
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
-})
-const recallsData = computed(() => {
-  return recallsQuery.data.value ?? []
 })
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
@@ -313,6 +296,8 @@ const handleDateUpdate = (_date: Date) => {
   if (selectedModules.value) {
     selectedModules.value.recallDate = _date
   }
+
+  recallStore.selectedRecallDate = _date
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
@@ -344,7 +329,7 @@ const handlePreviewButtonClick = () => {
 }
 
 watch(
-  () => recallsQuery.data.value,
+  () => recallStore.recallDatesQuery.data,
   data => {
     if (data) {
       // Default to date saved in draft

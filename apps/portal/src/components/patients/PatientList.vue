@@ -144,6 +144,7 @@ import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useRoute } from 'vue-router'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import { isArray } from 'radash'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -271,6 +272,7 @@ const generateSurveyLink = async (link: string) => {
 watch(
   () => props.patientsData,
   newPatients => {
+    if (!isArray(newPatients)) return
     patients.value =
       newPatients.map(patient => {
         const recallDates = patient.recallDates

@@ -14,7 +14,6 @@
           Back to {{ patientName }} records
         </BackButton>
       </div>
-      {{ recallStore.selectedRecallDate }}
       <div
         v-if="
           recallStore.recallDates &&

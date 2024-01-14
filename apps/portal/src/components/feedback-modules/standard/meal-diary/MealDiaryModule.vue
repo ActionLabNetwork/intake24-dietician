@@ -69,10 +69,6 @@ const getServingWeight = (food: { [x: string]: any[] }) => {
   const servingWeight = usePrecision(rawServingWeight, 2).value
   return `${servingWeight}g`
 }
-
-recallStore.$subscribe((mutation, state) => {
-  console.log({ mutation, state })
-})
 </script>
 
 <style scoped lang="scss">

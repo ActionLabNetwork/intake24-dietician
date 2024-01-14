@@ -7,7 +7,7 @@ import { useClientStore } from '../trpc/trpc'
 export const usePatients = (surveyId: Ref<string>) => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
-    queryKey: ['patients', surveyId],
+    queryKey: ['patients', 'surveyId', surveyId],
     queryFn: () => {
       return authenticatedClient.dieticianPatient.getPatients.query({
         surveyId: Number(surveyId.value),
@@ -30,7 +30,7 @@ export const usePatientById = (userId: Ref<string>) => {
   const queryClient = useQueryClient()
 
   const query = useQuery({
-    queryKey: ['patients', userId],
+    queryKey: ['patients', 'userId', userId],
     queryFn: async () => {
       const response =
         await authenticatedClient.dieticianPatient.getPatient.query({

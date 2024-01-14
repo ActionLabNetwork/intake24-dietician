@@ -2,11 +2,10 @@ import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useRecallById, useRecallDatesByUserId } from '../queries/useRecall'
 import { useRoute } from 'vue-router'
-import { useQueryClient } from '@tanstack/vue-query'
+import moment from 'moment'
 
 export const useRecallStore = defineStore('recalls', () => {
   const route = useRoute()
-  const queryClient = useQueryClient()
 
   const patientId = ref('')
   const recallId = ref(0)
@@ -34,19 +33,22 @@ export const useRecallStore = defineStore('recalls', () => {
     recallId.value = newRecallId
   }
 
+  const updateRecallData = async (newDate: Date) => {
+    const matchingRecall = recallDates.value.findLast(range =>
+      moment(range.startTime).isSame(newDate, 'day'),
+    )
+
+    if (matchingRecall) {
+      recallId.value = matchingRecall.id
+      recallQuery.refetch()
+    }
+  }
+
   watch(
     () => selectedRecallDate.value,
     async newDate => {
-      console.log({ newDate })
       if (!newDate) return
-      const recallDate = recallDates.value.find(
-        recallDate => recallDate.startTime.getTime() === newDate.getTime(),
-      )
-
-      if (!recallDate) return
-      recallId.value = recallDate.id
-      recallQuery.refetch()
-      queryClient.refetchQueries({ queryKey: ['recallId', recallId.value] })
+      await updateRecallData(newDate)
     },
     { immediate: true },
   )
