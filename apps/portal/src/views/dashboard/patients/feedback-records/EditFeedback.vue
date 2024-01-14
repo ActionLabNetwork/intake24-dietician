@@ -66,11 +66,11 @@
   </div>
   <div v-show="previewing">
     <FeedbackPreview
-      v-if="selectedModules"
-      :recalls-data="selectedModules?.recallsData"
+      v-if="selectedModules && selectedModules.recallDates"
+      :recall-dates="selectedModules?.recallDates"
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
-      :patient-name="fullName"
+      :patient-name="patientStore.fullName"
       class="mt-0"
     />
   </div>
@@ -106,6 +106,7 @@ import cloneDeep from 'lodash.clonedeep'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 defineProps<{ draft: DraftDto }>()
 
@@ -113,6 +114,7 @@ defineProps<{ draft: DraftDto }>()
 
 // Stores
 const patientStore = usePatientStore()
+const recallStore = useRecallStore()
 
 // Composables
 const route = useRoute()
@@ -159,22 +161,9 @@ const patientName = computed(() => {
   }
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
 })
-const fullName = computed(() => {
-  const firstName = patientQueryData.value?.firstName ?? ''
-  const lastName = patientQueryData.value?.lastName ?? ''
-
-  return `${firstName} ${lastName}`
-})
 const recallsData = computed(() => {
   return recallsQuery.data.value ?? []
 })
-// const routeToModuleComponentMapping: ComponentMappingWithFeedback = reactive({
-//   '/meal-diary': { component: MealDiaryModule, feedback: '' },
-//   '/carbs-exchange': { component: CarbsExchangeModule, feedback: '' },
-//   '/energy-intake': { component: EnergyIntakeModule, feedback: '' },
-//   '/fibre-intake': { component: FibreIntakeModule, feedback: '' },
-//   '/water-intake': { component: WaterIntakeModule, feedback: '' },
-// })
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
@@ -220,7 +209,7 @@ const feedbackMapping = ref<FeedbackMapping>({
 
 const initialAllModules = ref<
   | {
-      recallsData: typeof recallsData
+      recallDates: typeof recallStore.recallDatesQuery.data
       recallDate: typeof date
       modules: {
         key: ModuleName
@@ -233,7 +222,7 @@ const initialAllModules = ref<
 >(undefined)
 const allModules = ref<
   | {
-      recallsData: typeof recallsData
+      recallDates: typeof recallStore.recallDatesQuery.data
       recallDate: typeof date
       modules: {
         key: ModuleName
@@ -244,7 +233,7 @@ const allModules = ref<
     }
   | undefined
 >({
-  recallsData: recallsData,
+  recallDates: recallStore.recallDatesQuery.data,
   recallDate: date,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
@@ -264,7 +253,7 @@ const allModules = ref<
 
 const selectedModules = ref<
   | {
-      recallsData: typeof recallsData
+      recallDates: typeof recallStore.recallDatesQuery.data
       recallDate: typeof date
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
@@ -277,7 +266,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   const newValue = {
-    recallsData: recallsData.value,
+    recallDates: recallStore.recallDatesQuery.data,
     recallDate: date.value,
     modules: modules.map(module => {
       const key = module.title
@@ -298,7 +287,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = newValue
 
   selectedModules.value = {
-    recallsData: recallsData.value,
+    recallDates: recallStore.recallDatesQuery.data,
     recallDate: date.value,
     modules: modules
       .filter(module => module.selected)

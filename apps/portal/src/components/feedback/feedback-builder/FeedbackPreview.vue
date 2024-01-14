@@ -17,7 +17,7 @@
           <component
             :is="module.component"
             :feedback="module.feedback"
-            :recalls-data="recallsData"
+            :recalls-dates-data="recallDates"
             :recall-date="recallDate"
             mode="preview"
             class="mt-10"
@@ -51,12 +51,12 @@ import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/
 import type { Component } from 'vue'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
 
 interface Props {
   patientName: string
-  recallsData: RecallDto[]
+  recallDates: RecallDatesDto[]
   recallDate: Date
   modules: { key: ModuleName; component: Component; feedback: string }[]
 }

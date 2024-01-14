@@ -2,18 +2,18 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && selectedDate"
+      v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Water intake"
       :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
+      :allowedStartDates="recallStore.allowedStartDates"
+      :selectedDate="recallStore.selectedRecallDate"
       :show-datepicker="mode === 'view'"
-      @update:selected-date="selectedDate = $event"
+      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <div>
-      <BaseProgressCircular v-if="recallQuery.isPending.value" />
-      <div v-if="recallQuery.isError.value" class="mt-10">
+      <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
+      <div v-if="recallStore.recallQuery.isError" class="mt-10">
         <v-alert
           type="error"
           title="Error fetching recall data"
@@ -94,9 +94,9 @@ import MascotSad from '@/components/feedback-modules/standard/water-intake/svg/M
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import MascotWithBackground from '@/components/feedback-modules/standard/water-intake/svg/MascotWithBackground.vue'
 import chroma from 'chroma-js'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -108,7 +108,7 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
-const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
 
 const totalWaterIntake = ref(0)
 
@@ -128,16 +128,16 @@ const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
 
-watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
-  },
-  { immediate: true },
-)
+// watch(
+//   () => props.recallDate,
+//   newRecallDate => {
+//     selectedDate.value = newRecallDate
+//   },
+//   { immediate: true },
+// )
 
 watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(

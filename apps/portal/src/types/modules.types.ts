@@ -4,10 +4,8 @@ import {
   moduleRoutes,
   moduleNames,
 } from '@intake24-dietician/common/types/modules'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 export interface FeedbackModulesProps {
-  recallsData?: RecallDto[]
   recallDate?: Date
   feedback: string
   mode: 'preview' | 'edit' | 'view'

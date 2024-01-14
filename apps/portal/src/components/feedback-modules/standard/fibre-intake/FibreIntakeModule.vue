@@ -2,14 +2,14 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && selectedDate"
+      v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Fibre intake"
       :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
+      :allowedStartDates="recallStore.allowedStartDates"
+      :selectedDate="recallStore.selectedRecallDate"
       :show-datepicker="mode === 'view'"
-      @update:selected-date="selectedDate = $event"
+      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <div v-if="mealCards" class="mt-2">
       <BaseTabs
@@ -60,10 +60,10 @@ import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.v
 import PieChartSection from './PieChartSection.vue'
 import TimelineSection from './TimelineSection.vue'
 import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -75,7 +75,7 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
-const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
 
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
@@ -118,16 +118,16 @@ const tabs = ref([
   },
 ])
 
-watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
-  },
-  { immediate: true },
-)
+// watch(
+//   () => props.recallDate,
+//   newRecallDate => {
+//     selectedDate.value = newRecallDate
+//   },
+//   { immediate: true },
+// )
 
 watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     // TODO: Improve typings, remove uses of any
     const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {

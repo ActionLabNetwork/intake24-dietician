@@ -42,7 +42,8 @@ export class RecallRepository {
       return {
         ...recall,
         recall: {
-          id: _recall.id,
+          id: recall.id,
+          i24Id: _recall.id,
           startTime: _recall.startTime,
           endTime: _recall.endTime,
         },

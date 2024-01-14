@@ -23,7 +23,7 @@
               v-model="date"
               :teleport="true"
               :enable-time-picker="false"
-              :allowed-dates="allowedDates"
+              :allowed-dates="allowedStartDates"
               text-input
               format="dd/MM/yyyy"
               class="ml-2"
@@ -92,9 +92,10 @@ import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { storeToRefs } from 'pinia'
 
 const props = defineProps<{
-  recallDates: { id: number; startTime: Date; endTime: Date }[]
   initialDate: Date
   previewing: boolean
   editingDraft: { originalDraft: DraftCreateDto } | false
@@ -111,16 +112,15 @@ const route = useRoute()
 const $toast = useToast()
 
 const patientStore = usePatientStore()
+const recallStore = useRecallStore()
+
+const { allowedStartDates } = storeToRefs(recallStore)
 
 const patient = computed(() => patientStore.patientQuery.data)
 
 // Mutations
 const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
-
-const allowedDates = computed(() => {
-  return props.recallDates.map(date => date.startTime)
-})
 
 const date = ref()
 

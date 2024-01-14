@@ -1,32 +1,55 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
-import { useRecallsByUserId } from '../queries/useRecall'
+import { useRecallById, useRecallDatesByUserId } from '../queries/useRecall'
 import { useRoute } from 'vue-router'
+import { useQueryClient } from '@tanstack/vue-query'
 
 export const useRecallStore = defineStore('recalls', () => {
   const route = useRoute()
+  const queryClient = useQueryClient()
 
   const patientId = ref('')
+  const recallId = ref(0)
+  const selectedRecallDate = ref<Date>()
 
-  const recallsQuery = useRecallsByUserId(patientId)
+  const recallDatesQuery = useRecallDatesByUserId(patientId)
+  const recallQuery = useRecallById(recallId)
 
-  const recalls = computed<RecallDto[]>(() => recallsQuery.data.value ?? [])
-  const hasRecalls = computed(() => (recalls.value?.length ?? 0) > 0)
+  const hasRecalls = computed(
+    () => (recallDatesQuery.data.value?.length ?? 0) > 0,
+  )
   const recallDates = computed(() => {
-    const data = recalls.value
-
-    if (!data) return []
-    return data.map(recall => ({
-      id: recall.id,
-      startTime: recall.recall.startTime,
-      endTime: recall.recall.endTime,
-    }))
+    if (!recallDatesQuery.data.value) return []
+    return recallDatesQuery.data.value.map(d => d.recall)
   })
+  const allowedStartDates = computed(() =>
+    recallDates.value.map(date => date.startTime),
+  )
 
   const fetchRecalls = async (newPatientId: string) => {
     patientId.value = newPatientId
   }
+
+  const fetchRecall = async (newRecallId: number) => {
+    recallId.value = newRecallId
+  }
+
+  watch(
+    () => selectedRecallDate.value,
+    async newDate => {
+      console.log({ newDate })
+      if (!newDate) return
+      const recallDate = recallDates.value.find(
+        recallDate => recallDate.startTime.getTime() === newDate.getTime(),
+      )
+
+      if (!recallDate) return
+      recallId.value = recallDate.id
+      recallQuery.refetch()
+      queryClient.refetchQueries({ queryKey: ['recallId', recallId.value] })
+    },
+    { immediate: true },
+  )
 
   watch(
     route,
@@ -41,11 +64,33 @@ export const useRecallStore = defineStore('recalls', () => {
     { immediate: true },
   )
 
+  watch(
+    () => recallDates.value,
+    newRecallDates => {
+      if (!newRecallDates) return
+      const sortedRecallDates = newRecallDates.sort(
+        (a, b) => b.startTime.getTime() - a.startTime.getTime(),
+      )
+
+      if (!selectedRecallDate.value) {
+        selectedRecallDate.value = sortedRecallDates[0]?.startTime
+      }
+    },
+    { immediate: true },
+  )
+
   return {
-    recalls,
+    // recalls,
+    patientId,
+    recallId,
     recallDates,
+    recallDatesQuery,
+    recallQuery,
+    selectedRecallDate,
     hasRecalls,
+    allowedStartDates,
     fetchRecalls,
-    isPending: recallsQuery.isPending,
+    fetchRecall,
+    // isPending: recallsQuery.isPending,
   }
 })

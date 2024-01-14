@@ -2,14 +2,14 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && selectedDate"
+      v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Energy intake"
       :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
+      :allowedStartDates="recallStore.allowedStartDates"
+      :selectedDate="recallStore.selectedRecallDate"
       :show-datepicker="mode === 'view'"
-      @update:selected-date="selectedDate = $event"
+      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
@@ -17,9 +17,9 @@
     <div>
       <div class="grid-container">
         <!-- Loading state -->
-        <BaseProgressCircular v-if="recallQuery.isPending.value" />
+        <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
         <!-- Error state -->
-        <div v-if="recallQuery.isError.value" class="mt-10">
+        <div v-if="recallStore.recallQuery.isError" class="mt-10">
           <v-alert
             type="error"
             title="Error fetching recall data"
@@ -71,12 +71,12 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import SummarizedCard, {
   type SummarizedCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -89,7 +89,7 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
-const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
 
 // Refs
 const totalEnergy = ref(0)
@@ -154,16 +154,16 @@ const calculateMealEnergy = (meal: RecallMeal) => {
   return mealEnergy
 }
 
-watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
-  },
-  { immediate: true },
-)
+// watch(
+//   () => props.recallDate,
+//   newRecallDate => {
+//     selectedDate.value = newRecallDate
+//   },
+//   { immediate: true },
+// )
 
 watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     if (!data) return
 

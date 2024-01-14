@@ -2,15 +2,15 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && selectedDate"
+      v-if="recallStore.selectedRecallDate"
       :logo="Logo"
       title="Carbs Exchange"
-      :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
+      :recallDate="recallStore.selectedRecallDate ?? new Date()"
+      :allowedStartDates="recallStore.allowedStartDates"
+      :selectedDate="recallStore.selectedRecallDate"
       :show-datepicker="mode === 'view'"
       :class="{ 'text-white': mode === 'preview' }"
-      @update:selected-date="selectedDate = $event"
+      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
 
     <TotalNutrientsDisplay>
@@ -18,9 +18,9 @@
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
-      <BaseProgressCircular v-if="recallQuery.isPending.value" />
+      <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
       <!-- Error state -->
-      <div v-if="recallQuery.isError.value" class="mt-10">
+      <div v-if="recallStore.recallQuery.isError" class="mt-10">
         <v-alert
           type="error"
           title="Error fetching recall data"
@@ -74,12 +74,12 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -88,7 +88,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
-const { selectedDate, recallQuery, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
 
 // Refs
 const totalCarbs = ref(0)
@@ -142,15 +142,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal) => {
 
 // Watchers
 watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
-  },
-  { immediate: true },
-)
-
-watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     if (!data) return
 

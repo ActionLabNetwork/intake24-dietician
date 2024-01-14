@@ -10,7 +10,8 @@ export type RecallDto = z.infer<typeof RecallDtoSchema>
 export const RecallDatesDtoSchema = z.object({
   id: z.number(),
   recall: z.object({
-    id: z.string(),
+    id: z.number(),
+    i24Id: z.string(),
     startTime: z.date(),
     endTime: z.date(),
   }),

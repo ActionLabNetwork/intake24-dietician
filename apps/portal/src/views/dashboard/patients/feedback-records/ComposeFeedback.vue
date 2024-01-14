@@ -14,13 +14,18 @@
           Back to {{ patientName }} records
         </BackButton>
       </div>
+      {{ recallStore.selectedRecallDate }}
       <div
-        v-if="recallStore.recalls && recallStore.recallDates && allModules"
+        v-if="
+          recallStore.recallDates &&
+          recallStore.selectedRecallDate &&
+          allModules
+        "
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
           :recall-dates="recallStore.recallDates"
-          :initial-date="date"
+          :initial-date="recallStore.selectedRecallDate"
           :previewing="previewing"
           :editing-draft="false"
           :draft="allModules"
@@ -28,7 +33,7 @@
           @update:date="handleDateUpdate"
         />
       </div>
-      <div v-if="recallStore.recalls" v-show="!previewing" class="mt-4">
+      <div v-if="recallStore.hasRecalls" v-show="!previewing" class="mt-4">
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
@@ -37,23 +42,29 @@
               @update:modules="handleModulesUpdate"
             />
           </v-col>
-          <v-col cols="9">
+          <v-col v-if="!recallStore.recallQuery.isPending" cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
-              :recalls-data="recallsData"
               :recall-date="date"
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
             />
           </v-col>
+          <!-- <v-col v-if="!recallStore.recallQuery.isPending" cols="9">
+            <MealDiaryModule
+              :recall-date="date"
+              :feedback="moduleFeedback"
+              @update:feedback="handleFeedbackUpdate"
+            />
+          </v-col> -->
         </v-row>
       </div>
     </v-container>
   </div>
   <div v-show="previewing">
     <FeedbackPreview
-      v-if="selectedModules"
-      :recalls-data="selectedModules?.recallsData"
+      v-if="selectedModules && selectedModules.recallDates"
+      :recall-dates="selectedModules?.recallDates"
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
@@ -123,9 +134,6 @@ const patientName = computed(() => {
   }
   return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
 })
-const recallsData = computed(() => {
-  return recallStore.recalls ?? []
-})
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
@@ -138,7 +146,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
 
 const allModules = ref<
   | {
-      recallsData: typeof recallsData
+      recallDates: typeof recallStore.recallDatesQuery.data
       recallDate: typeof date
       modules: {
         key: ModuleName
@@ -149,7 +157,7 @@ const allModules = ref<
     }
   | undefined
 >({
-  recallsData: recallsData,
+  recallDates: recallStore.recallDatesQuery.data,
   recallDate: date,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
@@ -169,7 +177,7 @@ const allModules = ref<
 
 const selectedModules = ref<
   | {
-      recallsData: typeof recallsData
+      recallDates: typeof recallStore.recallDatesQuery.data
       recallDate: typeof date
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
@@ -182,7 +190,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = {
-    recallsData: recallsData.value,
+    recallDates: recallStore.recallDatesQuery.data,
     recallDate: date.value,
     modules: modules.map(module => {
       const key = module.title
@@ -195,7 +203,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 
   selectedModules.value = {
-    recallsData: recallsData.value,
+    recallDates: recallStore.recallDatesQuery.data,
     recallDate: date.value,
     modules: modules
       .filter(module => module.selected)
@@ -211,6 +219,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
 const handleDateUpdate = (_date: Date) => {
   date.value = _date
+  recallStore.selectedRecallDate = _date
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
@@ -241,11 +250,14 @@ const handlePreviewButtonClick = () => {
 }
 
 watch(
-  () => recallStore.recalls,
+  () => recallStore.recallDatesQuery.data,
   data => {
     if (data) {
       // Default to latest recall date
-      date.value = recallStore.recallDates.at(-1)?.startTime ?? new Date()
+      date.value =
+        recallStore.selectedRecallDate ??
+        data[0]?.recall.startTime ??
+        new Date()
     }
   },
   { immediate: true },
