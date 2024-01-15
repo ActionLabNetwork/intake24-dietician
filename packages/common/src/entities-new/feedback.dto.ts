@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { moduleNames } from '../types/modules'
 import { TimestampSchema } from './timestamp.dto'
 
+export type FeedbackType = 'Auto' | 'Tailored'
+
 export const DraftCreateDtoSchema = z.object({
   recallDate: z.coerce.date(),
   modules: z.array(

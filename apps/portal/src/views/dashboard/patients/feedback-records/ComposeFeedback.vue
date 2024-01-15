@@ -25,6 +25,7 @@
         <ProfileAndFeedbackCard
           :recall-dates="recallStore.recallDates"
           :initial-date="recallStore.selectedRecallDate"
+          feedback-type="Tailored"
           :previewing="previewing"
           :editing-draft="false"
           :draft="allModules"

@@ -29,6 +29,7 @@
           :recall-dates="recallStore.recallDates"
           :initial-date="recallStore.selectedRecallDate"
           :previewing="previewing"
+          feedback-type="Tailored"
           :draft="allModules"
           :editingDraft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"

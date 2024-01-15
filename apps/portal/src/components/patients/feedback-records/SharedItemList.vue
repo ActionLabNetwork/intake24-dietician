@@ -23,7 +23,7 @@
             :shared="moment(shared.createdAt).format(dateFormat)"
             :share-type="shared.shareType"
             class="mb-4"
-            @button-click="() => handleDraftItemButtonClick(shared.id)"
+            @button-click="() => handleViewButtonClick(shared.id)"
           />
         </div>
         <v-pagination
@@ -70,9 +70,9 @@ const paginationLength = computed(() => {
   return Math.ceil((feedbackSharesCountQuery.data.value ?? 0) / paginationLimit)
 })
 
-const handleDraftItemButtonClick = (shareId: number) => {
+const handleViewButtonClick = (shareId: number) => {
   router.push({
-    name: 'Survey Patient Edit Draft Feedback',
+    name: 'Survey Patient View Shared Feedback',
     params: {
       surveyId: route.params['surveyId'],
       patientId,

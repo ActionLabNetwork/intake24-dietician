@@ -28,9 +28,12 @@
         <ProfileAndFeedbackCard
           :recall-dates="recallStore.recallDates"
           :initial-date="recallStore.selectedRecallDate"
-          :previewing="previewing"
+          previewing
+          hide-action-buttons
           :draft="allModules"
           :editingDraft="{ originalDraft: initialAllModules }"
+          :feedback-type="shareQuery.data.value.shareType"
+          disable-datepicker
           @click:preview="handlePreviewButtonClick"
           @update:date="handleDateUpdate"
         />
@@ -128,7 +131,7 @@ const patientQuery = computed(() => patientStore.patientQuery)
 // Refs
 const date = ref<Date>(new Date())
 const component = ref<ModuleName>('Meal diary')
-const previewing = ref<boolean>(false)
+const previewing = ref<boolean>(true)
 const isDataLoaded = ref<boolean>(false)
 
 // Computed properties
