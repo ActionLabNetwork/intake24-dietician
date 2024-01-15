@@ -104,7 +104,7 @@ const headerTitles = [
   'Name',
   'Survey Details',
   'Alias',
-  'Recall Submission Url',
+  // 'Recall Submission Url',
 ] as const
 
 interface SurveyTableHeaders {
@@ -151,12 +151,12 @@ const headers = ref<SurveyTableHeaders[]>([
     key: 'alias',
     sortable: true,
   },
-  {
-    title: 'Recall Submission Url',
-    align: 'center',
-    key: 'recallSubmissionUrl',
-    sortable: false,
-  },
+  // {
+  //   title: 'Recall Submission Url',
+  //   align: 'center',
+  //   key: 'recallSubmissionUrl',
+  //   sortable: false,
+  // },
 ])
 
 const search = ref('')
@@ -173,7 +173,7 @@ watch(
           name: survey.surveyName,
           surveyDetails: undefined,
           alias: survey.alias,
-          recallSubmissionUrl: survey.recallSubmissionURL ?? '',
+          // recallSubmissionUrl: survey.recallSubmissionURL ?? '',
         }
       }) ?? []
   },

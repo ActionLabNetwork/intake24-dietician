@@ -25,6 +25,14 @@ export class SurveyRepository {
     })
   }
 
+  public async getSurveyByAlias(
+    alias: string,
+  ): Promise<typeof surveys.$inferSelect | undefined> {
+    return await this.drizzle.query.surveys.findFirst({
+      where: eq(surveys.alias, alias),
+    })
+  }
+
   public async getSurveyById(
     id: number,
   ): Promise<(SurveyDto & { dieticianId: number }) | undefined> {
@@ -111,7 +119,7 @@ export class SurveyRepository {
         const defaultFeedbackModules = await tx.query.feedbackModules.findMany()
         const feedbackModulesToBeInserted = defaultFeedbackModules.map(
           module => {
-            const { id, ...moduleWithoutId } = module
+            const { id: _, ...moduleWithoutId } = module
             return {
               id: (lastSurveyToFeedbackModules[0]?.id || 1) + 1 || 1,
               ...moduleWithoutId,
@@ -124,7 +132,7 @@ export class SurveyRepository {
         console.log({ feedbackModulesToBeInserted })
 
         feedbackModulesToBeInserted.forEach(async module => {
-          const { id, ...withoutId } = module
+          const { id: _, ...withoutId } = module
           await tx.insert(surveyToFeedbackModules).values(withoutId)
         })
       }
@@ -149,7 +157,7 @@ export class SurveyRepository {
         .execute()
       if (!feedbackModules) return
       feedbackModules.forEach(module => {
-        const { feedbackModuleId, ...rest } = module
+        const { feedbackModuleId: _, ...rest } = module
         tx.insert(surveyToFeedbackModules)
           .values({ ...module, surveyId })
           .onConflictDoUpdate({

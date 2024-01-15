@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type {
   PatientUpdateDto,
   PatientCreateDto,
@@ -52,6 +52,20 @@ export const useUpdatePatient = () => {
     mutate,
     mutateAsync,
   }
+}
+
+export const useSendRecallReminder = () => {
+  const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: { patientId: number }) =>
+      authenticatedClient.dieticianPatient.sendRecallReminder.mutate(body),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: [variables.patientId],
+      })
+    },
+  })
 }
 
 // TODO: Implement delete and restore patient

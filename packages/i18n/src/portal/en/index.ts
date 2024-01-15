@@ -6,6 +6,7 @@ import { profile } from './profile'
 import { appBar } from './appBar'
 import { surveys } from './surveys'
 import { patients } from './patients'
+import { general } from './general'
 
 const messages = {
   login,
@@ -16,6 +17,7 @@ const messages = {
   profile,
   patients,
   surveys,
+  general,
 }
 
 export default messages
