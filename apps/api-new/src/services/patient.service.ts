@@ -56,6 +56,10 @@ export class PatientService {
     return recall
   }
 
+  public async getSampleRecall() {
+    return await this.recallRepository.getSampleRecall()
+  }
+
   public async getRecallsOfPatient(patientId: number, dieticianId: number) {
     if (
       !(await this.userRepository.isPatientDieticians({

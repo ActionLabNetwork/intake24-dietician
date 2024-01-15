@@ -5,12 +5,7 @@
       v-if="recallStore.selectedRecallDate"
       :logo="Logo"
       title="Carbs Exchange"
-      :recallDate="recallStore.selectedRecallDate ?? new Date()"
-      :allowedStartDates="recallStore.allowedStartDates"
-      :selectedDate="recallStore.selectedRecallDate"
-      :show-datepicker="mode === 'view'"
       :class="{ 'text-white': mode === 'preview' }"
-      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
 
     <TotalNutrientsDisplay>

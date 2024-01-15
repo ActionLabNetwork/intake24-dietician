@@ -8,11 +8,6 @@
       v-if="props.recallDate && selectedRecallDate"
       :logo="Mascot"
       title="Meal diary"
-      :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedRecallDate"
-      :show-datepicker="mode === 'view'"
-      @update:selected-date="selectedRecallDate = $event"
     />
     <MealDiaryTimeline
       :meals="recallStore.recallQuery?.data?.recall.meals"
@@ -58,7 +53,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const recallStore = useRecallStore()
-const { allowedStartDates, selectedRecallDate } = storeToRefs(recallStore)
+const { selectedRecallDate } = storeToRefs(recallStore)
 
 const getServingWeight = (food: { [x: string]: any[] }) => {
   const rawServingWeight = parseFloat(

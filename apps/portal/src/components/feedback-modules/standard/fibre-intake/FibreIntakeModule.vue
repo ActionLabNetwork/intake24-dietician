@@ -5,11 +5,6 @@
       v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Fibre intake"
-      :recallDate="props.recallDate"
-      :allowedStartDates="recallStore.allowedStartDates"
-      :selectedDate="recallStore.selectedRecallDate"
-      :show-datepicker="mode === 'view'"
-      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <div v-if="mealCards" class="mt-2">
       <BaseTabs

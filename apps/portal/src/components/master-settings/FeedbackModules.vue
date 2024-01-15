@@ -73,6 +73,7 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -117,13 +118,6 @@ interface FormFieldConfig<TVal, TProps = Record<string, unknown>> {
 interface FormConfig {
   [key: string]: FormFieldConfig<any, any>
 }
-
-type ModuleName =
-  | 'Meal diary'
-  | 'Carbs exchange'
-  | 'Energy intake'
-  | 'Fibre intake'
-  | 'Water intake'
 
 const findFeedbackModel = (name: ModuleName) => {
   return props.defaultState.feedbackModules.find(module => module.name === name)

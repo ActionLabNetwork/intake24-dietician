@@ -19,6 +19,11 @@ export class RecallRepository {
     })
   }
 
+  // TODO: Ensure there is a proper sample recall
+  public async getSampleRecall() {
+    return await this.drizzle.query.recalls.findFirst()
+  }
+
   public async getRecallsOfPatient(patientId: number) {
     const _recalls = await this.drizzle.query.recalls
       .findMany({

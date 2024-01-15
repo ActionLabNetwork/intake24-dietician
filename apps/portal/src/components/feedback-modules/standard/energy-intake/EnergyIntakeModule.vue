@@ -5,11 +5,6 @@
       v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Energy intake"
-      :recallDate="props.recallDate"
-      :allowedStartDates="recallStore.allowedStartDates"
-      :selectedDate="recallStore.selectedRecallDate"
-      :show-datepicker="mode === 'view'"
-      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal

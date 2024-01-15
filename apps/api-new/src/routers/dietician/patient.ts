@@ -178,6 +178,21 @@ export class DieticianPatientRouter {
           opts.ctx.dieticianId,
         )
       }),
+    getSampleRecall: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/recalls/sample',
+          tags: ['patients', 'recalls'],
+          summary:
+            'Get sample recall to be displayed as preview for the feedback modules',
+        },
+      })
+      .input(z.void())
+      .output(RecallDtoSchema.nullish())
+      .query(async () => {
+        return await this.patientService.getSampleRecall()
+      }),
   })
 
   public constructor(

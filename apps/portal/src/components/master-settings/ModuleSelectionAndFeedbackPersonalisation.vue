@@ -24,9 +24,7 @@
         <!-- Feedback Personalisation -->
         <div>
           <div class="text feedback-heading">
-            Customise this feedback ({{
-              selectedModule.slice(1).replace(/-/g, ' ')
-            }})
+            Customise this feedback ({{ selectedModule }})
           </div>
           <!-- Feedback for below recommended level -->
           <FeedbackTextArea

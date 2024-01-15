@@ -2,6 +2,21 @@ import { useQuery } from '@tanstack/vue-query'
 import { Ref } from 'vue'
 import { useClientStore } from '../trpc/trpc'
 
+export const useSampleRecall = () => {
+  const { authenticatedClient } = useClientStore()
+  const query = useQuery({
+    queryKey: ['sampleRecall'],
+    queryFn: async () => {
+      return await authenticatedClient.dieticianPatient.getSampleRecall.query()
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  })
+
+  return {
+    ...query,
+  }
+}
+
 export const useRecallById = (recallId: Ref<number>) => {
   const { authenticatedClient } = useClientStore()
   const query = useQuery({

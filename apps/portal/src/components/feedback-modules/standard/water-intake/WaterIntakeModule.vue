@@ -5,11 +5,6 @@
       v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Water intake"
-      :recallDate="props.recallDate"
-      :allowedStartDates="recallStore.allowedStartDates"
-      :selectedDate="recallStore.selectedRecallDate"
-      :show-datepicker="mode === 'view'"
-      @update:selected-date="recallStore.selectedRecallDate = $event"
     />
     <div>
       <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
@@ -127,14 +122,6 @@ const getColor = (number: number, target: number) => {
 const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
-
-// watch(
-//   () => props.recallDate,
-//   newRecallDate => {
-//     selectedDate.value = newRecallDate
-//   },
-//   { immediate: true },
-// )
 
 watch(
   () => recallStore.recallQuery.data,
