@@ -36,7 +36,11 @@
         >
           View
         </v-btn>
-        <v-icon icon="mdi-download-outline" class="ml-5" />
+        <!-- <v-icon
+          icon="mdi-download-outline"
+          class="ml-5"
+          @click="handleDownloadPdf"
+        /> -->
       </div>
     </div>
   </v-card>

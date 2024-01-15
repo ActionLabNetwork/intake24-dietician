@@ -47,7 +47,7 @@
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
-      hide-export-to-pdf-button
+      :hide-export-to-pdf-button="constrainOutputHeight"
       :constrain-output-height="constrainOutputHeight"
       class="mt-0"
     />
