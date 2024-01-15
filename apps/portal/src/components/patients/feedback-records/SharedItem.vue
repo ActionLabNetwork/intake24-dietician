@@ -36,8 +36,11 @@
       </div>
     </div>
   </v-card>
+  <ViewFeedback feedbackId="1" hide-back-button constrain-output-height />
 </template>
 <script setup lang="ts">
+import ViewFeedback from '@intake24-dietician/portal/views/dashboard/patients/feedback-records/ViewFeedback.vue'
+
 interface SharedItem {
   shared: string
   shareType: 'Tailored' | 'Auto'

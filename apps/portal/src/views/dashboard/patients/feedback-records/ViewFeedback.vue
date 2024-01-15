@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-container>
-      <div class="d-print-none">
+      <div v-if="!hideBackButton" class="d-print-none">
         <BackButton
           :to="{
             name: 'Survey Patient Feedback Records',
@@ -15,35 +15,8 @@
         </BackButton>
       </div>
       <div
-        v-if="
-          recallStore.recallDates &&
-          recallStore.selectedRecallDate &&
-          shareQuery.data.value &&
-          allModules &&
-          initialAllModules &&
-          isDataLoaded
-        "
-        class="d-print-none mt-4"
-      >
-        <ProfileAndFeedbackCard
-          :recall-dates="recallStore.recallDates"
-          :initial-date="recallStore.selectedRecallDate"
-          previewing
-          hide-action-buttons
-          :draft="allModules"
-          :editingDraft="{ originalDraft: initialAllModules }"
-          :feedback-type="shareQuery.data.value.shareType"
-          disable-datepicker
-          @click:preview="handlePreviewButtonClick"
-          @update:date="handleDateUpdate"
-        />
-      </div>
-      <div v-else>
-        <BaseProgressCircular />
-      </div>
-      <div
         v-if="recallStore.hasRecalls && shareQuery.data.value && isDataLoaded"
-        v-show="!previewing"
+        v-show="false"
         class="mt-4"
       >
         <v-row>
@@ -74,6 +47,8 @@
       :recall-date="selectedModules?.recallDate"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
+      hide-export-to-pdf-button
+      :constrain-output-height="constrainOutputHeight"
       class="mt-0"
     />
   </div>
@@ -85,7 +60,6 @@ import { type Component, computed, ref, watch, reactive } from 'vue'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import { useRoute } from 'vue-router'
-import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import ModuleSelectList, {
   ModuleItem,
 } from '@intake24-dietician/portal/components/feedback-modules/ModuleSelectList.vue'
@@ -99,20 +73,24 @@ import type {
   ModuleName,
 } from '@/types/modules.types'
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
-import { useToast } from 'vue-toast-notification'
+// import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
-import { SharedDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackShareById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
-defineProps<{ shared: SharedDto }>()
-
 // const { t } = useI18n<i18nOptions>()
+const props = withDefaults(
+  defineProps<{
+    feedbackId?: string
+    hideBackButton: boolean
+    constrainOutputHeight: boolean
+  }>(),
+  { hideBackButton: false, constrainOutputHeight: false },
+)
 
 // Stores
 const patientStore = usePatientStore()
@@ -120,12 +98,11 @@ const recallStore = useRecallStore()
 
 // Composables
 const route = useRoute()
-const $toast = useToast()
+// const $toast = useToast()
 
 // Queries
-const shareQuery = useFeedbackShareById(
-  Number(route.params['feedbackId'] as string),
-)
+const _feedbackId = route.params['feedbackId'] ?? props.feedbackId
+const shareQuery = useFeedbackShareById(Number(_feedbackId))
 const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
@@ -289,19 +266,19 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 }
 
-const handleDateUpdate = (_date: Date) => {
-  date.value = _date
+// const handleDateUpdate = (_date: Date) => {
+//   date.value = _date
 
-  if (allModules.value) {
-    allModules.value.recallDate = _date
-  }
+//   if (allModules.value) {
+//     allModules.value.recallDate = _date
+//   }
 
-  if (selectedModules.value) {
-    selectedModules.value.recallDate = _date
-  }
+//   if (selectedModules.value) {
+//     selectedModules.value.recallDate = _date
+//   }
 
-  recallStore.selectedRecallDate = _date
-}
+//   recallStore.selectedRecallDate = _date
+// }
 
 const handleFeedbackUpdate = (feedback: string) => {
   moduleNameToModuleComponentMapping[component.value].feedback = feedback
@@ -323,13 +300,13 @@ const handleFeedbackUpdate = (feedback: string) => {
   }
 }
 
-const handlePreviewButtonClick = () => {
-  if (!selectedModules.value || selectedModules.value.modules.length === 0) {
-    $toast.warning('Please select at least one module to preview')
-    return
-  }
-  previewing.value = !previewing.value
-}
+// const handlePreviewButtonClick = () => {
+//   if (!selectedModules.value || selectedModules.value.modules.length === 0) {
+//     $toast.warning('Please select at least one module to preview')
+//     return
+//   }
+//   previewing.value = !previewing.value
+// }
 
 watch(
   () => recallStore.recallDatesQuery.data,

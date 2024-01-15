@@ -8,16 +8,6 @@
         {{ recallDate }}
       </p>
     </div>
-    <div class="my-5 ml-0 d-print-none">
-      <v-btn
-        class="text-none"
-        color="secondary"
-        flat
-        @click="exportContentToPdf"
-      >
-        Export to PDF
-      </v-btn>
-    </div>
   </div>
 </template>
 
@@ -25,7 +15,6 @@
 defineProps<{
   patientName: string
   recallDate: string
-  exportContentToPdf: Function
 }>()
 </script>
 
