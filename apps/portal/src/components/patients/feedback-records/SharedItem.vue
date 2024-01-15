@@ -19,12 +19,16 @@
       </div>
       <div>
         <v-btn
-          append-icon="mdi-eye-off-outline"
+          :append-icon="
+            showOutputPreview ? 'mdi-eye-off-outline' : 'mdi-eye-outline'
+          "
           class="text-capitalize"
           variant="text"
+          @click="showOutputPreview = !showOutputPreview"
         >
-          Hide
+          {{ showOutputPreview ? 'Hide' : 'Show' }}
         </v-btn>
+
         <v-btn
           class="text-capitalize ml-8"
           color="primary"
@@ -36,16 +40,32 @@
       </div>
     </div>
   </v-card>
-  <ViewFeedback feedbackId="1" hide-back-button constrain-output-height />
+  <div class="mb-5">
+    <ViewFeedback
+      v-if="showOutputPreview"
+      class="my-0"
+      :feedbackId="shareId"
+      hide-back-button
+      constrain-output-height
+    />
+  </div>
 </template>
 <script setup lang="ts">
 import ViewFeedback from '@intake24-dietician/portal/views/dashboard/patients/feedback-records/ViewFeedback.vue'
+import { ref } from 'vue'
 
 interface SharedItem {
+  shareId: string
   shared: string
   shareType: 'Tailored' | 'Auto'
+  showOutputPreview: boolean
 }
 
-defineProps<SharedItem>()
+const props = withDefaults(defineProps<SharedItem>(), {
+  showOutputPreview: false,
+})
 defineEmits<{ buttonClick: [] }>()
+
+// eslint-disable-next-line vue/no-setup-props-destructure
+const showOutputPreview = ref(props.showOutputPreview)
 </script>

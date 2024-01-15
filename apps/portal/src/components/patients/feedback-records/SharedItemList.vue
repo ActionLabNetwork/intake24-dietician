@@ -20,6 +20,7 @@
       >
         <div v-for="shared in feedbackSharesQuery.data.value" :key="shared.id">
           <SharedItem
+            :share-id="shared.id.toString()"
             :shared="moment(shared.createdAt).format(dateFormat)"
             :share-type="shared.shareType"
             class="mb-4"
