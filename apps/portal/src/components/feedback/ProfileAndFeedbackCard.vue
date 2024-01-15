@@ -68,7 +68,12 @@
                 : 'Save as draft'
             }}
           </v-btn>
-          <v-btn class="text-none ml-3" color="primary" flat>
+          <v-btn
+            class="text-none ml-3"
+            color="primary"
+            flat
+            @click="handleShareDraftClick"
+          >
             Share feedback
           </v-btn>
         </div>
@@ -83,6 +88,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import {
   useEditDraft,
   useSaveDraft,
+  useShareDraft,
 } from '@intake24-dietician/portal/mutations/useFeedback'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useRouter, useRoute } from 'vue-router'
@@ -121,6 +127,7 @@ const patient = computed(() => patientStore.patientQuery.data)
 // Mutations
 const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
+const shareDraftMutation = useShareDraft()
 
 const date = ref()
 
@@ -168,6 +175,27 @@ const handleEditDraftClick = () => {
     {
       onSuccess: () => {
         $toast.success('Draft updated')
+      },
+    },
+  )
+}
+
+const handleShareDraftClick = () => {
+  shareDraftMutation.mutate(
+    {
+      patientId: Number(patient.value?.id),
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        $toast.success('Draft shared')
+        // router.push({
+        //   name: 'Survey Patient Feedback Records',
+        //   params: {
+        //     surveyId: route.params['surveyId'],
+        //     patientId: route.params['patientId'],
+        //   },
+        // })
       },
     },
   )

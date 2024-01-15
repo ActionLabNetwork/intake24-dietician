@@ -5,37 +5,44 @@
         <div>
           <p>
             <span class="font-weight-medium">Shared:</span>
-            {{ items[0]!.shared }}
+            {{ shared }}
           </p>
         </div>
         <div class="ml-2">
           <v-chip
             variant="outlined"
-            :color="items[0]!.type === 'Tailored' ? 'success' : 'warning'"
-            :text="items[0]!.type"
+            :color="shareType === 'Tailored' ? 'success' : 'warning'"
+            :text="shareType"
           >
           </v-chip>
         </div>
       </div>
       <div>
-        <v-btn append-icon="mdi-eye-off-outline" class="text-capitalize" variant="text"> Hide </v-btn>
-        <v-btn class="text-capitalize ml-8" color="primary">View</v-btn>
+        <v-btn
+          append-icon="mdi-eye-off-outline"
+          class="text-capitalize"
+          variant="text"
+        >
+          Hide
+        </v-btn>
+        <v-btn
+          class="text-capitalize ml-8"
+          color="primary"
+          @click="$emit('buttonClick')"
+        >
+          View
+        </v-btn>
         <v-icon icon="mdi-download-outline" class="ml-5" />
       </div>
     </div>
   </v-card>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue'
-
 interface SharedItem {
   shared: string
-  type: 'Tailored' | 'Auto'
+  shareType: 'Tailored' | 'Auto'
 }
 
-const items = ref<SharedItem[]>([
-  { shared: 'Real-Time', type: 'Tailored' },
-  { shared: 'Audience', type: 'Tailored' },
-  { shared: 'Conversions', type: 'Auto' },
-])
+defineProps<SharedItem>()
+defineEmits<{ buttonClick: [] }>()
 </script>

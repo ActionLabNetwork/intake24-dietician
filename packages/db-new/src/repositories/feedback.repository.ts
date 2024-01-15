@@ -1,7 +1,7 @@
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { feedbackDrafts } from '../models/feedback.model'
+import { feedbackDrafts, feedbackShares } from '../models/feedback.model'
 import { desc, eq, count } from 'drizzle-orm'
 
 @singleton()
@@ -36,6 +36,34 @@ export class FeedbackRepository {
     return _count?.value ?? 0
   }
 
+  public async getSharedFeedbackById(shareId: number) {
+    return await this.drizzle.query.feedbackShares.findFirst({
+      where: eq(feedbackShares.id, shareId),
+    })
+  }
+
+  public async getSharedFeedbacksByPatientId(
+    patientId: number,
+    page = 1,
+    limit = 3,
+  ) {
+    return await this.drizzle.query.feedbackShares.findMany({
+      where: eq(feedbackShares.patientId, patientId),
+      orderBy: desc(feedbackShares.updatedAt),
+      limit: limit,
+      offset: (page - 1) * limit,
+    })
+  }
+
+  public async getSharedFeedbackCountByPatientId(patientId: number) {
+    const [_count] = await this.drizzle
+      .select({ value: count() })
+      .from(feedbackShares)
+      .where(eq(feedbackShares.patientId, patientId))
+
+    return _count?.value ?? 0
+  }
+
   public async saveDraft(patientId: number, draft: DraftCreateDto) {
     const [createdDraft] = await this.drizzle
       .insert(feedbackDrafts)
@@ -55,5 +83,15 @@ export class FeedbackRepository {
       .execute()
 
     return updatedDraft
+  }
+
+  public async saveShared(patientId: number, shared: DraftCreateDto) {
+    const [createdShared] = await this.drizzle
+      .insert(feedbackShares)
+      .values({ patientId: patientId, shared: shared, shareType: 'Tailored' })
+      .returning()
+      .execute()
+
+    return createdShared
   }
 }

@@ -6,7 +6,6 @@ export const useSaveDraft = () => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { patientId: number; draft: DraftCreateDto }) => {
-      console.log({ body })
       return authenticatedClient.dieticianFeedback.saveDraft.mutate(body)
     },
   })
@@ -25,8 +24,25 @@ export const useEditDraft = () => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { draftId: number; draft: DraftCreateDto }) => {
-      console.log({ body })
       return authenticatedClient.dieticianFeedback.editDraft.mutate(body)
+    },
+  })
+
+  return {
+    data,
+    isPending,
+    isError,
+    error,
+    isSuccess,
+    mutate,
+  }
+}
+
+export const useShareDraft = () => {
+  const { authenticatedClient } = useClientStore()
+  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+    mutationFn: (body: { patientId: number; draft: DraftCreateDto }) => {
+      return authenticatedClient.dieticianFeedback.shareDraft.mutate(body)
     },
   })
 

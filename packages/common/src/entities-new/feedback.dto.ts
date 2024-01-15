@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { moduleNames } from '../types/modules'
+import { TimestampSchema } from './timestamp.dto'
 
 export const DraftCreateDtoSchema = z.object({
   recallDate: z.coerce.date(),
@@ -21,6 +22,16 @@ export const DraftDtoSchema = z.object({
   updatedAt: z.coerce.date(),
 })
 export type DraftDto = z.infer<typeof DraftDtoSchema>
+
+export const SharedDtoSchema = z
+  .object({
+    id: z.number(),
+    shared: DraftCreateDtoSchema,
+    shareType: z.enum(['Auto', 'Tailored']),
+    patientId: z.number(),
+  })
+  .extend(TimestampSchema.shape)
+export type SharedDto = z.infer<typeof SharedDtoSchema>
 
 export const FeedbackModuleDtoSchema = z.object({
   id: z.number(),

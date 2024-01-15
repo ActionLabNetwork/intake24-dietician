@@ -20,7 +20,6 @@
             :recalls-dates-data="recallDates"
             :recall-date="recallDate"
             mode="preview"
-            class="mt-10"
             flat
             :style="{
               'background-color':

@@ -4,6 +4,7 @@ import { protectedDieticianProcedure, router } from '../../trpc'
 import {
   DraftCreateDtoSchema,
   DraftDtoSchema,
+  SharedDtoSchema,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackService } from '../../services/feedback.service'
 
@@ -68,6 +69,64 @@ export class DieticianFeedbackRouter {
           opts.input.patientId,
         )
       }),
+    getShareById: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/feedbacks/shares/:shareId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Get shared feedback by id',
+        },
+      })
+      .input(z.object({ shareId: z.number() }))
+      .output(SharedDtoSchema.nullish())
+      .query(async opts => {
+        return await this.feedbackService.getShareById(opts.input.shareId)
+      }),
+    getPatientShares: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/feedbacks/shares/patient/:patientId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Get shared feedbacks of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number(),
+          page: z.number().optional(),
+          limit: z.number().optional(),
+        }),
+      )
+      .output(z.array(SharedDtoSchema))
+      .query(async opts => {
+        return await this.feedbackService.getSharedFeedbacksByPatientId(
+          opts.input.patientId,
+          opts.input.page,
+          opts.input.limit,
+        )
+      }),
+    getPatientSharesCount: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/feedbacks/shares/patient/count/:patientId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Get shared feedbacks count of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number(),
+        }),
+      )
+      .output(z.number())
+      .query(async opts => {
+        return await this.feedbackService.getSharedFeedbackCountByPatientId(
+          opts.input.patientId,
+        )
+      }),
     saveDraft: protectedDieticianProcedure
       .meta({
         openapi: {
@@ -104,6 +163,23 @@ export class DieticianFeedbackRouter {
       .mutation(async opts => {
         return await this.feedbackService.editDraft(
           opts.input.draftId,
+          opts.input.draft,
+        )
+      }),
+    shareDraft: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/feedbacks/shared',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Share a draft of a tailored feedback',
+        },
+      })
+      .input(z.object({ patientId: z.number(), draft: DraftCreateDtoSchema }))
+      .output(z.number().nullish())
+      .mutation(async opts => {
+        return await this.feedbackService.shareDraft(
+          opts.input.patientId,
           opts.input.draft,
         )
       }),
