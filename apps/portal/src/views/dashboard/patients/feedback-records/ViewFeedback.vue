@@ -31,7 +31,6 @@
           <v-col cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
-              :recall-date="date"
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
             />

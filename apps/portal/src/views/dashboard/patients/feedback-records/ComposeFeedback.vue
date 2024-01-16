@@ -45,7 +45,6 @@
           <v-col v-if="!recallStore.recallQuery.isPending" cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
-              :recall-date="date"
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
             />

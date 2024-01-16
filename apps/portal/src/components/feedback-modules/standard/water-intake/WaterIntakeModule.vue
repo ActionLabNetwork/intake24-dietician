@@ -2,13 +2,13 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && recallStore.selectedRecallDate"
       :logo="Logo"
       title="Water intake"
+      :class="{ 'text-white': mode === 'preview' }"
     />
     <div>
-      <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
-      <div v-if="recallStore.recallQuery.isError" class="mt-10">
+      <BaseProgressCircular v-if="isPending" />
+      <div v-if="isError" class="mt-10">
         <v-alert
           type="error"
           title="Error fetching recall data"
@@ -98,12 +98,23 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
 const recallStore = useRecallStore()
+const isError = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isError
+    : recallStore.recallQuery.isError,
+)
+const isPending = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isPending
+    : recallStore.recallQuery.isPending,
+)
 
 const totalWaterIntake = ref(0)
 
@@ -125,6 +136,43 @@ const textStyle = computed(() => ({
 
 watch(
   () => recallStore.recallQuery.data,
+  data => {
+    const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
+      return food.nutrients.reduce(
+        (
+          total: number,
+          nutrient: { nutrientType: { id: string }; amount: any },
+        ) => {
+          const amount =
+            nutrient.nutrientType.id === NUTRIENTS_WATER_INTAKE_ID
+              ? nutrient.amount
+              : 0
+
+          return total + amount
+        },
+        0,
+      )
+    }
+
+    const calculateMealWaterContent = (meal: RecallMeal) => {
+      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
+        return total + calculateFoodWaterContent(food)
+      }, 0)
+
+      return mealEnergy
+    }
+
+    if (!data) return
+    totalWaterIntake.value = Math.floor(
+      data.recall.meals.reduce((totalEnergy, meal) => {
+        return totalEnergy + calculateMealWaterContent(meal)
+      }, 0),
+    )
+  },
+  { immediate: true },
+)
+watch(
+  () => recallStore.sampleRecallQuery.data,
   data => {
     const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(

@@ -1,20 +1,16 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      v-if="props.recallDate && recallStore.selectedRecallDate"
-      :logo="Logo"
-      title="Energy intake"
-    />
+    <ModuleTitle :logo="Logo" title="Energy intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
         <!-- Loading state -->
-        <BaseProgressCircular v-if="recallStore.recallQuery.isPending" />
+        <BaseProgressCircular v-if="isPending" />
         <!-- Error state -->
-        <div v-if="recallStore.recallQuery.isError" class="mt-10">
+        <div v-if="isError" class="mt-10">
           <v-alert
             type="error"
             title="Error fetching recall data"
@@ -56,7 +52,7 @@ import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
@@ -78,6 +74,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 
 const emit = defineEmits<{
@@ -85,6 +82,17 @@ const emit = defineEmits<{
 }>()
 
 const recallStore = useRecallStore()
+
+const isError = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isError
+    : recallStore.recallQuery.isError,
+)
+const isPending = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isPending
+    : recallStore.recallQuery.isPending,
+)
 
 // Refs
 const totalEnergy = ref(0)
@@ -149,13 +157,25 @@ const calculateMealEnergy = (meal: RecallMeal) => {
   return mealEnergy
 }
 
-// watch(
-//   () => props.recallDate,
-//   newRecallDate => {
-//     selectedDate.value = newRecallDate
-//   },
-//   { immediate: true },
-// )
+watch(
+  () => recallStore.sampleRecallQuery.data,
+  data => {
+    if (!data) return
+
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
+    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
+      return totalEnergy + calculateMealEnergy(meal)
+    }, 0)
+  },
+  { immediate: true },
+)
 
 watch(
   () => recallStore.recallQuery.data,

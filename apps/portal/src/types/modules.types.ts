@@ -6,12 +6,12 @@ import {
 } from '@intake24-dietician/common/types/modules'
 
 export interface FeedbackModulesProps {
-  recallDate?: Date
   feedback: string
   mode: 'preview' | 'edit' | 'view'
   mainBgColor: string
   feedbackBgColor: string
   feedbackTextColor: string
+  useSampleRecall: boolean
 }
 
 export type Module = (typeof modules)[number]

@@ -1,11 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      v-if="props.recallDate && recallStore.selectedRecallDate"
-      :logo="Logo"
-      title="Fibre intake"
-    />
+    <ModuleTitle :logo="Logo" title="Fibre intake" />
     <div v-if="mealCards" class="mt-2">
       <BaseTabs
         :tabs="tabs"
@@ -60,11 +56,12 @@ import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.t
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -113,16 +110,69 @@ const tabs = ref([
   },
 ])
 
-// watch(
-//   () => props.recallDate,
-//   newRecallDate => {
-//     selectedDate.value = newRecallDate
-//   },
-//   { immediate: true },
-// )
-
 watch(
   () => recallStore.recallQuery.data,
+  data => {
+    // TODO: Improve typings, remove uses of any
+    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
+      return food.nutrients.reduce(
+        (
+          total: any,
+          nutrient: { nutrientType: { id: string }; amount: any },
+        ) => {
+          return (
+            total +
+            (nutrient.nutrientType.id === NUTRIENTS_DIETARY_FIBRE_ID
+              ? nutrient.amount
+              : 0)
+          )
+        },
+        0,
+      )
+    }
+
+    const calculateMealCarbsExchange = (meal: RecallMeal) => {
+      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+        return total + calculateFoodCarbsExchange(food)
+      }, 0)
+
+      mealCards[meal.name] = {
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        foods: meal.foods.map(f => ({
+          name: f['englishName'],
+          servingWeight: f['portionSizes']?.find(
+            (item: { name: string }) => item.name === 'servingWeight',
+          )?.value,
+          value: Math.floor(calculateFoodCarbsExchange(f as any)),
+        })),
+      }
+
+      return mealCarbsExchange
+    }
+
+    if (!data) return
+
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
+
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    totalEnergy.value = Math.floor(
+      data.recall.meals.reduce((totalEnergy, meal) => {
+        return totalEnergy + calculateMealCarbsExchange(meal)
+      }, 0),
+    )
+  },
+  { immediate: true },
+)
+watch(
+  () => recallStore.sampleRecallQuery.data,
   data => {
     // TODO: Improve typings, remove uses of any
     const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {

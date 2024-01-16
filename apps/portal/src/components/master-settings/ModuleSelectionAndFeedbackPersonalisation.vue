@@ -13,12 +13,32 @@
         <!-- TODO: Figure out how to add preview (e.g. Using test data) -->
         <!-- Preview -->
         <div class="ma-4">
-          <!-- <component
-            :is="routeToModuleComponentMapping[component].component"
-            :recalls-data="recallsData"
-            :recall-date="date"
-            :feedback="moduleFeedback"
-          /> -->
+          <component
+            :is="moduleNameToModuleComponentMapping[selectedModule].component"
+            :feedback="
+              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
+            "
+            mode="preview"
+            useSampleRecall
+            flat
+            :style="{
+              'background-color':
+                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
+                  .mainBackground,
+            }"
+            :mainBgColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
+                .mainBackground
+            "
+            :feedbackBgColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
+                .feedback.background
+            "
+            :feedbackTextColor="
+              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
+                .feedback.color
+            "
+          />
         </div>
 
         <!-- Feedback Personalisation -->
@@ -60,20 +80,21 @@
 </template>
 
 <script setup lang="ts">
+import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
+import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
+import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
+import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
+import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
+import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
 } from '@intake24-dietician/portal/types/modules.types'
+import { reactive, ref, watch } from 'vue'
 import ModuleSelectList, {
   ModuleItem,
 } from '../feedback-modules/ModuleSelectList.vue'
-import { reactive, ref, watch } from 'vue'
-import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
-import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
-import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
-import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
-import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
-import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
 
 export type FeedbackMapping = {
   [K in keyof typeof moduleNameToModuleComponentMapping]: {
@@ -91,7 +112,6 @@ const emit = defineEmits<{
 }>()
 
 const selectedModule = ref<ModuleName>('Meal diary')
-// const component = ref<ModuleRoute>('/meal-diary')
 
 // TODO: Figure out a way to show preview of the modules. Maybe use a test data for sample?
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =

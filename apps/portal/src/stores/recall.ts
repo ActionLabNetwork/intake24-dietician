@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
-import { useRecallById, useRecallDatesByUserId } from '../queries/useRecall'
+import {
+  useRecallById,
+  useRecallDatesByUserId,
+  useSampleRecall,
+} from '../queries/useRecall'
 import { useRoute } from 'vue-router'
 import moment from 'moment'
 
@@ -12,6 +16,7 @@ export const useRecallStore = defineStore('recalls', () => {
   const selectedRecallDate = ref<Date>()
 
   const recallDatesQuery = useRecallDatesByUserId(patientId)
+  const sampleRecallQuery = useSampleRecall()
   const recallQuery = useRecallById(recallId)
 
   const hasRecalls = computed(
@@ -87,6 +92,7 @@ export const useRecallStore = defineStore('recalls', () => {
     recallId,
     recallDates,
     recallDatesQuery,
+    sampleRecallQuery,
     recallQuery,
     selectedRecallDate,
     hasRecalls,

@@ -1,16 +1,9 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card
-    v-if="!recallStore.recallQuery.isPending"
-    :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
-  >
-    <ModuleTitle
-      v-if="props.recallDate && selectedRecallDate"
-      :logo="Mascot"
-      title="Meal diary"
-    />
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+    <ModuleTitle :logo="Mascot" title="Meal diary" />
     <MealDiaryTimeline
-      :meals="recallStore.recallQuery?.data?.recall.meals"
+      :meals="meals"
       :mode="mode"
       :get-serving-weight="getServingWeight"
     />
@@ -41,19 +34,24 @@ import MealDiaryTimeline from '@/components/feedback-modules/standard/meal-diary
 
 import type { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { storeToRefs } from 'pinia'
+import { computed } from 'vue'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const recallStore = useRecallStore()
-const { selectedRecallDate } = storeToRefs(recallStore)
+const meals = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery?.data?.recall.meals
+    : recallStore.recallQuery?.data?.recall.meals,
+)
 
 const getServingWeight = (food: { [x: string]: any[] }) => {
   const rawServingWeight = parseFloat(
