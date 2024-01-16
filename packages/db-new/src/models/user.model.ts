@@ -94,6 +94,7 @@ export const patients = pgTable('patient', {
   patientPreference: typedJsonbFromSchema(PatientPreferenceSchema)(
     'preference',
   ).notNull(),
+  lastReminderSent: timestamp('lastReminderSent'),
   isArchived: boolean('is_archived').default(false).notNull(),
   ...timestampFields,
 })

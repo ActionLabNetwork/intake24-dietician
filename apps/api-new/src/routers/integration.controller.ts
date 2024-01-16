@@ -1,5 +1,4 @@
 import { resolveLogger } from '../di/di.config'
-import { JwtService } from '../services/jwt.service'
 import { PatientService } from '../services/patient.service'
 import { RecallSchema } from '@intake24-dietician/common/entities-new/recall.schema'
 import type { Express } from 'express'
@@ -8,24 +7,22 @@ import { z } from 'zod'
 
 export function registerIntegrationEndpoints(app: Express) {
   const patientService = container.resolve(PatientService)
-  const jwtService = container.resolve(JwtService)
   const logger = resolveLogger()
 
-  app.post('/recall/:surveyId', async (req, res) => {
+  app.post('/recall/:alias', async (req, res) => {
     try {
-      const { surveyId } = z
+      const { alias } = z
         .object({
-          surveyId: z.coerce.number().int(),
+          alias: z.string(),
         })
         .parse(req.params)
       const recall = RecallSchema.parse(req.body)
-      const { id } = recall
       const jwt = z
         .string()
         .regex(/Bearer /)
         .parse(req.headers.authorization)
         .split(' ')[1]!
-      await patientService.createRecall(surveyId, jwt, recall)
+      await patientService.createRecall(alias, jwt, recall)
       res.sendStatus(201)
     } catch (error) {
       logger.error({

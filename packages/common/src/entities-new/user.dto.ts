@@ -112,6 +112,7 @@ export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
   patientPreference: PatientPreferenceSchema,
   startSurveyUrl: z.string(),
+  lastReminderSent: z.date().nullable(),
 }).extend(TimestampSchema.shape)
 export type PatientDto = z.infer<typeof PatientDtoSchema>
 

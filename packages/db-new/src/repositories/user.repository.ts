@@ -263,7 +263,8 @@ export class UserRepository {
             survey: {
               columns: {
                 intake24Secret: true,
-                recallSubmissionURL: true,
+                intake24Host: true,
+                intake24SurveyId: true,
               },
             },
           },
@@ -320,5 +321,16 @@ export class UserRepository {
         .where(eq(users.id, patient.userId))
         .execute()
     })
+  }
+
+  public async updatePatientLastReminderSent(
+    patientId: number,
+    lastReminderSent: Date,
+  ) {
+    return await this.drizzle
+      .update(patients)
+      .set({ lastReminderSent })
+      .where(eq(patients.id, patientId))
+      .execute()
   }
 }

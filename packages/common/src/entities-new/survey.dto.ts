@@ -24,12 +24,10 @@ export type SurveyFeedbackModuleDto = z.infer<
 
 export const SurveyCreateDtoSchema = z.object({
   surveyName: z.string().min(1, 'Clinic name is required'),
+  intake24Host: z.string().url(),
   intake24SurveyId: z.string().min(1, 'Intake24 survey ID is required'),
   intake24Secret: z.string().min(1, 'Intake24 secret is required'),
   alias: z.string().min(1, 'Alias is required'),
-  recallSubmissionURL: z
-    .string()
-    .url('Recall submission URL must be a valid URL'),
   isActive: z.boolean(),
   // The survey creation process is multi-step so this can take optional values
   surveyPreference: SurveyPreferenceSchema.optional(),

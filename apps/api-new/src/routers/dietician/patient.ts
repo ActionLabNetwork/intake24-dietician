@@ -111,6 +111,27 @@ export class DieticianPatientRouter {
           patient,
         )
       }),
+    sendRecallReminder: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/patients/{patientId}/reminder',
+          tags: ['patients'],
+          summary: 'Send a recall reminder to the patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number().int(),
+        }),
+      )
+      .output(z.void())
+      .mutation(async ({ input, ctx }) => {
+        await this.patientService.sendRecallReminder(
+          input.patientId,
+          ctx.dieticianId,
+        )
+      }),
     getRecalls: protectedDieticianProcedure
       .meta({
         openapi: {

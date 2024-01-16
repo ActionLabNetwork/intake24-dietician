@@ -111,9 +111,28 @@
             <div
               class="d-flex flex-column flex-xl-row align-baseline justify-center"
             >
-              {{ item.raw.lastReminderSent }}
+              {{
+                item.raw.lastReminderSent?.toLocaleString('en-AU', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                }) ?? 'No reminder has been sent'
+              }}
               <span class="mt-2 ml-0 ml-xl-4">
-                <v-btn class="text-capitalize" color="accent"> Remind </v-btn>
+                <v-btn
+                  class="text-capitalize"
+                  color="accent"
+                  :loading="isSendRecallReminderPending"
+                  :disabled="
+                    item.raw.lastReminderSent &&
+                    moment(item.raw.lastReminderSent)
+                      .add(recallReminderCooldown)
+                      .isAfter(new Date())
+                  "
+                  @click="onRemindButtonClick(item.raw.id)"
+                >
+                  Remind
+                </v-btn>
               </span>
             </div>
           </td>
@@ -145,6 +164,10 @@ import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user
 import { useRoute } from 'vue-router'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import { isArray } from 'radash'
+import { useSendRecallReminder } from '@intake24-dietician/portal/mutations/usePatients'
+import { useToast } from 'vue-toast-notification'
+import moment from 'moment'
+import { recallReminderCooldown } from '@intake24-dietician/common/constants/settings-contants'
 
 // Manual type unwrapping as vuetify doesn't expose headers type
 type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
@@ -188,7 +211,7 @@ interface KeyValueTypes {
     type: 'Tailored' | 'Auto'
   }
   patientStatus: 'Active' | 'Archived'
-  lastReminderSent: string
+  lastReminderSent: Date | null
   surveyURL: string
 }
 
@@ -241,6 +264,8 @@ const headers = ref<PatientTableHeaders[]>([
 
 const route = useRoute()
 
+const $toast = useToast()
+
 const search = ref('')
 
 const randomDate = (start: Date, end: Date) => {
@@ -269,6 +294,21 @@ const generateSurveyLink = async (link: string) => {
   }
 }
 
+const {
+  mutateAsync: sendRecallReminder,
+  isPending: isSendRecallReminderPending,
+} = useSendRecallReminder()
+
+const onRemindButtonClick = async (patientId: number) => {
+  try {
+    await sendRecallReminder({ patientId })
+    $toast.success('Reminder sent')
+  } catch (e) {
+    console.error(e)
+    $toast.error('Failed to send a reminder')
+  }
+}
+
 watch(
   () => props.patientsData,
   newPatients => {
@@ -293,7 +333,7 @@ watch(
               : 'Tailored',
           },
           patientStatus: patient.isArchived ? 'Archived' : 'Active',
-          lastReminderSent: getRandomDate(),
+          lastReminderSent: patient.lastReminderSent,
           surveyURL: patient.startSurveyUrl,
         }
       }) ?? []
