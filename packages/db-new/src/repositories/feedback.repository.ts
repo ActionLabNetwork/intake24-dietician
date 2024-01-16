@@ -85,13 +85,40 @@ export class FeedbackRepository {
     return updatedDraft
   }
 
-  public async saveShared(patientId: number, shared: DraftCreateDto) {
-    const [createdShared] = await this.drizzle
-      .insert(feedbackShares)
-      .values({ patientId: patientId, shared: shared, shareType: 'Tailored' })
-      .returning()
-      .execute()
+  public async saveShared(
+    patientId: number,
+    draftId: number | undefined,
+    shared: DraftCreateDto,
+  ) {
+    return await this.drizzle.transaction(async tx => {
+      if (draftId) {
+        const draft = await tx.query.feedbackDrafts.findFirst({
+          where: eq(feedbackDrafts.id, draftId),
+        })
 
-    return createdShared
+        if (draft) {
+          // Check if draft belongs to patient
+          console.log({ draft })
+          if (draft.patientId !== patientId) {
+            throw new Error('Draft does not belong to patient')
+          }
+
+          // Delete draft
+          await tx.delete(feedbackDrafts).where(eq(feedbackDrafts.id, draftId))
+        }
+      }
+
+      const [createdShared] = await tx
+        .insert(feedbackShares)
+        .values({
+          patientId: patientId,
+          shared: shared,
+          shareType: 'Tailored',
+        })
+        .returning()
+        .execute()
+
+      return createdShared
+    })
   }
 }

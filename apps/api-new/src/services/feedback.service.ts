@@ -62,9 +62,13 @@ export class FeedbackService {
     return (await this.feedbackRepository.editDraft(draftId, draft))?.id
   }
 
-  public async shareDraft(patientId: number, draft: DraftCreateDto) {
+  public async shareDraft(
+    patientId: number,
+    draftId: number | undefined,
+    draft: DraftCreateDto,
+  ) {
     const sharedFeedback = (
-      await this.feedbackRepository.saveShared(patientId, draft)
+      await this.feedbackRepository.saveShared(patientId, draftId, draft)
     )?.id
 
     // TODO: Send email to patient

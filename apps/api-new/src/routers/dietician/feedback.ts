@@ -175,11 +175,18 @@ export class DieticianFeedbackRouter {
           summary: 'Share a draft of a tailored feedback',
         },
       })
-      .input(z.object({ patientId: z.number(), draft: DraftCreateDtoSchema }))
+      .input(
+        z.object({
+          patientId: z.number(),
+          draftId: z.number().optional(),
+          draft: DraftCreateDtoSchema,
+        }),
+      )
       .output(z.number().nullish())
       .mutation(async opts => {
         return await this.feedbackService.shareDraft(
           opts.input.patientId,
+          opts.input.draftId,
           opts.input.draft,
         )
       }),

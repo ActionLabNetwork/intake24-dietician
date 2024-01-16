@@ -108,6 +108,7 @@ const props = withDefaults(
     initialDate: Date
     previewing: boolean
     editingDraft: { originalDraft: DraftCreateDto } | false
+    draftId?: number
     draft: DraftCreateDto
     disableDatepicker: boolean
     hideActionButtons: boolean
@@ -192,18 +193,19 @@ const handleShareDraftClick = () => {
   shareDraftMutation.mutate(
     {
       patientId: Number(patient.value?.id),
+      draftId: props.draftId,
       draft: props.draft,
     },
     {
       onSuccess: () => {
         $toast.success('Draft shared')
-        // router.push({
-        //   name: 'Survey Patient Feedback Records',
-        //   params: {
-        //     surveyId: route.params['surveyId'],
-        //     patientId: route.params['patientId'],
-        //   },
-        // })
+        router.push({
+          name: 'Survey Patient Feedback Records',
+          params: {
+            surveyId: route.params['surveyId'],
+            patientId: route.params['patientId'],
+          },
+        })
       },
     },
   )

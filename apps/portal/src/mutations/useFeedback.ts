@@ -40,18 +40,17 @@ export const useEditDraft = () => {
 
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: { patientId: number; draft: DraftCreateDto }) => {
+  const mutation = useMutation({
+    mutationFn: (body: {
+      patientId: number
+      draftId: number | undefined
+      draft: DraftCreateDto
+    }) => {
       return authenticatedClient.dieticianFeedback.shareDraft.mutate(body)
     },
   })
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
+    ...mutation,
   }
 }

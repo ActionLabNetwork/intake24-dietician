@@ -30,6 +30,7 @@
           :initial-date="recallStore.selectedRecallDate"
           :previewing="previewing"
           feedback-type="Tailored"
+          :draftId="draftQuery.data.value.id"
           :draft="allModules"
           :editingDraft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"
