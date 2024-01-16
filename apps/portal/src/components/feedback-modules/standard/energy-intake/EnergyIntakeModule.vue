@@ -68,6 +68,8 @@ import SummarizedCard, {
 } from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
+import { usePrecision } from '@vueuse/math'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -111,20 +113,6 @@ const getColours = (base: string) => {
   }
 }
 
-const calculateFoodEnergy = (food: { nutrients: any[] }) => {
-  return food.nutrients.reduce(
-    (total: any, nutrient: { nutrientType: { id: string }; amount: any }) => {
-      return (
-        total +
-        (nutrient.nutrientType.id === NUTRIENTS_ENERGY_INTAKE_ID
-          ? nutrient.amount
-          : 0)
-      )
-    },
-    0,
-  )
-}
-
 const getImageSrc = (name: string) => {
   const mealImages = {
     breakfast: Breakfast,
@@ -141,12 +129,16 @@ const getImageSrc = (name: string) => {
   return mealImages[mealName] || MidSnacks
 }
 
-const calculateMealEnergy = (meal: RecallMeal) => {
-  const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-    return total + Math.floor(calculateFoodEnergy(food))
-  }, 0)
+const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
+  const mealEnergy = usePrecision(
+    calculateMealNutrientsExchange(
+      meal,
+      NUTRIENTS_ENERGY_INTAKE_ID,
+      recallsCount,
+    ),
+    2,
+  ).value
 
-  // TODO: src and colors may be mapped to specific meals for consistency
   mealCards[meal.name] = {
     src: getImageSrc(meal.name),
     label: meal.name,
@@ -161,6 +153,7 @@ watch(
   () => recallStore.sampleRecallQuery.data,
   data => {
     if (!data) return
+    if (!props.useSampleRecall) return
 
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
@@ -170,6 +163,12 @@ watch(
       data.recall.meals.length + 1,
       data.recall.meals.map(meal => meal.hours),
     )
+
+    // Reset meal cards
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
     totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
       return totalEnergy + calculateMealEnergy(meal)
     }, 0)
@@ -182,20 +181,15 @@ watch(
   data => {
     if (!data) return
 
+    const combinedMeals = recallStore.recallsGroupedByMeals
+    colorPalette.value = recallStore.colorPalette
+
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })
 
-    const combinedMeals = data.reduce((combinedMeals, recall) => {
-      return combinedMeals.concat(recall.recall.meals)
-    }, [] as RecallMeal[])
-
-    colorPalette.value = generatePastelPalette(
-      combinedMeals.length + 1,
-      combinedMeals.map(meal => meal.hours),
-    )
-    totalEnergy.value = combinedMeals.reduce((totalEnergy, meal) => {
-      return totalEnergy + calculateMealEnergy(meal)
+    totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
+      return totalEnergy + calculateMealEnergy(meal, combinedMeals.recallsCount)
     }, 0)
   },
   { immediate: true },
