@@ -148,7 +148,6 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
           NUTRIENTS_CARBS_ID,
           CARBS_EXCHANGE_MULTIPLIER,
         ),
-
         2,
       ).value,
       mealDate: food['mealDate'],
@@ -185,7 +184,6 @@ watch(
   },
   { immediate: true },
 )
-
 watch(
   () => recallStore.sampleRecallQuery.data,
   data => {

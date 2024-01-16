@@ -7,7 +7,7 @@ import { usePrecision } from '@vueuse/math'
 export const calculateFoodNutrientsExchange = (
   food: RecallMealFood,
   nutrientId: string,
-  nutrientExchangeMultiplier: number,
+  nutrientExchangeMultiplier = 1,
 ) => {
   const nutrient = food.nutrients.find(
     nutrient => nutrient.nutrientType.id === nutrientId,
