@@ -86,12 +86,12 @@ const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallQuery.isError,
+    : recallStore.recallsQuery.isError,
 )
 const isPending = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallQuery.isPending,
+    : recallStore.recallsQuery.isPending,
 )
 
 // Refs
@@ -178,7 +178,7 @@ watch(
 )
 
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
     if (!data) return
 
@@ -186,11 +186,15 @@ watch(
       delete mealCards[key]
     })
 
+    const combinedMeals = data.reduce((combinedMeals, recall) => {
+      return combinedMeals.concat(recall.recall.meals)
+    }, [] as RecallMeal[])
+
     colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
+      combinedMeals.length + 1,
+      combinedMeals.map(meal => meal.hours),
     )
-    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
+    totalEnergy.value = combinedMeals.reduce((totalEnergy, meal) => {
       return totalEnergy + calculateMealEnergy(meal)
     }, 0)
   },

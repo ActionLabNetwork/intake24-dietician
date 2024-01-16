@@ -43,7 +43,7 @@
     <FeedbackPreview
       v-if="selectedModules && selectedModules.recallDates"
       :recall-dates="selectedModules?.recallDates"
-      :recall-date="selectedModules?.recallDate"
+      :recall-daterange="selectedModules?.recallDaterange"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
       :hide-export-to-pdf-button="constrainOutputHeight"
@@ -105,7 +105,10 @@ const shareQuery = useFeedbackShareById(Number(_feedbackId))
 const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
-const date = ref<Date>(new Date())
+const daterange = ref<[Date | undefined, Date | undefined]>([
+  new Date(),
+  new Date(),
+])
 const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(true)
 const isDataLoaded = ref<boolean>(false)
@@ -172,7 +175,7 @@ const feedbackMapping = ref<FeedbackMapping>({
 const initialAllModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: {
         key: ModuleName
         component: Component
@@ -185,7 +188,7 @@ const initialAllModules = ref<
 const allModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: {
         key: ModuleName
         component: Component
@@ -196,7 +199,7 @@ const allModules = ref<
   | undefined
 >({
   recallDates: recallStore.recallDatesQuery.data,
-  recallDate: date,
+  recallDaterange: daterange,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
@@ -216,7 +219,7 @@ const allModules = ref<
 const selectedModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
@@ -229,7 +232,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   const newValue = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules.map(module => {
       const key = module.title
       const component =
@@ -250,7 +253,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
   selectedModules.value = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules
       .filter(module => module.selected)
       .map(module => {
@@ -264,20 +267,6 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
       }),
   }
 }
-
-// const handleDateUpdate = (_date: Date) => {
-//   date.value = _date
-
-//   if (allModules.value) {
-//     allModules.value.recallDate = _date
-//   }
-
-//   if (selectedModules.value) {
-//     selectedModules.value.recallDate = _date
-//   }
-
-//   recallStore.selectedRecallDate = _date
-// }
 
 const handleFeedbackUpdate = (feedback: string) => {
   moduleNameToModuleComponentMapping[component.value].feedback = feedback
@@ -299,20 +288,15 @@ const handleFeedbackUpdate = (feedback: string) => {
   }
 }
 
-// const handlePreviewButtonClick = () => {
-//   if (!selectedModules.value || selectedModules.value.modules.length === 0) {
-//     $toast.warning('Please select at least one module to preview')
-//     return
-//   }
-//   previewing.value = !previewing.value
-// }
-
 watch(
   () => recallStore.recallDatesQuery.data,
   data => {
     if (data) {
       // Default to date saved in draft
-      date.value = shareQuery.data.value?.shared?.recallDate ?? new Date()
+      daterange.value = shareQuery.data.value?.shared?.recallDaterange ?? [
+        new Date(),
+        new Date(),
+      ]
     }
   },
   { immediate: true },
@@ -323,7 +307,7 @@ watch(
   data => {
     if (!data?.shared) return
 
-    date.value = data.shared.recallDate
+    daterange.value = data.shared.recallDaterange
 
     data.shared.modules.forEach(module => {
       feedbackMapping.value[module.key].isActive = module.selected

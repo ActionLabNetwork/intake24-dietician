@@ -6,9 +6,8 @@
       title="Carbs Exchange"
       :class="{ 'text-white': mode === 'preview' }"
     />
-
     <TotalNutrientsDisplay>
-      Total carb exchanges: {{ totalCarbs }}
+      Total carb exchanges: {{ averageCarbs }}
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
@@ -29,6 +28,7 @@
             :colors="getColours(colorPalette[index]!)"
             :foods="meal.foods"
             :mascot="Mascot"
+            :mean="meal.mean"
           />
         </div>
       </div>
@@ -52,6 +52,7 @@
 </template>
 
 <script setup lang="ts">
+import { usePrecision } from '@vueuse/math'
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
@@ -70,8 +71,15 @@ import BaseProgressCircular from '@intake24-dietician/portal/components/common/B
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import {
+  RecallMeal,
+  RecallMealFood,
+} from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import {
+  calculateMealNutrientsExchange,
+  calculateFoodNutrientsExchange,
+} from '@intake24-dietician/portal/utils/feedback'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -88,16 +96,21 @@ const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallQuery.isError,
+    : recallStore.recallsQuery.isError,
 )
 const isPending = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallQuery.isPending,
+    : recallStore.recallsQuery.isPending,
 )
 
 // Refs
 const totalCarbs = ref(0)
+const averageCarbs = computed(() => {
+  return Object.entries(mealCards).reduce((total, [, meal]) => {
+    return total + meal.mean
+  }, 0)
+})
 const colorPalette = ref<string[]>([])
 let mealCards = reactive<Record<string, Omit<DetailedCardProps, 'colors'>>>({})
 
@@ -111,25 +124,16 @@ const getColours = (base: string) => {
   }
 }
 
-const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
-  return food.nutrients.reduce(
-    (total: any, nutrient: { nutrientType: { id: string }; amount: any }) => {
-      return (
-        total +
-        (nutrient.nutrientType.id === NUTRIENTS_CARBS_ID
-          ? nutrient.amount
-          : 0) *
-          CARBS_EXCHANGE_MULTIPLIER
-      )
-    },
-    0,
-  )
-}
-
-const calculateMealCarbsExchange = (meal: RecallMeal) => {
-  const mealCarbsExchange = meal.foods.reduce((total, food: any) => {
-    return total + calculateFoodCarbsExchange(food)
-  }, 0)
+const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
+  const mealCarbsExchange = usePrecision(
+    calculateMealNutrientsExchange(
+      meal,
+      NUTRIENTS_CARBS_ID,
+      recallsCount,
+      CARBS_EXCHANGE_MULTIPLIER,
+    ),
+    2,
+  ).value
 
   mealCards[meal.name] = {
     label: meal.name,
@@ -138,8 +142,18 @@ const calculateMealCarbsExchange = (meal: RecallMeal) => {
       servingWeight: food['portionSizes']?.find(
         (item: { name: string }) => item.name === 'servingWeight',
       )?.value,
-      value: Math.floor(calculateFoodCarbsExchange(food as any)),
+      value: usePrecision(
+        calculateFoodNutrientsExchange(
+          food as RecallMealFood,
+          NUTRIENTS_CARBS_ID,
+          CARBS_EXCHANGE_MULTIPLIER,
+        ),
+
+        2,
+      ).value,
+      mealDate: food['mealDate'],
     })),
+    mean: mealCarbsExchange,
     mascot: Mascot,
   }
 
@@ -148,14 +162,12 @@ const calculateMealCarbsExchange = (meal: RecallMeal) => {
 
 // Watchers
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
     if (!data) return
 
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
+    const combinedMeals = recallStore.recallsGroupedByMeals
+    colorPalette.value = recallStore.colorPalette
 
     // Reset meal cards
     Object.keys(mealCards).forEach(key => {
@@ -163,8 +175,11 @@ watch(
     })
 
     totalCarbs.value = Math.floor(
-      data.recall.meals.reduce((totalCarbs, meal) => {
-        return totalCarbs + calculateMealCarbsExchange(meal)
+      combinedMeals.meals.reduce((totalCarbs, meal) => {
+        return (
+          totalCarbs +
+          calculateMealCarbsExchange(meal, combinedMeals.recallsCount)
+        )
       }, 0),
     )
   },
@@ -175,6 +190,7 @@ watch(
   () => recallStore.sampleRecallQuery.data,
   data => {
     if (!data) return
+    if (!props.useSampleRecall) return
 
     colorPalette.value = generatePastelPalette(
       data.recall.meals.length + 1,

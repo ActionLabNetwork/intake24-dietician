@@ -17,20 +17,20 @@
       <div
         v-if="
           recallStore.recallDates &&
-          recallStore.selectedRecallDate &&
+          recallStore.selectedRecallDateRange &&
           allModules
         "
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
           :recall-dates="recallStore.recallDates"
-          :initial-date="recallStore.selectedRecallDate"
+          :initial-date-range="recallStore.selectedRecallDateRange"
           feedback-type="Tailored"
           :previewing="previewing"
           :editing-draft="false"
-          :draft="allModules"
+          :draft="allModules as DraftCreateDto"
           @click:preview="handlePreviewButtonClick"
-          @update:date="handleDateUpdate"
+          @update:daterange="handleDateRangeUpdate"
         />
       </div>
       <div v-if="recallStore.hasRecalls" v-show="!previewing" class="mt-4">
@@ -42,7 +42,7 @@
               @update:modules="handleModulesUpdate"
             />
           </v-col>
-          <v-col v-if="!recallStore.recallQuery.isPending" cols="9">
+          <v-col v-if="!recallStore.recallsQuery.isPending" cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
               :feedback="moduleFeedback"
@@ -55,9 +55,13 @@
   </div>
   <div v-show="previewing">
     <FeedbackPreview
-      v-if="selectedModules && selectedModules.recallDates"
+      v-if="
+        selectedModules &&
+        selectedModules.recallDates &&
+        selectedModules.recallDaterange
+      "
       :recall-dates="selectedModules?.recallDates"
-      :recall-date="selectedModules?.recallDate"
+      :recall-daterange="selectedModules?.recallDaterange"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
       class="mt-0"
@@ -89,6 +93,7 @@ import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feed
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
+import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 // import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 // const { t } = useI18n<i18nOptions>()
@@ -105,7 +110,10 @@ const recallStore = useRecallStore()
 const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
-const date = ref<Date>(new Date())
+const daterange = ref<[Date | undefined, Date | undefined] | undefined>([
+  new Date(),
+  new Date(),
+])
 const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(route.query['preview'] === 'true' || false)
 
@@ -137,8 +145,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
 
 const allModules = ref<
   | {
-      recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: {
         key: ModuleName
         component: Component
@@ -148,8 +155,7 @@ const allModules = ref<
     }
   | undefined
 >({
-  recallDates: recallStore.recallDatesQuery.data,
-  recallDate: date,
+  recallDaterange: daterange,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
@@ -169,7 +175,7 @@ const allModules = ref<
 const selectedModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
@@ -181,8 +187,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = {
-    recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules.map(module => {
       const key = module.title
       const component = moduleNameToModuleComponentMapping[key].component
@@ -195,7 +200,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
   selectedModules.value = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules
       .filter(module => module.selected)
       .map(module => {
@@ -208,9 +213,11 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 }
 
-const handleDateUpdate = (_date: Date) => {
-  date.value = _date
-  recallStore.selectedRecallDate = _date
+const handleDateRangeUpdate = (
+  _daterange: [Date | undefined, Date | undefined],
+) => {
+  daterange.value = _daterange
+  recallStore.selectedRecallDateRange = _daterange
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
@@ -245,10 +252,7 @@ watch(
   data => {
     if (data) {
       // Default to latest recall date
-      date.value =
-        recallStore.selectedRecallDate ??
-        data[0]?.recall.startTime ??
-        new Date()
+      daterange.value = recallStore.selectedRecallDateRange
     }
   },
   { immediate: true },

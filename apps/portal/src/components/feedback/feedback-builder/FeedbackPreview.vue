@@ -21,13 +21,13 @@
           <FeedbackIntroText
             v-if="index === 0"
             :patient-name="patientName"
-            :recall-date="recallDate.toLocaleDateString()"
+            :recall-daterange="recallDaterange"
           />
           <component
             :is="module.component"
             :feedback="module.feedback"
             :recalls-dates-data="recallDates"
-            :recall-date="recallDate"
+            :recall-date="recallDaterange"
             mode="preview"
             flat
             :style="{
@@ -65,7 +65,7 @@ import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIn
 interface Props {
   patientName: string
   recallDates: RecallDatesDto[]
-  recallDate: Date
+  recallDaterange: [Date | undefined, Date | undefined]
   modules: { key: ModuleName; component: Component; feedback: string }[]
   hideExportToPdfButton: boolean
   constrainOutputHeight: boolean

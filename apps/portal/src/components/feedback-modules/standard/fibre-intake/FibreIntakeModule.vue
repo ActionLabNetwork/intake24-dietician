@@ -111,7 +111,7 @@ const tabs = ref([
 ])
 
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
     // TODO: Improve typings, remove uses of any
     const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
@@ -154,9 +154,13 @@ watch(
 
     if (!data) return
 
+    const combinedMeals = data.reduce((combinedMeals, recall) => {
+      return combinedMeals.concat(recall.recall.meals)
+    }, [] as RecallMeal[])
+
     colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
+      combinedMeals.length + 1,
+      combinedMeals.map(meal => meal.hours),
     )
 
     Object.keys(mealCards).forEach(key => {
@@ -164,7 +168,7 @@ watch(
     })
 
     totalEnergy.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
+      combinedMeals.reduce((totalEnergy, meal) => {
         return totalEnergy + calculateMealCarbsExchange(meal)
       }, 0),
     )

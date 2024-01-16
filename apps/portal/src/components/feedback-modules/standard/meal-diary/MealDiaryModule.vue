@@ -47,10 +47,11 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const recallStore = useRecallStore()
-const meals = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery?.data?.recall.meals
-    : recallStore.recallQuery?.data?.recall.meals,
+const meals = computed(
+  () =>
+    props.useSampleRecall
+      ? recallStore.sampleRecallQuery?.data?.recall.meals
+      : recallStore.sampleRecallQuery?.data?.recall.meals, // TODO: Change this once daterange refactoring is done
 )
 
 const getServingWeight = (food: { [x: string]: any[] }) => {

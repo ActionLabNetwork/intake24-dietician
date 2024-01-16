@@ -17,7 +17,7 @@
       <div
         v-if="
           recallStore.recallDates &&
-          recallStore.selectedRecallDate &&
+          recallStore.selectedRecallDateRange &&
           draftQuery.data.value &&
           allModules &&
           initialAllModules &&
@@ -27,7 +27,7 @@
       >
         <ProfileAndFeedbackCard
           :recall-dates="recallStore.recallDates"
-          :initial-date="recallStore.selectedRecallDate"
+          :initial-date-range="recallStore.selectedRecallDateRange"
           :previewing="previewing"
           feedback-type="Tailored"
           :draftId="draftQuery.data.value.id"
@@ -69,7 +69,7 @@
     <FeedbackPreview
       v-if="selectedModules && selectedModules.recallDates"
       :recall-dates="selectedModules?.recallDates"
-      :recall-date="selectedModules?.recallDate"
+      :recall-daterange="selectedModules?.recallDaterange"
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
       class="mt-0"
@@ -127,7 +127,10 @@ const draftQuery = useFeedbackDraftById(
 const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
-const date = ref<Date>(new Date())
+const daterange = ref<[Date | undefined, Date | undefined]>([
+  new Date(),
+  new Date(),
+])
 const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(false)
 const isDataLoaded = ref<boolean>(false)
@@ -194,7 +197,7 @@ const feedbackMapping = ref<FeedbackMapping>({
 const initialAllModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: {
         key: ModuleName
         component: Component
@@ -207,7 +210,7 @@ const initialAllModules = ref<
 const allModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: {
         key: ModuleName
         component: Component
@@ -218,7 +221,7 @@ const allModules = ref<
   | undefined
 >({
   recallDates: recallStore.recallDatesQuery.data,
-  recallDate: date,
+  recallDaterange: daterange,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
@@ -238,7 +241,7 @@ const allModules = ref<
 const selectedModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDate: typeof date
+      recallDaterange: typeof daterange
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
@@ -251,7 +254,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   const newValue = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules.map(module => {
       const key = module.title
       const component =
@@ -272,7 +275,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
   selectedModules.value = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDate: date.value,
+    recallDaterange: daterange.value,
     modules: modules
       .filter(module => module.selected)
       .map(module => {
@@ -287,18 +290,18 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 }
 
-const handleDateUpdate = (_date: Date) => {
-  date.value = _date
+const handleDateUpdate = (_daterange: [Date | undefined, Date | undefined]) => {
+  daterange.value = _daterange
 
   if (allModules.value) {
-    allModules.value.recallDate = _date
+    allModules.value.recallDaterange = _daterange
   }
 
   if (selectedModules.value) {
-    selectedModules.value.recallDate = _date
+    selectedModules.value.recallDaterange = _daterange
   }
 
-  recallStore.selectedRecallDate = _date
+  recallStore.selectedRecallDateRange = _daterange
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
@@ -334,7 +337,10 @@ watch(
   data => {
     if (data) {
       // Default to date saved in draft
-      date.value = draftQuery.data.value?.draft?.recallDate ?? new Date()
+      daterange.value = draftQuery.data.value?.draft?.recallDaterange ?? [
+        new Date(),
+        new Date(),
+      ]
     }
   },
   { immediate: true },
@@ -345,7 +351,7 @@ watch(
   data => {
     if (!data?.draft) return
 
-    date.value = data.draft.recallDate
+    daterange.value = data.draft.recallDaterange
 
     data.draft.modules.forEach(module => {
       feedbackMapping.value[module.key].isActive = module.selected

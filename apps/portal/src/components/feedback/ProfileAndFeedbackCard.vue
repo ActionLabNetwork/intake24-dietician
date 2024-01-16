@@ -19,16 +19,17 @@
         <div class="d-flex align-center">
           <div class="font-weight-medium">Date:</div>
           <VueDatePicker
-            v-model="date"
+            v-model="dateRange"
             :disabled="disableDatepicker"
             :teleport="true"
             :enable-time-picker="false"
             :allowed-dates="allowedStartDates"
             text-input
+            range
             format="dd/MM/yyyy"
             class="ml-2"
             style="width: 100%"
-            @update:model-value="handleDateUpdate"
+            @update:model-value="handleDaterangeUpdate"
           />
         </div>
       </div>
@@ -105,7 +106,7 @@ import { storeToRefs } from 'pinia'
 
 const props = withDefaults(
   defineProps<{
-    initialDate: Date
+    initialDateRange: [Date | undefined, Date | undefined]
     previewing: boolean
     editingDraft: { originalDraft: DraftCreateDto } | false
     draftId?: number
@@ -117,7 +118,7 @@ const props = withDefaults(
   { disableDatepicker: false, hideActionButtons: false },
 )
 const emit = defineEmits<{
-  'update:date': [date: Date]
+  'update:daterange': [date: [Date | undefined, Date | undefined]]
   'click:preview': []
 }>()
 
@@ -138,10 +139,12 @@ const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
 
-const date = ref()
+const dateRange = ref()
 
-const handleDateUpdate = (date: Date) => {
-  emit('update:date', date)
+const handleDaterangeUpdate = (
+  daterange: [Date | undefined, Date | undefined],
+) => {
+  emit('update:daterange', daterange)
 }
 
 const areDraftsEqual = computed(() => {
@@ -151,7 +154,7 @@ const areDraftsEqual = computed(() => {
 })
 
 onMounted(() => {
-  date.value = props.initialDate
+  dateRange.value = props.initialDateRange
 })
 
 const handleSaveDraftClick = () => {

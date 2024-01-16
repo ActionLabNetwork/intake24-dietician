@@ -108,12 +108,12 @@ const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallQuery.isError,
+    : recallStore.recallsQuery.isError,
 )
 const isPending = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallQuery.isPending,
+    : recallStore.recallsQuery.isPending,
 )
 
 const totalWaterIntake = ref(0)
@@ -135,7 +135,7 @@ const textStyle = computed(() => ({
 }))
 
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
     const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
       return food.nutrients.reduce(
@@ -163,8 +163,12 @@ watch(
     }
 
     if (!data) return
+    const combinedMeals = data.reduce((combinedMeals, recall) => {
+      return combinedMeals.concat(recall.recall.meals)
+    }, [] as RecallMeal[])
+
     totalWaterIntake.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
+      combinedMeals.reduce((totalEnergy, meal) => {
         return totalEnergy + calculateMealWaterContent(meal)
       }, 0),
     )

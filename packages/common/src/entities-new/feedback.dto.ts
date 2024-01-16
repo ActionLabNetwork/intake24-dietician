@@ -5,7 +5,10 @@ import { TimestampSchema } from './timestamp.dto'
 export type FeedbackType = 'Auto' | 'Tailored'
 
 export const DraftCreateDtoSchema = z.object({
-  recallDate: z.coerce.date(),
+  recallDaterange: z.tuple([
+    z.coerce.date().optional(),
+    z.coerce.date().optional(),
+  ]),
   modules: z.array(
     z.object({
       key: z.enum(moduleNames),

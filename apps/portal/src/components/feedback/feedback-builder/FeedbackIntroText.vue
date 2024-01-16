@@ -5,7 +5,7 @@
       <p class="w-50 mt-4">
         Great job on completing your recall. Below, you can find a quick
         feedback based on your recall data submitted on
-        {{ recallDate }}
+        {{ recallDaterange }}
       </p>
     </div>
   </div>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 defineProps<{
   patientName: string
-  recallDate: string
+  recallDaterange: [Date | undefined, Date | undefined]
 }>()
 </script>
 
