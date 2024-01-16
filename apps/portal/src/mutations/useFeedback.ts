@@ -37,3 +37,20 @@ export const useEditDraft = () => {
     mutate,
   }
 }
+
+export const useShareDraft = () => {
+  const { authenticatedClient } = useClientStore()
+  const mutation = useMutation({
+    mutationFn: (body: {
+      patientId: number
+      draftId: number | undefined
+      draft: DraftCreateDto
+    }) => {
+      return authenticatedClient.dieticianFeedback.shareDraft.mutate(body)
+    },
+  })
+
+  return {
+    ...mutation,
+  }
+}

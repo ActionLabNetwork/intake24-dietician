@@ -1,13 +1,16 @@
-import { AuthService } from '../../services/auth.service'
-import { PatientService } from '../../services/patient.service'
-import { protectedDieticianProcedure, router } from '../../trpc'
+import {
+  RecallDatesDtoSchema,
+  RecallDtoSchema,
+} from '@intake24-dietician/common/entities-new/recall.dto'
 import {
   PatientUpdateDtoSchema,
   PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
-import { RecallDtoSchema } from '@intake24-dietician/common/entities-new/recall.dto'
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
+import { AuthService } from '../../services/auth.service'
+import { PatientService } from '../../services/patient.service'
+import { protectedDieticianProcedure, router } from '../../trpc'
 
 @singleton()
 export class DieticianPatientRouter {
@@ -40,7 +43,13 @@ export class DieticianPatientRouter {
         },
       })
       .input(z.object({ surveyId: z.number() }))
-      .output(z.array(PatientWithUserDto))
+      .output(
+        z.array(
+          PatientWithUserDto.extend({
+            recallDates: z.array(RecallDatesDtoSchema),
+          }),
+        ),
+      )
       .query(async opts => {
         return await this.patientService.getPatients(
           opts.input.surveyId,
@@ -128,7 +137,7 @@ export class DieticianPatientRouter {
         openapi: {
           method: 'GET',
           path: '/patients/{patientId}/recalls',
-          tags: ['patients'],
+          tags: ['patients', 'recalls'],
           summary: 'Get recalls of a patient',
         },
       })
@@ -146,12 +155,35 @@ export class DieticianPatientRouter {
 
         return recalls
       }),
+    getRecallDates: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/patients/{patientId}/recalls/dates',
+          tags: ['patients', 'recalls'],
+          summary: 'Get the recall dates of a patient',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number().int(),
+        }),
+      )
+      .output(z.array(RecallDatesDtoSchema))
+      .query(async opts => {
+        const recalls = await this.patientService.getRecallDatesOfPatient(
+          opts.input.patientId,
+          opts.ctx.dieticianId,
+        )
+
+        return recalls
+      }),
     getRecall: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
           path: '/recalls/{id}',
-          tags: ['patients'],
+          tags: ['patients', 'recalls'],
           summary: 'Get recall by id',
         },
       })
@@ -166,6 +198,21 @@ export class DieticianPatientRouter {
           opts.input.id,
           opts.ctx.dieticianId,
         )
+      }),
+    getSampleRecall: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/recalls/sample',
+          tags: ['patients', 'recalls'],
+          summary:
+            'Get sample recall to be displayed as preview for the feedback modules',
+        },
+      })
+      .input(z.void())
+      .output(RecallDtoSchema.nullish())
+      .query(async () => {
+        return await this.patientService.getSampleRecall()
       }),
   })
 

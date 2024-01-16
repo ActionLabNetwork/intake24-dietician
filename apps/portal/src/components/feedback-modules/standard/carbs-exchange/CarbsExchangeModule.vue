@@ -2,15 +2,9 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      v-if="props.recallDate && selectedDate"
       :logo="Logo"
       title="Carbs Exchange"
-      :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
-      :show-datepicker="mode === 'view'"
       :class="{ 'text-white': mode === 'preview' }"
-      @update:selected-date="selectedDate = $event"
     />
 
     <TotalNutrientsDisplay>
@@ -18,9 +12,9 @@
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
-      <BaseProgressCircular v-if="recallQuery.isPending.value" />
+      <BaseProgressCircular v-if="isPending" />
       <!-- Error state -->
-      <div v-if="recallQuery.isError.value" class="mt-10">
+      <div v-if="isError" class="mt-10">
         <v-alert
           type="error"
           title="Error fetching recall data"
@@ -64,7 +58,7 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
 } from '@/components/feedback-modules/card-styles/DetailedCard.vue'
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
@@ -74,21 +68,33 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
-const { selectedDate, recallQuery, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
+
+const isError = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isError
+    : recallStore.recallQuery.isError,
+)
+const isPending = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isPending
+    : recallStore.recallQuery.isPending,
+)
 
 // Refs
 const totalCarbs = ref(0)
@@ -121,18 +127,18 @@ const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
 }
 
 const calculateMealCarbsExchange = (meal: RecallMeal) => {
-  const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
+  const mealCarbsExchange = meal.foods.reduce((total, food: any) => {
     return total + calculateFoodCarbsExchange(food)
   }, 0)
 
   mealCards[meal.name] = {
     label: meal.name,
-    foods: meal.foods.map(f => ({
-      name: f['englishName'],
-      servingWeight: f['portionSizes']?.find(
+    foods: meal.foods.map(food => ({
+      name: food['englishName'],
+      servingWeight: food['portionSizes']?.find(
         (item: { name: string }) => item.name === 'servingWeight',
       )?.value,
-      value: Math.floor(calculateFoodCarbsExchange(f as any)),
+      value: Math.floor(calculateFoodCarbsExchange(food as any)),
     })),
     mascot: Mascot,
   }
@@ -142,15 +148,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal) => {
 
 // Watchers
 watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
-  },
-  { immediate: true },
-)
-
-watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     if (!data) return
 
@@ -159,6 +157,31 @@ watch(
       data.recall.meals.map(meal => meal.hours),
     )
 
+    // Reset meal cards
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    totalCarbs.value = Math.floor(
+      data.recall.meals.reduce((totalCarbs, meal) => {
+        return totalCarbs + calculateMealCarbsExchange(meal)
+      }, 0),
+    )
+  },
+  { immediate: true },
+)
+
+watch(
+  () => recallStore.sampleRecallQuery.data,
+  data => {
+    if (!data) return
+
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
+
+    // Reset meal cards
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })

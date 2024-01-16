@@ -41,9 +41,7 @@
           </div>
         </div>
       </div>
-
       <v-divider class="my-10" />
-
       <div>
         <SurveyConfiguration
           :default-state="surveyConfigFormValues"
@@ -52,7 +50,6 @@
           @update="handleSurveyConfigUpdate"
         />
       </div>
-
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
@@ -265,7 +262,6 @@ const handleSubmit = async (): Promise<void> => {
 watch(
   surveyQueryData,
   newSurveyQueryData => {
-    console.log({ newSurveyQueryData })
     if (!initialFormData.value) {
       initialFormData.value = newSurveyQueryData
     }

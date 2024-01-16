@@ -6,6 +6,14 @@ export const modules = [
   'water-intake',
 ] as const
 
+export const moduleNames = [
+  'Meal diary',
+  'Carbs exchange',
+  'Energy intake',
+  'Fibre intake',
+  'Water intake',
+] as const
+
 const createRoutes = <T extends ReadonlyArray<string>>(
   modules: T,
 ): { [K in keyof T]: `/${T[K]}` } => modules.map(module => `/${module}`) as any

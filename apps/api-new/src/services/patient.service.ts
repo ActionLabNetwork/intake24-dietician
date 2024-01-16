@@ -7,7 +7,10 @@ import { inject, singleton } from 'tsyringe'
 import { JwtService } from './jwt.service'
 import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import moment from 'moment'
-import type { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import type {
+  RecallDatesDto,
+  RecallDto,
+} from '@intake24-dietician/common/entities-new/recall.dto'
 import type { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { recallReminderCooldown } from '@intake24-dietician/common/constants/settings-contants'
 import { EmailService } from './email.service'
@@ -56,6 +59,10 @@ export class PatientService {
     return recall
   }
 
+  public async getSampleRecall() {
+    return await this.recallRepository.getSampleRecall()
+  }
+
   public async getRecallsOfPatient(patientId: number, dieticianId: number) {
     if (
       !(await this.userRepository.isPatientDieticians({
@@ -68,6 +75,20 @@ export class PatientService {
       )
     }
     return await this.recallRepository.getRecallsOfPatient(patientId)
+  }
+
+  public async getRecallDatesOfPatient(patientId: number, dieticianId: number) {
+    if (
+      !(await this.userRepository.isPatientDieticians({
+        patientId,
+        dieticianId,
+      }))
+    ) {
+      throw new UnauthorizedError(
+        'You are not authorized to access this recall',
+      )
+    }
+    return await this.recallRepository.getRecallDatesOfPatient(patientId)
   }
 
   public async createRecall(
@@ -84,7 +105,7 @@ export class PatientService {
       throw new ClientError('Wrong slug')
     }
 
-    const patientUser = await recall.user.aliases[0]
+    const patientUser = recall.user.aliases[0]
     assert(patientUser)
     if (!patientUser) throw new ClientError('Patient cannot be extracted')
     // we are using our user ID for Intake's username
@@ -143,7 +164,7 @@ export class PatientService {
         'intake24Host' | 'intake24SurveyId' | 'intake24Secret'
       >
     },
-  ): Promise<PatientWithUserDto> {
+  ): Promise<PatientWithUserDto & { recallDates: RecallDatesDto[] }> {
     const payload = {
       username: `dietician:${patient.id}`,
       password: 'super_secret_password', // TODO: should this be created for the user and stored?
@@ -154,12 +175,18 @@ export class PatientService {
       moment().add(5, 'days').toDate(),
       patient.survey.intake24Secret,
     )
+
+    const recallDates = await this.recallRepository.getRecallDatesOfPatient(
+      patient.id,
+    )
+
     const survey = patient.survey
     const startSurveyUrl = new URL(survey.intake24Host)
     startSurveyUrl.pathname = `${survey.intake24SurveyId}/create-user/${jwt}`
     return {
       ...patient,
       startSurveyUrl: startSurveyUrl.toString(),
+      recallDates,
     }
   }
 }

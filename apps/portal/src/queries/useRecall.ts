@@ -2,13 +2,28 @@ import { useQuery } from '@tanstack/vue-query'
 import { Ref } from 'vue'
 import { useClientStore } from '../trpc/trpc'
 
-export const useRecallById = (recallId: Ref<string>) => {
+export const useSampleRecall = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
-    queryKey: ['recallId', recallId.value],
+  const query = useQuery({
+    queryKey: ['sampleRecall'],
+    queryFn: async () => {
+      return await authenticatedClient.dieticianPatient.getSampleRecall.query()
+    },
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  })
+
+  return {
+    ...query,
+  }
+}
+
+export const useRecallById = (recallId: Ref<number>) => {
+  const { authenticatedClient } = useClientStore()
+  const query = useQuery({
+    queryKey: ['recallId', recallId],
     queryFn: async () => {
       return await authenticatedClient.dieticianPatient.getRecall.query({
-        id: Number(recallId.value),
+        id: recallId.value,
       })
     },
     enabled: !!recallId.value,
@@ -16,12 +31,7 @@ export const useRecallById = (recallId: Ref<string>) => {
   })
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    refetch,
+    ...query,
   }
 }
 
@@ -44,4 +54,19 @@ export const useRecallsByUserId = (userId: Ref<string>) => {
     error,
     isSuccess,
   }
+}
+
+export const useRecallDatesByUserId = (userId: Ref<string>) => {
+  const { authenticatedClient } = useClientStore()
+  const query = useQuery({
+    queryKey: ['recalls', 'userId', 'dates', userId],
+    queryFn: async () => {
+      return await authenticatedClient.dieticianPatient.getRecallDates.query({
+        patientId: Number(userId.value),
+      })
+    },
+    enabled: !!userId,
+  })
+
+  return { ...query }
 }

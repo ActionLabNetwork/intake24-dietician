@@ -2,7 +2,6 @@ import html2pdf from 'html2pdf.js'
 
 export function usePdfExport() {
   const exportToPdf = (element: HTMLElement, filename: string) => {
-    console.log('Exporting pdf...', { element }, { filename })
     const opt = {
       margin: 0,
       filename: filename,

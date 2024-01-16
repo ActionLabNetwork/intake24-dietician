@@ -85,6 +85,7 @@ export const RecallMealFoodSchema = z.object({
   portionSizes: z.array(RecallPotionSizeSchema),
   nutrients: z.array(RecallNutrientSchema),
 })
+export type RecallMealFood = z.infer<typeof RecallMealFoodSchema>
 
 export const RecallSchema = z.object({
   id: z.string(),
@@ -106,5 +107,21 @@ export const RecallSchema = z.object({
   }),
   customFields: z.array(z.record(z.any())).nullable(),
 })
-
 export type Recall = z.infer<typeof RecallSchema>
+
+export type RecallKeys = keyof z.infer<typeof RecallSchema>
+export const RecallKeysSchema = z
+  .string()
+  .transform(str => {
+    // Split the string by commas, trim each part, and return as an array
+    return str.split(',').map(s => s.trim())
+  })
+  .refine(
+    keys => {
+      // Validate that each key is a valid key of RecallSchema
+      return keys.every(key => Object.keys(RecallSchema.shape).includes(key))
+    },
+    {
+      message: 'Invalid key found in the list',
+    },
+  )

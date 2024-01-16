@@ -28,7 +28,7 @@
       </div>
     </div>
     <v-form
-      v-if="patientQuery.isSuccess.value"
+      v-if="patientQuery.isSuccess"
       ref="form"
       class="mt-8"
       autocomplete="on"
@@ -95,7 +95,6 @@ import SendAutomatedFeedbackToggle from '@intake24-dietician/portal/components/p
 import UpdateRecallFrequency from '@intake24-dietician/portal/components/patients/patient-details/UpdateRecallFrequency.vue'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useToast } from 'vue-toast-notification'
-import { usePatientById } from '@intake24-dietician/portal/queries/usePatients'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useRoute } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
@@ -107,11 +106,14 @@ import {
 } from '@intake24-dietician/common/entities-new/user.dto'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { z } from 'zod'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 
 // const { t } = useI18n<i18nOptions>()
 
+const patientStore = usePatientStore()
+
 const route = useRoute()
-const patientQuery = usePatientById(route.params['patientId'] as string)
+const patientQuery = computed(() => patientStore.patientQuery)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
@@ -202,7 +204,7 @@ const handleSubmit = async (): Promise<void> => {
 }
 
 const patient = computed(() => {
-  return patientQuery.data.value
+  return patientQuery.value.data
 })
 
 const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
@@ -210,7 +212,7 @@ const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
 }
 
 watch(
-  () => patientQuery.data.value,
+  () => patientQuery.value.data,
   newData => {
     if (!newData) return
 

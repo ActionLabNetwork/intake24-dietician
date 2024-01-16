@@ -16,7 +16,7 @@ import { typedJsonbFromSchema } from './modelUtils'
 import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { recalls } from './recall.model'
 import { genders } from '@intake24-dietician/common/entities-new/user.dto'
-import { feedbackDrafts } from './feedback.model'
+import { feedbackDrafts, feedbackShares } from './feedback.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
 
@@ -110,4 +110,5 @@ export const patientRelations = relations(patients, ({ one, many }) => ({
   }),
   recalls: many(recalls),
   feedbackDrafts: many(feedbackDrafts),
+  feedbackShares: many(feedbackShares),
 }))

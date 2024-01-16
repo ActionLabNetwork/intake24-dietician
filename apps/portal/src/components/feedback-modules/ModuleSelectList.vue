@@ -45,17 +45,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import draggable from 'vuedraggable'
-import type { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import type { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 export interface ModuleItem {
-  title: string
+  title: ModuleName
   value: number
   selected: boolean
-  to: ModuleRoute
 }
 
 const props = withDefaults(
@@ -69,66 +69,69 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  update: [value: ModuleRoute]
+  update: [value: ModuleName]
   'update:modules': [items: ModuleItem[]]
 }>()
 
 const route = useRoute()
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
 const drag = ref(false)
 
-const items = ref<ModuleItem[]>([
-  {
-    title: 'Meal diary',
-    value: 1,
-    selected: false,
-    to: '/meal-diary',
-  },
-  {
-    title: 'Carbs exchange',
-    value: 2,
-    selected: false,
-    to: '/carbs-exchange',
-  },
-  {
-    title: 'Energy intake',
-    value: 3,
-    selected: false,
-    to: '/energy-intake',
-  },
-  { title: 'Fibre intake', value: 4, selected: false, to: '/fibre-intake' },
-  { title: 'Water intake', value: 5, selected: false, to: '/water-intake' },
-])
+const items = ref<ModuleItem[]>([])
 
 const selectedModule = ref(1)
 
-onMounted(() => {
-  const currentRoute = route.path.split('/').pop() ?? ''
-  selectedModule.value =
-    items.value.find(i => i.to.includes(currentRoute))?.value ?? 1
-
-  if (props.defaultState) {
-    mapPropsToRef()
-  }
-})
-
-const handleModuleSelect = (title: ModuleRoute) => {
+const handleModuleSelect = (title: ModuleName) => {
   const item = items.value.find(i => i.title === title)
 
   if (!item) return
   selectedModule.value = item.value
-  emit('update', item.to)
+  emit('update', item.title)
 }
 
-onMounted(() => {
-  emit('update:modules', items.value)
-})
+const initWithDefaultValues = () => {
+  if (!props.defaultState) return
 
-// Helpers
-const mapPropsToRef = () => {
-  items.value.forEach(item => {
-    const defaultStateItem = props.defaultState?.[item.to]
-    item.selected = defaultStateItem?.isActive ?? false
+  items.value = Object.entries(props.defaultState).map(
+    ([key, value], index) => {
+      return {
+        title: key as ModuleName,
+        value: index + 1,
+        selected: value.isActive,
+      }
+    },
+  )
+}
+
+const initWithValuesFromClinicSettings = () => {
+  if (!surveyQuery.data.value) return
+
+  const feedbackModules = surveyQuery.data.value.feedbackModules ?? []
+  items.value = feedbackModules.map((module, index) => {
+    return {
+      title: module.name as ModuleName,
+      value: index + 1,
+      selected: module.isActive,
+    }
   })
 }
+
+watch(
+  () => surveyQuery.data.value,
+  newData => {
+    // We are using default state
+    if (props.defaultState) {
+      initWithDefaultValues()
+      emit('update:modules', items.value)
+      return
+    }
+
+    if (!newData) return // No data yet
+    // Otherwise, we are using the clinic settings
+    initWithValuesFromClinicSettings()
+    emit('update:modules', items.value)
+  },
+  { immediate: true },
+)
 </script>

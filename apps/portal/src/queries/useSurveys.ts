@@ -30,12 +30,9 @@ export const useSurveyById = (id: string) => {
   const { data, isPending, isError, error, isSuccess } = useQuery({
     queryKey: ['surveys', id],
     queryFn: async () => {
-      const response =
-        await authenticatedClient.dieticianSurvey.getSurveyById.query({
-          id: Number(id),
-        })
-
-      return response
+      return authenticatedClient.dieticianSurvey.getSurveyById.query({
+        id: Number(id),
+      })
     },
   })
 

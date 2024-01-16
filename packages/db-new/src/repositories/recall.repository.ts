@@ -19,6 +19,11 @@ export class RecallRepository {
     })
   }
 
+  // TODO: Ensure there is a proper sample recall
+  public async getSampleRecall() {
+    return await this.drizzle.query.recalls.findFirst()
+  }
+
   public async getRecallsOfPatient(patientId: number) {
     const _recalls = await this.drizzle.query.recalls
       .findMany({
@@ -27,6 +32,30 @@ export class RecallRepository {
       .execute()
 
     return _recalls
+  }
+
+  public async getRecallDatesOfPatient(patientId: number) {
+    const _recalls = await this.drizzle.query.recalls
+      .findMany({
+        where: eq(recalls.patientId, patientId),
+      })
+      .execute()
+
+    const mappedRecalls = _recalls.map(recall => {
+      const { recall: _recall } = recall
+
+      return {
+        ...recall,
+        recall: {
+          id: recall.id,
+          i24Id: _recall.id,
+          startTime: _recall.startTime,
+          endTime: _recall.endTime,
+        },
+      }
+    })
+
+    return mappedRecalls
   }
 
   public async createRecall(patientId: number, recall: RecallDto['recall']) {

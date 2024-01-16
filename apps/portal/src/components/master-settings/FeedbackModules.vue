@@ -73,6 +73,7 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -118,13 +119,6 @@ interface FormConfig {
   [key: string]: FormFieldConfig<any, any>
 }
 
-type ModuleName =
-  | 'Meal diary'
-  | 'Carbs exchange'
-  | 'Energy intake'
-  | 'Fibre intake'
-  | 'Water intake'
-
 const findFeedbackModel = (name: ModuleName) => {
   return props.defaultState.feedbackModules.find(module => module.name === name)
 }
@@ -161,11 +155,11 @@ const sendAutomatedFeedback = ref<boolean>(
   toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
 )
 const feedbackMapping = ref<FeedbackMapping>({
-  '/meal-diary': createFeedbackEntry('Meal diary'),
-  '/carbs-exchange': createFeedbackEntry('Carbs exchange'),
-  '/energy-intake': createFeedbackEntry('Energy intake'),
-  '/fibre-intake': createFeedbackEntry('Fibre intake'),
-  '/water-intake': createFeedbackEntry('Water intake'),
+  'Meal diary': createFeedbackEntry('Meal diary'),
+  'Carbs exchange': createFeedbackEntry('Carbs exchange'),
+  'Energy intake': createFeedbackEntry('Energy intake'),
+  'Fibre intake': createFeedbackEntry('Fibre intake'),
+  'Water intake': createFeedbackEntry('Water intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {

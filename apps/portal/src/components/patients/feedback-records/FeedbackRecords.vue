@@ -4,16 +4,15 @@
       <div class="d-flex flex-column flex-sm-row justify-space-between">
         <p class="title mb-3 mb-sm-0">Feedback records</p>
         <v-btn
-          v-if="recallsStore.recalls !== undefined"
           append-icon="mdi-plus"
           color="primary"
           class="text-none"
           :to="`${route.fullPath}/compose-feedback`"
-          :loading="recallsStore.isPending"
-          :disabled="!recallsStore.hasRecalls"
+          :loading="recallStore.recallDatesQuery.isPending"
+          :disabled="!recallStore.hasRecalls"
         >
           {{
-            recallsStore.hasRecalls
+            recallStore.hasRecalls
               ? 'Compose new feedback'
               : 'No recalls available'
           }}
@@ -33,15 +32,15 @@
 import DraftItemList from '@/components/patients/feedback-records/DraftItemList.vue'
 import SharedItemList from './SharedItemList.vue'
 import { useRoute } from 'vue-router'
-import { useRecallsStore } from '@intake24-dietician/portal/stores/recall'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 // import DraftItem from './DraftItem.vue'
 
 const route = useRoute()
-const recallsStore = useRecallsStore()
+const recallStore = useRecallStore()
 
 const patientId = route.params['patientId'] as string
 
-recallsStore.fetchRecalls(patientId)
+recallStore.fetchRecalls(patientId)
 </script>
 
 <style scoped lang="scss">

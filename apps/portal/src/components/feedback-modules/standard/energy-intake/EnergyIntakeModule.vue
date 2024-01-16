@@ -1,25 +1,16 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      v-if="props.recallDate && selectedDate"
-      :logo="Logo"
-      title="Energy intake"
-      :recallDate="props.recallDate"
-      :allowedStartDates="allowedStartDates"
-      :selectedDate="selectedDate"
-      :show-datepicker="mode === 'view'"
-      @update:selected-date="selectedDate = $event"
-    />
+    <ModuleTitle :logo="Logo" title="Energy intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
         <!-- Loading state -->
-        <BaseProgressCircular v-if="recallQuery.isPending.value" />
+        <BaseProgressCircular v-if="isPending" />
         <!-- Error state -->
-        <div v-if="recallQuery.isError.value" class="mt-10">
+        <div v-if="isError" class="mt-10">
           <v-alert
             type="error"
             title="Error fetching recall data"
@@ -61,7 +52,7 @@ import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
@@ -71,25 +62,37 @@ import chroma from 'chroma-js'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import useRecallShared from '@intake24-dietician/portal/composables/useRecallShared'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import SummarizedCard, {
   type SummarizedCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  useSampleRecall: false,
 })
 
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
-const { recallQuery, selectedDate, allowedStartDates } = useRecallShared(props)
+const recallStore = useRecallStore()
+
+const isError = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isError
+    : recallStore.recallQuery.isError,
+)
+const isPending = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery.isPending
+    : recallStore.recallQuery.isPending,
+)
 
 // Refs
 const totalEnergy = ref(0)
@@ -155,15 +158,27 @@ const calculateMealEnergy = (meal: RecallMeal) => {
 }
 
 watch(
-  () => props.recallDate,
-  newRecallDate => {
-    selectedDate.value = newRecallDate
+  () => recallStore.sampleRecallQuery.data,
+  data => {
+    if (!data) return
+
+    Object.keys(mealCards).forEach(key => {
+      delete mealCards[key]
+    })
+
+    colorPalette.value = generatePastelPalette(
+      data.recall.meals.length + 1,
+      data.recall.meals.map(meal => meal.hours),
+    )
+    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
+      return totalEnergy + calculateMealEnergy(meal)
+    }, 0)
   },
   { immediate: true },
 )
 
 watch(
-  () => recallQuery.data.value,
+  () => recallStore.recallQuery.data,
   data => {
     if (!data) return
 

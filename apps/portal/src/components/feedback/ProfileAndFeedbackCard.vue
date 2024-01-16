@@ -1,74 +1,81 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card class="mx-auto py-2 px-5">
-    <div class="d-flex justify-space-between align-center">
-      <div class="flex-container">
-        <!-- Profile avatar, name and id -->
+  <v-card v-if="patient" class="mx-auto py-2 px-5">
+    <div class="d-flex flex-wrap justify-space-between align-center">
+      <!-- Profile avatar, name and id -->
+      <div class="d-flex align-center">
+        <v-avatar
+          size="x-large"
+          :image="patient.avatar ?? getDefaultAvatar()"
+        />
+        <div class="ml-3">
+          <div class="font-weight-bold">{{ patientStore.fullName }}</div>
+          <div>ID: {{ patient.id }}</div>
+        </div>
+      </div>
+
+      <!-- Date -->
+      <div class="d-flex">
         <div class="d-flex align-center">
-          <v-avatar size="x-large" :image="avatar" />
-          <div class="ml-3">
-            <div class="font-weight-bold">{{ fullName }}</div>
-            <div>ID: {{ id }}</div>
-          </div>
+          <div class="font-weight-medium">Date:</div>
+          <VueDatePicker
+            v-model="date"
+            :disabled="disableDatepicker"
+            :teleport="true"
+            :enable-time-picker="false"
+            :allowed-dates="allowedStartDates"
+            text-input
+            format="dd/MM/yyyy"
+            class="ml-2"
+            style="width: 100%"
+            @update:model-value="handleDateUpdate"
+          />
         </div>
+      </div>
 
-        <!-- Date -->
-        <div class="d-flex">
-          <div class="d-flex align-center">
-            <div class="font-weight-medium">Date:</div>
-            <VueDatePicker
-              v-model="date"
-              :teleport="true"
-              :enable-time-picker="false"
-              :allowed-dates="allowedDates"
-              text-input
-              format="dd/MM/yyyy"
-              class="ml-2"
-              style="width: 100%"
-              @update:model-value="handleDateUpdate"
-            />
-          </div>
-        </div>
+      <!-- Share status -->
+      <div class="d-flex flex-column align-center">
+        <p class="font-weight-medium mx-auto">Share status</p>
+        <v-chip variant="outlined" color="success" text="Tailored"> </v-chip>
+      </div>
 
-        <!-- Share status -->
-        <div class="d-flex flex-column align-center">
-          <p class="font-weight-medium mx-auto">Share status</p>
-          <v-chip variant="outlined" color="success" text="Tailored"> </v-chip>
-        </div>
-
-        <!-- Action buttons -->
-        <div>
-          <v-btn
-            :append-icon="previewing ? 'mdi-pencil-outline' : 'mdi-eye-outline'"
-            class="text-capitalize"
-            variant="text"
-            @click="emit('click:preview')"
-          >
-            {{ previewing ? 'Edit' : 'Preview' }}
-          </v-btn>
-          <v-btn
-            class="text-none ml-8"
-            color="#F1F1F1"
-            flat
-            :disabled="!!editingDraft && areDraftsEqual"
-            @click="
-              () => {
-                !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
-              }
-            "
-          >
-            {{
-              props.editingDraft
-                ? areDraftsEqual
-                  ? 'No draft changes'
-                  : 'Save draft changes'
-                : 'Save as draft'
-            }}
-          </v-btn>
-          <v-btn class="text-none ml-3" color="primary" flat>
-            Share feedback
-          </v-btn>
-        </div>
+      <!-- Action buttons -->
+      <div v-if="!hideActionButtons">
+        <v-btn
+          :append-icon="previewing ? 'mdi-pencil-outline' : 'mdi-eye-outline'"
+          class="text-capitalize"
+          variant="text"
+          @click="emit('click:preview')"
+        >
+          {{ previewing ? 'Edit' : 'Preview' }}
+        </v-btn>
+        <v-btn
+          class="text-none ml-8"
+          color="#F1F1F1"
+          flat
+          :disabled="!!editingDraft && areDraftsEqual"
+          @click="
+            () => {
+              !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
+            }
+          "
+        >
+          {{
+            props.editingDraft
+              ? areDraftsEqual
+                ? 'No draft changes'
+                : 'Save draft changes'
+              : 'Save as draft'
+          }}
+        </v-btn>
+        <v-btn
+          class="text-none ml-3"
+          color="primary"
+          flat
+          @click="handleShareDraftClick"
+        >
+          Share feedback
+        </v-btn>
       </div>
     </div>
   </v-card>
@@ -80,24 +87,35 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import {
   useEditDraft,
   useSaveDraft,
+  useShareDraft,
 } from '@intake24-dietician/portal/mutations/useFeedback'
-import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import {
+  DraftCreateDto,
+  FeedbackType,
+} from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useRouter, useRoute } from 'vue-router'
 import isEqual from 'lodash.isequal'
 
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { storeToRefs } from 'pinia'
 
-const props = defineProps<{
-  id: string
-  fullName: string
-  avatar: string
-  recallDates: { id: number; startTime: Date; endTime: Date }[]
-  initialDate: Date
-  previewing: boolean
-  editingDraft: { originalDraft: DraftCreateDto } | false
-  draft: DraftCreateDto
-}>()
+const props = withDefaults(
+  defineProps<{
+    initialDate: Date
+    previewing: boolean
+    editingDraft: { originalDraft: DraftCreateDto } | false
+    draftId?: number
+    draft: DraftCreateDto
+    disableDatepicker: boolean
+    hideActionButtons: boolean
+    feedbackType: FeedbackType
+  }>(),
+  { disableDatepicker: false, hideActionButtons: false },
+)
 const emit = defineEmits<{
   'update:date': [date: Date]
   'click:preview': []
@@ -108,13 +126,17 @@ const route = useRoute()
 
 const $toast = useToast()
 
+const patientStore = usePatientStore()
+const recallStore = useRecallStore()
+
+const { allowedStartDates } = storeToRefs(recallStore)
+
+const patient = computed(() => patientStore.patientQuery.data)
+
 // Mutations
 const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
-
-const allowedDates = computed(() => {
-  return props.recallDates.map(date => date.startTime)
-})
+const shareDraftMutation = useShareDraft()
 
 const date = ref()
 
@@ -135,7 +157,7 @@ onMounted(() => {
 const handleSaveDraftClick = () => {
   saveDraftMutation.mutate(
     {
-      patientId: Number(props.id),
+      patientId: Number(patient.value?.id),
       draft: props.draft,
     },
     {
@@ -166,18 +188,31 @@ const handleEditDraftClick = () => {
     },
   )
 }
+
+const handleShareDraftClick = () => {
+  shareDraftMutation.mutate(
+    {
+      patientId: Number(patient.value?.id),
+      draftId: props.draftId,
+      draft: props.draft,
+    },
+    {
+      onSuccess: () => {
+        $toast.success('Draft shared')
+        router.push({
+          name: 'Survey Patient Feedback Records',
+          params: {
+            surveyId: route.params['surveyId'],
+            patientId: route.params['patientId'],
+          },
+        })
+      },
+    },
+  )
+}
 </script>
 
 <style scoped lang="scss">
-.flex-container {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  gap: 4rem;
-}
-
 @media (max-width: 1440px) {
   .flex-container {
     justify-content: center;

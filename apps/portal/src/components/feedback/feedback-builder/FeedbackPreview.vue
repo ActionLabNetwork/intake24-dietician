@@ -1,6 +1,16 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div id="print-content" justify="center" elevation="2">
+  <div v-if="!hideExportToPdfButton" class="my-5 ml-0 d-print-none">
+    <v-btn class="text-none" color="secondary" flat @click="exportContentToPdf">
+      Export to PDF
+    </v-btn>
+  </div>
+  <div
+    id="print-content"
+    :class="constrainOutputHeight ? 'preview' : ''"
+    justify="center"
+    elevation="2"
+  >
     <v-card flat>
       <div v-if="modules && modules.length > 0">
         <div
@@ -8,36 +18,17 @@
           :key="index"
           :class="{ 'page-break': index > 1 }"
         >
-          <div
+          <FeedbackIntroText
             v-if="index === 0"
-            class="text-wrapper d-flex align-center justify-space-between flex-wrap"
-          >
-            <div class="">
-              <p class="text-h3 font-weight-medium">Hi {{ patientName }}</p>
-              <p class="w-50 mt-4">
-                Great job on completing your recall. Below, you can find a quick
-                feedback based on your recall data submitted on
-                {{ recallDate.toLocaleDateString() }}
-              </p>
-            </div>
-            <div class="my-5 ml-0 d-print-none">
-              <v-btn
-                class="text-none"
-                color="secondary"
-                flat
-                @click="exportContentToPdf"
-              >
-                Export to PDF
-              </v-btn>
-            </div>
-          </div>
+            :patient-name="patientName"
+            :recall-date="recallDate.toLocaleDateString()"
+          />
           <component
             :is="module.component"
             :feedback="module.feedback"
-            :recalls-data="recallsData"
+            :recalls-dates-data="recallDates"
             :recall-date="recallDate"
             mode="preview"
-            class="mt-10"
             flat
             :style="{
               'background-color':
@@ -66,18 +57,24 @@
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import type { Component } from 'vue'
-import { ModuleRoute } from '@intake24-dietician/portal/types/modules.types'
+import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
 
 interface Props {
   patientName: string
-  recallsData: RecallDto[]
+  recallDates: RecallDatesDto[]
   recallDate: Date
-  modules: { key: ModuleRoute; component: Component; feedback: string }[]
+  modules: { key: ModuleName; component: Component; feedback: string }[]
+  hideExportToPdfButton: boolean
+  constrainOutputHeight: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  hideExportToPdfButton: false,
+  constrainOutputHeight: false,
+})
 const { exportToPdf } = usePdfExport()
 
 const exportContentToPdf = () => {
@@ -87,17 +84,14 @@ const exportContentToPdf = () => {
 </script>
 
 <style scoped lang="scss">
-.text-wrapper {
-  padding: 4.5rem 4.5rem;
+.preview {
+  border: 1px solid black;
+  max-height: 50vh;
+  overflow-y: auto;
+  border-radius: 10px;
 }
 
 .page-break {
   page-break-inside: avoid;
-}
-
-@media print {
-  .text-wrapper {
-    padding: 0 4.5rem;
-  }
 }
 </style>

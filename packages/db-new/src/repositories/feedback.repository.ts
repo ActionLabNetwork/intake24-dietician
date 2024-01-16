@@ -1,7 +1,7 @@
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { feedbackDrafts } from '../models/feedback.model'
+import { feedbackDrafts, feedbackShares } from '../models/feedback.model'
 import { desc, eq, count } from 'drizzle-orm'
 
 @singleton()
@@ -36,6 +36,34 @@ export class FeedbackRepository {
     return _count?.value ?? 0
   }
 
+  public async getSharedFeedbackById(shareId: number) {
+    return await this.drizzle.query.feedbackShares.findFirst({
+      where: eq(feedbackShares.id, shareId),
+    })
+  }
+
+  public async getSharedFeedbacksByPatientId(
+    patientId: number,
+    page = 1,
+    limit = 3,
+  ) {
+    return await this.drizzle.query.feedbackShares.findMany({
+      where: eq(feedbackShares.patientId, patientId),
+      orderBy: desc(feedbackShares.updatedAt),
+      limit: limit,
+      offset: (page - 1) * limit,
+    })
+  }
+
+  public async getSharedFeedbackCountByPatientId(patientId: number) {
+    const [_count] = await this.drizzle
+      .select({ value: count() })
+      .from(feedbackShares)
+      .where(eq(feedbackShares.patientId, patientId))
+
+    return _count?.value ?? 0
+  }
+
   public async saveDraft(patientId: number, draft: DraftCreateDto) {
     const [createdDraft] = await this.drizzle
       .insert(feedbackDrafts)
@@ -47,14 +75,50 @@ export class FeedbackRepository {
   }
 
   public async editDraft(draftId: number, draft: DraftCreateDto) {
-    console.log({ draftId })
     const [updatedDraft] = await this.drizzle
       .update(feedbackDrafts)
-      .set({ draft: draft })
+      .set({ draft: draft, updatedAt: new Date() })
       .where(eq(feedbackDrafts.id, draftId))
       .returning()
       .execute()
 
     return updatedDraft
+  }
+
+  public async saveShared(
+    patientId: number,
+    draftId: number | undefined,
+    shared: DraftCreateDto,
+  ) {
+    return await this.drizzle.transaction(async tx => {
+      if (draftId) {
+        const draft = await tx.query.feedbackDrafts.findFirst({
+          where: eq(feedbackDrafts.id, draftId),
+        })
+
+        if (draft) {
+          // Check if draft belongs to patient
+          console.log({ draft })
+          if (draft.patientId !== patientId) {
+            throw new Error('Draft does not belong to patient')
+          }
+
+          // Delete draft
+          await tx.delete(feedbackDrafts).where(eq(feedbackDrafts.id, draftId))
+        }
+      }
+
+      const [createdShared] = await tx
+        .insert(feedbackShares)
+        .values({
+          patientId: patientId,
+          shared: shared,
+          shareType: 'Tailored',
+        })
+        .returning()
+        .execute()
+
+      return createdShared
+    })
   }
 }

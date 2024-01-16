@@ -139,6 +139,14 @@ const routes = [
               ),
           },
           {
+            path: 'patient-list/patient-records/:patientId/feedback-records/view-feedback/:feedbackId',
+            name: 'Survey Patient View Shared Feedback',
+            component: () =>
+              import(
+                '@/views/dashboard/patients/feedback-records/ViewFeedback.vue'
+              ),
+          },
+          {
             path: 'patient-list/patient-records/:patientId',
             name: 'Survey Patient Records',
             component: () =>
@@ -166,60 +174,6 @@ const routes = [
                 meta: {
                   requiresAuth: true,
                 } as const,
-              },
-              {
-                path: 'patient-recalls',
-                name: 'Survey Patient Recalls',
-                redirect: { name: 'Survey Patient Meal Diary' },
-                component: () =>
-                  import(
-                    '@/components/patients/patient-details/PatientRecalls.vue'
-                  ),
-                children: [
-                  {
-                    path: 'meal-diary',
-                    name: 'Survey Patient Meal Diary',
-                    component: () =>
-                      import(
-                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                      ),
-                    meta: {
-                      requiresAuth: true,
-                    } as const,
-                  },
-                  {
-                    path: 'energy-intake',
-                    name: 'Survey Patient Energy Intake',
-                    component: () =>
-                      import(
-                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                      ),
-                  },
-                  {
-                    path: 'carbs-exchange',
-                    name: 'Survey Patient Carbs Exchange',
-                    component: () =>
-                      import(
-                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                      ),
-                  },
-                  {
-                    path: 'fibre-intake',
-                    name: 'Survey Patient Fibre Intake',
-                    component: () =>
-                      import(
-                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                      ),
-                  },
-                  {
-                    path: 'water-intake',
-                    name: 'Survey Patient Water Intake',
-                    component: () =>
-                      import(
-                        '@/views/dashboard/patients/patient-recalls/ModuleManager.vue'
-                      ),
-                  },
-                ],
               },
             ],
             meta: {

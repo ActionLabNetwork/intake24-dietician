@@ -1,26 +1,26 @@
-import { ModuleRoute } from '@/types/modules.types'
+import { ModuleName } from '@/types/modules.types'
 
 export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
-  ModuleRoute,
+  ModuleName,
   { mainBackground: string; feedback: { background: string; color: string } }
 > = {
-  '/carbs-exchange': {
+  'Carbs exchange': {
     mainBackground: '#08401f',
     feedback: { background: '#ffffff', color: '#000' },
   },
-  '/fibre-intake': {
+  'Fibre intake': {
     mainBackground: '#F3EFD0',
     feedback: { background: '#008435', color: '#fff' },
   },
-  '/water-intake': {
+  'Water intake': {
     mainBackground: '#106B9E',
     feedback: { background: '#073D64', color: '#fff' },
   },
-  '/energy-intake': {
+  'Energy intake': {
     mainBackground: '#ffffff',
     feedback: { background: '#FFCB45', color: '#000' },
   },
-  '/meal-diary': {
+  'Meal diary': {
     mainBackground: '#ffffff',
     feedback: { background: '#ffffff', color: '#000' },
   },

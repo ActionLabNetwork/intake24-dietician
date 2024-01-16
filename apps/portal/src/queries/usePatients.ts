@@ -7,7 +7,7 @@ import { useClientStore } from '../trpc/trpc'
 export const usePatients = (surveyId: Ref<string>) => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, refetch } = useQuery({
-    queryKey: ['patients', surveyId],
+    queryKey: ['patients', 'surveyId', surveyId],
     queryFn: () => {
       return authenticatedClient.dieticianPatient.getPatients.query({
         surveyId: Number(surveyId.value),
@@ -25,16 +25,16 @@ export const usePatients = (surveyId: Ref<string>) => {
   }
 }
 
-export const usePatientById = (userId: string) => {
+export const usePatientById = (userId: Ref<string>) => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
 
-  const { data, isPending, isError, error, isSuccess } = useQuery({
-    queryKey: [userId],
+  const query = useQuery({
+    queryKey: ['patients', 'userId', userId],
     queryFn: async () => {
       const response =
         await authenticatedClient.dieticianPatient.getPatient.query({
-          id: Number(userId),
+          id: Number(userId.value),
         })
 
       const avatar = response.avatar || getDefaultAvatar()
@@ -45,16 +45,12 @@ export const usePatientById = (userId: string) => {
   })
 
   const invalidatePatientByIdQuery = async () => {
-    await queryClient.invalidateQueries({ queryKey: [userId] })
-    await queryClient.refetchQueries({ queryKey: [userId] })
+    await queryClient.invalidateQueries({ queryKey: ['patients', userId] })
+    await queryClient.refetchQueries({ queryKey: ['patients', userId] })
   }
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
+    ...query,
     invalidatePatientByIdQuery,
   }
 }
