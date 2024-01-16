@@ -76,6 +76,19 @@ export const useRecallStore = defineStore('recalls', () => {
     () => selectedRecallDateRange.value,
     async newDate => {
       if (!newDate) return
+
+      const [startDate, endDate] = newDate
+
+      if (startDate && !endDate) {
+        await updateRecallData([startDate, startDate])
+        return
+      }
+
+      if (!startDate && endDate) {
+        await updateRecallData([endDate, endDate])
+        return
+      }
+
       await updateRecallData(newDate)
     },
     { immediate: true },

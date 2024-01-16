@@ -7,11 +7,11 @@ import {
 
 export interface FeedbackModulesProps {
   feedback: string
-  mode: 'preview' | 'edit' | 'view'
-  mainBgColor: string
-  feedbackBgColor: string
-  feedbackTextColor: string
-  useSampleRecall: boolean
+  mode?: 'preview' | 'edit' | 'view'
+  mainBgColor?: string
+  feedbackBgColor?: string
+  feedbackTextColor?: string
+  useSampleRecall?: boolean
 }
 
 export type Module = (typeof modules)[number]

@@ -71,7 +71,7 @@
 
 <script lang="ts" setup>
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
-import { computed, reactive, ref, watch, type Component } from 'vue'
+import { computed, reactive, ref, watch, type Component, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import type {
@@ -136,11 +136,11 @@ const patientName = computed(() => {
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
-    'Meal diary': { component: MealDiaryModule, feedback: '' },
-    'Carbs exchange': { component: CarbsExchangeModule, feedback: '' },
-    'Energy intake': { component: EnergyIntakeModule, feedback: '' },
-    'Fibre intake': { component: FibreIntakeModule, feedback: '' },
-    'Water intake': { component: WaterIntakeModule, feedback: '' },
+    'Meal diary': { component: markRaw(MealDiaryModule), feedback: '' },
+    'Carbs exchange': { component: markRaw(CarbsExchangeModule), feedback: '' },
+    'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
+    'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
+    'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
   })
 
 const allModules = ref<

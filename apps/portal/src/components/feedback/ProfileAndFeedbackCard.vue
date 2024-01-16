@@ -111,8 +111,8 @@ const props = withDefaults(
     editingDraft: { originalDraft: DraftCreateDto } | false
     draftId?: number
     draft: DraftCreateDto
-    disableDatepicker: boolean
-    hideActionButtons: boolean
+    disableDatepicker?: boolean
+    hideActionButtons?: boolean
     feedbackType: FeedbackType
   }>(),
   { disableDatepicker: false, hideActionButtons: false },

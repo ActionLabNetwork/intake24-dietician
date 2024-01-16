@@ -9,7 +9,7 @@
     <v-col cols="12" lg="7" class="pr-6">
       <FibreIntakeCard
         v-for="(meal, key, index) in meals"
-        :key="key"
+        :key="key + index + meal.label"
         :label="meal.label"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"

@@ -14,7 +14,7 @@
       <ul>
         <li
           v-for="food in props.foods"
-          :key="food.name"
+          :key="food.name + food.servingWeight + food.value"
           class="energy-value d-flex"
         >
           <div class="w-100">

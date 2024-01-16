@@ -22,7 +22,10 @@
       </div>
       <!-- Success state -->
       <div v-else class="grid-container">
-        <div v-for="(meal, key, index) in mealCards" :key="key">
+        <div
+          v-for="(meal, key, index) in mealCards"
+          :key="key + index + meal.mean"
+        >
           <DetailedCard
             :label="meal.label"
             :colors="getColours(colorPalette[index]!)"
