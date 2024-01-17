@@ -1,7 +1,13 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div v-if="!hideExportToPdfButton" class="my-5 ml-0 d-print-none">
-    <v-btn class="text-none" color="secondary" flat @click="exportContentToPdf">
+    <v-btn
+      :loading="pdfExportLoading"
+      class="text-none"
+      color="secondary"
+      flat
+      @click="exportContentToPdf"
+    >
       Export to PDF
     </v-btn>
   </div>
@@ -56,7 +62,7 @@
 
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
-import type { Component } from 'vue'
+import { ref, type Component } from 'vue'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
@@ -77,9 +83,13 @@ withDefaults(defineProps<Props>(), {
 })
 const { exportToPdf } = usePdfExport()
 
+const pdfExportLoading = ref(false)
+
 const exportContentToPdf = () => {
+  pdfExportLoading.value = true
   const element = document.querySelector('#print-content') as HTMLElement
   exportToPdf(element, 'feedback.pdf')
+  pdfExportLoading.value = false
 }
 </script>
 
