@@ -10,7 +10,6 @@
     </v-col>
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
-        <!-- TODO: Figure out how to add preview (e.g. Using test data) -->
         <!-- Preview -->
         <div class="ma-4">
           <component
@@ -91,7 +90,7 @@ import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
 } from '@intake24-dietician/portal/types/modules.types'
-import { reactive, ref, watch } from 'vue'
+import { markRaw, reactive, ref, watch } from 'vue'
 import ModuleSelectList, {
   ModuleItem,
 } from '../feedback-modules/ModuleSelectList.vue'
@@ -117,35 +116,35 @@ const selectedModule = ref<ModuleName>('Meal diary')
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =
   reactive({
     'Meal diary': {
-      component: MealDiaryModule,
+      component: markRaw(MealDiaryModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     'Carbs exchange': {
-      component: CarbsExchangeModule,
+      component: markRaw(CarbsExchangeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     'Energy intake': {
-      component: EnergyIntakeModule,
+      component: markRaw(EnergyIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     'Fibre intake': {
-      component: FibreIntakeModule,
+      component: markRaw(FibreIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
       isActive: false,
     },
     'Water intake': {
-      component: WaterIntakeModule,
+      component: markRaw(WaterIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
