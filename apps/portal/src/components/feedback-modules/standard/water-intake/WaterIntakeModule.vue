@@ -36,7 +36,13 @@
               </p>
             </div>
           </div>
-          <div class="flex-container pr-10">
+          <div
+            v-if="
+              Number.isInteger(actualToRecommendedProportion) &&
+              actualToRecommendedProportion >= 0
+            "
+            class="flex-container pr-10"
+          >
             <Mascot
               v-for="i in Math.min(
                 actualToRecommendedProportion,

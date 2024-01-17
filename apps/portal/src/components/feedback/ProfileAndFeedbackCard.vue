@@ -149,7 +149,6 @@ const handleDaterangeUpdate = (
 
 const areDraftsEqual = computed(() => {
   if (!props.editingDraft) return false
-
   return isEqual(props.editingDraft.originalDraft, props.draft)
 })
 

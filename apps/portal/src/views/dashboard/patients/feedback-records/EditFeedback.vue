@@ -34,7 +34,7 @@
           :draft="allModules"
           :editingDraft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"
-          @update:date="handleDateUpdate"
+          @update:daterange="handleDaterangeUpdate"
         />
       </div>
       <div v-else>
@@ -56,7 +56,9 @@
           </v-col>
           <v-col cols="9">
             <component
-              :is="moduleNameToModuleComponentMapping[component].component"
+              :is="
+                markRaw(moduleNameToModuleComponentMapping[component].component)
+              "
               :feedback="moduleFeedback"
               @update:feedback="handleFeedbackUpdate"
             />
@@ -78,7 +80,7 @@
 </template>
 
 <script lang="ts" setup>
-import { type Component, computed, ref, watch, reactive } from 'vue'
+import { type Component, computed, ref, watch, reactive, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -154,11 +156,11 @@ const patientName = computed(() => {
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
-    'Meal diary': { component: MealDiaryModule, feedback: '' },
-    'Carbs exchange': { component: CarbsExchangeModule, feedback: '' },
-    'Energy intake': { component: EnergyIntakeModule, feedback: '' },
-    'Fibre intake': { component: FibreIntakeModule, feedback: '' },
-    'Water intake': { component: WaterIntakeModule, feedback: '' },
+    'Meal diary': { component: markRaw(MealDiaryModule), feedback: '' },
+    'Carbs exchange': { component: markRaw(CarbsExchangeModule), feedback: '' },
+    'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
+    'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
+    'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -224,7 +226,7 @@ const allModules = ref<
   recallDaterange: daterange,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
-      const component = module.component
+      const component = markRaw(module.component)
       const feedback = module.feedback
       const selected = false
 
@@ -257,8 +259,9 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
     recallDaterange: daterange.value,
     modules: modules.map(module => {
       const key = module.title
-      const component =
-        moduleNameToModuleComponentMapping[module.title].component
+      const component = markRaw(
+        moduleNameToModuleComponentMapping[module.title].component,
+      )
       const feedback = moduleNameToModuleComponentMapping[module.title].feedback
       const selected = module.selected
 
@@ -280,8 +283,9 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
       .filter(module => module.selected)
       .map(module => {
         const key = module.title
-        const component =
-          moduleNameToModuleComponentMapping[module.title].component
+        const component = markRaw(
+          moduleNameToModuleComponentMapping[module.title].component,
+        )
         const feedback =
           moduleNameToModuleComponentMapping[module.title].feedback
 
@@ -290,15 +294,24 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 }
 
-const handleDateUpdate = (_daterange: [Date | undefined, Date | undefined]) => {
+const handleDaterangeUpdate = (
+  _daterange: [Date | undefined, Date | undefined],
+) => {
+  console.log({ newDatteRange: _daterange })
   daterange.value = _daterange
 
   if (allModules.value) {
-    allModules.value.recallDaterange = _daterange
+    allModules.value = {
+      ...allModules.value,
+      recallDaterange: _daterange,
+    }
   }
 
   if (selectedModules.value) {
-    selectedModules.value.recallDaterange = _daterange
+    selectedModules.value = {
+      ...selectedModules.value,
+      recallDaterange: _daterange,
+    }
   }
 
   recallStore.selectedRecallDateRange = _daterange
@@ -351,6 +364,7 @@ watch(
   data => {
     if (!data?.draft) return
 
+    recallStore.selectedRecallDateRange = data.draft.recallDaterange
     daterange.value = data.draft.recallDaterange
 
     data.draft.modules.forEach(module => {

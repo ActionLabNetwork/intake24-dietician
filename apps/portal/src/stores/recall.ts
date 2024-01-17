@@ -122,7 +122,6 @@ export const useRecallStore = defineStore('recalls', () => {
         selectedRecallDateRange.value[0] === undefined &&
         selectedRecallDateRange.value[1] === undefined
       ) {
-        console.log('SETTING Initial date range')
         selectedRecallDateRange.value = [
           sortedRecallDates[0]?.startTime,
           sortedRecallDates[0]?.startTime,

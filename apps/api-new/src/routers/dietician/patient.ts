@@ -172,11 +172,9 @@ export class DieticianPatientRouter {
       )
       .output(z.array(RecallDtoSchema))
       .query(async opts => {
-        console.log({ opts })
         const decodedRecallIds = decodeURIComponent(opts.input.recallIds)
           .split(',')
           .map(Number)
-        console.log({ decodedRecallIds })
 
         const recalls =
           await this.patientService.getRecallsOfPatientByRecallIds(

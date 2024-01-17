@@ -4,7 +4,7 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useFeedbackDraftById = (draftId: number) => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess } = useQuery({
+  const query = useQuery({
     queryKey: ['drafts', draftId],
     queryFn: async () => {
       return authenticatedClient.dieticianFeedback.getDraftById.query({
@@ -13,13 +13,7 @@ export const useFeedbackDraftById = (draftId: number) => {
     },
   })
 
-  return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-  }
+  return { ...query }
 }
 
 export const useFeedbackDraftsByPatientId = (
