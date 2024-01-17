@@ -82,7 +82,7 @@ export const patients = pgTable('patient', {
   lastName: text('last_name').notNull(),
   mobileNumber: text('mobile_number').notNull(),
   address: text('address').notNull(),
-  age: integer('age').notNull(),
+  dateOfBirth: text('date_of_birth').notNull(),
   gender: genderEnum('gender').notNull(),
   height: integer('height').notNull(),
   weight: integer('weight').notNull(),

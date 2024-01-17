@@ -64,7 +64,10 @@ export const PatientCreateDtoSchema = z.object({
   lastName: z.string(),
   mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
-  age: z.number().int(),
+  dateOfBirth: z.union([
+    z.string().regex(/^\d{2}\/\d{2}\/\d{4}/),
+    z.literal(''),
+  ]),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
   weight: z.number().int(),
@@ -83,7 +86,10 @@ export const PatientUpdateDtoSchema = z.object({
   lastName: z.string(),
   mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
-  age: z.number().int(),
+  dateOfBirth: z.union([
+    z.string().regex(/^\d{2}\/\d{2}\/\d{4}/),
+    z.literal(''),
+  ]),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
   weight: z.number().int(),

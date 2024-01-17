@@ -5,17 +5,24 @@
       <v-container>
         <v-row dense align="center">
           <v-col cols="12" md="6">
-            <!-- Age -->
-            <BaseInput
-              type="number"
-              name="age"
-              :value="formValues.age"
-              class="base-input"
-              suffix="yrs"
-              @update="newVal => handleFieldUpdate('age', newVal)"
-            >
-              <span class="input-label"> Age: </span>
-            </BaseInput>
+            <!-- DateOfBirth -->
+            <span class="input-label"> Date of Birth: </span>
+            <VueDatePicker
+              :model-value="
+                formValues.dateOfBirth === ''
+                  ? undefined
+                  : moment(formValues.dateOfBirth, 'DD/MM/YYYY').toDate()
+              "
+              :enable-time-picker="false"
+              :max-date="moment(new Date()).subtract(1, 'day').toDate()"
+              @update:model-value="
+                val =>
+                  handleFieldUpdate(
+                    'dateOfBirth',
+                    (val && moment(val).format('DD/MM/YYYY')) || '',
+                  )
+              "
+            />
           </v-col>
           <v-col cols="12" md="6">
             <!-- Gender -->
@@ -96,6 +103,8 @@
 </template>
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import moment from 'moment'
 
 import { useDisplay } from 'vuetify'
 
@@ -108,7 +117,7 @@ import {
 } from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface PersonalDetailsFormValues {
-  age: number
+  dateOfBirth: string
   gender: Gender
   height: number
   weight: number
@@ -126,8 +135,8 @@ const emit = defineEmits<{
 
 const isNumericField = (
   field: keyof PersonalDetailsFormValues,
-): field is 'age' | 'height' | 'weight' => {
-  return ['age', 'height', 'weight'].includes(field)
+): field is 'height' | 'weight' => {
+  return ['height', 'weight'].includes(field)
 }
 
 const { mdAndUp } = useDisplay()

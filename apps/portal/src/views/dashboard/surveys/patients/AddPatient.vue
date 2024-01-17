@@ -118,7 +118,7 @@ const defaultContactDetailsFormValues: ContactDetailsFormValues = {
   address: '',
 }
 const defaultPersonalDetailsFormValues: PersonalDetailsFormValues = {
-  age: 20,
+  dateOfBirth: '01/01/2000',
   gender: 'Male',
   weight: 70,
   height: 170,

@@ -130,7 +130,7 @@ const formValues = ref({
     address: '',
   }),
   personalDetailsFormValues: ref<PersonalDetailsFormValues>({
-    age: 30,
+    dateOfBirth: '01/01/1980',
     gender: 'Male',
     weight: 80,
     height: 180,
@@ -237,7 +237,10 @@ watch(
         address: updateFormValue(contactDetails.address, newData.address),
       },
       personalDetailsFormValues: {
-        age: updateFormValue(personalDetails.age, newData.age),
+        dateOfBirth: updateFormValue(
+          personalDetails.dateOfBirth,
+          newData.dateOfBirth,
+        ),
         gender: updateFormValue(personalDetails.gender, newData.gender),
         weight: updateFormValue(personalDetails.weight, newData.weight),
         height: updateFormValue(personalDetails.height, newData.height),

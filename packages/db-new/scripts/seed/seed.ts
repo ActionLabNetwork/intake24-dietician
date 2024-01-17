@@ -137,7 +137,7 @@ async function seedPatients(
       userId: patientUser!.id,
       mobileNumber: '',
       address: '',
-      age: 18,
+      dateOfBirth: '01/01/2000',
       gender: 'Male',
       height: 180,
       weight: 60,
