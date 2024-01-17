@@ -13,11 +13,11 @@
           background: chroma(colors.backgroundColor).darken().saturate(4).hex(),
         }"
       >
-        {{ totalExchange }}
+        {{ mean }}
       </div>
     </div>
     <div
-      v-for="food in props.foods"
+      v-for="food in foods"
       :key="food.name"
       class="nutrient-value d-flex"
       :style="{
@@ -30,31 +30,32 @@
                 .hex(),
       }"
     >
-      <div>
-        <p>
-          {{ food.name }} ({{
-            usePrecision(parseFloat(food.servingWeight), 2)
-          }}g)
-        </p>
-        <div class="d-flex justify-between flex-wrap">
-          <div v-for="(_, i) in food.value" :key="i" class="pt-2 pr-4">
-            <component
-              :is="mascot"
-              :fill="
-                chroma(colors.valueCardBgColor).darken(1).saturate(5).hex()
-              "
+      <div v-if="food.mealDate.startTime">
+        <v-tooltip
+          location="bottom"
+          :text="food.mealDate.startTime.toDateString()"
+        >
+          <template v-slot:activator="{ props }">
+            <DetailedCardFoodItem
+              v-bind="props"
+              :food="food"
+              :mascot="mascot"
+              :colors="colors"
             />
-          </div>
-        </div>
+          </template>
+        </v-tooltip>
+      </div>
+      <div v-else>
+        <DetailedCardFoodItem :food="food" :mascot="mascot" :colors="colors" />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue'
+import type { Component } from 'vue'
 import chroma from 'chroma-js'
-import { usePrecision } from '@vueuse/math'
+import DetailedCardFoodItem from './DetailedCardFoodItem.vue'
 
 export interface DetailedCardProps {
   label: string
@@ -67,15 +68,16 @@ export interface DetailedCardProps {
     name: string
     value: number
     servingWeight: string
+    mealDate: {
+      startTime: Date
+      endTime: Date
+    }
   }[]
+  mean: number
   mascot: Component
 }
 
-const props = defineProps<DetailedCardProps>()
-
-const totalExchange = computed(() => {
-  return props.foods.reduce((acc, curr) => acc + curr.value, 0)
-})
+defineProps<DetailedCardProps>()
 </script>
 
 <style scoped>

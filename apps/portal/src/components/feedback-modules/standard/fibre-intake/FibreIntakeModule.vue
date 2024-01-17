@@ -43,7 +43,7 @@
 <script setup lang="ts">
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw } from 'vue'
-import { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
+import type { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
@@ -53,10 +53,18 @@ import TimelineSection from './TimelineSection.vue'
 import BaseTabs from '@intake24-dietician/portal/components/common/BaseTabs.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import {
+  RecallMeal,
+  RecallMealFood,
+} from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { usePrecision } from '@vueuse/math'
+import {
+  calculateFoodNutrientsExchange,
+  calculateMealNutrientsExchange,
+} from '@intake24-dietician/portal/utils/feedback'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -69,7 +77,7 @@ const emit = defineEmits<{
 
 const recallStore = useRecallStore()
 
-const totalEnergy = ref(0)
+const totalFibre = ref(0)
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<FibreIntakeProps, 'colors'>>>({})
@@ -82,6 +90,7 @@ const tabs = ref([
     props: {
       meals: mealCards,
       colors: colorPalette,
+      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
     },
     icon: 'mdi-chart-pie',
     style: {
@@ -98,6 +107,7 @@ const tabs = ref([
     component: markRaw(TimelineSection),
     props: {
       meals: mealCards,
+      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       colors: colorPalette,
     },
     icon: 'mdi-calendar-blank-outline',
@@ -110,62 +120,56 @@ const tabs = ref([
   },
 ])
 
+const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
+  const mealFibreExchange = usePrecision(
+    calculateMealNutrientsExchange(
+      meal,
+      NUTRIENTS_DIETARY_FIBRE_ID,
+      recallsCount,
+    ),
+    2,
+  ).value
+
+  mealCards[meal.name] = {
+    label: meal.name,
+    hours: meal.hours,
+    minutes: meal.minutes,
+    foods: meal.foods.map(food => ({
+      name: food['englishName'],
+      servingWeight: food['portionSizes']?.find(
+        (item: { name: string }) => item.name === 'servingWeight',
+      )?.value,
+      value: usePrecision(
+        calculateFoodNutrientsExchange(
+          food as RecallMealFood,
+          NUTRIENTS_DIETARY_FIBRE_ID,
+        ),
+        2,
+      ).value,
+    })),
+  }
+
+  return mealFibreExchange
+}
+
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
-    // TODO: Improve typings, remove uses of any
-    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: any,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          return (
-            total +
-            (nutrient.nutrientType.id === NUTRIENTS_DIETARY_FIBRE_ID
-              ? nutrient.amount
-              : 0)
-          )
-        },
-        0,
-      )
-    }
-
-    const calculateMealCarbsExchange = (meal: RecallMeal) => {
-      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodCarbsExchange(food)
-      }, 0)
-
-      mealCards[meal.name] = {
-        label: meal.name,
-        hours: meal.hours,
-        minutes: meal.minutes,
-        foods: meal.foods.map(f => ({
-          name: f['englishName'],
-          servingWeight: f['portionSizes']?.find(
-            (item: { name: string }) => item.name === 'servingWeight',
-          )?.value,
-          value: Math.floor(calculateFoodCarbsExchange(f as any)),
-        })),
-      }
-
-      return mealCarbsExchange
-    }
-
     if (!data) return
 
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
+    const combinedMeals = recallStore.recallsGroupedByMeals
+    colorPalette.value = recallStore.colorPalette
 
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })
 
-    totalEnergy.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealCarbsExchange(meal)
+    totalFibre.value = Math.floor(
+      combinedMeals.meals.reduce((totalEnergy, meal) => {
+        return (
+          totalEnergy +
+          calculateMealFibreExchange(meal, combinedMeals.recallsCount)
+        )
       }, 0),
     )
   },
@@ -174,46 +178,8 @@ watch(
 watch(
   () => recallStore.sampleRecallQuery.data,
   data => {
-    // TODO: Improve typings, remove uses of any
-    const calculateFoodCarbsExchange = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: any,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          return (
-            total +
-            (nutrient.nutrientType.id === NUTRIENTS_DIETARY_FIBRE_ID
-              ? nutrient.amount
-              : 0)
-          )
-        },
-        0,
-      )
-    }
-
-    const calculateMealCarbsExchange = (meal: RecallMeal) => {
-      const mealCarbsExchange = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodCarbsExchange(food)
-      }, 0)
-
-      mealCards[meal.name] = {
-        label: meal.name,
-        hours: meal.hours,
-        minutes: meal.minutes,
-        foods: meal.foods.map(f => ({
-          name: f['englishName'],
-          servingWeight: f['portionSizes']?.find(
-            (item: { name: string }) => item.name === 'servingWeight',
-          )?.value,
-          value: Math.floor(calculateFoodCarbsExchange(f as any)),
-        })),
-      }
-
-      return mealCarbsExchange
-    }
-
     if (!data) return
+    if (!props.useSampleRecall) return
 
     colorPalette.value = generatePastelPalette(
       data.recall.meals.length + 1,
@@ -224,9 +190,9 @@ watch(
       delete mealCards[key]
     })
 
-    totalEnergy.value = Math.floor(
+    totalFibre.value = Math.floor(
       data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealCarbsExchange(meal)
+        return totalEnergy + calculateMealFibreExchange(meal)
       }, 0),
     )
   },

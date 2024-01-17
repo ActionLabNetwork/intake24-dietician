@@ -1,23 +1,32 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import {
-  useRecallById,
   useRecallDatesByUserId,
+  useRecallsByRecallIds,
   useSampleRecall,
 } from '../queries/useRecall'
 import { useRoute } from 'vue-router'
 import moment from 'moment'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import { generatePastelPalette } from '../utils/colors'
 
 export const useRecallStore = defineStore('recalls', () => {
   const route = useRoute()
 
   const patientId = ref('')
-  const recallId = ref(0)
-  const selectedRecallDate = ref<Date>()
+  const recallIds = ref<number[]>([])
+  const selectedRecallDateRange = ref<[Date | undefined, Date | undefined]>([
+    undefined,
+    undefined,
+  ])
+  const recallsGroupedByMeals = ref<{
+    recallsCount: number
+    meals: RecallMeal[]
+  }>({ recallsCount: 0, meals: [] })
 
   const recallDatesQuery = useRecallDatesByUserId(patientId)
   const sampleRecallQuery = useSampleRecall()
-  const recallQuery = useRecallById(recallId)
+  const recallsQuery = useRecallsByRecallIds(patientId, recallIds)
 
   const hasRecalls = computed(
     () => (recallDatesQuery.data.value?.length ?? 0) > 0,
@@ -29,30 +38,60 @@ export const useRecallStore = defineStore('recalls', () => {
   const allowedStartDates = computed(() =>
     recallDates.value.map(date => date.startTime),
   )
+  const isDateRange = computed(() => {
+    return (
+      selectedRecallDateRange.value &&
+      selectedRecallDateRange.value[0] &&
+      selectedRecallDateRange.value[1]
+    )
+  })
+  const colorPalette = computed(() => {
+    if (!recallsGroupedByMeals.value) return []
+    return generatePastelPalette(
+      recallsGroupedByMeals.value.meals.length + 1,
+      recallsGroupedByMeals.value.meals.map(meal => meal.hours),
+    )
+  })
 
   const fetchRecalls = async (newPatientId: string) => {
     patientId.value = newPatientId
   }
 
-  const fetchRecall = async (newRecallId: number) => {
-    recallId.value = newRecallId
-  }
+  const updateRecallData = async (
+    newDateRange: [Date | undefined, Date | undefined],
+  ) => {
+    const [startDate, endDate] = newDateRange
 
-  const updateRecallData = async (newDate: Date) => {
-    const matchingRecall = recallDates.value.findLast(range =>
-      moment(range.startTime).isSame(newDate, 'day'),
-    )
+    const matchingRecallDates = recallDates.value.filter(range => {
+      return (
+        moment(range.startTime).isSameOrAfter(startDate, 'day') &&
+        moment(range.endTime).isSameOrBefore(endDate, 'day')
+      )
+    })
 
-    if (matchingRecall) {
-      recallId.value = matchingRecall.id
-      recallQuery.refetch()
+    if (matchingRecallDates) {
+      recallIds.value = matchingRecallDates.map(recall => recall.id)
+      recallsQuery.refetch()
     }
   }
 
   watch(
-    () => selectedRecallDate.value,
+    () => selectedRecallDateRange.value,
     async newDate => {
       if (!newDate) return
+
+      const [startDate, endDate] = newDate
+
+      if (startDate && !endDate) {
+        await updateRecallData([startDate, startDate])
+        return
+      }
+
+      if (!startDate && endDate) {
+        await updateRecallData([endDate, endDate])
+        return
+      }
+
       await updateRecallData(newDate)
     },
     { immediate: true },
@@ -79,26 +118,84 @@ export const useRecallStore = defineStore('recalls', () => {
         (a, b) => b.startTime.getTime() - a.startTime.getTime(),
       )
 
-      if (!selectedRecallDate.value) {
-        selectedRecallDate.value = sortedRecallDates[0]?.startTime
+      if (
+        selectedRecallDateRange.value[0] === undefined &&
+        selectedRecallDateRange.value[1] === undefined
+      ) {
+        selectedRecallDateRange.value = [
+          sortedRecallDates[0]?.startTime,
+          sortedRecallDates[0]?.startTime,
+        ]
+      }
+    },
+  )
+
+  watch(
+    () => recallsQuery.data.value,
+    data => {
+      if (!data) return
+
+      const combinedMeals = data.reduce((combinedMeals, recall) => {
+        recall.recall.meals.forEach(meal => {
+          const mealName = meal.name
+          const mealInCombinedMeals = combinedMeals.find(
+            // eslint-disable-next-line max-nested-callbacks
+            m => m.name === mealName,
+          )
+
+          if (mealInCombinedMeals) {
+            mealInCombinedMeals.foods = mealInCombinedMeals.foods.concat(
+              // eslint-disable-next-line max-nested-callbacks
+              meal.foods.map(food => ({
+                ...food,
+                mealDate: {
+                  startTime: recall.recall.startTime,
+                  endTime: recall.recall.endTime,
+                },
+              })),
+            )
+          } else {
+            const mealCopy = {
+              ...meal,
+              // eslint-disable-next-line max-nested-callbacks
+              foods: [
+                // eslint-disable-next-line max-nested-callbacks
+                ...meal.foods.map(food => ({
+                  ...food,
+                  mealDate: {
+                    startTime: recall.recall.startTime,
+                    endTime: recall.recall.endTime,
+                  },
+                })),
+              ],
+            }
+            combinedMeals.push(mealCopy)
+          }
+        })
+
+        return combinedMeals
+      }, [] as RecallMeal[])
+
+      recallsGroupedByMeals.value = {
+        recallsCount: data.length,
+        meals: combinedMeals,
       }
     },
     { immediate: true },
   )
 
   return {
-    // recalls,
     patientId,
-    recallId,
+    recallsGroupedByMeals,
     recallDates,
     recallDatesQuery,
     sampleRecallQuery,
-    recallQuery,
-    selectedRecallDate,
+    recallsQuery,
+    selectedRecallDateRange,
+    isDateRange,
     hasRecalls,
     allowedStartDates,
+    colorPalette,
     fetchRecalls,
-    fetchRecall,
-    // isPending: recallsQuery.isPending,
   }
 })

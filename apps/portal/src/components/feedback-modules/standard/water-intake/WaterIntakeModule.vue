@@ -36,7 +36,13 @@
               </p>
             </div>
           </div>
-          <div class="flex-container pr-10">
+          <div
+            v-if="
+              Number.isInteger(actualToRecommendedProportion) &&
+              actualToRecommendedProportion >= 0
+            "
+            class="flex-container pr-10"
+          >
             <Mascot
               v-for="i in Math.min(
                 actualToRecommendedProportion,
@@ -92,6 +98,8 @@ import chroma from 'chroma-js'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { usePrecision } from '@vueuse/math'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -108,19 +116,21 @@ const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallQuery.isError,
+    : recallStore.recallsQuery.isError,
 )
 const isPending = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallQuery.isPending,
+    : recallStore.recallsQuery.isPending,
 )
 
 const totalWaterIntake = ref(0)
 
 const actualToRecommendedProportion = computed(() => {
-  return Math.floor(
-    (totalWaterIntake.value / DAILY_WATER_AMOUNT) * NUMBER_OF_GLASSES,
+  return (
+    Math.floor(
+      (totalWaterIntake.value / DAILY_WATER_AMOUNT) * NUMBER_OF_GLASSES,
+    ) / recallStore.recallsGroupedByMeals.recallsCount
   )
 })
 
@@ -134,38 +144,31 @@ const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
 
+const calculateMealWaterContent = (meal: RecallMeal, recallsCount = 1) => {
+  const mealWaterContent = usePrecision(
+    calculateMealNutrientsExchange(
+      meal,
+      NUTRIENTS_WATER_INTAKE_ID,
+      recallsCount,
+    ),
+    2,
+  ).value
+
+  return mealWaterContent
+}
+
 watch(
-  () => recallStore.recallQuery.data,
+  () => recallStore.recallsQuery.data,
   data => {
-    const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: number,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          const amount =
-            nutrient.nutrientType.id === NUTRIENTS_WATER_INTAKE_ID
-              ? nutrient.amount
-              : 0
-
-          return total + amount
-        },
-        0,
-      )
-    }
-
-    const calculateMealWaterContent = (meal: RecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodWaterContent(food)
-      }, 0)
-
-      return mealEnergy
-    }
-
     if (!data) return
+    const combinedMeals = recallStore.recallsGroupedByMeals
+
     totalWaterIntake.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealWaterContent(meal)
+      combinedMeals.meals.reduce((totalWater, meal) => {
+        return (
+          totalWater +
+          calculateMealWaterContent(meal, combinedMeals.recallsCount)
+        )
       }, 0),
     )
   },
@@ -174,32 +177,9 @@ watch(
 watch(
   () => recallStore.sampleRecallQuery.data,
   data => {
-    const calculateFoodWaterContent = (food: { nutrients: any[] }) => {
-      return food.nutrients.reduce(
-        (
-          total: number,
-          nutrient: { nutrientType: { id: string }; amount: any },
-        ) => {
-          const amount =
-            nutrient.nutrientType.id === NUTRIENTS_WATER_INTAKE_ID
-              ? nutrient.amount
-              : 0
-
-          return total + amount
-        },
-        0,
-      )
-    }
-
-    const calculateMealWaterContent = (meal: RecallMeal) => {
-      const mealEnergy = meal.foods.reduce((total: any, food: any) => {
-        return total + calculateFoodWaterContent(food)
-      }, 0)
-
-      return mealEnergy
-    }
-
     if (!data) return
+    if (!props.useSampleRecall) return
+
     totalWaterIntake.value = Math.floor(
       data.recall.meals.reduce((totalEnergy, meal) => {
         return totalEnergy + calculateMealWaterContent(meal)

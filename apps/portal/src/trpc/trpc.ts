@@ -77,8 +77,6 @@ export const useClientStore = defineStore('client', () => {
       if (state.type !== 'init') resolve(state)
       let unwatch: () => void
       unwatch = watch(authState, state => {
-        // console.log('auth state changed', state, authState.value)
-        // console.log(authState.)
         if (state.type === 'init') return
         unwatch()
         resolve(state)

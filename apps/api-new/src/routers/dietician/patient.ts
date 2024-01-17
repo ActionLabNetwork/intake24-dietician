@@ -155,6 +155,36 @@ export class DieticianPatientRouter {
 
         return recalls
       }),
+    getRecallsByIds: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/patients/{patientId}/recalls/{recallIds}',
+          tags: ['patients', 'recalls'],
+          summary: 'Get recalls of a patient by their IDs',
+        },
+      })
+      .input(
+        z.object({
+          patientId: z.number().int(),
+          recallIds: z.string(),
+        }),
+      )
+      .output(z.array(RecallDtoSchema))
+      .query(async opts => {
+        const decodedRecallIds = decodeURIComponent(opts.input.recallIds)
+          .split(',')
+          .map(Number)
+
+        const recalls =
+          await this.patientService.getRecallsOfPatientByRecallIds(
+            opts.input.patientId,
+            opts.ctx.dieticianId,
+            decodedRecallIds,
+          )
+
+        return recalls
+      }),
     getRecallDates: protectedDieticianProcedure
       .meta({
         openapi: {

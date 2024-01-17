@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { eq } from 'drizzle-orm'
+import { and, eq, inArray } from 'drizzle-orm'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { recalls } from '../models'
@@ -28,6 +28,22 @@ export class RecallRepository {
     const _recalls = await this.drizzle.query.recalls
       .findMany({
         where: eq(recalls.patientId, patientId),
+      })
+      .execute()
+
+    return _recalls
+  }
+
+  public async getRecallsOfPatientByRecallIds(
+    patientId: number,
+    recallIds: number[],
+  ) {
+    const _recalls = await this.drizzle.query.recalls
+      .findMany({
+        where: and(
+          eq(recalls.patientId, patientId),
+          inArray(recalls.id, recallIds),
+        ),
       })
       .execute()
 

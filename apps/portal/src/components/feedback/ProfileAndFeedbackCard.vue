@@ -19,16 +19,17 @@
         <div class="d-flex align-center">
           <div class="font-weight-medium">Date:</div>
           <VueDatePicker
-            v-model="date"
+            v-model="dateRange"
             :disabled="disableDatepicker"
             :teleport="true"
             :enable-time-picker="false"
             :allowed-dates="allowedStartDates"
             text-input
+            range
             format="dd/MM/yyyy"
             class="ml-2"
             style="width: 100%"
-            @update:model-value="handleDateUpdate"
+            @update:model-value="handleDaterangeUpdate"
           />
         </div>
       </div>
@@ -53,6 +54,10 @@
           class="text-none ml-8"
           color="#F1F1F1"
           flat
+          :loading="
+            saveDraftMutation.isPending.value ||
+            editDraftMutation.isPending.value
+          "
           :disabled="!!editingDraft && areDraftsEqual"
           @click="
             () => {
@@ -70,6 +75,7 @@
         </v-btn>
         <v-btn
           class="text-none ml-3"
+          :loading="shareDraftMutation.isPending.value"
           color="primary"
           flat
           @click="handleShareDraftClick"
@@ -105,20 +111,21 @@ import { storeToRefs } from 'pinia'
 
 const props = withDefaults(
   defineProps<{
-    initialDate: Date
+    initialDateRange: [Date | undefined, Date | undefined]
     previewing: boolean
     editingDraft: { originalDraft: DraftCreateDto } | false
     draftId?: number
     draft: DraftCreateDto
-    disableDatepicker: boolean
-    hideActionButtons: boolean
+    disableDatepicker?: boolean
+    hideActionButtons?: boolean
     feedbackType: FeedbackType
   }>(),
   { disableDatepicker: false, hideActionButtons: false },
 )
 const emit = defineEmits<{
-  'update:date': [date: Date]
+  'update:daterange': [date: [Date | undefined, Date | undefined]]
   'click:preview': []
+  'update:draft': []
 }>()
 
 const router = useRouter()
@@ -138,20 +145,21 @@ const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
 
-const date = ref()
+const dateRange = ref()
 
-const handleDateUpdate = (date: Date) => {
-  emit('update:date', date)
+const handleDaterangeUpdate = (
+  daterange: [Date | undefined, Date | undefined],
+) => {
+  emit('update:daterange', daterange)
 }
 
 const areDraftsEqual = computed(() => {
   if (!props.editingDraft) return false
-
   return isEqual(props.editingDraft.originalDraft, props.draft)
 })
 
 onMounted(() => {
-  date.value = props.initialDate
+  dateRange.value = recallStore.selectedRecallDateRange
 })
 
 const handleSaveDraftClick = () => {
@@ -184,6 +192,7 @@ const handleEditDraftClick = () => {
     {
       onSuccess: () => {
         $toast.success('Draft updated')
+        emit('update:draft')
       },
     },
   )

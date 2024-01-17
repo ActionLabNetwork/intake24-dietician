@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useClientStore } from '../trpc/trpc'
 
@@ -22,9 +22,13 @@ export const useSaveDraft = () => {
 
 export const useEditDraft = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { draftId: number; draft: DraftCreateDto }) => {
       return authenticatedClient.dieticianFeedback.editDraft.mutate(body)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drafts'] })
     },
   })
 

@@ -35,6 +35,28 @@ export const useRecallById = (recallId: Ref<number>) => {
   }
 }
 
+export const useRecallsByRecallIds = (
+  userId: Ref<string>,
+  recallIds: Ref<number[]>,
+) => {
+  const { authenticatedClient } = useClientStore()
+  const query = useQuery({
+    queryKey: ['recalls', 'recallIds', recallIds],
+    queryFn: async () => {
+      return await authenticatedClient.dieticianPatient.getRecallsByIds.query({
+        patientId: Number(userId.value),
+        recallIds: recallIds.value.join(','),
+      })
+    },
+    enabled: !!recallIds.value,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  })
+
+  return {
+    ...query,
+  }
+}
+
 export const useRecallsByUserId = (userId: Ref<string>) => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess } = useQuery({

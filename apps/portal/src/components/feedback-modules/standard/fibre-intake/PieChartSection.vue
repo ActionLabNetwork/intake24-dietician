@@ -9,7 +9,7 @@
     <v-col cols="12" lg="7" class="pr-6">
       <FibreIntakeCard
         v-for="(meal, key, index) in meals"
-        :key="key"
+        :key="index"
         :label="meal.label"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
@@ -31,6 +31,7 @@ import chroma from 'chroma-js'
 
 const props = defineProps<{
   meals: Record<string, Omit<FibreIntakeProps, 'colors'>>
+  recallsCount: number
   colors: string[]
 }>()
 
@@ -42,8 +43,10 @@ const data = computed(() => {
         backgroundColor: props.colors.map(color =>
           chroma(color).darken(2).saturate(4).hex(),
         ),
-        data: Object.values(props.meals).map(meal =>
-          meal.foods.reduce((acc, curr) => acc + curr.value, 2),
+        data: Object.values(props.meals).map(
+          meal =>
+            meal.foods.reduce((acc, curr) => acc + curr.value, 0) /
+            Math.max(props.recallsCount, 1),
         ),
       },
     ],

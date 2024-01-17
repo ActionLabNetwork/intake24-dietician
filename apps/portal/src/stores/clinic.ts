@@ -59,7 +59,6 @@ export const useClinicStore = defineStore('clinic', () => {
     if (!surveysQuery.data.value) return
 
     const surveys = surveysQuery.data.value
-    console.log({ surveys })
     const colors = generateDistinctColors(
       surveys.map(survey => survey.id.toString()),
     )
