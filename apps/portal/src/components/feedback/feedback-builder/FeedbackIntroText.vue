@@ -4,8 +4,10 @@
       <p class="text-h3 font-weight-medium">Hi {{ patientName }}</p>
       <p class="w-50 mt-4">
         Great job on completing your recall. Below, you can find a quick
-        feedback based on your recall data submitted on
-        {{ recallDaterange }}
+        feedback based on your recall data submitted between
+        <br />
+        {{ recallDaterange[0]?.toDateString() }} -
+        {{ recallDaterange[1]?.toDateString() }}
       </p>
     </div>
   </div>

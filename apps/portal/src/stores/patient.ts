@@ -10,7 +10,6 @@ export const usePatientStore = defineStore('patient', () => {
   const patientQuery = usePatientById(patientId)
 
   const fullName = computed(() => {
-    console.log({ patientData: patientQuery.data.value })
     if (!patientQuery.data.value) return ''
 
     return `${patientQuery.data.value.firstName} ${patientQuery.data.value.lastName}`

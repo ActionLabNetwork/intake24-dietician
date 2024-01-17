@@ -154,7 +154,7 @@ const areDraftsEqual = computed(() => {
 })
 
 onMounted(() => {
-  dateRange.value = props.initialDateRange
+  dateRange.value = recallStore.selectedRecallDateRange
 })
 
 const handleSaveDraftClick = () => {

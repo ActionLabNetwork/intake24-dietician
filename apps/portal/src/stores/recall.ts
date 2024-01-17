@@ -15,7 +15,10 @@ export const useRecallStore = defineStore('recalls', () => {
 
   const patientId = ref('')
   const recallIds = ref<number[]>([])
-  const selectedRecallDateRange = ref<[Date | undefined, Date | undefined]>()
+  const selectedRecallDateRange = ref<[Date | undefined, Date | undefined]>([
+    undefined,
+    undefined,
+  ])
   const recallsGroupedByMeals = ref<{
     recallsCount: number
     meals: RecallMeal[]
@@ -115,7 +118,11 @@ export const useRecallStore = defineStore('recalls', () => {
         (a, b) => b.startTime.getTime() - a.startTime.getTime(),
       )
 
-      if (!selectedRecallDateRange.value) {
+      if (
+        selectedRecallDateRange.value[0] === undefined &&
+        selectedRecallDateRange.value[1] === undefined
+      ) {
+        console.log('SETTING Initial date range')
         selectedRecallDateRange.value = [
           sortedRecallDates[0]?.startTime,
           sortedRecallDates[0]?.startTime,

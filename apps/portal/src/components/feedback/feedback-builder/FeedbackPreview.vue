@@ -67,8 +67,8 @@ interface Props {
   recallDates: RecallDatesDto[]
   recallDaterange: [Date | undefined, Date | undefined]
   modules: { key: ModuleName; component: Component; feedback: string }[]
-  hideExportToPdfButton: boolean
-  constrainOutputHeight: boolean
+  hideExportToPdfButton?: boolean
+  constrainOutputHeight?: boolean
 }
 
 withDefaults(defineProps<Props>(), {

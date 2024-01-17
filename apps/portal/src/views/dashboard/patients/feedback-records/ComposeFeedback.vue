@@ -17,13 +17,12 @@
       <div
         v-if="
           recallStore.recallDates &&
-          recallStore.selectedRecallDateRange &&
+          recallStore.selectedRecallDateRange[0] &&
           allModules
         "
         class="d-print-none mt-4"
       >
         <ProfileAndFeedbackCard
-          :recall-dates="recallStore.recallDates"
           :initial-date-range="recallStore.selectedRecallDateRange"
           feedback-type="Tailored"
           :previewing="previewing"
@@ -110,10 +109,6 @@ const recallStore = useRecallStore()
 const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
-const daterange = ref<[Date | undefined, Date | undefined] | undefined>([
-  new Date(),
-  new Date(),
-])
 const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(route.query['preview'] === 'true' || false)
 
@@ -145,7 +140,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
 
 const allModules = ref<
   | {
-      recallDaterange: typeof daterange
+      recallDaterange: [Date | undefined, Date | undefined]
       modules: {
         key: ModuleName
         component: Component
@@ -155,7 +150,7 @@ const allModules = ref<
     }
   | undefined
 >({
-  recallDaterange: daterange,
+  recallDaterange: recallStore.selectedRecallDateRange,
   modules: Object.entries(moduleNameToModuleComponentMapping).map(
     ([key, module]) => {
       const component = module.component
@@ -175,7 +170,7 @@ const allModules = ref<
 const selectedModules = ref<
   | {
       recallDates: typeof recallStore.recallDatesQuery.data
-      recallDaterange: typeof daterange
+      recallDaterange: [Date | undefined, Date | undefined]
       modules: { key: ModuleName; component: Component; feedback: string }[]
     }
   | undefined
@@ -187,7 +182,7 @@ const handleModuleUpdate = (module: ModuleName) => {
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = {
-    recallDaterange: daterange.value,
+    recallDaterange: recallStore.selectedRecallDateRange,
     modules: modules.map(module => {
       const key = module.title
       const component = moduleNameToModuleComponentMapping[key].component
@@ -200,7 +195,7 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 
   selectedModules.value = {
     recallDates: recallStore.recallDatesQuery.data,
-    recallDaterange: daterange.value,
+    recallDaterange: recallStore.selectedRecallDateRange,
     modules: modules
       .filter(module => module.selected)
       .map(module => {
@@ -216,8 +211,21 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 const handleDateRangeUpdate = (
   _daterange: [Date | undefined, Date | undefined],
 ) => {
-  daterange.value = _daterange
   recallStore.selectedRecallDateRange = _daterange
+
+  if (allModules.value) {
+    allModules.value = {
+      ...allModules.value,
+      recallDaterange: _daterange,
+    }
+  }
+
+  if (selectedModules.value) {
+    selectedModules.value = {
+      ...selectedModules.value,
+      recallDaterange: _daterange,
+    }
+  }
 }
 
 const handleFeedbackUpdate = (feedback: string) => {
@@ -248,20 +256,17 @@ const handlePreviewButtonClick = () => {
 }
 
 watch(
-  () => recallStore.recallDatesQuery.data,
-  data => {
-    if (data) {
-      // Default to latest recall date
-      daterange.value = recallStore.selectedRecallDateRange
-    }
-  },
-  { immediate: true },
-)
-
-watch(
   () => allModules.value,
   newSelectedModules => {
     console.log({ newSelectedModules })
+  },
+)
+
+watch(
+  () => recallStore.selectedRecallDateRange,
+  newDateRange => {
+    console.log({ newDateRange })
+    console.log({ allModules: allModules.value })
   },
 )
 </script>
