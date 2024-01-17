@@ -35,6 +35,7 @@
           :editingDraft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"
           @update:daterange="handleDaterangeUpdate"
+          @update:draft="handleDraftUpdate"
         />
       </div>
       <div v-else>
@@ -270,7 +271,6 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
   }
 
   if (initialAllModules.value === undefined) {
-    // initialAllModules.value = { ...newValue }
     initialAllModules.value = cloneDeep(newValue)
   }
 
@@ -343,6 +343,10 @@ const handlePreviewButtonClick = () => {
     return
   }
   previewing.value = !previewing.value
+}
+
+const handleDraftUpdate = () => {
+  initialAllModules.value = cloneDeep(allModules.value)
 }
 
 watch(

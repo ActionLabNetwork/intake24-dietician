@@ -54,6 +54,10 @@
           class="text-none ml-8"
           color="#F1F1F1"
           flat
+          :loading="
+            saveDraftMutation.isPending.value ||
+            editDraftMutation.isPending.value
+          "
           :disabled="!!editingDraft && areDraftsEqual"
           @click="
             () => {
@@ -71,6 +75,7 @@
         </v-btn>
         <v-btn
           class="text-none ml-3"
+          :loading="shareDraftMutation.isPending.value"
           color="primary"
           flat
           @click="handleShareDraftClick"
@@ -120,6 +125,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   'update:daterange': [date: [Date | undefined, Date | undefined]]
   'click:preview': []
+  'update:draft': []
 }>()
 
 const router = useRouter()
@@ -186,6 +192,7 @@ const handleEditDraftClick = () => {
     {
       onSuccess: () => {
         $toast.success('Draft updated')
+        emit('update:draft')
       },
     },
   )
