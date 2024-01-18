@@ -19,12 +19,12 @@
             <BaseInput
               :type="fieldConfig.inputType"
               :name="fieldName"
-              :value="formValues[fieldName]"
+              :value="props.defaultState[fieldName] ?? ''"
               :suffix-icon="fieldConfig.suffixIcon"
               :handle-icon-click="fieldConfig.handleSuffixIconClick"
               :rules="fieldConfig.rules"
               :readonly="fieldConfig.readonly"
-              @update="newVal => handleFieldUpdate(fieldName, newVal)"
+              @update="fieldConfig.handleUpdate"
             >
               <span class="input-label">
                 {{ fieldConfig.label }}
@@ -38,14 +38,18 @@
             <v-card>
               <v-card-title>Change Email</v-card-title>
               <v-card-text>
-                <BaseInput type="email" :value="currentEmailAddress" readonly>
+                <BaseInput
+                  type="email"
+                  :value="props.defaultState.email"
+                  readonly
+                >
                   <span class="input-label">
                     {{ t('profile.form.contactDetails.email.label') }}
                   </span>
                 </BaseInput>
                 <BaseInput
                   type="email"
-                  :value="formValues.email"
+                  :value="props.defaultState.email"
                   @update="newVal => handleFieldUpdate('email', newVal)"
                 >
                   <span class="input-label">
@@ -55,7 +59,6 @@
               </v-card-text>
               <v-card-actions>
                 <v-btn
-                  :disabled="currentEmailAddress === formValues.email"
                   color="primary"
                   :loading="requestEmailChangeMutation.isPending.value"
                   @click="requestEmailChange"
@@ -74,34 +77,32 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
 import BaseInput from '@/components/form/BaseInput.vue'
-import { useDisplay } from 'vuetify'
-import { i18nOptions } from '@intake24-dietician/i18n/index'
-import { useI18n } from 'vue-i18n'
 import { useRequestEmailChange } from '@/mutations/useAuth'
-import { validateWithZod } from '@intake24-dietician/portal/validators'
-import { Form, Layout } from './types'
 import {
   DieticianUpdateDto,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
+import { i18nOptions } from '@intake24-dietician/i18n/index'
+import { validateWithZod } from '@intake24-dietician/portal/validators'
+import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useToast } from 'vue-toast-notification'
+import { useDisplay } from 'vuetify'
+import { Form, Layout } from './types'
 
 export interface ContactDetailsFormValues {
   email: string
-  mobileNumber: string
-  businessNumber: string
-  businessAddress: string
+  mobileNumber: string | null
+  businessNumber: string | null
+  businessAddress: string | null
 }
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
-  email: string
-  handleSubmit: (validate: boolean) => Promise<void>
 }>()
 const emit = defineEmits<{
-  update: [value: ContactDetailsFormValues]
+  update: [value: Partial<ContactDetailsFormValues>]
 }>()
 
 // const generateTokenMutation = useGenerateToken()
@@ -113,36 +114,24 @@ const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-const currentEmailAddress = ref('')
-// eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<ContactDetailsFormValues>(props.defaultState)
-
 const shouldShowDivider = (layout: Layout) => {
   return (
     layout.cols === 12 && !layout.sm && !layout.md && !layout.lg && !layout.xl
   )
 }
 
-onMounted(() => {
-  currentEmailAddress.value = props.email
-  formValues.value = props.defaultState
-})
-
 const changeEmailDialog = ref(false)
 
-const handleFieldUpdate = (
-  fieldName: keyof ContactDetailsFormValues,
-  newVal: string,
+const handleFieldUpdate = <T extends keyof ContactDetailsFormValues>(
+  fieldName: T,
+  newVal: ContactDetailsFormValues[T],
 ) => {
-  formValues.value[fieldName] = newVal
-  emit('update', { ...formValues.value })
+  emit('update', { [fieldName]: newVal })
 }
 
-const requestEmailChange = async () => {
+const requestEmailChange = async (newEmail: string) => {
   try {
-    requestEmailChangeMutation.mutate({
-      newEmail: formValues.value.email,
-    })
+    requestEmailChangeMutation.mutate({ newEmail })
     $toast.info('Please check your email inbox to verify the email change.')
   } catch (e) {
     $toast.info('Failed to request to change the email.')
@@ -176,15 +165,17 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
     key: 'mobileNumber',
     autocomplete: 'tel',
     label: t('profile.form.contactDetails.mobileNumber.label'),
-    labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
     required: true,
     type: 'input',
-    inputType: 'text',
+    inputType: 'tel',
     rules: [
       (value: string) =>
         validateWithZod(DieticianUpdateDto.shape.mobileNumber, value),
     ],
-    handleUpdate: val => handleFieldUpdate('mobileNumber', val),
+    handleUpdate: val => {
+      console.log('updating phone number', val)
+      handleFieldUpdate('mobileNumber', val || null)
+    },
     layout: { cols: 12, md: 4 },
   },
   businessNumber: {
@@ -192,12 +183,12 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
     label: t('profile.form.contactDetails.businessNumber.label'),
     required: false,
     type: 'input',
-    inputType: 'text',
+    inputType: 'tel',
     rules: [
       (value: string) =>
-        validateWithZod(DieticianUpdateDto.shape.businessNumber, value),
+        validateWithZod(DieticianUpdateDto.shape.businessNumber, value || null),
     ],
-    handleUpdate: val => handleFieldUpdate('businessNumber', val),
+    handleUpdate: val => handleFieldUpdate('businessNumber', val || null),
     layout: { cols: 12, md: 4 },
   },
   businessAddress: {
@@ -209,9 +200,12 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
     inputType: 'text',
     rules: [
       (value: string) =>
-        validateWithZod(DieticianUpdateDto.shape.businessAddress, value),
+        validateWithZod(
+          DieticianUpdateDto.shape.businessAddress,
+          value || null,
+        ),
     ],
-    handleUpdate: val => handleFieldUpdate('businessAddress', val),
+    handleUpdate: val => handleFieldUpdate('businessAddress', val || null),
     layout: { cols: 12 },
   },
 }

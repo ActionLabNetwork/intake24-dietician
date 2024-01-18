@@ -7,7 +7,18 @@
       :style="bordered ? 'background: white' : ''"
       :class="{ 'pa-3 my-2 d-flex rounded-lg elevation-1': bordered }"
     >
+      <v-phone-input
+        v-if="type === 'tel'"
+        :model-value="value?.toString()"
+        label=""
+        country-label=""
+        country-icon-mode="svg"
+        density="compact"
+        guess-country
+        @update:model-value="(value: string) => emit('update', value)"
+      />
       <v-text-field
+        v-else
         flat
         :required="required ?? false"
         :type="type ?? 'text'"
@@ -24,7 +35,7 @@
         :suffix="suffix"
         :bordered="bordered"
         :data-cy="dataCy"
-        @input="updateValue"
+        @update:model-value="updateValue"
         @click:append-inner="handleIconClick"
         @click:append="handleOuterIconClick"
       >
@@ -34,8 +45,9 @@
 </template>
 
 <script setup lang="ts">
-import { INPUT_DEBOUNCE_TIME } from '@intake24-dietician/portal/constants'
-import { useDebounceFn } from '@vueuse/core'
+import { VPhoneInput } from 'v-phone-input'
+import 'v-phone-input/dist/v-phone-input.css'
+import 'flag-icons/css/flag-icons.min.css'
 
 defineProps<{
   type?: HTMLInputElement['type']
@@ -52,13 +64,16 @@ defineProps<{
   required?: boolean
   bordered?: boolean
   dataCy?: string
+  emptyAsNull?: boolean
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
-const emit = defineEmits<{ update: [value: string] }>()
-const updateValue = useDebounceFn((e: InputEvent) => {
-  emit('update', (e.target as HTMLInputElement).value)
-}, INPUT_DEBOUNCE_TIME)
+const emit = defineEmits<{
+  update: [value: string]
+}>()
+const updateValue = (value: string) => {
+  emit('update', value)
+}
 </script>
 
 <style scoped>

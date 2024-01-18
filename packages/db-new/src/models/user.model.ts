@@ -50,12 +50,12 @@ export const dieticians = pgTable('dietician', {
     .notNull()
     .unique(),
   firstName: text('first_name').notNull(),
-  middleName: text('middle_name').notNull(),
-  lastName: text('last_name').notNull(),
-  mobileNumber: text('mobile_number').notNull(),
-  businessNumber: text('business_number').notNull(),
-  businessAddress: text('business_address').notNull(),
-  shortBio: text('short_bio').notNull(),
+  middleName: text('middle_name'),
+  lastName: text('last_name'),
+  mobileNumber: text('mobile_number'),
+  businessNumber: text('business_number'),
+  businessAddress: text('business_address'),
+  shortBio: text('short_bio'),
   avatar: text('avatar'),
   ...timestampFields,
 })

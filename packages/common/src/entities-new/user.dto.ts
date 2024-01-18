@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { PatientPreferenceSchema } from './preferences.dto'
 import { TimestampSchema } from './timestamp.dto'
+import { parsePhoneNumber } from 'awesome-phonenumber'
 
 // Gender
 export const genders = [
@@ -11,20 +12,15 @@ export const genders = [
 ] as const
 export type Gender = (typeof genders)[number]
 
-// Mobile number schemas
-const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/, {
-  message: 'Invalid mobile number format',
+export const MobileNumberSchema = z.string().refine(val => {
+  const phoneNumber = parsePhoneNumber(val)
+  return phoneNumber.valid && phoneNumber.typeIsMobile
 })
 
-const IndonesianMobileSchema = z.string().regex(/^\+?628\d{8,11}$/)
-
-const MalaysianMobileSchema = z.string().regex(/^01\d{7,8}$/)
-
-export const MobileNumberSchema = z.union([
-  AustralianMobileSchema,
-  IndonesianMobileSchema,
-  MalaysianMobileSchema,
-])
+export const PhoneNumberSchema = z.string().refine(val => {
+  const phoneNumber = parsePhoneNumber(val)
+  return phoneNumber.valid
+})
 
 // User schemas
 export const UserCreateDtoSchema = z.object({
@@ -39,27 +35,19 @@ export const UserDtoSchema = UserCreateDtoSchema.extend({
 export type UserDto = z.infer<typeof UserDtoSchema>
 
 export const DieticianCreateDto = z.object({
-  firstName: z.string(),
-  middleName: z.string(),
-  lastName: z.string(),
-  mobileNumber: z.string(),
-  businessNumber: z.string(),
-  businessAddress: z.string(),
-  shortBio: z.string(),
+  firstName: z.string().min(1),
+  middleName: z.string().min(1).nullable(),
+  lastName: z.string().min(1).nullable(),
+  mobileNumber: MobileNumberSchema.nullable(),
+  businessNumber: PhoneNumberSchema.nullable(),
+  businessAddress: z.string().nullable(),
+  shortBio: z.string().nullable(),
   avatar: z.string().nullable(),
 })
 export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
 
-export const DieticianUpdateDto = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  middleName: z.string(),
-  lastName: z.string(),
-  mobileNumber: MobileNumberSchema,
-  businessNumber: z.string(),
-  businessAddress: z.string(),
-  shortBio: z.string(),
-  avatar: z.string().nullable(),
-})
+export const DieticianUpdateDto = DieticianCreateDto.partial()
+
 export type DieticianUpdateDto = z.infer<typeof DieticianUpdateDto>
 
 export const DieticianDtoSchema = DieticianCreateDto.extend({
@@ -74,7 +62,7 @@ export const PatientCreateDtoSchema = z.object({
   firstName: z.string(),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: z.string(),
+  mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
   age: z.number().int(),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
@@ -93,7 +81,7 @@ export const PatientUpdateDtoSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   middleName: z.string(),
   lastName: z.string(),
-  mobileNumber: MobileNumberSchema,
+  mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
   age: z.number().int(),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
