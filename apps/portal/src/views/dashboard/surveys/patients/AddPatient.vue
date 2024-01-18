@@ -120,7 +120,7 @@ const defaultContactDetailsFormValues: ContactDetailsFormValues = {
 const defaultPersonalDetailsFormValues: PersonalDetailsFormValues = {
   dateOfBirth: '01/01/2000',
   gender: 'Male',
-  weight: 70,
+  weightHistory: [{ weight: 70, timestamp: new Date() }],
   height: 170,
   additionalNotes: '',
   patientGoal: '',

@@ -58,6 +58,13 @@ export const DieticianWithUserDto = DieticianDtoSchema.extend({
   user: UserDtoSchema,
 })
 
+export const WeightHistorySchema = z.array(
+  z.object({
+    timestamp: z.coerce.date(),
+    weight: z.number().int(),
+  }),
+)
+
 export const PatientCreateDtoSchema = z.object({
   firstName: z.string(),
   middleName: z.string(),
@@ -70,7 +77,7 @@ export const PatientCreateDtoSchema = z.object({
   ]),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
-  weight: z.number().int(),
+  weightHistory: WeightHistorySchema,
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
@@ -92,7 +99,7 @@ export const PatientUpdateDtoSchema = z.object({
   ]),
   gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
-  weight: z.number().int(),
+  weightHistory: WeightHistorySchema,
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
   additionalNotes: z.string(),
   patientGoal: z.string(),
@@ -105,6 +112,12 @@ export type PatientUpdateDto = z.infer<typeof PatientUpdateDtoSchema>
 export const PatientDtoSchema = PatientCreateDtoSchema.extend({
   id: z.number(),
   patientPreference: PatientPreferenceSchema,
+  weightHistory: z
+    .object({
+      weight: z.number().int(),
+      timestamp: z.date(),
+    })
+    .array(),
   startSurveyUrl: z.string(),
   lastReminderSent: z.date().nullable(),
 }).extend(TimestampSchema.shape)

@@ -15,7 +15,10 @@ import { surveys } from './survey.model'
 import { typedJsonbFromSchema } from './modelUtils'
 import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { recalls } from './recall.model'
-import { genders } from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  WeightHistorySchema,
+  genders,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { feedbackDrafts, feedbackShares } from './feedback.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
@@ -85,7 +88,8 @@ export const patients = pgTable('patient', {
   dateOfBirth: text('date_of_birth').notNull(),
   gender: genderEnum('gender').notNull(),
   height: integer('height').notNull(),
-  weight: integer('weight').notNull(),
+  weightHistory:
+    typedJsonbFromSchema(WeightHistorySchema)('weight_history').notNull(),
   additionalDetails:
     jsonb('additional_details').$type<Record<string, unknown>>(),
   additionalNotes: text('additional_notes').notNull(),
