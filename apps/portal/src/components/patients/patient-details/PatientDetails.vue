@@ -306,4 +306,14 @@ watch(
     line-height: normal;
   }
 }
+
+:deep(.form-label) {
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &.description {
+    color: #555555;
+    font-size: 0.85rem;
+  }
+}
 </style>

@@ -6,7 +6,7 @@
         <v-row dense align="center">
           <v-col cols="12" md="6">
             <!-- DateOfBirth -->
-            <span class="input-label"> Date of Birth: </span>
+            <span class="form-label"> Date of Birth: </span>
             <VueDatePicker
               :model-value="
                 formValues.dateOfBirth === ''
@@ -161,5 +161,11 @@ const handleFieldUpdate = <K extends keyof PersonalDetailsFormValues>(
   &.suffix {
     color: #ee672d;
   }
+}
+
+.dp__theme_light {
+  --dp-background-color: rgb(246, 246, 246);
+  --dp-border-color: #ffffff00;
+  --dp-input-padding: 14px 30px;
 }
 </style>
