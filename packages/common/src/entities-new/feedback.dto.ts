@@ -43,3 +43,45 @@ export const FeedbackModuleDtoSchema = z.object({
   name: z.string(),
 })
 export type FeedbackModuleDto = z.infer<typeof FeedbackModuleDtoSchema>
+
+const ThresholdSchema = z.object({
+  valuesBelow: z.number(),
+  valuesAbove: z.number(),
+})
+export type Threshold = z.infer<typeof ThresholdSchema>
+
+const FeedbackLevelSchema = z.object({
+  below: z.string(),
+  within: z.string(),
+  above: z.string(),
+  thresholds: ThresholdSchema,
+})
+export type FeedbackLevel = z.infer<typeof FeedbackLevelSchema>
+
+const AgeRangeSchema = z.object({
+  min: z.number().nonnegative(),
+  max: z.number().nonnegative(),
+})
+export type AgeRange = z.infer<typeof AgeRangeSchema>
+
+const AgeCategorySchema = z.record(
+  z.string(),
+  z.object({
+    ageRange: AgeRangeSchema,
+    feedbackLevel: FeedbackLevelSchema,
+  }),
+)
+export type AgeCategory = z.infer<typeof AgeCategorySchema>
+
+const GenderFeedbackSchema = z.object({
+  male: AgeCategorySchema,
+  female: AgeCategorySchema,
+  notSpecified: AgeCategorySchema,
+})
+export type GenderFeedback = z.infer<typeof GenderFeedbackSchema>
+
+export const FeedbackLevelRootSchema = z.object({
+  rule: z.literal('range'), // Add additional rules here
+  criteria: GenderFeedbackSchema,
+})
+export type FeedbackLevelRoot = z.infer<typeof FeedbackLevelRootSchema>

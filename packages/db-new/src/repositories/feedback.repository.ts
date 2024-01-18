@@ -1,8 +1,12 @@
-import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import type {
+  DraftCreateDto,
+  FeedbackLevelRoot,
+} from '@intake24-dietician/common/entities-new/feedback.dto'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import { feedbackDrafts, feedbackShares } from '../models/feedback.model'
 import { desc, eq, count } from 'drizzle-orm'
+import { surveyToFeedbackModules, surveys } from '../models'
 
 @singleton()
 export class FeedbackRepository {
@@ -64,6 +68,19 @@ export class FeedbackRepository {
     return _count?.value ?? 0
   }
 
+  public async getSurveyFeedbackModulesDieticianId(
+    surveyFeedbackModulesId: number,
+  ) {
+    const [survey] = await this.drizzle
+      .select()
+      .from(surveyToFeedbackModules)
+      .where(eq(surveyToFeedbackModules.id, surveyFeedbackModulesId))
+      .innerJoin(surveys, eq(surveyToFeedbackModules.surveyId, surveys.id))
+      .limit(1)
+
+    return survey?.survey.dieticianId
+  }
+
   public async saveDraft(patientId: number, draft: DraftCreateDto) {
     const [createdDraft] = await this.drizzle
       .insert(feedbackDrafts)
@@ -120,5 +137,19 @@ export class FeedbackRepository {
 
       return createdShared
     })
+  }
+
+  public async addFeedbackLevelToFeedbackModule(
+    levelsObject: FeedbackLevelRoot,
+  ) {
+    const [createdFeedbackLevel] = await this.drizzle
+      .update(surveyToFeedbackModules)
+      .set({
+        levels: levelsObject,
+      })
+      .returning()
+      .execute()
+
+    return createdFeedbackLevel
   }
 }

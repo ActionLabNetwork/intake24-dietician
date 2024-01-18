@@ -9,6 +9,8 @@ import {
 } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { surveys } from './survey.model'
+import { typedJsonbFromSchema } from './modelUtils'
+import { FeedbackLevelRootSchema } from '@intake24-dietician/common/entities-new/feedback.dto'
 
 export const feedbackModules = pgTable('feedback-module', {
   id: serial('id').primaryKey(),
@@ -41,6 +43,7 @@ export const surveyToFeedbackModules = pgTable(
     feedbackAboveRecommendedLevel: text('feedback_above_recommended_level')
       .default('')
       .notNull(),
+    levels: typedJsonbFromSchema(FeedbackLevelRootSchema)('levelsObject'),
     ...timestampFields,
   },
   t => ({

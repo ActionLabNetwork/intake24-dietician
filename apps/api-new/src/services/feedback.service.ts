@@ -1,4 +1,7 @@
-import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import type {
+  DraftCreateDto,
+  FeedbackLevelRoot,
+} from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackRepository } from '@intake24-dietician/db-new/repositories/feedback.repository'
 import { inject, singleton } from 'tsyringe'
 
@@ -74,5 +77,13 @@ export class FeedbackService {
     // TODO: Send email to patient
 
     return sharedFeedback
+  }
+
+  public async addFeedbackLevelToFeedbackModule(
+    levelsObject: FeedbackLevelRoot,
+  ) {
+    return await this.feedbackRepository.addFeedbackLevelToFeedbackModule(
+      levelsObject,
+    )
   }
 }

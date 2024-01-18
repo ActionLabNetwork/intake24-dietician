@@ -70,6 +70,13 @@ export const DieticianWithUserDto = DieticianDtoSchema.extend({
   user: UserDtoSchema,
 })
 
+export const GenderSchema = z.enum([
+  'Male',
+  'Female',
+  'Non-binary',
+  'Prefer not to say',
+])
+
 export const PatientCreateDtoSchema = z.object({
   firstName: z.string(),
   middleName: z.string(),
@@ -77,7 +84,7 @@ export const PatientCreateDtoSchema = z.object({
   mobileNumber: z.string(),
   address: z.string(),
   age: z.number().int(),
-  gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
+  gender: GenderSchema,
   height: z.number().int(),
   weight: z.number().int(),
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
@@ -96,7 +103,7 @@ export const PatientUpdateDtoSchema = z.object({
   mobileNumber: MobileNumberSchema,
   address: z.string(),
   age: z.number().int(),
-  gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
+  gender: GenderSchema,
   height: z.number().int(),
   weight: z.number().int(),
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
