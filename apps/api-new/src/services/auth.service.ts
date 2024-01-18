@@ -243,6 +243,7 @@ export class AuthService {
     if (survey.dieticianId !== dieticianId) {
       throw new UnauthorizedError('Invalid dietician')
     }
+
     return await this.userRepository.createPatient(surveyId, email, {
       patientPreference: survey.surveyPreference,
       ...patientDto,
@@ -256,9 +257,11 @@ export class AuthService {
     patientDto: Partial<PatientUpdateDto>,
   ) => {
     const patient = await this.userRepository.getPatient(patientId)
-    console.log({ patientDto })
+    if (!patient) {
+      throw new NotFoundError('Patient does not exist')
+    }
 
-    if (patient?.user.email !== email) {
+    if (patient.user.email !== email) {
       const isEmailValid = await this.validateNewEmailAvailability(email)
       if (!isEmailValid) {
         throw new ClientError('Invalid email address. Please try again.')

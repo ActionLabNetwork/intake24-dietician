@@ -11,7 +11,11 @@
               <div class="d-flex flex-column">
                 <ImageUpload
                   :default-state="defaultState.avatar || getDefaultAvatar()"
-                  @update="value => handleFieldUpdate('avatar', value)"
+                  @update="
+                    value => {
+                      uploadAvatarMutation.mutate({ avatarBase64: value })
+                    }
+                  "
                 />
               </div>
             </v-col>
@@ -27,7 +31,7 @@
                     :name="config.key"
                     :rules="config.rules"
                     :autocomplete="config.autocomplete"
-                    :value="formValues[fieldName]"
+                    :value="props.defaultState[fieldName] ?? ''"
                     :suffix-icon="config.suffixIcon"
                     :handle-icon-click="config.handleSuffixIconClick"
                     :class="config.class"
@@ -56,41 +60,38 @@ import { useDisplay } from 'vuetify'
 
 import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
-import { ref } from 'vue'
 import { getDefaultAvatar } from '@/utils/profile'
 import { Form } from './types'
 import ImageUpload from './ImageUpload.vue'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { DieticianUpdateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { useUploadAvatar } from '@intake24-dietician/portal/mutations/useAuth'
 
 export interface PersonalDetailsFormValues {
   firstName: string
-  middleName: string
-  lastName: string
-  avatar: string
+  middleName: string | null
+  lastName: string | null
+  avatar: string | null
 }
 
 const props = defineProps<{
   defaultState: PersonalDetailsFormValues
-  email: string
 }>()
 const emit = defineEmits<{
-  update: [value: PersonalDetailsFormValues]
+  update: [value: Partial<PersonalDetailsFormValues>]
 }>()
+
+const uploadAvatarMutation = useUploadAvatar()
 
 const { mdAndUp } = useDisplay()
 
 const { t } = useI18n<i18nOptions>()
 
-// eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
-
-const handleFieldUpdate = (
-  fieldName: keyof PersonalDetailsFormValues,
-  newVal: string,
+const handleFieldUpdate = <T extends keyof PersonalDetailsFormValues>(
+  fieldName: T,
+  newVal: PersonalDetailsFormValues[T],
 ) => {
-  formValues.value[fieldName] = newVal
-  emit('update', { ...formValues.value })
+  emit('update', { [fieldName]: newVal })
 }
 
 const formConfig: Form<keyof Omit<PersonalDetailsFormValues, 'avatar'>> = {
@@ -117,7 +118,7 @@ const formConfig: Form<keyof Omit<PersonalDetailsFormValues, 'avatar'>> = {
       (value: string) =>
         validateWithZod(DieticianUpdateDto.shape.middleName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('middleName', val),
+    handleUpdate: val => handleFieldUpdate('middleName', val || null),
   },
   lastName: {
     key: 'lastName',
@@ -129,7 +130,7 @@ const formConfig: Form<keyof Omit<PersonalDetailsFormValues, 'avatar'>> = {
       (value: string) =>
         validateWithZod(DieticianUpdateDto.shape.lastName, value),
     ],
-    handleUpdate: val => handleFieldUpdate('lastName', val),
+    handleUpdate: val => handleFieldUpdate('lastName', val || null),
   },
 }
 </script>

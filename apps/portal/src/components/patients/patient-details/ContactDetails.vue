@@ -229,7 +229,7 @@ const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
       labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
       required: true,
       type: 'input',
-      inputType: 'text',
+      inputType: 'tel',
       rules: [
         (value: string) =>
           validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),

@@ -118,9 +118,9 @@ const defaultContactDetailsFormValues: ContactDetailsFormValues = {
   address: '',
 }
 const defaultPersonalDetailsFormValues: PersonalDetailsFormValues = {
-  age: 20,
+  dateOfBirth: '01/01/2000',
   gender: 'Male',
-  weight: 70,
+  weightHistory: [{ weight: 70, timestamp: new Date() }],
   height: 170,
   additionalNotes: '',
   patientGoal: '',

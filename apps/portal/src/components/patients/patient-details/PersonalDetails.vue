@@ -5,17 +5,24 @@
       <v-container>
         <v-row dense align="center">
           <v-col cols="12" md="6">
-            <!-- Age -->
-            <BaseInput
-              type="number"
-              name="age"
-              :value="formValues.age"
-              class="base-input"
-              suffix="yrs"
-              @update="newVal => handleFieldUpdate('age', newVal)"
-            >
-              <span class="input-label"> Age: </span>
-            </BaseInput>
+            <!-- DateOfBirth -->
+            <span class="form-label"> Date of Birth: </span>
+            <VueDatePicker
+              :model-value="
+                formValues.dateOfBirth === ''
+                  ? undefined
+                  : moment(formValues.dateOfBirth, 'DD/MM/YYYY').toDate()
+              "
+              :enable-time-picker="false"
+              :max-date="moment(new Date()).subtract(1, 'day').toDate()"
+              @update:model-value="
+                val =>
+                  handleFieldUpdate(
+                    'dateOfBirth',
+                    (val && moment(val).format('DD/MM/YYYY')) || '',
+                  )
+              "
+            />
           </v-col>
           <v-col cols="12" md="6">
             <!-- Gender -->
@@ -41,23 +48,17 @@
               :value="formValues.height"
               class="base-input"
               suffix="kg"
-              @update="newVal => handleFieldUpdate('height', newVal)"
+              @update="newVal => handleFieldUpdate('height', parseInt(newVal))"
             >
               <span class="input-label"> Height: </span>
             </BaseInput>
           </v-col>
           <v-col cols="12" md="6">
             <!-- Weight -->
-            <BaseInput
-              type="number"
-              name="weight"
-              :value="formValues.weight"
-              class="base-input"
-              suffix="cm"
-              @update="newVal => handleFieldUpdate('weight', newVal)"
-            >
-              <span class="input-label"> Weight: </span>
-            </BaseInput>
+            <WeightHistory
+              :model-value="formValues.weightHistory"
+              @update="val => handleFieldUpdate('weightHistory', val)"
+            />
           </v-col>
         </v-row>
         <v-divider class="my-3"></v-divider>
@@ -96,11 +97,10 @@
 </template>
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
-
+import VueDatePicker from '@vuepic/vue-datepicker'
+import moment from 'moment'
+import WeightHistory from './WeightHistory.vue'
 import { useDisplay } from 'vuetify'
-
-// import { i18nOptions } from '@intake24-dietician/i18n/index'
-// import { useI18n } from 'vue-i18n'
 import { ref } from 'vue'
 import {
   Gender,
@@ -108,10 +108,10 @@ import {
 } from '@intake24-dietician/common/entities-new/user.dto'
 
 export interface PersonalDetailsFormValues {
-  age: number
+  dateOfBirth: string
   gender: Gender
   height: number
-  weight: number
+  weightHistory: { timestamp: Date; weight: number }[]
   additionalNotes: string
   patientGoal: string
 }
@@ -124,12 +124,6 @@ const emit = defineEmits<{
   update: [value: PersonalDetailsFormValues]
 }>()
 
-const isNumericField = (
-  field: keyof PersonalDetailsFormValues,
-): field is 'age' | 'height' | 'weight' => {
-  return ['age', 'height', 'weight'].includes(field)
-}
-
 const { mdAndUp } = useDisplay()
 
 // const { t } = useI18n<i18nOptions>()
@@ -137,19 +131,21 @@ const { mdAndUp } = useDisplay()
 // eslint-disable-next-line vue/no-setup-props-destructure
 const formValues = ref<PersonalDetailsFormValues>(props.defaultState)
 
-const handleFieldUpdate = (
-  fieldName: keyof PersonalDetailsFormValues,
-  newVal: string,
+const handleFieldUpdate = <K extends keyof PersonalDetailsFormValues>(
+  fieldName: K,
+  newVal: PersonalDetailsFormValues[K],
 ) => {
-  const numericValue = Number(newVal)
+  formValues.value[fieldName] = newVal
+  emit('update', { ...formValues.value })
+  // if (isNumericField(fieldName)) {
+  //   formValues.value[fieldName] = numericValue
+  //   emit('update', { ...formValues.value })
+  // } else if (fieldName === 'gender') {
+  //   formValues.value[fieldName] = newVal as (typeof genders)[number]
+  //   emit('update', { ...formValues.value })
+  // } else if (fieldName === 'weightHistory') {
 
-  if (isNumericField(fieldName)) {
-    formValues.value[fieldName] = numericValue
-    emit('update', { ...formValues.value })
-  } else {
-    formValues.value[fieldName] = newVal as (typeof genders)[number]
-    emit('update', { ...formValues.value })
-  }
+  // }
 }
 </script>
 <style scoped lang="scss">
@@ -165,5 +161,11 @@ const handleFieldUpdate = (
   &.suffix {
     color: #ee672d;
   }
+}
+
+.dp__theme_light {
+  --dp-background-color: rgb(246, 246, 246);
+  --dp-border-color: #ffffff00;
+  --dp-input-padding: 14px 30px;
 }
 </style>
