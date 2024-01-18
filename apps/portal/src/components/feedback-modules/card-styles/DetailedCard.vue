@@ -30,7 +30,7 @@
                 .hex(),
       }"
     >
-      <div v-if="food.mealDate.startTime">
+      <div v-if="food.mealDate?.startTime">
         <v-tooltip
           location="bottom"
           :text="food.mealDate.startTime.toDateString()"
@@ -68,7 +68,7 @@ export interface DetailedCardProps {
     name: string
     value: number
     servingWeight: string
-    mealDate: {
+    mealDate?: {
       startTime: Date
       endTime: Date
     }

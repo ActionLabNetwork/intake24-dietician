@@ -58,6 +58,12 @@ export const DieticianWithUserDto = DieticianDtoSchema.extend({
   user: UserDtoSchema,
 })
 
+export const GenderSchema = z.enum([
+  'Male',
+  'Female',
+  'Non-binary',
+  'Prefer not to say',
+])
 export const WeightHistorySchema = z.array(
   z.object({
     timestamp: z.coerce.date(),
@@ -71,11 +77,11 @@ export const PatientCreateDtoSchema = z.object({
   lastName: z.string(),
   mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
+  gender: GenderSchema,
   dateOfBirth: z.union([
     z.string().regex(/^\d{2}\/\d{2}\/\d{4}/),
     z.literal(''),
   ]),
-  gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
   weightHistory: WeightHistorySchema,
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),
@@ -93,11 +99,11 @@ export const PatientUpdateDtoSchema = z.object({
   lastName: z.string(),
   mobileNumber: z.union([MobileNumberSchema, z.literal('')]),
   address: z.string(),
+  gender: GenderSchema,
   dateOfBirth: z.union([
     z.string().regex(/^\d{2}\/\d{2}\/\d{4}/),
     z.literal(''),
   ]),
-  gender: z.enum(['Male', 'Female', 'Non-binary', 'Prefer not to say']),
   height: z.number().int(),
   weightHistory: WeightHistorySchema,
   additionalDetails: z.record(z.string(), z.unknown()).nullable(),

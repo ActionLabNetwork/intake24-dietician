@@ -222,6 +222,71 @@ async function seedSurveyToFeedbackModules(
   drizzle: ReturnType<typeof initDrizzle>['drizzle'],
   survey: Awaited<ReturnType<typeof seedSurvey>>['survey'],
 ) {
+  const ageLevels = (gender: string) => {
+    return {
+      '0-12': {
+        ageRange: { min: 0, max: 12 },
+        feedbackLevel: {
+          below: `You are below the recommended intake as a ${gender}`,
+          within: `You are within the recommended intake ${gender}`,
+          above: `You are above the recommended intake ${gender}`,
+          thresholds: {
+            valuesBelow: 10,
+            valuesAbove: 20,
+          },
+        },
+      },
+      '13-20': {
+        ageRange: { min: 13, max: 20 },
+        feedbackLevel: {
+          below: `You are below the recommended intake as a ${gender}`,
+          within: `You are within the recommended intake ${gender}`,
+          above: `You are above the recommended intake ${gender}`,
+          thresholds: {
+            valuesBelow: 15,
+            valuesAbove: 25,
+          },
+        },
+      },
+      '21-30': {
+        ageRange: { min: 21, max: 30 },
+        feedbackLevel: {
+          below: `You are below the recommended intake as a ${gender}`,
+          within: `You are within the recommended intake ${gender}`,
+          above: `You are above the recommended intake ${gender}`,
+          thresholds: {
+            valuesBelow: 20,
+            valuesAbove: 30,
+          },
+        },
+      },
+      '31-40': {
+        ageRange: { min: 31, max: 40 },
+        feedbackLevel: {
+          below: `You are below the recommended intake as a ${gender}`,
+          within: `You are within the recommended intake ${gender}`,
+          above: `You are above the recommended intake ${gender}`,
+          thresholds: {
+            valuesBelow: 25,
+            valuesAbove: 35,
+          },
+        },
+      },
+      '41-130': {
+        ageRange: { min: 41, max: 130 },
+        feedbackLevel: {
+          below: `You are below the recommended intake as a ${gender}`,
+          within: `You are within the recommended intake ${gender}`,
+          above: `You are above the recommended intake ${gender}`,
+          thresholds: {
+            valuesBelow: 30,
+            valuesAbove: 40,
+          },
+        },
+      },
+    }
+  }
+
   const defaultFeedbackModules = await drizzle.query.feedbackModules.findMany()
   await drizzle.insert(surveyToFeedbackModules).values(
     defaultFeedbackModules.map(module => {
@@ -230,6 +295,14 @@ async function seedSurveyToFeedbackModules(
         ...moduleWithoutId,
         surveyId: survey!.id,
         feedbackModuleId: module.id,
+        levels: {
+          rule: 'range' as const,
+          criteria: {
+            male: ageLevels('male'),
+            female: ageLevels('female'),
+            notSpecified: ageLevels('not specified'),
+          },
+        },
       }
     }),
   )
