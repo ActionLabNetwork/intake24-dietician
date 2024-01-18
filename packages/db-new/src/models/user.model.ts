@@ -15,7 +15,10 @@ import { surveys } from './survey.model'
 import { typedJsonbFromSchema } from './modelUtils'
 import { PatientPreferenceSchema } from '@intake24-dietician/common/entities-new/preferences.dto'
 import { recalls } from './recall.model'
-import { genders } from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  WeightHistorySchema,
+  genders,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { feedbackDrafts, feedbackShares } from './feedback.model'
 // import { surveys } from './survey.model'
 // import { patientPreferences } from './preferences.model'
@@ -50,12 +53,12 @@ export const dieticians = pgTable('dietician', {
     .notNull()
     .unique(),
   firstName: text('first_name').notNull(),
-  middleName: text('middle_name').notNull(),
-  lastName: text('last_name').notNull(),
-  mobileNumber: text('mobile_number').notNull(),
-  businessNumber: text('business_number').notNull(),
-  businessAddress: text('business_address').notNull(),
-  shortBio: text('short_bio').notNull(),
+  middleName: text('middle_name'),
+  lastName: text('last_name'),
+  mobileNumber: text('mobile_number'),
+  businessNumber: text('business_number'),
+  businessAddress: text('business_address'),
+  shortBio: text('short_bio'),
   avatar: text('avatar'),
   ...timestampFields,
 })
@@ -82,10 +85,11 @@ export const patients = pgTable('patient', {
   lastName: text('last_name').notNull(),
   mobileNumber: text('mobile_number').notNull(),
   address: text('address').notNull(),
-  age: integer('age').notNull(),
+  dateOfBirth: text('date_of_birth').notNull(),
   gender: genderEnum('gender').notNull(),
   height: integer('height').notNull(),
-  weight: integer('weight').notNull(),
+  weightHistory:
+    typedJsonbFromSchema(WeightHistorySchema)('weight_history').notNull(),
   additionalDetails:
     jsonb('additional_details').$type<Record<string, unknown>>(),
   additionalNotes: text('additional_notes').notNull(),

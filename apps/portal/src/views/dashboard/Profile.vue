@@ -21,6 +21,7 @@
             color="primary text-capitalize"
             class="mt-3 mt-sm-0"
             :loading="updateProfileMutation.isPending.value"
+            :disabled="!hasFormChanged"
             @click="handleSubmit"
           >
             {{ t('profile.cta') }}
@@ -28,27 +29,24 @@
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form v-if="profile" ref="form" @submit.prevent="() => handleSubmit()">
+      <v-form
+        v-if="currentFormData"
+        ref="form"
+        @submit.prevent="() => handleSubmit()"
+      >
         <PersonalDetails
-          v-if="personalDetailsFormValues"
-          :default-state="personalDetailsFormValues"
-          :email="profile.user.email"
-          @update="value => handleProfileDetailsUpdate(value)"
+          :default-state="currentFormData"
+          @update="handleFormValueUpdate"
         />
         <ContactDetails
-          v-if="contactDetailsFormValues"
           class="mt-10"
-          :default-state="contactDetailsFormValues"
-          :email="profile.user.email"
-          :handleSubmit="handleSubmit"
-          @update="value => handleProfileDetailsUpdate(value)"
+          :default-state="currentFormData"
+          @update="handleFormValueUpdate"
         />
         <ShortBio
-          v-if="shortBioFormValues"
           class="mt-16"
-          :user="profile"
-          :default-state="shortBioFormValues"
-          @update="value => handleProfileDetailsUpdate(value)"
+          :default-state="currentFormData"
+          @update="handleFormValueUpdate"
         />
         <div class="mt-16">
           <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
@@ -57,6 +55,7 @@
             color="primary text-capitalize"
             class="mt-3"
             :loading="updateProfileMutation.isPending.value"
+            :disabled="!hasFormChanged"
           >
             {{ t('profile.cta') }}
           </v-btn>
@@ -67,46 +66,26 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref, watch } from 'vue'
-import PersonalDetails, {
-  PersonalDetailsFormValues,
-} from '@/components/profile/PersonalDetails.vue'
-import ContactDetails, {
-  ContactDetailsFormValues,
-} from '@/components/profile/ContactDetails.vue'
-import ShortBio, { ShortBioFormValues } from '@/components/profile/ShortBio.vue'
-import { i18nOptions } from '@intake24-dietician/i18n/index'
-import { useI18n } from 'vue-i18n'
+import ContactDetails from '@/components/profile/ContactDetails.vue'
+import PersonalDetails from '@/components/profile/PersonalDetails.vue'
+import ShortBio from '@/components/profile/ShortBio.vue'
+import { useUpdateProfile } from '@/mutations/useAuth'
 import { useAuthStore } from '@/stores/auth'
+import { i18nOptions } from '@intake24-dietician/i18n/index'
 import { storeToRefs } from 'pinia'
-import { useUpdateProfile, useUploadAvatar } from '@/mutations/useAuth'
+import { onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 // import { pick, keys, isEqual } from 'radash'
+import isEqual from 'lodash.isequal'
+import { computed } from 'vue'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import {
-  DieticianCreateDto,
-  DieticianUpdateDto,
-} from '@intake24-dietician/common/entities-new/user.dto'
-import { useForm } from '@intake24-dietician/portal/composables/useForm'
-
-// Types
-type ProfileFormValues = Partial<DieticianCreateDto> & { emailAddress: string }
-
-const defaultValue = {
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  emailAddress: '',
-  mobileNumber: '',
-  businessNumber: '',
-  businessAddress: '',
-  shortBio: '',
-  avatar: null,
-}
 
 onMounted(async () => {
-  await authStore.refetch()
+  if (!authStore.profile) {
+    await authStore.refetch()
+  }
 })
 
 // i18n
@@ -115,106 +94,55 @@ const { t } = useI18n<i18nOptions>()
 // Stores
 const authStore = useAuthStore()
 
-const { profile, isProfileLoading, profileQuerySucceeded } =
-  storeToRefs(authStore)
+const {
+  profile: savedProfile,
+  isProfileLoading,
+  profileQuerySucceeded,
+} = storeToRefs(authStore)
 
 // Mutations
 const updateProfileMutation = useUpdateProfile()
-const uploadAvatarMutation = useUploadAvatar()
 
 // Composables
 const $toast = useToast()
 
-// Refs
-const form = ref()
-const profileForm = useForm<
-  Partial<ProfileFormValues>,
-  { emailAddress: string; dieticianProfile: Partial<DieticianCreateDto> }
->({
-  initialValues: defaultValue,
-  schema: DieticianUpdateDto,
-  $toast,
-  mutationFn: updateProfileMutation.mutateAsync,
-  onSuccess: () => {
-    $toast.success('Profile updated successfully')
-  },
-  onError: () => {
-    console.log('Failed to update dietician profile')
-  },
+const savedFormData = computed(() => {
+  if (!savedProfile.value) return undefined
+  const { user, ...rest } = savedProfile.value
+  return { ...rest, email: user.email }
 })
 
-const profileFormValues = ref<DieticianCreateDto & { emailAddress: string }>(
-  defaultValue,
-)
+const currentFormData = ref<typeof savedFormData.value>(undefined)
+watch(savedFormData, () => {
+  currentFormData.value = savedFormData.value
+})
 
-const personalDetailsFormValues = ref<PersonalDetailsFormValues>()
-const contactDetailsFormValues = ref<ContactDetailsFormValues>()
-const shortBioFormValues = ref<ShortBioFormValues>()
+const hasFormChanged = computed(() => {
+  return !isEqual(savedFormData.value, currentFormData.value)
+})
 
-const handleProfileDetailsUpdate = (
-  details:
-    | PersonalDetailsFormValues
-    | ContactDetailsFormValues
-    | ShortBioFormValues,
+const handleFormValueUpdate = (
+  newValues: Partial<typeof currentFormData.value>,
 ) => {
-  profileFormValues.value = { ...profileFormValues.value, ...details }
+  if (currentFormData.value === undefined) return
+  currentFormData.value = { ...currentFormData.value, ...newValues }
 }
 
-const handleSubmit = async (): Promise<void> => {
-  await form.value.validate()
-
-  const { emailAddress, ...dieticianProfile } = profileFormValues.value
-
-  profileForm.handleSubmit(profileFormValues.value, {
-    emailAddress,
-    dieticianProfile,
-  })
-
-  if (profileFormValues.value.avatar) {
-    uploadAvatarMutation.mutate({
-      avatarBase64:
-        profileFormValues.value.avatar ?? profile.value?.avatar ?? '',
+const handleSubmit = async () => {
+  if (!hasFormChanged.value || !currentFormData.value) return
+  try {
+    await updateProfileMutation.mutateAsync({
+      emailAddress: currentFormData.value.email,
+      dieticianProfile: currentFormData.value,
     })
+    $toast.success('Profile updated successfully')
+  } catch {
+    $toast.error('Failed to update dietician profile')
   }
 }
 
-watch(
-  profile,
-  // eslint-disable-next-line complexity
-  newUser => {
-    if (newUser) {
-      profileFormValues.value = {
-        firstName: newUser.firstName,
-        middleName: newUser.middleName,
-        lastName: newUser.lastName,
-        emailAddress: newUser.user.email,
-        mobileNumber: newUser.mobileNumber ?? '',
-        businessNumber: newUser.businessNumber ?? '',
-        businessAddress: newUser.businessAddress ?? '',
-        shortBio: newUser.shortBio ?? '',
-        avatar: newUser.avatar ?? null,
-      }
-
-      personalDetailsFormValues.value = {
-        firstName: newUser.firstName,
-        middleName: newUser.middleName,
-        lastName: newUser.lastName,
-        avatar: newUser.avatar ?? '',
-      }
-
-      contactDetailsFormValues.value = {
-        email: newUser.user.email ?? '',
-        mobileNumber: newUser.mobileNumber ?? '',
-        businessNumber: newUser.businessNumber ?? '',
-        businessAddress: newUser.businessAddress ?? '',
-      }
-
-      shortBioFormValues.value = {
-        shortBio: newUser.shortBio ?? '',
-      }
-    }
-  },
-)
+// Refs
+const form = ref()
 </script>
 
 <style scoped lang="scss">

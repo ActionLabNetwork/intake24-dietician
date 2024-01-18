@@ -90,8 +90,8 @@ watch(
 
     profile.value = newData
 
-    _user.value.initials = getInitials(firstName, lastName)
-    _user.value.fullName = getFullName(firstName, lastName)
+    _user.value.initials = getInitials(firstName, lastName ?? '')
+    _user.value.fullName = getFullName(firstName, lastName ?? '')
     _user.value.email = email ?? ''
   },
 )

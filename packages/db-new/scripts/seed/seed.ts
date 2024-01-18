@@ -82,12 +82,7 @@ async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {
     .values({
       userId: user!.id,
       firstName: 'John',
-      middleName: '',
       lastName: 'Smith',
-      mobileNumber: '',
-      businessNumber: '',
-      businessAddress: '',
-      shortBio: '',
     })
     .returning()
     .execute()
@@ -142,15 +137,22 @@ async function seedPatients(
       userId: patientUser!.id,
       mobileNumber: '',
       address: '',
-      age: 18,
+      dateOfBirth: '01/01/2000',
       gender: 'Male',
       height: 180,
-      weight: 60,
+      weightHistory: [
+        {
+          timestamp: new Date('2023-01-01'),
+          weight: 60,
+        },
+      ],
       additionalNotes: '',
       patientGoal: '',
       patientPreference: preference,
     })
-    .returning()
+    .returning({
+      id: patients.id,
+    })
     .execute()
 
   return { patient1 }

@@ -1,6 +1,6 @@
 export const validateWithZod = <T extends Zod.ZodTypeAny>(
   schema: T,
-  value: string,
+  value: string | null,
 ) => {
   const result = schema.safeParse(value)
   if (result.success) {

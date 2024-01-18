@@ -130,9 +130,9 @@ const formValues = ref({
     address: '',
   }),
   personalDetailsFormValues: ref<PersonalDetailsFormValues>({
-    age: 30,
+    dateOfBirth: '01/01/1980',
     gender: 'Male',
-    weight: 80,
+    weightHistory: [{ weight: 80, timestamp: new Date() }],
     height: 180,
     additionalNotes: '',
     patientGoal: '',
@@ -237,9 +237,15 @@ watch(
         address: updateFormValue(contactDetails.address, newData.address),
       },
       personalDetailsFormValues: {
-        age: updateFormValue(personalDetails.age, newData.age),
+        dateOfBirth: updateFormValue(
+          personalDetails.dateOfBirth,
+          newData.dateOfBirth,
+        ),
         gender: updateFormValue(personalDetails.gender, newData.gender),
-        weight: updateFormValue(personalDetails.weight, newData.weight),
+        weightHistory: updateFormValue(
+          personalDetails.weightHistory,
+          newData.weightHistory,
+        ),
         height: updateFormValue(personalDetails.height, newData.height),
         additionalNotes: updateFormValue(
           personalDetails.additionalNotes,
@@ -298,6 +304,16 @@ watch(
     font-style: normal;
     font-weight: 500;
     line-height: normal;
+  }
+}
+
+:deep(.form-label) {
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  &.description {
+    color: #555555;
+    font-size: 0.85rem;
   }
 }
 </style>
