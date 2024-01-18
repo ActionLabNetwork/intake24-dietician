@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/vue-query'
+import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useClientStore } from '../trpc/trpc'
 
@@ -95,6 +95,7 @@ export const useLogout = () => {
 
 export const useUpdateProfile = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (updateProfileBody: {
@@ -105,6 +106,11 @@ export const useUpdateProfile = () => {
         return authenticatedClient.dieticianProfile.updateProfile.mutate({
           email: emailAddress,
           profile: dieticianProfile,
+        })
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['auth'],
         })
       },
     })
@@ -149,6 +155,7 @@ export const useVerifyEmail = () => {
 
 export const useUploadAvatar = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (uploadAvatarBody: { avatarBase64: string }) => {
       const formData = new FormData()
@@ -161,6 +168,11 @@ export const useUploadAvatar = () => {
       //     'Content-Type': 'multipart/form-data',
       //   },
       // })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['auth'],
+      })
     },
   })
 
