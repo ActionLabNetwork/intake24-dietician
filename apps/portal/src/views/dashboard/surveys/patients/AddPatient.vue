@@ -1,6 +1,6 @@
 <template>
   <div v-if="surveyQuery.isPending.value">
-    <BaseProgressCircularVue />
+    <BaseProgressCircular />
   </div>
   <div v-else-if="surveyQuery.isError.value">
     <!-- TODO: Create an error page  -->
@@ -17,7 +17,7 @@
         <div>
           <BaseButton
             class="mt-3 mt-sm-0"
-            :disabled="!isFormValid"
+            :disabled="!patientForm.isDirty.value"
             type="submit"
             @click.prevent="handleSubmit"
           >
@@ -29,29 +29,39 @@
       <v-form ref="form">
         <div>
           <ContactDetails
-            :default-state="contactDetailsFormValues"
+            :default-state="
+              patientForm.formValues.value.contactDetailsFormValues
+            "
             mode="Add"
-            @update="handleContactDetailsUpdate"
+            @update="
+              patientForm.handleFormUpdate('contactDetailsFormValues', $event)
+            "
           />
           <PersonalDetails
-            :default-state="personalDetailsFormValues"
+            :default-state="
+              patientForm.formValues.value.personalDetailsFormValues
+            "
             class="mt-16"
-            @update="handlePersonalDetailsUpdate"
+            @update="
+              patientForm.handleFormUpdate('personalDetailsFormValues', $event)
+            "
           />
           <VisualThemeSelector
-            :default-state="theme"
+            :default-state="patientForm.formValues.value.theme"
             class="mt-10"
-            @update="handleVisualThemeUpdate"
+            @update="patientForm.handleFormUpdate('theme', $event)"
           />
           <SendAutomatedFeedbackToggle
-            :default-state="sendAutomatedFeedback"
+            :default-state="patientForm.formValues.value.sendAutomatedFeedback"
             class="mt-10"
-            @update="handleSendAutomatedFeedback"
+            @update="
+              patientForm.handleFormUpdate('sendAutomatedFeedback', $event)
+            "
           />
           <UpdateRecallFrequency
-            :default-state="recallFrequency"
+            :default-state="patientForm.formValues.value.recallFrequency"
             class="mt-10"
-            @update="handleRecallFrequencyUpdate"
+            @update="patientForm.handleFormUpdate('recallFrequency', $event)"
           />
         </div>
         <div>
@@ -62,7 +72,7 @@
             color="primary"
             class="text-none mt-4"
             type="submit"
-            :disabled="!isFormValid"
+            :disabled="!patientForm.isDirty.value"
             @click.prevent="handleSubmit"
           >
             Add patient to records
@@ -74,9 +84,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
+import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import ContactDetails, {
   ContactDetailsFormValues,
@@ -89,42 +100,19 @@ import UpdateRecallFrequency from '@intake24-dietician/portal/components/patient
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useAddPatient } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
-import { DEFAULT_ERROR_MESSAGE } from '@/constants/index'
-import router from '@intake24-dietician/portal/router'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
-import { useRoute } from 'vue-router'
-import { PatientUpdateDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import { useRoute, useRouter } from 'vue-router'
+import {
+  PatientUpdateDto,
+  PatientUpdateDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import BaseButton from '@intake24-dietician/portal/components/common/BaseButton.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useForm } from '@intake24-dietician/portal/composables/useForm'
+import { z } from 'zod'
 // const { t } = useI18n<i18nOptions>()
 
-const route = useRoute()
-
-const $toast = useToast()
-
-const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const addPatientMutation = useAddPatient()
-
-const form = ref()
-
 // Default values
-const defaultContactDetailsFormValues: ContactDetailsFormValues = {
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  avatar: '',
-  mobileNumber: '',
-  email: '',
-  address: '',
-}
-const defaultPersonalDetailsFormValues: PersonalDetailsFormValues = {
-  dateOfBirth: '01/01/2000',
-  gender: 'Male',
-  weightHistory: [{ weight: 70, timestamp: new Date() }],
-  height: 170,
-  additionalNotes: '',
-  patientGoal: '',
-}
 const defaultTheme: Theme = 'Classic'
 const defaultSendAutomatedFeedback = false
 const defaultRecallFrequency: ReminderCondition = {
@@ -137,101 +125,121 @@ const defaultRecallFrequency: ReminderCondition = {
   },
 }
 
-const contactDetailsFormValues = ref<ContactDetailsFormValues>(
-  defaultContactDetailsFormValues,
-)
-const personalDetailsFormValues = ref<PersonalDetailsFormValues>(
-  defaultPersonalDetailsFormValues,
-)
-const theme = ref<Theme>(defaultTheme)
-const sendAutomatedFeedback = ref<boolean>(defaultSendAutomatedFeedback)
-const recallFrequency = ref<ReminderCondition>(defaultRecallFrequency)
+const router = useRouter()
+const route = useRoute()
+
+const $toast = useToast()
+
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
+const addPatientMutation = useAddPatient()
+
+const form = ref()
+const formValues = ref({
+  contactDetailsFormValues: ref<ContactDetailsFormValues>({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    avatar: '',
+    mobileNumber: '',
+    email: '',
+    address: '',
+  }),
+  personalDetailsFormValues: ref<PersonalDetailsFormValues>({
+    dateOfBirth: '01/01/1980',
+    gender: 'Male',
+    weightHistory: [{ weight: 80, timestamp: new Date() }],
+    height: 180,
+    additionalNotes: '',
+    patientGoal: '',
+  }),
+  theme: ref<Theme>('Classic'),
+  sendAutomatedFeedback: ref<boolean>(false),
+  recallFrequency: ref<ReminderCondition>({
+    reminderEvery: {
+      every: 5,
+      unit: 'days',
+    },
+    reminderEnds: {
+      type: 'never',
+    },
+  }),
+})
+
+const patientForm = useForm<
+  typeof formValues,
+  {
+    surveyId: string
+    email: string
+    patient: PatientUpdateDto
+  }
+>({
+  initialValues: formValues,
+  schema: z.object({
+    surveyId: z.string(),
+    email: z.string().email(),
+    patient: PatientUpdateDtoSchema,
+  }),
+  $toast: $toast,
+  mutationFn: addPatientMutation.mutateAsync,
+  onSuccess: () => {
+    $toast.success('Patient details added successfully')
+    router.push({
+      name: 'Survey Patient List',
+      params: { surveyId: route.params['surveyId'] as string },
+    })
+  },
+})
 
 const aggregatedData = computed(() => ({
-  ...contactDetailsFormValues.value,
-  ...personalDetailsFormValues.value,
+  ...patientForm.formValues.value.contactDetailsFormValues,
+  ...patientForm.formValues.value.personalDetailsFormValues,
   additionalDetails: null,
-  theme: theme.value,
-  sendAutomatedFeedback: sendAutomatedFeedback.value,
-  recallFrequency: recallFrequency.value,
+  theme: patientForm.formValues.value.theme,
+  sendAutomatedFeedback: patientForm.formValues.value.sendAutomatedFeedback,
+  recallFrequency: patientForm.formValues.value.recallFrequency,
   isArchived: false,
 }))
 
-const isFormValid = computed(() => {
-  // TODO: Add proper zod validation
-  return true
-})
-
-const handleContactDetailsUpdate = (values: ContactDetailsFormValues) => {
-  contactDetailsFormValues.value = values
-}
-
-const handlePersonalDetailsUpdate = (values: PersonalDetailsFormValues) => {
-  personalDetailsFormValues.value = values
-}
-
-const handleVisualThemeUpdate = (_theme: Theme) => {
-  theme.value = _theme
-}
-
-const handleSendAutomatedFeedback = (value: boolean) => {
-  sendAutomatedFeedback.value = value
-}
-
-const handleRecallFrequencyUpdate = (value: ReminderCondition) => {
-  recallFrequency.value = value
-}
-
 const handleSubmit = async () => {
-  return new Promise((resolve, reject) => {
-    // Validate with zod
-    const result = PatientUpdateDtoSchema.safeParse(aggregatedData.value)
-
-    if (!result.success) {
-      $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    // Validate with Vuetify
-    const errors = form.value.errors
-    if (errors.length > 0) {
-      reject(new Error('Form validation failed'))
-      return
-    }
-
-    addPatientMutation.mutate(
-      {
-        surveyId: (route.params['surveyId'] as string) ?? '',
-        email: aggregatedData.value.email,
-        patient: aggregatedData.value,
-      },
-      {
-        onSuccess: () => {
-          $toast.success('Patient added to records')
-          resolve('Patient added to records')
-          router.push({
-            name: 'Survey Patient List',
-            params: { surveyId: route.params['surveyId'] as string },
-          })
-        },
-        onError: () => {
-          $toast.error(DEFAULT_ERROR_MESSAGE)
-        },
-      },
-    )
+  return await patientForm.handleSubmit({
+    surveyId: route.params['surveyId'] as string,
+    email: aggregatedData.value.email ?? '',
+    patient: aggregatedData.value,
   })
 }
 
+const initWithSurveyPreferences = () => {
+  console.log('Refetch watch')
+  const survey = surveyQuery.data.value
+  patientForm.formValues.value = {
+    ...patientForm.formValues.value,
+    theme: survey?.surveyPreference.theme ?? defaultTheme,
+    sendAutomatedFeedback:
+      survey?.surveyPreference.sendAutomatedFeedback ??
+      defaultSendAutomatedFeedback,
+    recallFrequency:
+      survey?.surveyPreference.reminderCondition ?? defaultRecallFrequency,
+  }
+
+  patientForm.serverDataSnapshot.value = {
+    ...patientForm.serverDataSnapshot.value,
+    theme: survey?.surveyPreference.theme ?? defaultTheme,
+    sendAutomatedFeedback:
+      survey?.surveyPreference.sendAutomatedFeedback ??
+      defaultSendAutomatedFeedback,
+    recallFrequency:
+      survey?.surveyPreference.reminderCondition ?? defaultRecallFrequency,
+  }
+}
+
+onMounted(() => {
+  initWithSurveyPreferences()
+})
+
 watch(
   () => surveyQuery.data.value,
-  survey => {
-    theme.value = survey?.surveyPreference.theme ?? defaultTheme
-    sendAutomatedFeedback.value =
-      survey?.surveyPreference.sendAutomatedFeedback ??
-      defaultSendAutomatedFeedback
-    recallFrequency.value =
-      survey?.surveyPreference.reminderCondition ?? defaultRecallFrequency
+  () => {
+    initWithSurveyPreferences()
   },
 )
 </script>

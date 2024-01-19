@@ -1,9 +1,11 @@
 // useForm.ts
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ToastPluginApi } from 'vue-toast-notification'
 import type { ZodType } from 'zod'
 import { DEFAULT_ERROR_MESSAGE } from '../constants'
 import { MutateFunction } from '@tanstack/vue-query'
+import cloneDeep from 'lodash.clonedeep'
+import isEqual from 'lodash.isequal'
 
 /**
  * Custom hook for handling form logic.
@@ -39,7 +41,12 @@ export const useForm = <TInitial, TSubmit>({
   }
 
   const formValues = ref<TInitial>(initialValues)
-  const isDirty = ref(false)
+  const isServerDataLoaded = ref(false)
+  const serverDataSnapshot = ref<TInitial>(cloneDeep(initialValues))
+
+  const isDirty = computed(
+    () => !isEqual(formValues.value, serverDataSnapshot.value),
+  )
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
     return schema.safeParse(validationData).success
@@ -51,7 +58,6 @@ export const useForm = <TInitial, TSubmit>({
   ) => {
     console.log({ property, value })
     formValues.value[property] = value
-    isDirty.value = true
   }
 
   const handleSubmit: SubmitHandler = async (
@@ -74,7 +80,6 @@ export const useForm = <TInitial, TSubmit>({
     mutationFn(submissionData, {
       onSuccess: () => {
         onSuccess?.()
-        isDirty.value = false
       },
       onError: () => {
         $toast?.error(DEFAULT_ERROR_MESSAGE)
@@ -83,11 +88,31 @@ export const useForm = <TInitial, TSubmit>({
     })
   }
 
+  watch(
+    isServerDataLoaded,
+    newLoad => {
+      console.log({ newLoad })
+      console.log({ serverDataSnapshot, formValues })
+      serverDataSnapshot.value = cloneDeep(formValues.value)
+    },
+    { immediate: true },
+  )
+
+  watch(
+    serverDataSnapshot,
+    newSnapshot => {
+      console.log({ newSnapshot })
+    },
+    { immediate: true },
+  )
+
   return {
     formValues,
     isFormValid,
     handleFormUpdate,
     handleSubmit,
     isDirty,
+    isServerDataLoaded,
+    serverDataSnapshot,
   }
 }

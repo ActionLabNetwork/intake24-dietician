@@ -82,8 +82,8 @@
     <div>
       <BaseDialog
         v-model="dialogVisible"
-        :on-confirm="handleDialogConfirm"
-        :on-cancel="handleDialogCancel"
+        :on-confirm="dialog.handleDialogConfirm"
+        :on-cancel="dialog.handleDialogCancel"
       >
         <template v-slot:title> Attention! </template>
         You still have unsaved changes. Are you sure you want to leave the page?
@@ -118,11 +118,13 @@ import { ReminderCondition } from '@intake24-dietician/common/entities-new/prefe
 import {
   PatientUpdateDto,
   PatientUpdateDtoSchema,
+  PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { z } from 'zod'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useLeaveGuard } from '@intake24-dietician/portal/composables/useLeaveGuard'
+import cloneDeep from 'lodash.clonedeep'
 
 // const { t } = useI18n<i18nOptions>()
 
@@ -224,15 +226,13 @@ const dialog = {
   close: () => {
     dialogVisible.value = false
   },
-}
-
-const handleDialogConfirm = () => {
-  leaveGuard.switchOffGuard()
-  router.push(leaveGuard.destinationRoute.value)
-}
-
-const handleDialogCancel = () => {
-  dialog.close()
+  handleDialogConfirm: () => {
+    leaveGuard.switchOffGuard()
+    router.push(leaveGuard.destinationRoute.value)
+  },
+  handleDialogCancel: () => {
+    dialog.close()
+  },
 }
 
 const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
@@ -244,6 +244,69 @@ const leaveGuard = useLeaveGuard(
   computed(() => patientForm.isDirty.value),
 )
 
+const initWithServerData = (
+  newData: PatientWithUserDto,
+  contactDetails: ContactDetailsFormValues,
+  personalDetails: PersonalDetailsFormValues,
+) => ({
+  contactDetailsFormValues: {
+    firstName: updateFormValue(contactDetails.firstName, newData.firstName),
+    middleName: updateFormValue(contactDetails.middleName, newData.middleName),
+    lastName: updateFormValue(contactDetails.lastName, newData.lastName),
+    avatar: updateFormValue(contactDetails.avatar, newData.avatar),
+    mobileNumber: updateFormValue(
+      contactDetails.mobileNumber,
+      newData.mobileNumber,
+    ),
+    email: updateFormValue(contactDetails.email, newData.user.email),
+    address: updateFormValue(contactDetails.address, newData.address),
+  },
+  personalDetailsFormValues: {
+    dateOfBirth: updateFormValue(
+      personalDetails.dateOfBirth,
+      newData.dateOfBirth,
+    ),
+    gender: updateFormValue(personalDetails.gender, newData.gender),
+    weightHistory: updateFormValue(
+      personalDetails.weightHistory,
+      newData.weightHistory,
+    ),
+    height: updateFormValue(personalDetails.height, newData.height),
+    additionalNotes: updateFormValue(
+      personalDetails.additionalNotes,
+      newData.additionalNotes,
+    ),
+    patientGoal: updateFormValue(
+      personalDetails.patientGoal,
+      newData.patientGoal,
+    ),
+  },
+  theme: updateFormValue(
+    patientForm.formValues.value.theme,
+    newData.patientPreference?.theme,
+  ) as Theme,
+  sendAutomatedFeedback: updateFormValue(
+    patientForm.formValues.value.sendAutomatedFeedback,
+    newData.patientPreference?.sendAutomatedFeedback,
+  ),
+  recallFrequency: {
+    reminderEvery: {
+      every: updateFormValue(
+        patientForm.formValues.value.recallFrequency.reminderEvery.every,
+        newData.patientPreference.reminderCondition.reminderEvery.every,
+      ),
+      unit: updateFormValue(
+        patientForm.formValues.value.recallFrequency.reminderEvery.unit,
+        newData.patientPreference.reminderCondition.reminderEvery.unit,
+      ),
+    },
+    reminderEnds: updateFormValue(
+      patientForm.formValues.value.recallFrequency.reminderEnds,
+      newData.patientPreference.reminderCondition.reminderEnds,
+    ),
+  },
+})
+
 watch(
   () => patientQuery.value.data,
   newData => {
@@ -253,67 +316,14 @@ watch(
     const personalDetails =
       patientForm.formValues.value.personalDetailsFormValues
 
-    patientForm.formValues.value = {
-      contactDetailsFormValues: {
-        firstName: updateFormValue(contactDetails.firstName, newData.firstName),
-        middleName: updateFormValue(
-          contactDetails.middleName,
-          newData.middleName,
-        ),
-        lastName: updateFormValue(contactDetails.lastName, newData.lastName),
-        avatar: updateFormValue(contactDetails.avatar, newData.avatar),
-        mobileNumber: updateFormValue(
-          contactDetails.mobileNumber,
-          newData.mobileNumber,
-        ),
-        email: updateFormValue(contactDetails.email, newData.user.email),
-        address: updateFormValue(contactDetails.address, newData.address),
-      },
-      personalDetailsFormValues: {
-        dateOfBirth: updateFormValue(
-          personalDetails.dateOfBirth,
-          newData.dateOfBirth,
-        ),
-        gender: updateFormValue(personalDetails.gender, newData.gender),
-        weightHistory: updateFormValue(
-          personalDetails.weightHistory,
-          newData.weightHistory,
-        ),
-        height: updateFormValue(personalDetails.height, newData.height),
-        additionalNotes: updateFormValue(
-          personalDetails.additionalNotes,
-          newData.additionalNotes,
-        ),
-        patientGoal: updateFormValue(
-          personalDetails.patientGoal,
-          newData.patientGoal,
-        ),
-      },
-      theme: updateFormValue(
-        patientForm.formValues.value.theme,
-        newData.patientPreference?.theme,
-      ) as Theme,
-      sendAutomatedFeedback: updateFormValue(
-        patientForm.formValues.value.sendAutomatedFeedback,
-        newData.patientPreference?.sendAutomatedFeedback,
-      ),
-      recallFrequency: {
-        reminderEvery: {
-          every: updateFormValue(
-            patientForm.formValues.value.recallFrequency.reminderEvery.every,
-            newData.patientPreference.reminderCondition.reminderEvery.every,
-          ),
-          unit: updateFormValue(
-            patientForm.formValues.value.recallFrequency.reminderEvery.unit,
-            newData.patientPreference.reminderCondition.reminderEvery.unit,
-          ),
-        },
-        reminderEnds: updateFormValue(
-          patientForm.formValues.value.recallFrequency.reminderEnds,
-          newData.patientPreference.reminderCondition.reminderEnds,
-        ),
-      },
-    }
+    const updatedFormValues = initWithServerData(
+      newData,
+      contactDetails,
+      personalDetails,
+    )
+
+    patientForm.formValues.value = cloneDeep(updatedFormValues)
+    patientForm.serverDataSnapshot.value = cloneDeep(updatedFormValues)
   },
   { immediate: true },
 )

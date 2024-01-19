@@ -7,7 +7,7 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useAddPatient = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+  const mutation = useMutation({
     mutationFn: (body: {
       surveyId: string
       email: string
@@ -21,12 +21,7 @@ export const useAddPatient = () => {
   })
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
+    ...mutation,
   }
 }
 
