@@ -91,7 +91,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 import BaseInput from '../../form/BaseInput.vue'
 import { capitalize } from 'radash'
 import VueDatePicker from '@vuepic/vue-datepicker'
@@ -108,19 +108,8 @@ const props = withDefaults(
 )
 const emit = defineEmits<{ update: [reminderConditions: ReminderCondition] }>()
 
-const reminderConditions = ref<ReminderCondition>({
-  reminderEvery: {
-    every: 5,
-    unit: 'days',
-  },
-  reminderEnds: {
-    type: 'never',
-  },
-})
-
-onMounted(() => {
-  emit('update', reminderConditions.value)
-})
+// eslint-disable-next-line vue/no-setup-props-destructure
+const reminderConditions = ref<ReminderCondition>(props.defaultState)
 
 const frequencyEndOptions = ReminderEndCondition.options.map(type => ({
   label: capitalize(type.shape.type.value),

@@ -18,7 +18,7 @@ import { MutateFunction } from '@tanstack/vue-query'
  * @param {Function} [options.onError] - The callback function to be called when an error occurs during form submission.
  * @returns {Object} - An object containing the form values, form validation function, form update function, and form submission function.
  */
-export const useForm = <TInitial extends {}, TSubmit>({
+export const useForm = <TInitial, TSubmit>({
   initialValues,
   schema,
   $toast,
@@ -33,7 +33,13 @@ export const useForm = <TInitial extends {}, TSubmit>({
   onSuccess?: () => void
   onError?: (err: string) => void
 }) => {
+  interface SubmitHandler {
+    (validationData: TSubmit): Promise<void>
+    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
+  }
+
   const formValues = ref<TInitial>(initialValues)
+  const isDirty = ref(false)
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
     return schema.safeParse(validationData).success
@@ -43,12 +49,9 @@ export const useForm = <TInitial extends {}, TSubmit>({
     property: TFormValues,
     value: (typeof formValues.value)[TFormValues],
   ) => {
+    console.log({ property, value })
     formValues.value[property] = value
-  }
-
-  interface SubmitHandler {
-    (validationData: TSubmit): Promise<void>
-    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
+    isDirty.value = true
   }
 
   const handleSubmit: SubmitHandler = async (
@@ -71,6 +74,7 @@ export const useForm = <TInitial extends {}, TSubmit>({
     mutationFn(submissionData, {
       onSuccess: () => {
         onSuccess?.()
+        isDirty.value = false
       },
       onError: () => {
         $toast?.error(DEFAULT_ERROR_MESSAGE)
@@ -84,5 +88,6 @@ export const useForm = <TInitial extends {}, TSubmit>({
     isFormValid,
     handleFormUpdate,
     handleSubmit,
+    isDirty,
   }
 }

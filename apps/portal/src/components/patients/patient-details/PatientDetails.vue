@@ -70,11 +70,25 @@
         />
       </div>
       <div>
-        <BaseButton type="submit" @click.prevent="handleSubmit">
+        <BaseButton
+          type="submit"
+          :disabled="!patientForm.isDirty.value"
+          @click.prevent="handleSubmit"
+        >
           Update patient details
         </BaseButton>
       </div>
     </v-form>
+    <div>
+      <BaseDialog
+        v-model="dialogVisible"
+        :on-confirm="handleDialogConfirm"
+        :on-cancel="handleDialogCancel"
+      >
+        <template v-slot:title> Attention! </template>
+        You still have unsaved changes. Are you sure you want to leave the page?
+      </BaseDialog>
+    </div>
   </div>
 </template>
 
@@ -96,7 +110,8 @@ import UpdateRecallFrequency from '@intake24-dietician/portal/components/patient
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useToast } from 'vue-toast-notification'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import BaseDialog from '../../common/BaseDialog.vue'
 import AccountActionMenu from './AccountActionMenu.vue'
 import { useForm } from '@/composables/useForm'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
@@ -107,17 +122,21 @@ import {
 import BaseButton from '@/components/common/BaseButton.vue'
 import { z } from 'zod'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import { useLeaveGuard } from '@intake24-dietician/portal/composables/useLeaveGuard'
 
 // const { t } = useI18n<i18nOptions>()
 
 const patientStore = usePatientStore()
 
+const router = useRouter()
 const route = useRoute()
 const patientQuery = computed(() => patientStore.patientQuery)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
 
+const dialogVisible = ref(false)
+const dialogStatus = ref<'confirmed' | 'cancelled' | 'idle'>('idle')
 const form = ref()
 const formValues = ref({
   contactDetailsFormValues: ref<ContactDetailsFormValues>({
@@ -187,14 +206,6 @@ const aggregatedData = computed(() => {
   }
 })
 
-// const isFormValid = computed(() => {
-//   return patientForm.isFormValid({
-//     id: Number(route.params['patientId']),
-//     email: aggregatedData.value.email ?? '',
-//     patient: aggregatedData.value,
-//   })
-// })
-
 const handleSubmit = async (): Promise<void> => {
   return await patientForm.handleSubmit({
     id: Number(route.params['patientId']),
@@ -207,10 +218,38 @@ const patient = computed(() => {
   return patientQuery.value.data
 })
 
+const handleDialogConfirm = () => {
+  dialogVisible.value = false
+  dialogStatus.value = 'confirmed'
+  leaveGuard.guardOn.value = false
+  router.push(leaveGuard.destinationRoute.value)
+}
+
+const handleDialogCancel = () => {
+  dialogVisible.value = false
+  dialogStatus.value = 'cancelled'
+}
+
 const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
   return newValue ?? formValue
 }
 
+const showDialog = (): Promise<boolean> => {
+  dialogVisible.value = true
+
+  return new Promise(resolve => {
+    resolve(true)
+  })
+}
+
+const leaveGuard = useLeaveGuard(showDialog)
+
+watch(
+  () => patientForm.isDirty.value,
+  isDirty => {
+    leaveGuard.unsavedChanges.value = isDirty
+  },
+)
 watch(
   () => patientQuery.value.data,
   newData => {
