@@ -6,13 +6,14 @@
         <v-row dense align="center">
           <v-col cols="12" md="6">
             <!-- DateOfBirth -->
-            <span class="form-label"> Date of Birth: </span>
+            <span class="form-label input-label">Date of Birth: </span>
             <VueDatePicker
               :model-value="
                 formValues.dateOfBirth === ''
                   ? undefined
                   : moment(formValues.dateOfBirth, 'DD/MM/YYYY').toDate()
               "
+              class="pb-6 pt-2"
               :enable-time-picker="false"
               :max-date="moment(new Date()).subtract(1, 'day').toDate()"
               @update:model-value="
@@ -26,7 +27,7 @@
           </v-col>
           <v-col cols="12" md="6">
             <!-- Gender -->
-            <div class="form-label pl-2 pb-2">Gender:</div>
+            <div class="form-label input-label pb-2">Gender:</div>
             <v-select
               :items="genders"
               variant="solo-filled"
@@ -47,10 +48,10 @@
               name="height"
               :value="formValues.height"
               class="base-input"
-              suffix="kg"
+              suffix="cm"
               @update="newVal => handleFieldUpdate('height', parseInt(newVal))"
             >
-              <span class="input-label"> Height: </span>
+              <span class="input-label form-label"> Height: </span>
             </BaseInput>
           </v-col>
           <v-col cols="12" md="6">
@@ -149,12 +150,6 @@ const handleFieldUpdate = <K extends keyof PersonalDetailsFormValues>(
 }
 </script>
 <style scoped lang="scss">
-.avatar {
-  width: 100%;
-  height: 100%;
-  aspect-ratio: 1/1;
-}
-
 .input-label {
   color: #555555;
 
@@ -163,9 +158,10 @@ const handleFieldUpdate = <K extends keyof PersonalDetailsFormValues>(
   }
 }
 
+// Datepicker styles
 .dp__theme_light {
   --dp-background-color: rgb(246, 246, 246);
   --dp-border-color: #ffffff00;
-  --dp-input-padding: 14px 30px;
+  --dp-input-padding: 15px 30px;
 }
 </style>

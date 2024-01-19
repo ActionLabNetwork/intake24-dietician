@@ -4,11 +4,11 @@
     name="weight"
     :value="props.modelValue.at(-1)?.weight ?? 0"
     class="base-input"
-    suffix="cm"
+    suffix="kg"
     @update="(newVal: string) => onWeightEdit(parseInt(newVal))"
   >
-    <v-row justify="space-between">
-      <span class="input-label"> Weight:</span>
+    <v-row justify="space-between" class="pa-3">
+      <span class="input-label">Weight:</span>
       <v-btn variant="plain" size="x-small" @click="isDialogOpen = true">
         History
       </v-btn>
@@ -103,3 +103,13 @@ const tableHeaders = [
 
 const previousEntries = computed(() => props.modelValue.slice(0, -1))
 </script>
+
+<style scoped lang="scss">
+.input-label {
+  color: #555555;
+
+  &.suffix {
+    color: #ee672d;
+  }
+}
+</style>

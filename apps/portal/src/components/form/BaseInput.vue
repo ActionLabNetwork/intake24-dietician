@@ -3,22 +3,38 @@
     <div :class="['form-label pb-2', labelClass]">
       <slot />
     </div>
-    <div
-      :style="bordered ? 'background: white' : ''"
-      :class="{ 'pa-3 my-2 d-flex rounded-lg elevation-1': bordered }"
-    >
+    <div v-if="type === 'tel'" class="">
       <v-phone-input
-        v-if="type === 'tel'"
         :model-value="value?.toString()"
         label=""
         country-label=""
         country-icon-mode="svg"
         density="compact"
+        :invalid-message="`Invalid mobile number for ${country}`"
         guess-country
+        default-country="AU"
+        :phone-props="{
+          flat: true,
+          variant: 'solo-filled',
+          density: 'comfortable',
+        }"
+        :country-props="{
+          flat: true,
+          variant: 'solo-filled',
+          density: 'comfortable',
+        }"
         @update:model-value="(value: string) => emit('update', value)"
+        @update:country="country = $event"
       />
+    </div>
+    <div
+      v-else
+      :style="bordered ? 'background: white' : ''"
+      :class="{
+        'pa-3 my-3 d-flex rounded-lg elevation-1': bordered,
+      }"
+    >
       <v-text-field
-        v-else
         flat
         :required="required ?? false"
         :type="type ?? 'text'"
@@ -48,6 +64,7 @@
 import { VPhoneInput } from 'v-phone-input'
 import 'v-phone-input/dist/v-phone-input.css'
 import 'flag-icons/css/flag-icons.min.css'
+import { ref } from 'vue'
 
 defineProps<{
   type?: HTMLInputElement['type']
@@ -74,6 +91,8 @@ const emit = defineEmits<{
 const updateValue = (value: string) => {
   emit('update', value)
 }
+
+const country = ref('AU')
 </script>
 
 <style scoped>
