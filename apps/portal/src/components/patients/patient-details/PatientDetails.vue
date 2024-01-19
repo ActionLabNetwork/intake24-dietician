@@ -136,7 +136,6 @@ const updatePatientMutation = useUpdatePatient()
 const $toast = useToast()
 
 const dialogVisible = ref(false)
-const dialogStatus = ref<'confirmed' | 'cancelled' | 'idle'>('idle')
 const form = ref()
 const formValues = ref({
   contactDetailsFormValues: ref<ContactDetailsFormValues>({
@@ -218,38 +217,33 @@ const patient = computed(() => {
   return patientQuery.value.data
 })
 
+const dialog = {
+  show: () => {
+    dialogVisible.value = true
+  },
+  close: () => {
+    dialogVisible.value = false
+  },
+}
+
 const handleDialogConfirm = () => {
-  dialogVisible.value = false
-  dialogStatus.value = 'confirmed'
-  leaveGuard.guardOn.value = false
+  leaveGuard.switchOffGuard()
   router.push(leaveGuard.destinationRoute.value)
 }
 
 const handleDialogCancel = () => {
-  dialogVisible.value = false
-  dialogStatus.value = 'cancelled'
+  dialog.close()
 }
 
 const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
   return newValue ?? formValue
 }
 
-const showDialog = (): Promise<boolean> => {
-  dialogVisible.value = true
-
-  return new Promise(resolve => {
-    resolve(true)
-  })
-}
-
-const leaveGuard = useLeaveGuard(showDialog)
-
-watch(
-  () => patientForm.isDirty.value,
-  isDirty => {
-    leaveGuard.unsavedChanges.value = isDirty
-  },
+const leaveGuard = useLeaveGuard(
+  dialog.show,
+  computed(() => patientForm.isDirty.value),
 )
+
 watch(
   () => patientQuery.value.data,
   newData => {

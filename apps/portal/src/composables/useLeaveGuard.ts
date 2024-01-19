@@ -1,8 +1,11 @@
-import { ref } from 'vue'
+import { ComputedRef, ref } from 'vue'
 import { type RouteLocationRaw, onBeforeRouteLeave } from 'vue-router'
 
-export function useLeaveGuard(showDialog: () => Promise<boolean>) {
-  const unsavedChanges = ref(false)
+export function useLeaveGuard(
+  showDialog: () => void,
+  unsavedChanges: ComputedRef<boolean>,
+) {
+  // const unsavedChanges = ref(false)
   const guardOn = ref(true)
   const destinationRoute = ref<RouteLocationRaw>({ name: 'My Profile' })
 
@@ -21,9 +24,14 @@ export function useLeaveGuard(showDialog: () => Promise<boolean>) {
     }
   })
 
+  function switchOffGuard() {
+    guardOn.value = false
+  }
+
   return {
     unsavedChanges,
     guardOn,
     destinationRoute,
+    switchOffGuard,
   }
 }
