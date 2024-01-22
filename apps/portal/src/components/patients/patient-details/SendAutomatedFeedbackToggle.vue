@@ -1,13 +1,10 @@
 <template>
   <div>
     <div v-if="!hideLabel">
-      <p class="font-weight-medium">
-        Send patient automated feedback after every recall
-      </p>
+      <p class="font-weight-medium">Automated feedbacks</p>
       <p class="subheading w-50">
-        Every time a patient completes their recall, an automated feedback based
-        on their recall data and pre-defined feedbacks will be shared with them
-        on their email address
+        Select this setting if you want your patient to receive automated
+        feedback every time they complete a recall.
       </p>
     </div>
 
@@ -16,7 +13,7 @@
       width="100%"
       flat
     >
-      <div>Send automated feedback?</div>
+      <div>Send automated feedback to the patient?</div>
       <div class="ml-auto">
         <v-switch
           v-model="sendAutomatedFeedback"

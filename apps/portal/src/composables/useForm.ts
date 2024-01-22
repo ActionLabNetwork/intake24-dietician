@@ -49,14 +49,19 @@ export const useForm = <TInitial, TSubmit>({
   )
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
-    return schema.safeParse(validationData).success
+    const result = schema.safeParse(validationData)
+    if (!result.success) {
+      $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      return
+    }
+    return result.success
   }
 
   const handleFormUpdate = <TFormValues extends keyof typeof formValues.value>(
     property: TFormValues,
     value: (typeof formValues.value)[TFormValues],
   ) => {
-    console.log({ property, value })
     formValues.value[property] = value
   }
 
@@ -90,18 +95,8 @@ export const useForm = <TInitial, TSubmit>({
 
   watch(
     isServerDataLoaded,
-    newLoad => {
-      console.log({ newLoad })
-      console.log({ serverDataSnapshot, formValues })
+    () => {
       serverDataSnapshot.value = cloneDeep(formValues.value)
-    },
-    { immediate: true },
-  )
-
-  watch(
-    serverDataSnapshot,
-    newSnapshot => {
-      console.log({ newSnapshot })
     },
     { immediate: true },
   )

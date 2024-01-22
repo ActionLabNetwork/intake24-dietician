@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="dialog" width="500px">
     <v-card>
-      <v-card-title>
+      <v-card-title class="pl-5 pt-5">
         <slot name="title"></slot>
       </v-card-title>
       <v-card-text>

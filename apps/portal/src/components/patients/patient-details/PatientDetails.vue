@@ -79,16 +79,7 @@
         </BaseButton>
       </div>
     </v-form>
-    <div>
-      <BaseDialog
-        v-model="dialogVisible"
-        :on-confirm="dialog.handleDialogConfirm"
-        :on-cancel="dialog.handleDialogCancel"
-      >
-        <template v-slot:title> Attention! </template>
-        You still have unsaved changes. Are you sure you want to leave the page?
-      </BaseDialog>
-    </div>
+    <DialogRouteLeave :unsavedChanges="patientForm.isDirty.value" />
   </div>
 </template>
 
@@ -110,8 +101,7 @@ import UpdateRecallFrequency from '@intake24-dietician/portal/components/patient
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useToast } from 'vue-toast-notification'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
-import { useRoute, useRouter } from 'vue-router'
-import BaseDialog from '../../common/BaseDialog.vue'
+import { useRoute } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
 import { useForm } from '@/composables/useForm'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
@@ -123,21 +113,19 @@ import {
 import BaseButton from '@/components/common/BaseButton.vue'
 import { z } from 'zod'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
-import { useLeaveGuard } from '@intake24-dietician/portal/composables/useLeaveGuard'
 import cloneDeep from 'lodash.clonedeep'
+import DialogRouteLeave from '../../common/DialogRouteLeave.vue'
 
 // const { t } = useI18n<i18nOptions>()
 
 const patientStore = usePatientStore()
 
-const router = useRouter()
 const route = useRoute()
 const patientQuery = computed(() => patientStore.patientQuery)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
 
-const dialogVisible = ref(false)
 const form = ref()
 const formValues = ref({
   contactDetailsFormValues: ref<ContactDetailsFormValues>({
@@ -219,30 +207,9 @@ const patient = computed(() => {
   return patientQuery.value.data
 })
 
-const dialog = {
-  show: () => {
-    dialogVisible.value = true
-  },
-  close: () => {
-    dialogVisible.value = false
-  },
-  handleDialogConfirm: () => {
-    leaveGuard.switchOffGuard()
-    router.push(leaveGuard.destinationRoute.value)
-  },
-  handleDialogCancel: () => {
-    dialog.close()
-  },
-}
-
 const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
   return newValue ?? formValue
 }
-
-const leaveGuard = useLeaveGuard(
-  dialog.show,
-  computed(() => patientForm.isDirty.value),
-)
 
 const initWithServerData = (
   newData: PatientWithUserDto,
