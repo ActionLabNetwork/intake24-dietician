@@ -1,9 +1,8 @@
 <template>
   <BaseDialog v-model="dialog" :on-confirm="props.onConfirm">
-    <template #title> Editing patient details </template>
+    <template #title> Editing feedback draft </template>
     <template #default>
-      Are you sure you want to edit patient details of
-      <span class="font-weight-medium"> {{ fullName }}? </span>
+      Are you sure you want to edit the feedback draft?
     </template>
   </BaseDialog>
 </template>
@@ -13,7 +12,6 @@ import BaseDialog from '@intake24-dietician/portal/components/common/BaseDialog.
 import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps<{
-  fullName: string
   modelValue: boolean
   onConfirm: Function
 }>()

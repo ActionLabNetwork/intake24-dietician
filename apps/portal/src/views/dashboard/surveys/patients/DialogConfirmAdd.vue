@@ -1,9 +1,5 @@
 <template>
-  <BaseDialog
-    v-model="dialog"
-    title="Confirm patient details"
-    :on-confirm="props.onConfirm"
-  >
+  <BaseDialog v-model="dialog" :on-confirm="props.onConfirm">
     <template #title>
       Adding a new patient to
       {{ clinicName }}

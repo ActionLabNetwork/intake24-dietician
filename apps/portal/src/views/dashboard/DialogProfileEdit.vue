@@ -1,9 +1,5 @@
 <template>
-  <BaseDialog
-    v-model="dialog"
-    title="Confirm patient details"
-    :on-confirm="props.onConfirm"
-  >
+  <BaseDialog v-model="dialog" :on-confirm="props.onConfirm">
     <template #title> Updating profile details </template>
     <template #default>
       Are you sure you want to update your profile details?

@@ -61,7 +61,9 @@
           :disabled="!!editingDraft && areDraftsEqual"
           @click="
             () => {
-              !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
+              !editingDraft
+                ? handleSaveDraftClick()
+                : handleEditDraftClick().showDialog()
             }
           "
         >
@@ -85,8 +87,14 @@
       </div>
     </div>
   </v-card>
+  <DialogRouteLeave :unsavedChanges="!areDraftsEqual" />
+  <DialogFeedbackEdit
+    v-model="confirmDialog"
+    :on-confirm="handleEditDraftClick().submit"
+  />
 </template>
 <script setup lang="ts">
+import DialogRouteLeave from '../common/DialogRouteLeave.vue'
 import { computed, onMounted, ref } from 'vue'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -108,6 +116,7 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { storeToRefs } from 'pinia'
+import DialogFeedbackEdit from './DialogFeedbackEdit.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -146,6 +155,7 @@ const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
 
 const dateRange = ref()
+const confirmDialog = ref(false)
 
 const handleDaterangeUpdate = (
   daterange: [Date | undefined, Date | undefined],
@@ -184,18 +194,25 @@ const handleSaveDraftClick = () => {
 }
 
 const handleEditDraftClick = () => {
-  editDraftMutation.mutate(
-    {
-      draftId: Number(route.params['feedbackId'] as string),
-      draft: props.draft,
-    },
-    {
-      onSuccess: () => {
-        $toast.success('Draft updated')
-        emit('update:draft')
+  const showDialog = () => {
+    confirmDialog.value = true
+  }
+  const submit = () => {
+    editDraftMutation.mutate(
+      {
+        draftId: Number(route.params['feedbackId'] as string),
+        draft: props.draft,
       },
-    },
-  )
+      {
+        onSuccess: () => {
+          $toast.success('Draft updated')
+          emit('update:draft')
+        },
+      },
+    )
+  }
+
+  return { showDialog, submit }
 }
 
 const handleShareDraftClick = () => {
