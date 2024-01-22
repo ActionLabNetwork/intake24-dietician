@@ -4,19 +4,9 @@
     title="Confirm patient details"
     :on-confirm="props.onConfirm"
   >
-    <template #title>
-      Adding a new patient to
-      {{ clinicName }}
-    </template>
+    <template #title> Updating profile details </template>
     <template #default>
-      Are you sure you want to add
-      <span class="font-weight-medium">
-        {{ fullName }}
-      </span>
-      to
-      <span class="font-weight-medium">
-        {{ clinicName }}
-      </span>
+      Are you sure you want to update your profile details?
     </template>
   </BaseDialog>
 </template>
@@ -26,8 +16,6 @@ import BaseDialog from '@intake24-dietician/portal/components/common/BaseDialog.
 import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps<{
-  clinicName: string
-  fullName: string
   modelValue: boolean
   onConfirm: Function
 }>()
