@@ -37,7 +37,6 @@
         <ContactDetails
           :default-state="patientForm.formValues.value.contactDetailsFormValues"
           mode="Edit"
-          :handle-submit="handleSubmit"
           @update="
             patientForm.handleFormUpdate('contactDetailsFormValues', $event)
           "
@@ -73,18 +72,26 @@
         <BaseButton
           type="submit"
           :disabled="!patientForm.isDirty.value"
-          @click.prevent="handleSubmit"
+          @click.prevent="handleSubmit().showConfirmDialog"
         >
           Update patient details
         </BaseButton>
       </div>
     </v-form>
-    <DialogRouteLeave :unsavedChanges="patientForm.isDirty.value" />
+    <DialogPatientEdit
+      v-model="confirmDialog"
+      :full-name="fullName"
+      :on-confirm="handleSubmit().submit"
+    />
+    <DialogRouteLeave
+      :unsavedChanges="patientForm.isDirty.value && !isSubmitting"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
+import DialogPatientEdit from './DialogPatientEdit.vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -101,7 +108,7 @@ import UpdateRecallFrequency from '@intake24-dietician/portal/components/patient
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useToast } from 'vue-toast-notification'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
 import { useForm } from '@/composables/useForm'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
@@ -120,12 +127,15 @@ import DialogRouteLeave from '../../common/DialogRouteLeave.vue'
 
 const patientStore = usePatientStore()
 
+const router = useRouter()
 const route = useRoute()
 const patientQuery = computed(() => patientStore.patientQuery)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
 
+const isSubmitting = ref(false)
+const confirmDialog = ref(false)
 const form = ref()
 const formValues = ref({
   contactDetailsFormValues: ref<ContactDetailsFormValues>({
@@ -176,7 +186,19 @@ const patientForm = useForm<
   mutationFn: updatePatientMutation.mutateAsync,
   onSuccess: () => {
     $toast.success('Patient details updated successfully')
+    router.push({
+      name: 'Survey Patient Feedback Records',
+      params: {
+        surveyId: route.params['surveyId'],
+        patientId: route.params['patientId'],
+      },
+    })
   },
+})
+
+const fullName = computed(() => {
+  const contactDetails = patientForm.formValues.value.contactDetailsFormValues
+  return `${contactDetails.firstName} ${contactDetails.lastName}`
 })
 
 const aggregatedData = computed(() => {
@@ -195,12 +217,25 @@ const aggregatedData = computed(() => {
   }
 })
 
-const handleSubmit = async (): Promise<void> => {
-  return await patientForm.handleSubmit({
+const handleSubmit = () => {
+  const submitValue = {
     id: Number(route.params['patientId']),
     email: aggregatedData.value.email ?? '',
     patient: aggregatedData.value,
-  })
+  }
+
+  const showConfirmDialog = () => {
+    const isValid = patientForm.isFormValid(submitValue)
+
+    if (!isValid) return
+    confirmDialog.value = true
+  }
+  const submit = async () => {
+    isSubmitting.value = true
+    await patientForm.handleSubmit(submitValue)
+  }
+
+  return { showConfirmDialog, submit }
 }
 
 const patient = computed(() => {

@@ -27,6 +27,8 @@ export const useAddPatient = () => {
 
 export const useUpdatePatient = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (body: {
@@ -35,6 +37,11 @@ export const useUpdatePatient = () => {
         patient: Partial<PatientUpdateDto>
       }) => {
         return authenticatedClient.dieticianPatient.updatePatient.mutate(body)
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['patients', 'userId'],
+        })
       },
     })
 

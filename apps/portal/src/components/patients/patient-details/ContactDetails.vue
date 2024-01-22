@@ -156,7 +156,6 @@ export type ContactDetailsFormValues = Pick<
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
-  handleSubmit?: () => Promise<void>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
