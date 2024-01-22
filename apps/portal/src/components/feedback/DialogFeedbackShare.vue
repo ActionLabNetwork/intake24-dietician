@@ -1,8 +1,10 @@
 <template>
   <BaseDialog v-model="dialog" :on-confirm="props.onConfirm">
-    <template #title> Saving feedback as draft </template>
+    <template #title> Saving feedback draft </template>
     <template #default>
-      Do you want to save the feedback document as draft?
+      Are you sure you want to share the feedback with
+      <span class="font-weight-medium">{{ fullName }}</span
+      >?
     </template>
   </BaseDialog>
 </template>
@@ -13,6 +15,7 @@ import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps<{
   modelValue: boolean
+  fullName: string
   onConfirm: Function
 }>()
 const emits = defineEmits<{

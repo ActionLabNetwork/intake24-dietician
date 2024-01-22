@@ -74,7 +74,7 @@
           :loading="shareDraftMutation.isPending.value"
           color="primary"
           flat
-          @click="handleShareDraftClick"
+          @click="showDialog"
         >
           Share feedback
         </v-btn>
@@ -92,8 +92,14 @@
     v-model="confirmDialog"
     :on-confirm="handleSaveDraftClick"
   />
+  <DialogFeedbackShare
+    v-model="confirmDialog"
+    :full-name="patientStore.fullName"
+    :on-confirm="handleShareDraftClick"
+  />
 </template>
 <script setup lang="ts">
+import DialogFeedbackShare from './DialogFeedbackShare.vue'
 import {
   DraftCreateDto,
   FeedbackType,
@@ -217,6 +223,7 @@ const handleEditDraftClick = () => {
 }
 
 const handleShareDraftClick = () => {
+  isSubmitting.value = true
   shareDraftMutation.mutate(
     {
       patientId: Number(patient.value?.id),
