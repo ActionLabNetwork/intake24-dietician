@@ -7,7 +7,7 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useAddPatient = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
+  const mutation = useMutation({
     mutationFn: (body: {
       surveyId: string
       email: string
@@ -21,17 +21,14 @@ export const useAddPatient = () => {
   })
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
-    mutate,
+    ...mutation,
   }
 }
 
 export const useUpdatePatient = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
       mutationFn: (body: {
@@ -40,6 +37,11 @@ export const useUpdatePatient = () => {
         patient: Partial<PatientUpdateDto>
       }) => {
         return authenticatedClient.dieticianPatient.updatePatient.mutate(body)
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ['patients', 'userId'],
+        })
       },
     })
 

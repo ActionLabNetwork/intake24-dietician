@@ -1,9 +1,11 @@
 // useForm.ts
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { ToastPluginApi } from 'vue-toast-notification'
 import type { ZodType } from 'zod'
 import { DEFAULT_ERROR_MESSAGE } from '../constants'
 import { MutateFunction } from '@tanstack/vue-query'
+import cloneDeep from 'lodash.clonedeep'
+import isEqual from 'lodash.isequal'
 
 /**
  * Custom hook for handling form logic.
@@ -18,7 +20,7 @@ import { MutateFunction } from '@tanstack/vue-query'
  * @param {Function} [options.onError] - The callback function to be called when an error occurs during form submission.
  * @returns {Object} - An object containing the form values, form validation function, form update function, and form submission function.
  */
-export const useForm = <TInitial extends {}, TSubmit>({
+export const useForm = <TInitial, TSubmit>({
   initialValues,
   schema,
   $toast,
@@ -33,10 +35,27 @@ export const useForm = <TInitial extends {}, TSubmit>({
   onSuccess?: () => void
   onError?: (err: string) => void
 }) => {
+  interface SubmitHandler {
+    (validationData: TSubmit): Promise<void>
+    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
+  }
+
   const formValues = ref<TInitial>(initialValues)
+  const isServerDataLoaded = ref(false)
+  const serverDataSnapshot = ref<TInitial>(cloneDeep(initialValues))
+
+  const isDirty = computed(
+    () => !isEqual(formValues.value, serverDataSnapshot.value),
+  )
 
   const isFormValid = (validationData: Partial<TSubmit>) => {
-    return schema.safeParse(validationData).success
+    const result = schema.safeParse(validationData)
+    if (!result.success) {
+      $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
+      return
+    }
+    return result.success
   }
 
   const handleFormUpdate = <TFormValues extends keyof typeof formValues.value>(
@@ -44,11 +63,6 @@ export const useForm = <TInitial extends {}, TSubmit>({
     value: (typeof formValues.value)[TFormValues],
   ) => {
     formValues.value[property] = value
-  }
-
-  interface SubmitHandler {
-    (validationData: TSubmit): Promise<void>
-    (validationData: Partial<TSubmit>, submissionData: TSubmit): Promise<void>
   }
 
   const handleSubmit: SubmitHandler = async (
@@ -79,10 +93,21 @@ export const useForm = <TInitial extends {}, TSubmit>({
     })
   }
 
+  watch(
+    isServerDataLoaded,
+    () => {
+      serverDataSnapshot.value = cloneDeep(formValues.value)
+    },
+    { immediate: true },
+  )
+
   return {
     formValues,
     isFormValid,
     handleFormUpdate,
     handleSubmit,
+    isDirty,
+    isServerDataLoaded,
+    serverDataSnapshot,
   }
 }

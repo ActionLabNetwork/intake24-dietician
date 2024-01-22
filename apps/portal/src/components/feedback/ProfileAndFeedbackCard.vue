@@ -59,11 +59,7 @@
             editDraftMutation.isPending.value
           "
           :disabled="!!editingDraft && areDraftsEqual"
-          @click="
-            () => {
-              !editingDraft ? handleSaveDraftClick() : handleEditDraftClick()
-            }
-          "
+          @click="showDialog"
         >
           {{
             props.editingDraft
@@ -78,36 +74,56 @@
           :loading="shareDraftMutation.isPending.value"
           color="primary"
           flat
-          @click="handleShareDraftClick"
+          @click="showDialog"
         >
           Share feedback
         </v-btn>
       </div>
     </div>
   </v-card>
+  <DialogRouteLeave :unsavedChanges="!areDraftsEqual && !isSubmitting" />
+  <DialogFeedbackEdit
+    v-if="!!editingDraft"
+    v-model="confirmDialog"
+    :on-confirm="handleEditDraftClick"
+  />
+  <DialogFeedbackSave
+    v-if="!editingDraft"
+    v-model="confirmDialog"
+    :on-confirm="handleSaveDraftClick"
+  />
+  <DialogFeedbackShare
+    v-model="confirmDialog"
+    :full-name="patientStore.fullName"
+    :on-confirm="handleShareDraftClick"
+  />
 </template>
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
+import DialogFeedbackShare from './DialogFeedbackShare.vue'
+import {
+  DraftCreateDto,
+  FeedbackType,
+} from '@intake24-dietician/common/entities-new/feedback.dto'
 import {
   useEditDraft,
   useSaveDraft,
   useShareDraft,
 } from '@intake24-dietician/portal/mutations/useFeedback'
-import {
-  DraftCreateDto,
-  FeedbackType,
-} from '@intake24-dietician/common/entities-new/feedback.dto'
-import { useRouter, useRoute } from 'vue-router'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
 import isEqual from 'lodash.isequal'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import DialogRouteLeave from '../common/DialogRouteLeave.vue'
 
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
+import { storeToRefs } from 'pinia'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
-import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { storeToRefs } from 'pinia'
+import DialogFeedbackEdit from './DialogFeedbackEdit.vue'
+import DialogFeedbackSave from './DialogFeedbackSave.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -145,7 +161,9 @@ const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
 
+const isSubmitting = ref(false)
 const dateRange = ref()
+const confirmDialog = ref(false)
 
 const handleDaterangeUpdate = (
   daterange: [Date | undefined, Date | undefined],
@@ -160,9 +178,15 @@ const areDraftsEqual = computed(() => {
 
 onMounted(() => {
   dateRange.value = recallStore.selectedRecallDateRange
+  isSubmitting.value = false
 })
 
+const showDialog = () => {
+  confirmDialog.value = true
+}
+
 const handleSaveDraftClick = () => {
+  isSubmitting.value = true
   saveDraftMutation.mutate(
     {
       patientId: Number(patient.value?.id),
@@ -199,6 +223,7 @@ const handleEditDraftClick = () => {
 }
 
 const handleShareDraftClick = () => {
+  isSubmitting.value = true
   shareDraftMutation.mutate(
     {
       patientId: Number(patient.value?.id),

@@ -6,6 +6,7 @@
   </v-main>
   <v-main v-else class="wrapper">
     <v-container>
+      <BackButton class="mb-5" />
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
       >
@@ -22,7 +23,7 @@
             class="mt-3 mt-sm-0"
             :loading="updateProfileMutation.isPending.value"
             :disabled="!hasFormChanged"
-            @click="handleSubmit"
+            @click="handleSubmit().showConfirmDialog"
           >
             {{ t('profile.cta') }}
           </v-btn>
@@ -61,11 +62,18 @@
           </v-btn>
         </div>
       </v-form>
+      <DialogRouteLeave :unsavedChanges="hasFormChanged" />
+      <DialogProfileEdit
+        v-model="confirmDialog"
+        :on-confirm="handleSubmit().submit"
+      />
     </v-container>
   </v-main>
 </template>
 
 <script lang="ts" setup>
+import DialogRouteLeave from '@intake24-dietician/portal/components/common/DialogRouteLeave.vue'
+import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
@@ -81,6 +89,7 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import isEqual from 'lodash.isequal'
 import { computed } from 'vue'
 import { VForm } from 'vuetify/lib/components/index.mjs'
+import DialogProfileEdit from './DialogProfileEdit.vue'
 
 onMounted(async () => {
   if (!authStore.profile) {
@@ -112,10 +121,15 @@ const savedFormData = computed(() => {
   return { ...rest, email: user.email }
 })
 
+const confirmDialog = ref(false)
 const currentFormData = ref<typeof savedFormData.value>(undefined)
-watch(savedFormData, () => {
-  currentFormData.value = savedFormData.value
-})
+watch(
+  savedFormData,
+  () => {
+    currentFormData.value = savedFormData.value
+  },
+  { immediate: true },
+)
 
 const hasFormChanged = computed(() => {
   return !isEqual(savedFormData.value, currentFormData.value)
@@ -128,17 +142,43 @@ const handleFormValueUpdate = (
   currentFormData.value = { ...currentFormData.value, ...newValues }
 }
 
-const handleSubmit = async () => {
-  if (!hasFormChanged.value || !currentFormData.value) return
-  try {
-    await updateProfileMutation.mutateAsync({
-      emailAddress: currentFormData.value.email,
-      dieticianProfile: currentFormData.value,
-    })
-    $toast.success('Profile updated successfully')
-  } catch {
-    $toast.error('Failed to update dietician profile')
+// const handleSubmit = async () => {
+//   if (!hasFormChanged.value || !currentFormData.value) return
+//   try {
+//     await updateProfileMutation.mutateAsync({
+//       emailAddress: currentFormData.value.email,
+//       dieticianProfile: currentFormData.value,
+//     })
+//     $toast.success('Profile updated successfully')
+//   } catch {
+//     $toast.error('Failed to update dietician profile')
+//   }
+// }
+
+const handleSubmit = () => {
+  const showConfirmDialog = () => {
+    confirmDialog.value = true
   }
+  const submit = async () => {
+    if (!hasFormChanged.value || !currentFormData.value) return
+
+    await updateProfileMutation.mutateAsync(
+      {
+        emailAddress: currentFormData.value.email,
+        dieticianProfile: currentFormData.value,
+      },
+      {
+        onSuccess: () => {
+          $toast.success('Profile updated successfully')
+        },
+        onError: () => {
+          $toast.error('Failed to update dietician profile')
+        },
+      },
+    )
+  }
+
+  return { showConfirmDialog, submit }
 }
 
 // Refs

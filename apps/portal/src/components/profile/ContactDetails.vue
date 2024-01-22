@@ -173,7 +173,6 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
         validateWithZod(DieticianUpdateDto.shape.mobileNumber, value),
     ],
     handleUpdate: val => {
-      console.log('updating phone number', val)
       handleFieldUpdate('mobileNumber', val || null)
     },
     layout: { cols: 12, md: 4 },

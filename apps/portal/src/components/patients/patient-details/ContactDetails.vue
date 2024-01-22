@@ -156,7 +156,6 @@ export type ContactDetailsFormValues = Pick<
 
 const props = defineProps<{
   defaultState: ContactDetailsFormValues
-  handleSubmit?: () => Promise<void>
   mode: 'Add' | 'Edit'
 }>()
 const emit = defineEmits<{
@@ -226,8 +225,7 @@ const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
       key: 'mobileNumber',
       autocomplete: 'tel',
       label: t('profile.form.contactDetails.mobileNumber.label'),
-      labelSuffix: t('profile.form.contactDetails.mobileNumber.labelSuffix'),
-      required: true,
+      required: false,
       type: 'input',
       inputType: 'tel',
       rules: [

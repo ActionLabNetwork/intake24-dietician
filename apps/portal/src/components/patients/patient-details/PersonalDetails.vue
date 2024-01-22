@@ -47,7 +47,6 @@
               type="number"
               name="height"
               :value="formValues.height"
-              class="base-input"
               suffix="cm"
               @update="newVal => handleFieldUpdate('height', parseInt(newVal))"
             >
@@ -64,7 +63,7 @@
         </v-row>
         <v-divider class="my-3"></v-divider>
         <div>
-          <div class="form-label pl-2 pb-2">Additional notes:</div>
+          <div class="form-label input-label pb-2">Additional notes:</div>
           <v-textarea
             v-model="formValues.additionalNotes"
             flat
@@ -151,6 +150,8 @@ const handleFieldUpdate = <K extends keyof PersonalDetailsFormValues>(
 </script>
 <style scoped lang="scss">
 .input-label {
+  font-size: 0.875rem;
+  font-weight: 500;
   color: #555555;
 
   &.suffix {

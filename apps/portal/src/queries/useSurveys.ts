@@ -27,7 +27,7 @@ export const useSurveyById = (id: string) => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
 
-  const { data, isPending, isError, error, isSuccess } = useQuery({
+  const query = useQuery({
     queryKey: ['surveys', id],
     queryFn: async () => {
       return authenticatedClient.dieticianSurvey.getSurveyById.query({
@@ -42,11 +42,7 @@ export const useSurveyById = (id: string) => {
   }
 
   return {
-    data,
-    isPending,
-    isError,
-    error,
-    isSuccess,
+    ...query,
     invalidateSurveyByIdQuery,
   }
 }

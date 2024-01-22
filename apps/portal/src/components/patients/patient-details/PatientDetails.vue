@@ -37,7 +37,6 @@
         <ContactDetails
           :default-state="patientForm.formValues.value.contactDetailsFormValues"
           mode="Edit"
-          :handle-submit="handleSubmit"
           @update="
             patientForm.handleFormUpdate('contactDetailsFormValues', $event)
           "
@@ -70,16 +69,29 @@
         />
       </div>
       <div>
-        <BaseButton type="submit" @click.prevent="handleSubmit">
+        <BaseButton
+          type="submit"
+          :disabled="!patientForm.isDirty.value"
+          @click.prevent="handleSubmit().showConfirmDialog"
+        >
           Update patient details
         </BaseButton>
       </div>
     </v-form>
+    <DialogPatientEdit
+      v-model="confirmDialog"
+      :full-name="fullName"
+      :on-confirm="handleSubmit().submit"
+    />
+    <DialogRouteLeave
+      :unsavedChanges="patientForm.isDirty.value && !isSubmitting"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, ref, watch } from 'vue'
+import DialogPatientEdit from './DialogPatientEdit.vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -96,28 +108,34 @@ import UpdateRecallFrequency from '@intake24-dietician/portal/components/patient
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useToast } from 'vue-toast-notification'
 import { useUpdatePatient } from '@intake24-dietician/portal/mutations/usePatients'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AccountActionMenu from './AccountActionMenu.vue'
 import { useForm } from '@/composables/useForm'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import {
   PatientUpdateDto,
   PatientUpdateDtoSchema,
+  PatientWithUserDto,
 } from '@intake24-dietician/common/entities-new/user.dto'
 import BaseButton from '@/components/common/BaseButton.vue'
 import { z } from 'zod'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import cloneDeep from 'lodash.clonedeep'
+import DialogRouteLeave from '../../common/DialogRouteLeave.vue'
 
 // const { t } = useI18n<i18nOptions>()
 
 const patientStore = usePatientStore()
 
+const router = useRouter()
 const route = useRoute()
 const patientQuery = computed(() => patientStore.patientQuery)
 const updatePatientMutation = useUpdatePatient()
 
 const $toast = useToast()
 
+const isSubmitting = ref(false)
+const confirmDialog = ref(false)
 const form = ref()
 const formValues = ref({
   contactDetailsFormValues: ref<ContactDetailsFormValues>({
@@ -168,7 +186,19 @@ const patientForm = useForm<
   mutationFn: updatePatientMutation.mutateAsync,
   onSuccess: () => {
     $toast.success('Patient details updated successfully')
+    router.push({
+      name: 'Survey Patient Feedback Records',
+      params: {
+        surveyId: route.params['surveyId'],
+        patientId: route.params['patientId'],
+      },
+    })
   },
+})
+
+const fullName = computed(() => {
+  const contactDetails = patientForm.formValues.value.contactDetailsFormValues
+  return `${contactDetails.firstName} ${contactDetails.lastName}`
 })
 
 const aggregatedData = computed(() => {
@@ -187,20 +217,25 @@ const aggregatedData = computed(() => {
   }
 })
 
-// const isFormValid = computed(() => {
-//   return patientForm.isFormValid({
-//     id: Number(route.params['patientId']),
-//     email: aggregatedData.value.email ?? '',
-//     patient: aggregatedData.value,
-//   })
-// })
-
-const handleSubmit = async (): Promise<void> => {
-  return await patientForm.handleSubmit({
+const handleSubmit = () => {
+  const submitValue = {
     id: Number(route.params['patientId']),
     email: aggregatedData.value.email ?? '',
     patient: aggregatedData.value,
-  })
+  }
+
+  const showConfirmDialog = () => {
+    const isValid = patientForm.isFormValid(submitValue)
+
+    if (!isValid) return
+    confirmDialog.value = true
+  }
+  const submit = async () => {
+    isSubmitting.value = true
+    await patientForm.handleSubmit(submitValue)
+  }
+
+  return { showConfirmDialog, submit }
 }
 
 const patient = computed(() => {
@@ -211,6 +246,69 @@ const updateFormValue = <T,>(formValue: T, newValue: T | null | undefined) => {
   return newValue ?? formValue
 }
 
+const initWithServerData = (
+  newData: PatientWithUserDto,
+  contactDetails: ContactDetailsFormValues,
+  personalDetails: PersonalDetailsFormValues,
+) => ({
+  contactDetailsFormValues: {
+    firstName: updateFormValue(contactDetails.firstName, newData.firstName),
+    middleName: updateFormValue(contactDetails.middleName, newData.middleName),
+    lastName: updateFormValue(contactDetails.lastName, newData.lastName),
+    avatar: updateFormValue(contactDetails.avatar, newData.avatar),
+    mobileNumber: updateFormValue(
+      contactDetails.mobileNumber,
+      newData.mobileNumber,
+    ),
+    email: updateFormValue(contactDetails.email, newData.user.email),
+    address: updateFormValue(contactDetails.address, newData.address),
+  },
+  personalDetailsFormValues: {
+    dateOfBirth: updateFormValue(
+      personalDetails.dateOfBirth,
+      newData.dateOfBirth,
+    ),
+    gender: updateFormValue(personalDetails.gender, newData.gender),
+    weightHistory: updateFormValue(
+      personalDetails.weightHistory,
+      newData.weightHistory,
+    ),
+    height: updateFormValue(personalDetails.height, newData.height),
+    additionalNotes: updateFormValue(
+      personalDetails.additionalNotes,
+      newData.additionalNotes,
+    ),
+    patientGoal: updateFormValue(
+      personalDetails.patientGoal,
+      newData.patientGoal,
+    ),
+  },
+  theme: updateFormValue(
+    patientForm.formValues.value.theme,
+    newData.patientPreference?.theme,
+  ) as Theme,
+  sendAutomatedFeedback: updateFormValue(
+    patientForm.formValues.value.sendAutomatedFeedback,
+    newData.patientPreference?.sendAutomatedFeedback,
+  ),
+  recallFrequency: {
+    reminderEvery: {
+      every: updateFormValue(
+        patientForm.formValues.value.recallFrequency.reminderEvery.every,
+        newData.patientPreference.reminderCondition.reminderEvery.every,
+      ),
+      unit: updateFormValue(
+        patientForm.formValues.value.recallFrequency.reminderEvery.unit,
+        newData.patientPreference.reminderCondition.reminderEvery.unit,
+      ),
+    },
+    reminderEnds: updateFormValue(
+      patientForm.formValues.value.recallFrequency.reminderEnds,
+      newData.patientPreference.reminderCondition.reminderEnds,
+    ),
+  },
+})
+
 watch(
   () => patientQuery.value.data,
   newData => {
@@ -220,67 +318,14 @@ watch(
     const personalDetails =
       patientForm.formValues.value.personalDetailsFormValues
 
-    patientForm.formValues.value = {
-      contactDetailsFormValues: {
-        firstName: updateFormValue(contactDetails.firstName, newData.firstName),
-        middleName: updateFormValue(
-          contactDetails.middleName,
-          newData.middleName,
-        ),
-        lastName: updateFormValue(contactDetails.lastName, newData.lastName),
-        avatar: updateFormValue(contactDetails.avatar, newData.avatar),
-        mobileNumber: updateFormValue(
-          contactDetails.mobileNumber,
-          newData.mobileNumber,
-        ),
-        email: updateFormValue(contactDetails.email, newData.user.email),
-        address: updateFormValue(contactDetails.address, newData.address),
-      },
-      personalDetailsFormValues: {
-        dateOfBirth: updateFormValue(
-          personalDetails.dateOfBirth,
-          newData.dateOfBirth,
-        ),
-        gender: updateFormValue(personalDetails.gender, newData.gender),
-        weightHistory: updateFormValue(
-          personalDetails.weightHistory,
-          newData.weightHistory,
-        ),
-        height: updateFormValue(personalDetails.height, newData.height),
-        additionalNotes: updateFormValue(
-          personalDetails.additionalNotes,
-          newData.additionalNotes,
-        ),
-        patientGoal: updateFormValue(
-          personalDetails.patientGoal,
-          newData.patientGoal,
-        ),
-      },
-      theme: updateFormValue(
-        patientForm.formValues.value.theme,
-        newData.patientPreference?.theme,
-      ) as Theme,
-      sendAutomatedFeedback: updateFormValue(
-        patientForm.formValues.value.sendAutomatedFeedback,
-        newData.patientPreference?.sendAutomatedFeedback,
-      ),
-      recallFrequency: {
-        reminderEvery: {
-          every: updateFormValue(
-            patientForm.formValues.value.recallFrequency.reminderEvery.every,
-            newData.patientPreference.reminderCondition.reminderEvery.every,
-          ),
-          unit: updateFormValue(
-            patientForm.formValues.value.recallFrequency.reminderEvery.unit,
-            newData.patientPreference.reminderCondition.reminderEvery.unit,
-          ),
-        },
-        reminderEnds: updateFormValue(
-          patientForm.formValues.value.recallFrequency.reminderEnds,
-          newData.patientPreference.reminderCondition.reminderEnds,
-        ),
-      },
-    }
+    const updatedFormValues = initWithServerData(
+      newData,
+      contactDetails,
+      personalDetails,
+    )
+
+    patientForm.formValues.value = cloneDeep(updatedFormValues)
+    patientForm.serverDataSnapshot.value = cloneDeep(updatedFormValues)
   },
   { immediate: true },
 )
