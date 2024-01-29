@@ -35,9 +35,9 @@ export const UserDtoSchema = UserCreateDtoSchema.extend({
 export type UserDto = z.infer<typeof UserDtoSchema>
 
 export const DieticianCreateDto = z.object({
-  firstName: z.string().min(1),
-  middleName: z.string().min(1).nullable(),
-  lastName: z.string().min(1).nullable(),
+  firstName: z.string().min(1, 'First name is required'),
+  middleName: z.string().nullable(),
+  lastName: z.string().nullable(),
   mobileNumber: z.string().nullable(),
   businessNumber: z.string().nullable(),
   businessAddress: z.string().nullable(),

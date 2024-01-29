@@ -1,91 +1,69 @@
 <template>
-  <v-main v-if="isProfileLoading && !profileQuerySucceeded" align="center">
-    <v-container>
-      <v-progress-circular indeterminate />
-    </v-container>
-  </v-main>
-  <v-main v-else class="wrapper">
-    <v-container>
-      <BackButton class="mb-5" />
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">{{ t('profile.title') }}</h1>
-          <h3 class="text subheading">
-            {{ t('profile.subtitle') }}
-          </h3>
-        </div>
-        <div>
-          <v-btn
-            type="submit"
-            color="primary text-capitalize"
-            class="mt-3 mt-sm-0"
-            :loading="updateProfileMutation.isPending.value"
-            :disabled="!hasFormChanged"
-            @click.prevent="() => onSubmit().showConfirmDialog()"
-          >
-            {{ t('profile.cta') }}
-          </v-btn>
-        </div>
+  <v-container>
+    {{ values }}
+    <div
+      class="d-flex flex-column flex-sm-row justify-space-between align-center mt-16"
+    >
+      <div>
+        <h1 class="text heading">Let's get you started</h1>
+        <h3 class="text subheading">
+          Begin by creating your profile. Some of your profile details such as
+          your display picture will reflect across the feedbacks you share with
+          your patients.
+        </h3>
       </div>
-      <v-divider class="my-10"></v-divider>
-      <v-form v-if="currentFormData">
-        <PersonalDetails :avatar="currentFormData.avatar" />
-        <ContactDetails
-          class="mt-10"
-          :email="{
-            current: values.currentEmail ?? currentFormData.email,
-            new: values.newEmail ?? currentFormData.email,
-          }"
-        />
-        <ShortBio class="mt-16" />
-        <div class="mt-16">
-          <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
-          <v-btn
-            type="submit"
-            color="primary text-capitalize"
-            class="mt-3"
-            :loading="updateProfileMutation.isPending.value"
-            :disabled="!hasFormChanged"
-            @click.prevent="() => onSubmit().showConfirmDialog()"
-          >
-            {{ t('profile.cta') }}
-          </v-btn>
-        </div>
-      </v-form>
-      <DialogRouteLeave :unsavedChanges="hasFormChanged" />
-      <DialogProfileEdit
-        v-model="confirmDialog"
-        :on-confirm="() => onSubmit().submit()"
+    </div>
+    <v-divider class="my-10"></v-divider>
+    <v-form>
+      <PersonalDetails :avatar="currentFormData?.avatar ?? null" />
+      <ContactDetails
+        class="mt-10"
+        :email="{
+          current: values.currentEmail ?? currentFormData?.email ?? '',
+          new: values.newEmail ?? currentFormData?.email ?? '',
+        }"
       />
-    </v-container>
-  </v-main>
+      <ShortBio class="mt-16" />
+      <div class="mt-16">
+        <v-btn
+          type="submit"
+          color="primary text-capitalize"
+          class="mt-3"
+          :loading="updateProfileMutation.isPending.value"
+          :disabled="!hasFormChanged"
+          @click.prevent="() => onSubmit().submit()"
+        >
+          Continue
+        </v-btn>
+      </div>
+    </v-form>
+  </v-container>
 </template>
 
 <script lang="ts" setup>
-import DialogRouteLeave from '@intake24-dietician/portal/components/common/DialogRouteLeave.vue'
-import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
 import { useUpdateProfile } from '@/mutations/useAuth'
 import { useAuthStore } from '@/stores/auth'
-import type { i18nOptions } from '@intake24-dietician/i18n/index'
+// import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useToast } from 'vue-toast-notification'
+// import { useI18n } from 'vue-i18n'
+// import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import isEqual from 'lodash.isequal'
 import { computed } from 'vue'
 import { VForm } from 'vuetify/lib/components/index.mjs'
-import DialogProfileEdit from './DialogProfileEdit.vue'
 import { useForm } from 'vee-validate'
 import { toTypedSchema } from '@vee-validate/zod'
 import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { z } from 'zod'
 import cloneDeep from 'lodash.clonedeep'
+
+const emit = defineEmits<{
+  submit: [values: DieticianCreateDto]
+}>()
 
 onMounted(async () => {
   if (!authStore.profile) {
@@ -94,22 +72,18 @@ onMounted(async () => {
 })
 
 // i18n
-const { t } = useI18n<i18nOptions>()
+// const { t } = useI18n<i18nOptions>()
 
 // Stores
 const authStore = useAuthStore()
 
-const {
-  profile: savedProfile,
-  isProfileLoading,
-  profileQuerySucceeded,
-} = storeToRefs(authStore)
+const { profile: savedProfile } = storeToRefs(authStore)
 
 // Mutations
 const updateProfileMutation = useUpdateProfile()
 
 // Composables
-const $toast = useToast()
+// const $toast = useToast()
 
 const { values, handleSubmit, meta, resetForm } = useForm({
   validationSchema: toTypedSchema(
@@ -151,24 +125,24 @@ const onSubmit = () => {
 
   const submit = handleSubmit(
     async values => {
-      console.log({ currentFormData, values })
       if (!currentFormData.value) return
 
-      updateProfileMutation.mutate(
-        {
-          emailAddress: currentFormData.value.email,
-          dieticianProfile: values,
-        },
-        {
-          onSuccess: () => {
-            $toast.success('Profile updated successfully')
-            resetForm({ values })
-          },
-          onError: () => {
-            $toast.error('Failed to update dietician profile')
-          },
-        },
-      )
+      emit('submit', values)
+      // updateProfileMutation.mutate(
+      //   {
+      //     emailAddress: currentFormData.value.email,
+      //     dieticianProfile: values,
+      //   },
+      //   {
+      //     onSuccess: () => {
+      //       $toast.success('Profile updated successfully')
+      //       resetForm({ values })
+      //     },
+      //     onError: () => {
+      //       $toast.error('Failed to update dietician profile')
+      //     },
+      //   },
+      // )
     },
     ({ values, errors, results }) => {
       console.log({ values, errors, results })
