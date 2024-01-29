@@ -130,16 +130,18 @@ import BaseInput from '@/components/form/BaseInput.vue'
 
 import { useDisplay } from 'vuetify'
 
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { ref, watch } from 'vue'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
-import { Form } from '../../profile/types'
+import type { Form } from '../../profile/types'
 import ImageUpload from '../../profile/ImageUpload.vue'
-import {
+import type {
   PatientUpdateDto,
-  PatientUpdateDtoSchema,
   UserCreateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  PatientUpdateDtoSchema,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
 

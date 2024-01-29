@@ -23,32 +23,23 @@
             class="mt-3 mt-sm-0"
             :loading="updateProfileMutation.isPending.value"
             :disabled="!hasFormChanged"
-            @click="handleSubmit().showConfirmDialog"
+            @click.prevent="onSubmit"
           >
             {{ t('profile.cta') }}
           </v-btn>
         </div>
       </div>
       <v-divider class="my-10"></v-divider>
-      <v-form
-        v-if="currentFormData"
-        ref="form"
-        @submit.prevent="() => handleSubmit()"
-      >
-        <PersonalDetails
-          :default-state="currentFormData"
-          @update="handleFormValueUpdate"
-        />
+      <v-form v-if="currentFormData" ref="form">
+        <PersonalDetails :avatar="currentFormData.avatar" />
         <ContactDetails
           class="mt-10"
-          :default-state="currentFormData"
-          @update="handleFormValueUpdate"
+          :email="{
+            current: values.currentEmail ?? currentFormData.email,
+            new: values.newEmail ?? currentFormData.email,
+          }"
         />
-        <ShortBio
-          class="mt-16"
-          :default-state="currentFormData"
-          @update="handleFormValueUpdate"
-        />
+        <ShortBio class="mt-16" />
         <div class="mt-16">
           <p class="font-weight-bold">{{ t('profile.form.review.title') }}</p>
           <v-btn
@@ -57,16 +48,14 @@
             class="mt-3"
             :loading="updateProfileMutation.isPending.value"
             :disabled="!hasFormChanged"
+            @click.prevent="onSubmit"
           >
             {{ t('profile.cta') }}
           </v-btn>
         </div>
       </v-form>
       <DialogRouteLeave :unsavedChanges="hasFormChanged" />
-      <DialogProfileEdit
-        v-model="confirmDialog"
-        :on-confirm="handleSubmit().submit"
-      />
+      <DialogProfileEdit v-model="confirmDialog" :on-confirm="onSubmit" />
     </v-container>
   </v-main>
 </template>
@@ -85,11 +74,15 @@ import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-// import { pick, keys, isEqual } from 'radash'
 import isEqual from 'lodash.isequal'
 import { computed } from 'vue'
 import { VForm } from 'vuetify/lib/components/index.mjs'
 import DialogProfileEdit from './DialogProfileEdit.vue'
+import { useForm } from 'vee-validate'
+import { toTypedSchema } from '@vee-validate/zod'
+import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { z } from 'zod'
+import cloneDeep from 'lodash.clonedeep'
 
 onMounted(async () => {
   if (!authStore.profile) {
@@ -115,61 +108,112 @@ const updateProfileMutation = useUpdateProfile()
 // Composables
 const $toast = useToast()
 
+const { values, handleSubmit, meta, resetForm } = useForm({
+  validationSchema: toTypedSchema(
+    DieticianCreateDto.merge(
+      z.object({
+        currentEmail: z.string().email(),
+        newEmail: z.string().email(),
+      }),
+    ),
+  ),
+})
+
+const confirmDialog = ref(false)
+const currentFormData = ref<typeof savedFormData.value>(undefined)
+
 const savedFormData = computed(() => {
   if (!savedProfile.value) return undefined
   const { user, ...rest } = savedProfile.value
   return { ...rest, email: user.email }
 })
 
-const confirmDialog = ref(false)
-const currentFormData = ref<typeof savedFormData.value>(undefined)
-watch(
-  savedFormData,
-  () => {
-    currentFormData.value = savedFormData.value
-  },
-  { immediate: true },
-)
+const hasFormChanged = computed<boolean>(() => {
+  const initialValues = cloneDeep(meta.value.initialValues)
+  const keysToRemove = new Set(['id', 'createdAt', 'updatedAt', 'email'])
 
-const hasFormChanged = computed(() => {
-  return !isEqual(savedFormData.value, currentFormData.value)
+  if (!initialValues) return false
+
+  const rest = Object.fromEntries(
+    Object.entries(initialValues).filter(([key]) => !keysToRemove.has(key)),
+  )
+
+  console.log({ rest, values })
+
+  return !isEqual(rest, values)
 })
 
-const handleFormValueUpdate = (
-  newValues: Partial<typeof currentFormData.value>,
-) => {
-  if (currentFormData.value === undefined) return
-  currentFormData.value = { ...currentFormData.value, ...newValues }
-}
+// const onSubmit = () => {
+//   const showConfirmDialog = () => {
+//     confirmDialog.value = true
+//   }
+//   const submit = async () => {
+//     if (!hasFormChanged.value || !currentFormData.value) return
 
-const handleSubmit = () => {
-  const showConfirmDialog = () => {
-    confirmDialog.value = true
-  }
-  const submit = async () => {
-    if (!hasFormChanged.value || !currentFormData.value) return
+//     await updateProfileMutation.mutateAsync(
+//       {
+//         emailAddress: currentFormData.value.email,
+//         dieticianProfile: currentFormData.value,
+//       },
+//       {
+//         onSuccess: () => {
+//           $toast.success('Profile updated successfully')
+//         },
+//         onError: () => {
+//           $toast.error('Failed to update dietician profile')
+//         },
+//       },
+//     )
+//   }
 
-    await updateProfileMutation.mutateAsync(
+//   return { showConfirmDialog, submit }
+// }
+
+const onSubmit = handleSubmit(
+  async values => {
+    console.log({ currentFormData, values })
+    if (!currentFormData.value) return
+
+    updateProfileMutation.mutate(
       {
         emailAddress: currentFormData.value.email,
-        dieticianProfile: currentFormData.value,
+        dieticianProfile: values,
       },
       {
         onSuccess: () => {
           $toast.success('Profile updated successfully')
+          resetForm({ values })
         },
         onError: () => {
           $toast.error('Failed to update dietician profile')
         },
       },
     )
-  }
+  },
+  ({ values, errors, results }) => {
+    console.log({ values, errors, results })
+  },
+)
 
-  return { showConfirmDialog, submit }
-}
+watch(
+  savedFormData,
+  () => {
+    if (!savedFormData.value) return
 
-// Refs
-const form = ref()
+    const email = savedFormData.value.email
+
+    currentFormData.value = savedFormData.value
+    // setValues(savedFormData.value)
+    resetForm({
+      values: {
+        ...savedFormData.value,
+        currentEmail: email,
+        newEmail: email,
+      },
+    })
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">

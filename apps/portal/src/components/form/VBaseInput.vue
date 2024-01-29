@@ -5,12 +5,14 @@
     </div>
     <div v-if="type === 'tel'" class="">
       <v-phone-input
-        :model-value="value?.toString()"
+        v-model="fieldValue"
         label=""
         country-label=""
         country-icon-mode="svg"
         density="compact"
-        :invalid-message="`Invalid mobile number for ${country}`"
+        :invalid-message="
+          `Invalid mobile number for ${country}` || errorMessage
+        "
         guess-country
         default-country="AU"
         :phone-props="{
@@ -23,7 +25,6 @@
           variant: 'solo-filled',
           density: 'comfortable',
         }"
-        @update:model-value="(value: string) => emit('update', value)"
         @update:country="country = $event"
       />
     </div>
@@ -85,10 +86,7 @@ const props = defineProps<{
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
-const emit = defineEmits<{
-  update: [value: string]
-}>()
-const { value: fieldValue, errorMessage } = useField(() => props.name)
+const { value: fieldValue, errorMessage } = useField<string>(() => props.name)
 
 const country = ref('AU')
 </script>

@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import type { z } from 'zod'
 
 export interface Layout {
   cols: number
@@ -56,7 +56,7 @@ interface FormInput {
 
   // Validation and event handling
   rules?: ((val: string) => boolean | string)[]
-  handleUpdate: (val: string) => void
+  handleUpdate?: (val: string) => void
   handleSuffixIconClick?: () => void
 
   // Layout

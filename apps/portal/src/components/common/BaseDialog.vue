@@ -33,6 +33,7 @@ const emit = defineEmits<{
 const dialog = ref(props.modelValue)
 
 const handleConfirm = () => {
+  console.log('Confirming')
   if (props.onConfirm) {
     props.onConfirm()
   }

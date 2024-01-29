@@ -24,7 +24,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { onMounted, ref } from 'vue'
 import { useToast } from 'vue-toast-notification'
