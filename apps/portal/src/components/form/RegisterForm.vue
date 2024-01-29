@@ -56,16 +56,14 @@
         </v-form>
       </div>
     </div>
-    <div v-if="registerMutation.data.value === undefined">
-      <div class="text-center">
-        {{ t('register.form.login.label') }}
-        <router-link
-          to="login"
-          class="text-decoration-none text-primary font-weight-bold"
-        >
-          {{ t('register.form.login.link') }}
-        </router-link>
-      </div>
+    <div v-if="registerMutation.data.value === undefined" class="px-16">
+      {{ t('register.form.login.label') }}
+      <router-link
+        to="login"
+        class="text-decoration-none text-primary font-weight-bold"
+      >
+        {{ t('register.form.login.link') }}
+      </router-link>
     </div>
     <div v-if="registerMutation.data.value !== undefined">
       <h1 class="px-16">Welcome</h1>
@@ -74,7 +72,8 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, computed, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+import type { Ref } from 'vue'
 
 import BaseInput from '@/components/form/BaseInput.vue'
 

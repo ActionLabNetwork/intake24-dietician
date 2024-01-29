@@ -70,16 +70,14 @@
         </v-form>
       </div>
     </div>
-    <div v-if="loginMutation.data.value === undefined">
-      <div class="text-center">
-        {{ t('login.form.createAccount.label') }}
-        <router-link
-          to="register"
-          class="text-decoration-none text-primary font-weight-bold"
-        >
-          {{ t('login.form.createAccount.link') }}
-        </router-link>
-      </div>
+    <div v-if="loginMutation.data.value === undefined" class="px-16">
+      {{ t('login.form.createAccount.label') }}
+      <router-link
+        to="register"
+        class="text-decoration-none text-primary font-weight-bold"
+      >
+        {{ t('login.form.createAccount.link') }}
+      </router-link>
     </div>
     <div v-else class="pl-16">
       <BaseProgressCircular />

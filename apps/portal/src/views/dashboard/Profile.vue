@@ -79,7 +79,7 @@ import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
 import { useUpdateProfile } from '@/mutations/useAuth'
 import { useAuthStore } from '@/stores/auth'
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { storeToRefs } from 'pinia'
 import { onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -141,19 +141,6 @@ const handleFormValueUpdate = (
   if (currentFormData.value === undefined) return
   currentFormData.value = { ...currentFormData.value, ...newValues }
 }
-
-// const handleSubmit = async () => {
-//   if (!hasFormChanged.value || !currentFormData.value) return
-//   try {
-//     await updateProfileMutation.mutateAsync({
-//       emailAddress: currentFormData.value.email,
-//       dieticianProfile: currentFormData.value,
-//     })
-//     $toast.success('Profile updated successfully')
-//   } catch {
-//     $toast.error('Failed to update dietician profile')
-//   }
-// }
 
 const handleSubmit = () => {
   const showConfirmDialog = () => {
