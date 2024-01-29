@@ -10,7 +10,9 @@
       <v-card-actions>
         <v-spacer></v-spacer>
         <v-btn class="text-none" @click="handleCancel"> Cancel </v-btn>
-        <BaseButton variant="flat" @click="handleConfirm">Confirm</BaseButton>
+        <BaseButton ref="confirmBtn" variant="flat" @click="handleConfirm">
+          Confirm
+        </BaseButton>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -19,6 +21,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BaseButton from './BaseButton.vue'
+import { nextTick } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -31,6 +34,7 @@ const emit = defineEmits<{
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const dialog = ref(props.modelValue)
+const confirmBtn = ref()
 
 const handleConfirm = () => {
   console.log('Confirming')
@@ -47,10 +51,19 @@ const handleCancel = () => {
   closeDialog()
 }
 
+const closeDialog = () => {
+  dialog.value = false
+  emit('update:modelValue', dialog.value)
+}
+
 watch(
   () => props.modelValue,
-  newValue => {
+  async newValue => {
     dialog.value = newValue
+    if (newValue) {
+      await nextTick()
+      confirmBtn.value?.focus()
+    }
   },
 )
 
@@ -60,9 +73,4 @@ watch(
     emit('update:modelValue', newValue)
   },
 )
-
-const closeDialog = () => {
-  dialog.value = false
-  emit('update:modelValue', dialog.value)
-}
 </script>

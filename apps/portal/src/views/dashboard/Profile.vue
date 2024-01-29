@@ -23,7 +23,7 @@
             class="mt-3 mt-sm-0"
             :loading="updateProfileMutation.isPending.value"
             :disabled="!hasFormChanged"
-            @click.prevent="onSubmit"
+            @click.prevent="() => onSubmit().showConfirmDialog()"
           >
             {{ t('profile.cta') }}
           </v-btn>
@@ -48,14 +48,17 @@
             class="mt-3"
             :loading="updateProfileMutation.isPending.value"
             :disabled="!hasFormChanged"
-            @click.prevent="onSubmit"
+            @click.prevent="() => onSubmit().showConfirmDialog()"
           >
             {{ t('profile.cta') }}
           </v-btn>
         </div>
       </v-form>
       <DialogRouteLeave :unsavedChanges="hasFormChanged" />
-      <DialogProfileEdit v-model="confirmDialog" :on-confirm="onSubmit" />
+      <DialogProfileEdit
+        v-model="confirmDialog"
+        :on-confirm="() => onSubmit().submit()"
+      />
     </v-container>
   </v-main>
 </template>
@@ -138,62 +141,42 @@ const hasFormChanged = computed<boolean>(() => {
     Object.entries(initialValues).filter(([key]) => !keysToRemove.has(key)),
   )
 
-  console.log({ rest, values })
-
   return !isEqual(rest, values)
 })
 
-// const onSubmit = () => {
-//   const showConfirmDialog = () => {
-//     confirmDialog.value = true
-//   }
-//   const submit = async () => {
-//     if (!hasFormChanged.value || !currentFormData.value) return
+const onSubmit = () => {
+  const showConfirmDialog = () => {
+    confirmDialog.value = true
+  }
 
-//     await updateProfileMutation.mutateAsync(
-//       {
-//         emailAddress: currentFormData.value.email,
-//         dieticianProfile: currentFormData.value,
-//       },
-//       {
-//         onSuccess: () => {
-//           $toast.success('Profile updated successfully')
-//         },
-//         onError: () => {
-//           $toast.error('Failed to update dietician profile')
-//         },
-//       },
-//     )
-//   }
+  const submit = handleSubmit(
+    async values => {
+      console.log({ currentFormData, values })
+      if (!currentFormData.value) return
 
-//   return { showConfirmDialog, submit }
-// }
-
-const onSubmit = handleSubmit(
-  async values => {
-    console.log({ currentFormData, values })
-    if (!currentFormData.value) return
-
-    updateProfileMutation.mutate(
-      {
-        emailAddress: currentFormData.value.email,
-        dieticianProfile: values,
-      },
-      {
-        onSuccess: () => {
-          $toast.success('Profile updated successfully')
-          resetForm({ values })
+      updateProfileMutation.mutate(
+        {
+          emailAddress: currentFormData.value.email,
+          dieticianProfile: values,
         },
-        onError: () => {
-          $toast.error('Failed to update dietician profile')
+        {
+          onSuccess: () => {
+            $toast.success('Profile updated successfully')
+            resetForm({ values })
+          },
+          onError: () => {
+            $toast.error('Failed to update dietician profile')
+          },
         },
-      },
-    )
-  },
-  ({ values, errors, results }) => {
-    console.log({ values, errors, results })
-  },
-)
+      )
+    },
+    ({ values, errors, results }) => {
+      console.log({ values, errors, results })
+    },
+  )
+
+  return { showConfirmDialog, submit }
+}
 
 watch(
   savedFormData,
@@ -217,25 +200,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
 .text {
   max-width: 75%;
   padding-bottom: 0.5rem;
