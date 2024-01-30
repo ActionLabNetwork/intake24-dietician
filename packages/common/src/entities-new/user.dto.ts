@@ -42,7 +42,7 @@ export const DieticianCreateDto = z.object({
   businessNumber: z.string().nullable(),
   businessAddress: z.string().nullable(),
   shortBio: z.string().nullable(),
-  avatar: z.string().optional().nullable(),
+  avatar: z.string().nullable(),
 })
 export type DieticianCreateDto = z.infer<typeof DieticianCreateDto>
 

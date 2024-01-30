@@ -74,7 +74,7 @@
 import VBaseInput from '../form/VBaseInput.vue'
 import { useRequestEmailChange } from '@/mutations/useAuth'
 import type { i18nOptions } from '@intake24-dietician/i18n/index'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useToast } from 'vue-toast-notification'
 import { useDisplay } from 'vuetify'
@@ -89,6 +89,7 @@ export interface ContactDetailsFormValues {
 
 const props = defineProps<{
   email: { current: string; new: string }
+  allowEmailChange?: boolean
 }>()
 
 const requestEmailChangeMutation = useRequestEmailChange()
@@ -106,6 +107,10 @@ const shouldShowDivider = (layout: Layout) => {
 
 const changeEmailDialog = ref(false)
 
+const _allowEmailChange = computed(() => {
+  return props.allowEmailChange ?? false
+})
+
 const requestEmailChange = async () => {
   requestEmailChangeMutation.mutate(
     { newEmail: props.email.new },
@@ -120,7 +125,7 @@ const requestEmailChange = async () => {
   )
 }
 
-const formConfig: Form<keyof ContactDetailsFormValues> = {
+const formConfig = computed<Form<keyof ContactDetailsFormValues>>(() => ({
   currentEmail: {
     key: 'currentEmail',
     autocomplete: 'email',
@@ -131,7 +136,7 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
     type: 'input',
     inputType: 'email',
     layout: { cols: 12, md: 4 },
-    suffixIcon: 'mdi-mail',
+    suffixIcon: _allowEmailChange.value ? 'mdi-mail' : '',
     handleSuffixIconClick: () => {
       changeEmailDialog.value = true
     },
@@ -162,7 +167,7 @@ const formConfig: Form<keyof ContactDetailsFormValues> = {
     inputType: 'text',
     layout: { cols: 12 },
   },
-}
+}))
 </script>
 <style scoped lang="scss">
 .input-label {

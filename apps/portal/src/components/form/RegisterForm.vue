@@ -4,7 +4,6 @@
       v-if="registerMutation.data.value === undefined"
       class="wrapper py-15 px-16 d-flex flex-column"
     >
-      {{ values }}
       <div class="pb-16">
         <v-img max-width="10rem" src="@/assets/logo.svg" />
       </div>
@@ -107,7 +106,7 @@ const formValues = reactive({ email: '', password: '', confirmPassword: '' })
 const passwordVisible = ref(false)
 const confirmPasswordVisible = ref(false)
 
-const { handleSubmit, meta, values } = useForm({
+const { handleSubmit, meta } = useForm({
   validationSchema: toTypedSchema(RegisterDtoSchema),
   initialValues: {
     email: '',

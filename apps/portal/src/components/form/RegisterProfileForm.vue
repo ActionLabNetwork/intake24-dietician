@@ -1,11 +1,5 @@
 <template>
   <v-container>
-    <div>
-      {{ values }}
-      <br /><br />
-      {{ email }}
-    </div>
-
     <div
       class="d-flex flex-column flex-sm-row justify-space-between align-center mt-16"
     >
@@ -27,6 +21,7 @@
           current: values.currentEmail ?? currentFormData?.email ?? '',
           new: values.newEmail ?? currentFormData?.email ?? '',
         }"
+        :allowEmailChange="false"
       />
       <ShortBio class="mt-16" />
       <div class="mt-16">
@@ -34,7 +29,7 @@
           type="submit"
           color="primary text-capitalize"
           class="mt-3"
-          :loading="updateProfileMutation.isPending.value"
+          :loading="loading"
           :disabled="!hasFormChanged"
           @click.prevent="() => onSubmit().submit()"
         >
@@ -49,7 +44,6 @@
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
-import { useUpdateProfile } from '@/mutations/useAuth'
 import { useAuthStore } from '@/stores/auth'
 // import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { storeToRefs } from 'pinia'
@@ -66,7 +60,7 @@ import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user
 import { z } from 'zod'
 import cloneDeep from 'lodash.clonedeep'
 
-const props = defineProps<{ email: string }>()
+const props = defineProps<{ email: string; loading: boolean }>()
 const emit = defineEmits<{
   submit: [values: DieticianCreateDto]
 }>()
@@ -85,9 +79,6 @@ const authStore = useAuthStore()
 
 const { profile: savedProfile } = storeToRefs(authStore)
 
-// Mutations
-const updateProfileMutation = useUpdateProfile()
-
 // Composables
 // const $toast = useToast()
 
@@ -100,6 +91,18 @@ const { values, handleSubmit, meta, resetForm } = useForm({
       }),
     ),
   ),
+  initialValues: {
+    currentEmail: '',
+    newEmail: '',
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    avatar: '',
+    mobileNumber: '',
+    businessNumber: '',
+    businessAddress: '',
+    shortBio: '',
+  },
 })
 
 const confirmDialog = ref(false)
@@ -131,25 +134,7 @@ const onSubmit = () => {
 
   const submit = handleSubmit(
     async values => {
-      // if (!currentFormData.value) return
-
       emit('submit', values)
-      console.log('Submitted')
-      // updateProfileMutation.mutate(
-      //   {
-      //     emailAddress: currentFormData.value.email,
-      //     dieticianProfile: values,
-      //   },
-      //   {
-      //     onSuccess: () => {
-      //       $toast.success('Profile updated successfully')
-      //       resetForm({ values })
-      //     },
-      //     onError: () => {
-      //       $toast.error('Failed to update dietician profile')
-      //     },
-      //   },
-      // )
     },
     ({ values, errors, results }) => {
       console.log({ values, errors, results })
@@ -167,7 +152,6 @@ watch(
     const email = savedFormData.value.email
 
     currentFormData.value = savedFormData.value
-    // setValues(savedFormData.value)
     resetForm({
       values: {
         ...savedFormData.value,
@@ -182,7 +166,6 @@ watch(
 watch(
   () => props.email,
   newEmail => {
-    console.log({ newEmail })
     resetForm({
       values: {
         ...values,

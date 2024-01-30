@@ -1,5 +1,4 @@
 <template>
-  <pre>{{ registerSteps }}</pre>
   <v-row v-if="currentStep === 'auth'" no-gutters>
     <v-col :cols="formCols">
       <div :class="!md && mdAndDown && 'hero-image-full'" />
@@ -13,6 +12,7 @@
     <v-col>
       <RegisterProfileForm
         :email="registerSteps.auth.values?.email ?? ''"
+        :loading="registerMutation.isPending.value"
         @submit="handleProfileStepSubmit"
       />
     </v-col>
@@ -47,6 +47,7 @@ import { ref } from 'vue'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import type { RegisterDto } from '@intake24-dietician/common/entities-new/auth.dto'
 import { useRegister } from '../mutations/useAuth'
+import { useRouter } from 'vue-router'
 
 interface RegisterSteps {
   auth: { title: string; values: RegisterDto | null }
@@ -54,6 +55,7 @@ interface RegisterSteps {
   clinic: { title: string; values: DieticianCreateDto | null }
 }
 
+const router = useRouter()
 const registerMutation = useRegister()
 const { mdAndUp, md, mdAndDown } = useDisplay()
 const formCols = computed(() => (mdAndUp.value ? 5 : 12))
@@ -86,7 +88,6 @@ const handleProfileStepSubmit = (values: DieticianCreateDto) => {
       values,
     },
   }
-  currentStep.value = 'clinic'
 
   const userValues = registerSteps.value.auth.values
   const profileValues = registerSteps.value.profile.values
@@ -114,6 +115,7 @@ const handleProfileStepSubmit = (values: DieticianCreateDto) => {
       },
       onSuccess: () => {
         console.log('success')
+        router.push({ name: 'My Profile' })
       },
     },
   )
