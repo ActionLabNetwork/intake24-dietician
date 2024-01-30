@@ -31,7 +31,7 @@
       </div>
       <v-divider class="my-10"></v-divider>
       <v-form v-if="currentFormData">
-        <PersonalDetails :avatar="currentFormData.avatar" />
+        <PersonalDetails :avatar="currentFormData.avatar ?? ''" />
         <ContactDetails
           class="mt-10"
           :email="{

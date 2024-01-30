@@ -109,6 +109,11 @@ const confirmPasswordVisible = ref(false)
 
 const { handleSubmit, meta, values } = useForm({
   validationSchema: toTypedSchema(RegisterDtoSchema),
+  initialValues: {
+    email: '',
+    password: '',
+    confirmPassword: '',
+  },
 })
 
 const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =

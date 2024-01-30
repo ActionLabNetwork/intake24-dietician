@@ -1,5 +1,8 @@
 import { AuthService } from '../../services/auth.service'
-import { UserDtoSchema } from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  DieticianCreateDto,
+  UserDtoSchema,
+} from '@intake24-dietician/common/entities-new/user.dto'
 import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 import type { Token } from '@intake24-dietician/common/types/auth'
 import { inject, singleton } from 'tsyringe'
@@ -36,15 +39,16 @@ export class AuthDieticianRouter {
       })
       .input(
         z.object({
-          email: z.string().email(),
-          password: z.string(),
+          user: LoginDtoSchema,
+          profile: DieticianCreateDto,
         }),
       )
       .output(UserDtoSchema)
       .mutation(async opts => {
         const user = await this.authService.register(
-          opts.input.email,
-          opts.input.password,
+          opts.input.user.email,
+          opts.input.user.password,
+          opts.input.profile,
         )
 
         const authCookies = this.getAuthCookies(user.token, 'both')

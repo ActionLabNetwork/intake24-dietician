@@ -7,27 +7,27 @@ import type { Token } from '@intake24-dietician/common/types/auth'
 @singleton()
 export class AuthPatientRouter {
   private router = router({
-    passwordlessRequest: publicProcedure
-      .meta({
-        openapi: {
-          method: 'POST',
-          path: '/passwordless/request',
-          tags: ['auth'],
-          summary: 'Request a token for passwordless login',
-        },
-      })
-      .input(
-        z.object({
-          identifier: z.string(),
-        }),
-      )
-      .output(z.boolean())
-      .mutation(async opts => {
-        await this.authService.generateUserTokenForPasswordlessAuth(
-          opts.input.identifier,
-        )
-        return true
-      }),
+    // passwordlessRequest: publicProcedure
+    //   .meta({
+    //     openapi: {
+    //       method: 'POST',
+    //       path: '/passwordless/request',
+    //       tags: ['auth'],
+    //       summary: 'Request a token for passwordless login',
+    //     },
+    //   })
+    //   .input(
+    //     z.object({
+    //       identifier: z.string(),
+    //     }),
+    //   )
+    //   .output(z.boolean())
+    //   .mutation(async opts => {
+    //     await this.authService.generateUserTokenForPasswordlessAuth(
+    //       opts.input.identifier,
+    //     )
+    //     return true
+    //   }),
     passwordlessVerify: publicProcedure
       .meta({
         openapi: {

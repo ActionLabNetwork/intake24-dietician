@@ -57,13 +57,18 @@ export class AuthService {
     @inject(Redis) private redis: Redis,
   ) {}
 
-  public register = async (email: string, password: string) => {
+  public register = async (
+    email: string,
+    password: string,
+    profile: DieticianCreateDto,
+  ) => {
     await this.validateNewEmailAvailability(email)
 
     const hashedPassword = await this.hashingService.hash(password)
     const newUser = await this.userRepository.createDieticianUser(
       email,
       hashedPassword,
+      profile,
     )
     const { jti, token } = await this.generateToken(newUser, 'both')
 
@@ -313,30 +318,30 @@ export class AuthService {
     return { ok: true, value: payload as TokenPayload & { tokenType: T } }
   }
 
-  public generateUserTokenForPasswordlessAuth = async (email: string) => {
-    // const isEmailRegistered = await this.confirmEmailExists(email)
+  // public generateUserTokenForPasswordlessAuth = async (email: string) => {
+  //   // const isEmailRegistered = await this.confirmEmailExists(email)
 
-    const user = await this.userRepository.getUserByEmail(email)
+  //   const user = await this.userRepository.getUserByEmail(email)
 
-    if (user) {
-      return await this.generateUserToken(user.id, {
-        type: 'passwordless-auth',
-      })
-    } else {
-      // Create a new user temporarily
-      const passwordLength = 12
-      const password = crypto
-        .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
-        .toString('hex')
-        .slice(0, passwordLength)
-      const hashedPassword = await this.hashingService.hash(password)
+  //   if (user) {
+  //     return await this.generateUserToken(user.id, {
+  //       type: 'passwordless-auth',
+  //     })
+  //   } else {
+  //     // Create a new user temporarily
+  //     const passwordLength = 12
+  //     const password = crypto
+  //       .randomBytes(Math.ceil(passwordLength / 2)) // Each byte becomes 2 hex characters
+  //       .toString('hex')
+  //       .slice(0, passwordLength)
+  //     const hashedPassword = await this.hashingService.hash(password)
 
-      const newUser = await this.register(email, hashedPassword)
-      return await this.generateUserToken(newUser.id, {
-        type: 'passwordless-auth',
-      })
-    }
-  }
+  //     const newUser = await this.register(email, hashedPassword)
+  //     return await this.generateUserToken(newUser.id, {
+  //       type: 'passwordless-auth',
+  //     })
+  //   }
+  // }
 
   public requestEmailChange = async (userId: number, newEmail: string) => {
     const user = await this.userRepository.getUserById(userId)

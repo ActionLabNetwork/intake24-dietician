@@ -1,12 +1,12 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useClientStore } from '../trpc/trpc'
 
 export const useRegister = () => {
   const { register } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
     useMutation({
-      mutationFn: async (registerBody: { email: string; password: string }) =>
+      mutationFn: async (registerBody: Parameters<typeof register>[0]) =>
         await register(registerBody),
     })
 

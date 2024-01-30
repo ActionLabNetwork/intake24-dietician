@@ -1,6 +1,11 @@
 <template>
   <v-container>
-    {{ values }}
+    <div>
+      {{ values }}
+      <br /><br />
+      {{ email }}
+    </div>
+
     <div
       class="d-flex flex-column flex-sm-row justify-space-between align-center mt-16"
     >
@@ -61,6 +66,7 @@ import { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user
 import { z } from 'zod'
 import cloneDeep from 'lodash.clonedeep'
 
+const props = defineProps<{ email: string }>()
 const emit = defineEmits<{
   submit: [values: DieticianCreateDto]
 }>()
@@ -125,9 +131,10 @@ const onSubmit = () => {
 
   const submit = handleSubmit(
     async values => {
-      if (!currentFormData.value) return
+      // if (!currentFormData.value) return
 
       emit('submit', values)
+      console.log('Submitted')
       // updateProfileMutation.mutate(
       //   {
       //     emailAddress: currentFormData.value.email,
@@ -166,6 +173,21 @@ watch(
         ...savedFormData.value,
         currentEmail: email,
         newEmail: email,
+      },
+    })
+  },
+  { immediate: true },
+)
+
+watch(
+  () => props.email,
+  newEmail => {
+    console.log({ newEmail })
+    resetForm({
+      values: {
+        ...values,
+        currentEmail: newEmail,
+        newEmail: newEmail,
       },
     })
   },

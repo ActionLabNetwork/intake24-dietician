@@ -3,20 +3,7 @@
   <v-row v-if="currentStep === 'auth'" no-gutters>
     <v-col :cols="formCols">
       <div :class="!md && mdAndDown && 'hero-image-full'" />
-      <RegisterForm
-        @submit="
-          values => {
-            registerSteps = {
-              ...registerSteps,
-              auth: {
-                ...registerSteps.auth,
-                values,
-              },
-            }
-            currentStep = 'profile'
-          }
-        "
-      />
+      <RegisterForm @submit="handleAuthStepSubmit" />
     </v-col>
     <v-col v-if="mdAndUp" :cols="heroImageCols">
       <div :class="mdAndUp ? 'hero-image' : 'hero-image-full'" />
@@ -25,18 +12,8 @@
   <v-row v-if="currentStep === 'profile'" class="wrapper">
     <v-col>
       <RegisterProfileForm
-        @submit="
-          values => {
-            registerSteps = {
-              ...registerSteps,
-              profile: {
-                ...registerSteps.profile,
-                values,
-              },
-            }
-            currentStep = 'clinic'
-          }
-        "
+        :email="registerSteps.auth.values?.email ?? ''"
+        @submit="handleProfileStepSubmit"
       />
     </v-col>
   </v-row>
@@ -69,6 +46,7 @@ import { useDisplay } from 'vuetify'
 import { ref } from 'vue'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import type { RegisterDto } from '@intake24-dietician/common/entities-new/auth.dto'
+import { useRegister } from '../mutations/useAuth'
 
 interface RegisterSteps {
   auth: { title: string; values: RegisterDto | null }
@@ -76,6 +54,7 @@ interface RegisterSteps {
   clinic: { title: string; values: DieticianCreateDto | null }
 }
 
+const registerMutation = useRegister()
 const { mdAndUp, md, mdAndDown } = useDisplay()
 const formCols = computed(() => (mdAndUp.value ? 5 : 12))
 const heroImageCols = computed(() => (mdAndUp.value ? 7 : 0))
@@ -87,6 +66,58 @@ const registerSteps = ref<RegisterSteps>({
 })
 
 const currentStep = ref<keyof typeof registerSteps.value>('auth')
+
+const handleAuthStepSubmit = (values: RegisterDto) => {
+  registerSteps.value = {
+    ...registerSteps.value,
+    auth: {
+      ...registerSteps.value.auth,
+      values,
+    },
+  }
+  currentStep.value = 'profile'
+}
+
+const handleProfileStepSubmit = (values: DieticianCreateDto) => {
+  registerSteps.value = {
+    ...registerSteps.value,
+    profile: {
+      ...registerSteps.value.profile,
+      values,
+    },
+  }
+  currentStep.value = 'clinic'
+
+  const userValues = registerSteps.value.auth.values
+  const profileValues = registerSteps.value.profile.values
+
+  registerMutation.mutate(
+    {
+      user: {
+        email: userValues?.email ?? '',
+        password: userValues?.password ?? '',
+      },
+      profile: {
+        firstName: profileValues?.firstName ?? '',
+        lastName: profileValues?.lastName ?? '',
+        middleName: profileValues?.middleName ?? '',
+        avatar: profileValues?.avatar ?? '',
+        mobileNumber: profileValues?.mobileNumber ?? '',
+        businessAddress: profileValues?.businessAddress ?? '',
+        businessNumber: profileValues?.businessNumber ?? '',
+        shortBio: profileValues?.shortBio ?? '',
+      },
+    },
+    {
+      onError: () => {
+        console.log('error')
+      },
+      onSuccess: () => {
+        console.log('success')
+      },
+    },
+  )
+}
 </script>
 
 <style scoped lang="scss">

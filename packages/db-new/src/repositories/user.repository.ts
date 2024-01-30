@@ -161,7 +161,11 @@ export class UserRepository {
     return dietician?.id
   }
 
-  public async createDieticianUser(email: string, hashedPassword: string) {
+  public async createDieticianUser(
+    email: string,
+    hashedPassword: string,
+    profile: DieticianCreateDto,
+  ) {
     return await this.drizzle.transaction(async tx => {
       const [user] = await tx
         .insert(users)
@@ -176,13 +180,13 @@ export class UserRepository {
         .insert(dieticians)
         .values({
           userId: user.id,
-          firstName: '',
-          middleName: '',
-          lastName: '',
-          mobileNumber: '',
-          businessNumber: '',
-          businessAddress: '',
-          shortBio: '',
+          firstName: profile.firstName,
+          middleName: profile.middleName,
+          lastName: profile.lastName,
+          mobileNumber: profile.mobileNumber,
+          businessNumber: profile.businessNumber,
+          businessAddress: profile.businessAddress,
+          shortBio: profile.shortBio,
         })
         .execute()
       return user
