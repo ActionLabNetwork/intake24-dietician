@@ -52,7 +52,6 @@ export const useForm = <TInitial, TSubmit>({
     const result = schema.safeParse(validationData)
     if (!result.success) {
       $toast?.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      onError?.(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
       return
     }
     return result.success
