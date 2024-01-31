@@ -59,7 +59,7 @@
             editDraftMutation.isPending.value
           "
           :disabled="!!editingDraft && areDraftsEqual"
-          @click="showDialog"
+          @click="showDialog(editingDraft ? 'edit' : 'save')"
         >
           {{
             props.editingDraft
@@ -74,7 +74,7 @@
           :loading="shareDraftMutation.isPending.value"
           color="primary"
           flat
-          @click="showDialog"
+          @click="showDialog('share')"
         >
           Share feedback
         </v-btn>
@@ -84,16 +84,16 @@
   <DialogRouteLeave :unsavedChanges="!areDraftsEqual && !isSubmitting" />
   <DialogFeedbackEdit
     v-if="!!editingDraft"
-    v-model="confirmDialog"
+    v-model="confirmEditDialog"
     :on-confirm="handleEditDraftClick"
   />
   <DialogFeedbackSave
     v-if="!editingDraft"
-    v-model="confirmDialog"
+    v-model="confirmSaveDialog"
     :on-confirm="handleSaveDraftClick"
   />
   <DialogFeedbackShare
-    v-model="confirmDialog"
+    v-model="confirmShareDialog"
     :full-name="patientStore.fullName"
     :on-confirm="handleShareDraftClick"
   />
@@ -163,7 +163,9 @@ const shareDraftMutation = useShareDraft()
 
 const isSubmitting = ref(false)
 const dateRange = ref()
-const confirmDialog = ref(false)
+const confirmEditDialog = ref(false)
+const confirmSaveDialog = ref(false)
+const confirmShareDialog = ref(false)
 
 const handleDaterangeUpdate = (
   daterange: [Date | undefined, Date | undefined],
@@ -181,8 +183,14 @@ onMounted(() => {
   isSubmitting.value = false
 })
 
-const showDialog = () => {
-  confirmDialog.value = true
+const showDialog = (dialog: 'edit' | 'save' | 'share') => {
+  if (dialog === 'edit') {
+    confirmEditDialog.value = true
+  } else if (dialog === 'save') {
+    confirmSaveDialog.value = true
+  } else if (dialog === 'share') {
+    confirmShareDialog.value = true
+  }
 }
 
 const handleSaveDraftClick = () => {

@@ -15,7 +15,7 @@
     "clean": "rimraf dist",
     "db:push": "drizzle-kit push:pg",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "ts-node scripts/seed/seed.ts",
+    "db:seed": "DOTENV_CONFIG_PATH=.env ts-node -r dotenv/config -r tsconfig-paths/register scripts/seed/seed.ts",
     "build": "pnpm clean && tsc -p tsconfig.build.json"
   },
   "dependencies": {

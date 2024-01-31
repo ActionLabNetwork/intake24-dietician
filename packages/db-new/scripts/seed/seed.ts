@@ -17,6 +17,7 @@ import { container } from 'tsyringe'
 import type { IRecall } from '@intake24-dietician/common/types/recall'
 import { nutrientTypes, nutrientUnits } from '../../src/models/nutrient.model'
 import { eq } from 'drizzle-orm'
+import { env } from '../../config/env'
 
 async function readJsonFile(filename: string) {
   const filePath = path.join(__dirname, filename)
@@ -26,9 +27,7 @@ async function readJsonFile(filename: string) {
 }
 
 function initDrizzle() {
-  const database = new AppDatabase(
-    'postgres://postgres:postgres@localhost:5433/intake24-dietician-db',
-  )
+  const database = new AppDatabase(env.PG_CONNECTION_STRING)
   const sql = database.sqlClient
   const drizzle = database.drizzleClient
 
