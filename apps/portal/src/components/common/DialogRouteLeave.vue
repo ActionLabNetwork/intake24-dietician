@@ -4,7 +4,7 @@
     :on-confirm="dialog.handleDialogConfirm"
     :on-cancel="dialog.handleDialogCancel"
   >
-    <template v-slot:title> Attention! </template>
+    <template #title> Attention! </template>
     You still have unsaved changes. Are you sure you want to leave the page?
   </BaseDialog>
 </template>

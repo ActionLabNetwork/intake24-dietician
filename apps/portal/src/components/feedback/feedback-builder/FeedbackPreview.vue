@@ -5,7 +5,7 @@
       :loading="pdfExportLoading"
       class="text-none"
       color="secondary"
-      flat
+      variant="flat"
       @click="exportContentToPdf"
     >
       Export to PDF
@@ -41,15 +41,15 @@
                 FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
                   .mainBackground,
             }"
-            :mainBgColor="
+            :main-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
                 .mainBackground
             "
-            :feedbackBgColor="
+            :feedback-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
                 .background
             "
-            :feedbackTextColor="
+            :feedback-text-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
                 .color
             "

@@ -5,7 +5,7 @@
     <div v-if="mealCards" class="mt-2">
       <BaseTabs
         :tabs="tabs"
-        :tabStyle="{
+        :tab-style="{
           backgroundColor: '#aabcb1',
           height: 'fit-content',
           width: 'fit-content',
@@ -14,7 +14,7 @@
           padding: '5px',
           color: 'white',
         }"
-        :activeTabStyle="{
+        :active-tab-style="{
           backgroundColor: '#34a749',
         }"
         align="center"
@@ -32,7 +32,7 @@
       <FeedbackTextArea
         :feedback="feedback"
         :editable="mode === 'edit'"
-        :bgColor="feedbackBgColor"
+        :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
       />

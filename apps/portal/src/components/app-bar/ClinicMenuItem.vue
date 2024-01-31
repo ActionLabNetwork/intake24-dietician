@@ -1,6 +1,6 @@
 <template>
   <v-list-item loading="!currentClinic">
-    <template v-if="clinic" v-slot:prepend>
+    <template v-if="clinic" #prepend>
       <v-avatar :color="clinic.avatarColor">
         <span class="text-h5">
           {{ clinic.surveyName[0]?.toLocaleUpperCase() }}
@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import type { SurveyPlainDto } from '@intake24-dietician/common/entities-new/survey.dto'
 
 defineProps<{
   clinic: SurveyPlainDto & { avatarColor: string }

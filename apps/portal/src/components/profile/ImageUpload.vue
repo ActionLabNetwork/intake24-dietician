@@ -5,7 +5,7 @@
     </v-avatar>
     <v-btn
       class="mt-5 text-center font-weight-medium text-capitalize"
-      flat
+      variant="flat"
       @click="
         () => {
           imageUpload.click()

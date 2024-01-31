@@ -64,6 +64,7 @@ const props = withDefaults(
     showSwitches: boolean
   }>(),
   {
+    defaultState: undefined,
     showSwitches: false,
   },
 )

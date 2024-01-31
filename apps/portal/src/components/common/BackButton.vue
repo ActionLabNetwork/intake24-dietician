@@ -1,9 +1,8 @@
 <template>
   <v-btn
     prepend-icon="mdi-chevron-left"
-    flat
-    class="text-none pa-0"
     variant="text"
+    class="text-none pa-0"
     @click="handleBackButtonClick"
   >
     <slot>Go Back</slot>

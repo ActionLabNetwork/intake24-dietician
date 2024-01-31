@@ -54,7 +54,7 @@
           </v-btn>
         </div>
       </v-form>
-      <DialogRouteLeave :unsavedChanges="hasFormChanged" />
+      <DialogRouteLeave :unsaved-changes="hasFormChanged" />
       <DialogProfileEdit
         v-model="confirmDialog"
         :on-confirm="() => onSubmit().submit()"

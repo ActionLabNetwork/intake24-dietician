@@ -18,22 +18,22 @@
               moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
             "
             mode="preview"
-            useSampleRecall
+            use-sample-recall
             flat
             :style="{
               'background-color':
                 FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                   .mainBackground,
             }"
-            :mainBgColor="
+            :main-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .mainBackground
             "
-            :feedbackBgColor="
+            :feedback-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .feedback.background
             "
-            :feedbackTextColor="
+            :feedback-text-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .feedback.color
             "

@@ -10,11 +10,6 @@ import 'vuetify/styles'
 
 // Composables
 import { createVuetify } from 'vuetify'
-import {
-  VDataTable,
-  VDataTableServer,
-  VDataTableVirtual,
-} from 'vuetify/lib/labs/components.mjs'
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
@@ -30,10 +25,5 @@ export default createVuetify({
         },
       },
     },
-  },
-  components: {
-    VDataTable,
-    VDataTableServer,
-    VDataTableVirtual,
   },
 })

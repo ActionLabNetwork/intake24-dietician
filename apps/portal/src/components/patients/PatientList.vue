@@ -18,14 +18,14 @@
 
   <div class="mt-4">
     <v-data-table
-      v-model:items-per-page="itemsPerPage"
-      :headers="headers as unknown as ReadonlyDataTableHeader[]"
+      :items-per-page="itemsPerPage"
+      :headers="headers"
       :search="search"
       :items="patients"
       item-value="name"
       class="elevation-1"
     >
-      <template v-slot:headers="{ columns, isSorted, toggleSort, sortBy }">
+      <template #headers="{ columns, isSorted, toggleSort, sortBy }">
         <tr>
           <template v-for="column in columns" :key="column.key">
             <td>
@@ -55,12 +55,12 @@
           </template>
         </tr>
       </template>
-      <template v-slot:item="{ item }">
+      <template #item="{ item }">
         <tr class="text-center">
           <td class="text-left">
             <div class="d-flex align-center">
-              <v-avatar :image="item.raw.avatar || getDefaultAvatar()" />
-              <span class="ml-5 text-left">{{ item.raw.name }}</span>
+              <v-avatar :image="item.avatar ?? getDefaultAvatar()" />
+              <span class="ml-5 text-left">{{ item.name }}</span>
             </div>
           </td>
           <td>
@@ -72,36 +72,45 @@
                 name: 'Survey Patient Feedback Records',
                 params: {
                   surveyId: route.params['surveyId'],
-                  patientId: item.raw.id,
+                  patientId: item.id,
                 },
               }"
             >
               View
             </v-btn>
           </td>
-          <td>{{ item.raw.lastRecall }}</td>
+          <td>{{ item.lastRecall }}</td>
           <td>
             <div class="d-flex flex-column align-center">
-              {{ item.raw.lastFeedbackSent.date }}
+              {{ item.lastFeedbackSent.date }}
               <v-chip
                 variant="outlined"
                 :color="
-                  item.raw.lastFeedbackSent.type === 'Tailored'
+                  item.lastFeedbackSent.type === 'Tailored'
                     ? 'success'
                     : 'warning'
                 "
                 class="mt-2"
-                :text="item.raw.lastFeedbackSent.type"
+                :text="item.lastFeedbackSent.type"
               >
               </v-chip>
             </div>
+          </td>
+          <td>
+            <v-chip
+              variant="flat"
+              :color="item.patientStatus === 'Active' ? 'success' : 'neutral'"
+              :text="item.patientStatus"
+            >
+            </v-chip>
+            <span v-show="false">{{ item.patientStatus }}</span>
           </td>
           <td>
             <div
               class="d-flex flex-column flex-xl-row align-baseline justify-center"
             >
               {{
-                item.raw.lastReminderSent?.toLocaleString('en-AU', {
+                item.lastReminderSent?.toLocaleString('en-AU', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
@@ -113,12 +122,12 @@
                   color="accent"
                   :loading="isSendRecallReminderPending"
                   :disabled="
-                    item.raw.lastReminderSent &&
-                    moment(item.raw.lastReminderSent)
+                    item.lastReminderSent &&
+                    moment(item.lastReminderSent)
                       .add(recallReminderCooldown)
                       .isAfter(new Date())
                   "
-                  @click="onRemindButtonClick(item.raw.id)"
+                  @click="onRemindButtonClick(item.id)"
                 >
                   Remind
                 </v-btn>
@@ -130,7 +139,7 @@
               icon="mdi-content-copy"
               size="medium"
               variant="plain"
-              @click="generateSurveyLink(item.raw.surveyURL)"
+              @click="generateSurveyLink(item.surveyURL)"
             />
           </td>
         </tr>
@@ -145,24 +154,16 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { VDataTable } from 'vuetify/lib/labs/components.mjs'
 import type { CamelCase } from 'type-fest'
 import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
-import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
+import type { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
 import { useRoute } from 'vue-router'
-import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
+import type { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import { isArray } from 'radash'
 import { useSendRecallReminder } from '@intake24-dietician/portal/mutations/usePatients'
 import { useToast } from 'vue-toast-notification'
 import moment from 'moment'
 import { recallReminderCooldown } from '@intake24-dietician/common/constants/settings-contants'
-
-// Manual type unwrapping as vuetify doesn't expose headers type
-type UnwrapReadonlyArrayType<A> = A extends Readonly<Array<infer I>>
-  ? UnwrapReadonlyArrayType<I>
-  : A
-type DT = InstanceType<typeof VDataTable>
-type ReadonlyDataTableHeader = UnwrapReadonlyArrayType<DT['headers']>
 
 const props = defineProps<{
   patientsData: (PatientWithUserDto & { recallDates: RecallDatesDto[] })[]
@@ -173,6 +174,7 @@ const headerTitles = [
   'Patient records',
   'Last recall',
   'Last feedback sent',
+  'Patient status',
   'Last reminder sent',
   'Survey URL',
 ] as const
@@ -197,6 +199,7 @@ interface KeyValueTypes {
     date: string
     type: 'Tailored' | 'Auto'
   }
+  patientStatus: 'Active' | 'Archived'
   lastReminderSent: Date | null
   surveyURL: string
 }
@@ -226,6 +229,12 @@ const headers = ref<PatientTableHeaders[]>([
     title: 'Last feedback sent',
     align: 'center',
     key: 'lastFeedbackSent',
+    sortable: true,
+  },
+  {
+    title: 'Patient status',
+    align: 'center',
+    key: 'patientStatus',
     sortable: true,
   },
   {
@@ -305,18 +314,14 @@ watch(
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
-          lastRecall:
-            recallDates[0]?.toLocaleDateString('en-AU', {
-              day: 'numeric',
-              month: 'short',
-              year: 'numeric',
-            }) ?? 'N/A',
+          lastRecall: recallDates[0]?.toLocaleDateString() ?? 'N/A',
           lastFeedbackSent: {
             date: getRandomDate(),
             type: patient.patientPreference.sendAutomatedFeedback
               ? 'Auto'
               : 'Tailored',
           },
+          patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: patient.lastReminderSent,
           surveyURL: patient.startSurveyUrl,
         }

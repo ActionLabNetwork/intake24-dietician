@@ -1,7 +1,7 @@
 <template>
   <div class="text-center font-weight-medium">
     <v-avatar size="x-large" :image="avatar" />
-    <p class="title text-md mt-4">{{ fullName }}</p>
+    <p class="text-h6 text-md mt-4">{{ fullName }}</p>
   </div>
   <v-card-subtitle class="text-center"> ID: {{ patientId }} </v-card-subtitle>
 </template>

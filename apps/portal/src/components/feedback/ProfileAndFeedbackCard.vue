@@ -53,7 +53,7 @@
         <v-btn
           class="text-none ml-8"
           color="#F1F1F1"
-          flat
+          variant="flat"
           :loading="
             saveDraftMutation.isPending.value ||
             editDraftMutation.isPending.value
@@ -73,7 +73,7 @@
           class="text-none ml-3"
           :loading="shareDraftMutation.isPending.value"
           color="primary"
-          flat
+          variant="flat"
           @click="showDialog('share')"
         >
           Share feedback
@@ -81,7 +81,7 @@
       </div>
     </div>
   </v-card>
-  <DialogRouteLeave :unsavedChanges="!areDraftsEqual && !isSubmitting" />
+  <DialogRouteLeave :unsaved-changes="!areDraftsEqual && !isSubmitting" />
   <DialogFeedbackEdit
     v-if="!!editingDraft"
     v-model="confirmEditDialog"
@@ -136,7 +136,7 @@ const props = withDefaults(
     hideActionButtons?: boolean
     feedbackType: FeedbackType
   }>(),
-  { disableDatepicker: false, hideActionButtons: false },
+  { draftId: undefined, disableDatepicker: false, hideActionButtons: false },
 )
 const emit = defineEmits<{
   'update:daterange': [date: [Date | undefined, Date | undefined]]

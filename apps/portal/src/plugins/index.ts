@@ -13,10 +13,7 @@ import vuetify from './vuetify'
 
 // Types
 
-export function registerPlugins (app: App) {
+export function registerPlugins(app: App) {
   loadFonts()
-  app
-    .use(vuetify)
-    .use(router)
-    .use(pinia)
+  app.use(vuetify).use(router).use(pinia)
 }

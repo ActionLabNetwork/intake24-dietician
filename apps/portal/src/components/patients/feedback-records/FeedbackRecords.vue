@@ -2,7 +2,7 @@
   <v-row>
     <v-col class="pt-1">
       <div class="d-flex flex-column flex-sm-row justify-space-between">
-        <p class="title mb-3 mb-sm-0">Feedback records</p>
+        <p class="text-h6 mb-3 mb-sm-0">Feedback records</p>
         <v-btn
           append-icon="mdi-plus"
           color="primary"

@@ -48,7 +48,7 @@
     <ViewFeedback
       v-if="showOutputPreview"
       class="my-0"
-      :feedbackId="shareId"
+      :feedback-id="shareId"
       hide-back-button
       constrain-output-height
     />

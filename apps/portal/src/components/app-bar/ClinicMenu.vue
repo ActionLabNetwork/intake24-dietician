@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-menu transition="slide-y-transition" bottom>
-      <template v-slot:activator="{ props }">
+    <v-menu transition="slide-y-transition" location="bottom">
+      <template #activator="{ props }">
         <v-btn class="text-none" v-bind="props">
           Clinics <v-icon class="ml-2" icon="mdi-chevron-down" />
         </v-btn>
@@ -65,6 +65,7 @@ import ClinicMenuItem from './ClinicMenuItem.vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { watch } from 'vue'
+import { VCard, VMenu, VBtn } from 'vuetify/lib/components/index.mjs'
 
 const router = useRouter()
 const route = useRoute()

@@ -52,7 +52,13 @@ withDefaults(
     activeTabStyle?: Record<string, string>
     showTabs?: boolean
   }>(),
-  { showTabs: true },
+  {
+    showTabs: true,
+    align: 'start',
+    hideSlider: false,
+    tabStyle: undefined,
+    activeTabStyle: undefined,
+  },
 )
 
 const activeTab = ref(0)

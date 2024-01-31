@@ -4,8 +4,8 @@
   </v-container>
   <v-container v-else fluid>
     <v-row justify="center">
-      <v-menu rounded :close-on-content-click="false">
-        <template v-slot:activator="{ props }">
+      <v-menu :close-on-content-click="false">
+        <template #activator="{ props }">
           <v-btn class="mr-16 mr-3" v-bind="props">
             <v-avatar :image="user?.avatar || getDefaultAvatar()"></v-avatar>
             <v-icon icon="mdi-chevron-down" size="large" />

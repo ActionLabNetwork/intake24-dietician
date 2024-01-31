@@ -80,8 +80,7 @@ export const useClientStore = defineStore('client', () => {
     new Promise<Exclude<AuthState, { type: 'init' }>>(resolve => {
       const state = authState.value
       if (state.type !== 'init') resolve(state)
-      let unwatch: () => void
-      unwatch = watch(authState, state => {
+      const unwatch = watch(authState, state => {
         if (state.type === 'init') return
         unwatch()
         resolve(state)
@@ -107,9 +106,8 @@ export const useClientStore = defineStore('client', () => {
                 ...options,
                 credentials: 'include',
               })
-            } else {
-              return result
             }
+            return result
           },
         }),
       ],

@@ -84,7 +84,7 @@
       :on-confirm="handleSubmit().submit"
     />
     <DialogRouteLeave
-      :unsavedChanges="patientForm.isDirty.value && !isSubmitting"
+      :unsaved-changes="patientForm.isDirty.value && !isSubmitting"
     />
   </div>
 </template>

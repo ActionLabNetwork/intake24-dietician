@@ -39,7 +39,7 @@
       <FeedbackTextArea
         :feedback="feedback"
         :editable="mode === 'edit'"
-        :bgColor="feedbackBgColor"
+        :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
       />

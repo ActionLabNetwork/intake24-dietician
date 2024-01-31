@@ -86,6 +86,9 @@ const props = defineProps<{
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
+
+// TODO: Investigate further this weird ts error
+// @ts-ignore
 const { value: fieldValue, errorMessage } = useField<string>(() => props.name)
 
 const country = ref('AU')

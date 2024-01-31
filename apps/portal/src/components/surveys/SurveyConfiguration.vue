@@ -66,7 +66,7 @@
       </div>
       <div>
         <BaseDialog v-model="submitDialog" :on-confirm="handleDialogConfirm">
-          <template v-slot:title> Attention! </template>
+          <template #title> Attention! </template>
           Are you sure you want to cancel and go back? Any changes made to the
           new clinic will get deleted.
         </BaseDialog>

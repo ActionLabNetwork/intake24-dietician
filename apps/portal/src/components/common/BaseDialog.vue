@@ -21,13 +21,12 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BaseButton from './BaseButton.vue'
-import { nextTick } from 'vue'
 
-const props = defineProps({
-  modelValue: Boolean,
-  onConfirm: Function,
-  onCancel: Function,
-})
+const props = defineProps<{
+  modelValue: boolean
+  onConfirm?: Function
+  onCancel?: Function
+}>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
 }>()
@@ -60,10 +59,6 @@ watch(
   () => props.modelValue,
   async newValue => {
     dialog.value = newValue
-    if (newValue) {
-      await nextTick()
-      confirmBtn.value?.focus()
-    }
   },
 )
 

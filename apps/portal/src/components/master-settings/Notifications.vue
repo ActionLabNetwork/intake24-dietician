@@ -85,7 +85,6 @@ function handleSwitchUpdate(
     email: notificationChannels.value.email.selected,
     sms: notificationChannels.value.sms.selected,
   })
-
 }
 </script>
 

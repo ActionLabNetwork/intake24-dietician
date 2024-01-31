@@ -92,16 +92,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import BaseInput from '../../form/BaseInput.vue'
-import { capitalize } from 'radash'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  ReminderEverySchema,
   ReminderCondition,
   ReminderEndCondition,
+  ReminderEverySchema,
 } from '@intake24-dietician/common/entities-new/preferences.dto'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { capitalize } from 'radash'
+import { ref, watch } from 'vue'
+import { VSelect } from 'vuetify/lib/components/index.mjs'
+import BaseInput from '../../form/BaseInput.vue'
 
 const props = withDefaults(
   defineProps<{ defaultState: ReminderCondition; hideLabel?: boolean }>(),

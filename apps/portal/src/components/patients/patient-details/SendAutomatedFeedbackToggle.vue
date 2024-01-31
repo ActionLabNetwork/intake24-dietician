@@ -32,6 +32,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { VSwitch } from 'vuetify/lib/components/index.mjs'
 
 const props = withDefaults(
   defineProps<{ defaultState: boolean; hideLabel?: boolean }>(),

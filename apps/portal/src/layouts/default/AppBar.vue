@@ -6,7 +6,7 @@
         <ClinicMenu class="ml-14" />
       </div>
     </v-app-bar-title>
-    <template v-slot:append>
+    <template #append>
       <div v-if="mdAndUp" class="d-flex">
         <v-btn icon class="mr-5">
           <v-icon icon="mdi-bell-outline" size="large" />

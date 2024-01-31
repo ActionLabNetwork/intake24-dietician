@@ -88,7 +88,11 @@ const props = withDefaults(
     hideBackButton: boolean
     constrainOutputHeight: boolean
   }>(),
-  { hideBackButton: false, constrainOutputHeight: false },
+  {
+    feedbackId: undefined,
+    hideBackButton: false,
+    constrainOutputHeight: false,
+  },
 )
 
 // Stores

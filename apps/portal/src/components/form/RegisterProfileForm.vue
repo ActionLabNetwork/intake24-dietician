@@ -21,7 +21,7 @@
           current: values.currentEmail ?? currentFormData?.email ?? '',
           new: values.newEmail ?? currentFormData?.email ?? '',
         }"
-        :allowEmailChange="false"
+        :allow-email-change="false"
       />
       <ShortBio class="mt-16" />
       <div class="mt-16">

@@ -14,7 +14,7 @@
           <v-card-title>
             <div class="d-flex align-center justify-space-between">
               <div>
-                <div class="title">{{ theme.title }}</div>
+                <div class="text-h6">{{ theme.title }}</div>
                 <div class="description">{{ theme.description }}</div>
               </div>
               <div>
@@ -48,6 +48,7 @@
 <script setup lang="ts">
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { ref, watch } from 'vue'
+import { VSwitch } from 'vuetify/lib/components/index.mjs'
 
 interface ThemeRef {
   title: string
