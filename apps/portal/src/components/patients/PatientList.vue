@@ -97,17 +97,6 @@
             </div>
           </td>
           <td>
-            <v-chip
-              variant="flat"
-              :color="
-                item.raw.patientStatus === 'Active' ? 'success' : 'neutral'
-              "
-              :text="item.raw.patientStatus"
-            >
-            </v-chip>
-            <span v-show="false">{{ item.raw.patientStatus }}</span>
-          </td>
-          <td>
             <div
               class="d-flex flex-column flex-xl-row align-baseline justify-center"
             >
@@ -143,7 +132,6 @@
               variant="plain"
               @click="generateSurveyLink(item.raw.surveyURL)"
             />
-            <!-- {{ item.raw.surveyURL }} -->
           </td>
         </tr>
       </template>
@@ -185,7 +173,6 @@ const headerTitles = [
   'Patient records',
   'Last recall',
   'Last feedback sent',
-  'Patient status',
   'Last reminder sent',
   'Survey URL',
 ] as const
@@ -210,7 +197,6 @@ interface KeyValueTypes {
     date: string
     type: 'Tailored' | 'Auto'
   }
-  patientStatus: 'Active' | 'Archived'
   lastReminderSent: Date | null
   surveyURL: string
 }
@@ -240,12 +226,6 @@ const headers = ref<PatientTableHeaders[]>([
     title: 'Last feedback sent',
     align: 'center',
     key: 'lastFeedbackSent',
-    sortable: true,
-  },
-  {
-    title: 'Patient status',
-    align: 'center',
-    key: 'patientStatus',
     sortable: true,
   },
   {
@@ -325,14 +305,18 @@ watch(
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
-          lastRecall: recallDates[0]?.toLocaleDateString() ?? 'N/A',
+          lastRecall:
+            recallDates[0]?.toLocaleDateString('en-AU', {
+              day: 'numeric',
+              month: 'short',
+              year: 'numeric',
+            }) ?? 'N/A',
           lastFeedbackSent: {
             date: getRandomDate(),
             type: patient.patientPreference.sendAutomatedFeedback
               ? 'Auto'
               : 'Tailored',
           },
-          patientStatus: patient.isArchived ? 'Archived' : 'Active',
           lastReminderSent: patient.lastReminderSent,
           surveyURL: patient.startSurveyUrl,
         }
