@@ -7,7 +7,7 @@
       <v-container>
         <div>
           <v-row dense justify="center" align="center">
-            <v-col :cols="mdAndUp ? 2 : 3" align="center">
+            <v-col :cols="mdAndUp ? 2 : 3" class="mx-auto">
               <div class="d-flex flex-column">
                 <ImageUpload
                   :default-state="avatar || getDefaultAvatar()"

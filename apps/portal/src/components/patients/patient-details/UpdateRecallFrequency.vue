@@ -2,6 +2,10 @@
 <template>
   <div>
     <p v-if="!hideLabel" class="font-weight-medium">Update recall frequency</p>
+    <p v-if="!hideLabel" class="subheading">
+      Update the default recall frequency period, when you want this patients to
+      complete and submit their recall data.
+    </p>
     <v-card class="wrapper mt-4" width="100%" flat>
       <div class="v-row align-center">
         <div class="v-col">
