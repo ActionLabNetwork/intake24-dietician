@@ -65,7 +65,6 @@ import ClinicMenuItem from './ClinicMenuItem.vue'
 import { storeToRefs } from 'pinia'
 import { useRouter, useRoute } from 'vue-router'
 import { watch } from 'vue'
-import { VCard, VMenu, VBtn } from 'vuetify/lib/components/index.mjs'
 
 const router = useRouter()
 const route = useRoute()

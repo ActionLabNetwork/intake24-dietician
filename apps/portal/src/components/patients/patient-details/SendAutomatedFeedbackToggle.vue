@@ -81,7 +81,7 @@ watch(
   width: 100%;
 
   @media only screen and (min-width: 768px) {
-    width: 50vw;
+    width: min(100%, 50vw);
   }
 }
 </style>

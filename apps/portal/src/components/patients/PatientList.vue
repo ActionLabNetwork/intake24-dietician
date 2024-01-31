@@ -107,7 +107,7 @@
           </td>
           <td>
             <div
-              class="d-flex flex-column flex-xl-row align-baseline justify-center"
+              class="d-flex flex-column flex-xl-row align-center justify-center"
             >
               {{
                 item.lastReminderSent?.toLocaleString('en-AU', {

@@ -42,14 +42,12 @@
         </div>
       </div>
       <v-divider class="my-10" />
-      <div>
-        <SurveyConfiguration
-          :default-state="surveyConfigFormValues"
-          mode="Edit"
-          :handle-submit="handleSubmit"
-          @update="handleSurveyConfigUpdate"
-        />
-      </div>
+      <SurveyConfiguration
+        :default-state="surveyConfigFormValues"
+        mode="Edit"
+        :handle-submit="handleSubmit"
+        @update="handleSurveyConfigUpdate"
+      />
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         :submit="handleSubmit"
