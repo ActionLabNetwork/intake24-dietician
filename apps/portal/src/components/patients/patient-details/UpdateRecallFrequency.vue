@@ -8,6 +8,7 @@
           <BaseInput
             type="number"
             name="recallFrequency"
+            class="text-label"
             :value="reminderConditions.reminderEvery.every.toString()"
             @update="
               newVal => {
@@ -47,7 +48,7 @@
       </div>
     </v-card>
     <v-card class="wrapper mt-4" width="100%" flat>
-      <div class="form-label pb-2">
+      <div class="pb-2 form-label text-label">
         Ends <span class="text-primary">(required)</span>
       </div>
       <div class="v-row">
@@ -201,6 +202,15 @@ watch(
   font-weight: 400;
   line-height: 135%;
   letter-spacing: 0.14px;
+}
+
+.text-label {
+  color: #555;
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .card {

@@ -6,7 +6,7 @@ export const profile = {
   form: {
     personalDetails: {
       title: 'Your personal details',
-      uploadImage: 'Upload image',
+      uploadImage: 'Choose picture',
       firstName: {
         label: 'First name',
         labelSuffix: ' (required)',

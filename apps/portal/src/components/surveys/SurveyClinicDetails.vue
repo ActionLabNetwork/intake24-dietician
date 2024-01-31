@@ -17,19 +17,22 @@
       </div>
     </div>
     <div v-if="clinic.intake24SurveyId">
-      <v-icon
-        icon="mdi-cog-outline"
-        class="hoverable"
+      <v-btn
+        class="text-none"
+        prepend-icon="mdi-cog-outline"
+        flat
+        variant="outlined"
         @click="
           () => {
-            console.log(route.params['surveyId'] as string)
             router.push({
               name: 'Survey Master Settings',
               params: { surveyId: route.params['surveyId'] as string },
             })
           }
         "
-      />
+      >
+        Settings
+      </v-btn>
       <v-btn
         v-show="false"
         variant="flat"

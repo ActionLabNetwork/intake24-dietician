@@ -125,6 +125,7 @@
     </v-card>
   </div>
 </template>
+
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
 
@@ -223,19 +224,6 @@ const formConfigNames: Form<['firstName', 'middleName', 'lastName'][number]> = {
 const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
   // eslint-disable-next-line vue/no-setup-props-destructure
   {
-    mobileNumber: {
-      key: 'mobileNumber',
-      autocomplete: 'tel',
-      label: t('profile.form.contactDetails.mobileNumber.label'),
-      required: false,
-      type: 'input',
-      inputType: 'tel',
-      rules: [
-        (value: string) =>
-          validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),
-      ],
-      handleUpdate: val => handleFieldUpdate('mobileNumber', val),
-    },
     email: {
       key: 'email',
       autocomplete: 'email',
@@ -250,6 +238,19 @@ const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
           validateWithZod(UserCreateDtoSchema.shape.email, value),
       ],
       handleUpdate: val => handleFieldUpdate('email', val),
+    },
+    mobileNumber: {
+      key: 'mobileNumber',
+      autocomplete: 'tel',
+      label: t('profile.form.contactDetails.mobileNumber.label'),
+      required: false,
+      type: 'input',
+      inputType: 'tel',
+      rules: [
+        (value: string) =>
+          validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('mobileNumber', val),
     },
     address: {
       key: 'address',
