@@ -21,8 +21,8 @@
     "noImplicitThis": true,
     "useUnknownInCatchVariables": false,
     "alwaysStrict": true,
-    "noUnusedLocals": false,  // disable error during development, checked by lint rule
-    "noUnusedParameters": false,  // disable error during development, checked by lint rule
+    "noUnusedLocals": false, // disable error during development, checked by lint rule
+    "noUnusedParameters": false, // disable error during development, checked by lint rule
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
@@ -31,6 +31,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
+    "emitDecoratorMetadata": true
   }
 }

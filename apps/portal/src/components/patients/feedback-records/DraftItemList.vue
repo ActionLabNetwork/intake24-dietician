@@ -18,8 +18,12 @@
       >
         <div v-for="draft in feedbackDraftsQuery.data.value" :key="draft.id">
           <DraftItem
-            :created="moment(draft.createdAt).format(dateFormat)"
             :modified="moment(draft.updatedAt).format(dateFormat)"
+            :recall-dates="
+              draft.draft.recallDaterange.map(date =>
+                moment(date).format(dateRangeFormat),
+              )
+            "
             class="mb-4"
             @button-click="() => handleDraftItemButtonClick(draft.id)"
           />
@@ -46,7 +50,8 @@ import { useRoute, useRouter } from 'vue-router'
 import BaseProgressCircular from '../../common/BaseProgressCircular.vue'
 import { computed, ref } from 'vue'
 
-const dateFormat = 'MMMM Do YYYY, h:mm:ss a'
+const dateFormat = 'D MMM, h:mm a'
+const dateRangeFormat = 'D MMM'
 const paginationLimit = 3
 
 const router = useRouter()

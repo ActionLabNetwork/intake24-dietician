@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto py-2 px-5">
+  <v-card class="mx-auto pa-5 card">
     <div class="d-flex justify-space-between align-center">
       <div class="d-flex align-center justify-center">
         <div>
@@ -26,21 +26,9 @@
           variant="text"
           @click="showOutputPreview = !showOutputPreview"
         >
-          {{ showOutputPreview ? 'Hide' : 'Show' }}
+          {{ showOutputPreview ? 'Hide' : 'Preview' }}
         </v-btn>
-
-        <v-btn
-          class="text-capitalize ml-8"
-          color="primary"
-          @click="$emit('buttonClick')"
-        >
-          View
-        </v-btn>
-        <!-- <v-icon
-          icon="mdi-download-outline"
-          class="ml-5"
-          @click="handleDownloadPdf"
-        /> -->
+        <v-icon icon="mdi-download-outline" class="ml-5" />
       </div>
     </div>
   </v-card>
@@ -73,3 +61,12 @@ defineEmits<{ buttonClick: [] }>()
 // eslint-disable-next-line vue/no-setup-props-destructure
 const showOutputPreview = ref(props.showOutputPreview)
 </script>
+
+<style scoped lang="scss">
+.card {
+  border-radius: 8px;
+  border: 0.5px solid rgba(0, 0, 0, 0.25);
+  background: #fff;
+  box-shadow: 0px 4px 16px 0px rgba(0, 0, 0, 0.08);
+}
+</style>

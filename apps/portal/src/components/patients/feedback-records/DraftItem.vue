@@ -8,7 +8,7 @@
         </p>
         <p>
           <span class="font-weight-medium">Recall date:</span>
-          {{ created }}
+          {{ recallDates[0] }} - {{ recallDates[1] }}
         </p>
       </div>
       <div>
@@ -27,8 +27,8 @@
 
 <script setup lang="ts">
 interface DraftItem {
-  created: string
   modified: string
+  recallDates: string[]
 }
 
 defineProps<DraftItem>()
