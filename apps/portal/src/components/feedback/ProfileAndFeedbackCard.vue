@@ -52,8 +52,7 @@
         </v-btn>
         <v-btn
           class="text-none ml-8"
-          color="#F1F1F1"
-          variant="flat"
+          variant="outlined"
           :loading="
             saveDraftMutation.isPending.value ||
             editDraftMutation.isPending.value
