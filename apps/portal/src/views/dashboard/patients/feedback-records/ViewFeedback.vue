@@ -2,17 +2,7 @@
   <div>
     <v-container>
       <div v-if="!hideBackButton" class="d-print-none">
-        <BackButton
-          :to="{
-            name: 'Survey Patient Feedback Records',
-            params: {
-              surveyId: route.params['surveyId'],
-              patientId: route.params['patientId'],
-            },
-          }"
-        >
-          Back to {{ patientName }} records
-        </BackButton>
+        <BackButton />
       </div>
       <div
         v-if="recallStore.hasRecalls && shareQuery.data.value && isDataLoaded"

@@ -32,4 +32,10 @@ import { VueQueryDevtools } from '@tanstack/vue-query-devtools'
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
 }
+
+@media print {
+  .wrapper {
+    background: white;
+  }
+}
 </style>

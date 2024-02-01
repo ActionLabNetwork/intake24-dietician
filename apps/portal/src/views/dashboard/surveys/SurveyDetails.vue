@@ -1,15 +1,13 @@
 <template>
   <v-main class="wrapper">
-    <v-container>
-      <v-row class="ml-4">
-        <SurveyClinicDetails v-if="!hideSurveyDetails" />
-      </v-row>
-      <v-row>
-        <v-col cols="12" md="12">
-          <router-view />
-        </v-col>
-      </v-row>
-    </v-container>
+    <v-row class="ml-1">
+      <SurveyClinicDetails v-if="!hideSurveyDetails" />
+    </v-row>
+    <v-row>
+      <v-col cols="12" md="12" class="pa-0 ma-0">
+        <router-view />
+      </v-col>
+    </v-row>
   </v-main>
 </template>
 
@@ -27,7 +25,10 @@ import { computed } from 'vue'
 const route = useRoute()
 
 const hideSurveyDetails = computed(() => {
-  const routeNames = ['Survey Master Settings']
+  const routeNames = [
+    'Survey Master Settings',
+    'Survey Patient Compose New Feedback',
+  ]
   return routeNames.includes(route.name as string)
 })
 </script>
@@ -51,5 +52,11 @@ const hideSurveyDetails = computed(() => {
     rgba(255, 255, 255, 1) 100%
   );
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
+}
+
+@media print {
+  .wrapper {
+    background: white;
+  }
 }
 </style>

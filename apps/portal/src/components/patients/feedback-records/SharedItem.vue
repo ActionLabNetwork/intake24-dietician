@@ -28,7 +28,12 @@
         >
           {{ showOutputPreview ? 'Hide' : 'Preview' }}
         </v-btn>
-        <v-icon icon="mdi-download-outline" class="ml-5" />
+        <v-btn
+          variant="flat"
+          icon="mdi-download-outline"
+          class="ml-5"
+          @click="$emit('buttonClick')"
+        />
       </div>
     </div>
   </v-card>

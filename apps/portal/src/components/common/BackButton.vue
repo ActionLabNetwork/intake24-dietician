@@ -17,12 +17,18 @@ const props = defineProps<{
   to?:
     | string
     | { name: string; params?: Record<string, string | string[] | undefined> }
+  onClick?: () => void
 }>()
 
 const clinicStore = useClinicStore()
 const router = useRouter()
 
 const handleBackButtonClick = () => {
+  if (props.onClick) {
+    props.onClick()
+    return
+  }
+
   if (props.to) {
     router.push(props.to)
   } else {

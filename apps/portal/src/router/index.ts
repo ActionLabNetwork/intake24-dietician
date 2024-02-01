@@ -140,7 +140,7 @@ const routes = [
           },
           {
             path: 'patient-list/patient-records/:patientId/feedback-records/view-feedback/:feedbackId',
-            name: 'Survey Patient View Shared Feedback',
+            name: 'Survey Patient View Feedback',
             component: () =>
               import(
                 '@/views/dashboard/patients/feedback-records/ViewFeedback.vue'
@@ -199,7 +199,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(process.env['BASE_URL']),
+  history: createWebHistory(process.env.BASE_URL),
   routes: routes as unknown as RouteRecordRaw[],
 })
 
@@ -208,9 +208,9 @@ router.beforeEach(async (to, _from, next) => {
   const authState = await waitForAuthState()
   const isAuthenticated = authState.type === 'logged_in'
   const hideIfAuthenticated = to.matched.some(
-    record => record.meta['hideIfAuthenticated'],
+    record => record.meta.hideIfAuthenticated,
   )
-  const requiresAuth = to.matched.some(record => record.meta['requiresAuth'])
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
   if (hideIfAuthenticated && isAuthenticated) {
     next('/dashboard/my-profile')

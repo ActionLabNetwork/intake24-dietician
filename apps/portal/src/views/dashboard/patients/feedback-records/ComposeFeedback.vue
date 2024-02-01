@@ -3,6 +3,7 @@
     <v-container>
       <div class="d-print-none">
         <BackButton
+          v-if="!previewing"
           :to="{
             name: 'Survey Patient Feedback Records',
             params: {
@@ -13,12 +14,27 @@
         >
           Back to {{ patientName }} records
         </BackButton>
+        <BackButton
+          v-else
+          :on-click="
+            () => {
+              previewing = false
+              router.push({
+                query: {
+                  ...router.currentRoute.value.query,
+                  preview: previewing.toString(),
+                },
+              })
+            }
+          "
+        />
       </div>
       <div
         v-if="
           recallStore.recallDates &&
           recallStore.selectedRecallDateRange[0] &&
-          allModules
+          allModules &&
+          !previewing
         "
         class="d-print-none mt-4"
       >
@@ -93,6 +109,7 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { nextTick } from 'vue'
 // import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 // const { t } = useI18n<i18nOptions>()
@@ -249,6 +266,7 @@ const handlePreviewButtonClick = () => {
   }
 
   const previewValue = previewing.value ? 'false' : 'true'
+
   router.push({
     query: { ...router.currentRoute.value.query, preview: previewValue },
   })
@@ -267,6 +285,17 @@ watch(
   newDateRange => {
     console.log({ newDateRange })
     console.log({ allModules: allModules.value })
+  },
+)
+
+watch(
+  () => route.query['preview'],
+  newPreviewValue => {
+    if (newPreviewValue === 'true') {
+      nextTick(() => {
+        // window.print()
+      })
+    }
   },
 )
 </script>

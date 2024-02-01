@@ -1,87 +1,89 @@
 <template>
-  <div class="wrapper">
-    <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-      <BackButton class="mb-5" />
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">
-            Master setup for {{ clinicStore.currentClinic?.surveyName }}
-          </h1>
-          <h3 class="text subheading">
-            Personalise your patient experience by choosing a visual theme,
-            select and tailor feedback modules to suit your preferences. Set a
-            default recall frequency to gather timely recall data, and customise
-            notification preferences for real-time updates when patients
-            complete their recall.
-          </h3>
-        </div>
-        <div class="alert-text">
-          <div v-if="formHasChanged" class="d-flex align-center">
-            <div>
-              <v-icon icon="mdi-alert-outline" size="large" start />
-            </div>
-            <div>
-              There are changes made in master module setup, review and confirm
-              changes before proceeding!
-            </div>
-          </div>
-          <div class="align-self-center">
-            <v-btn
-              color="primary text-none"
-              class="mt-3 mt-sm-0"
-              type="submit"
-              :disabled="!formHasChanged"
-              :loading="updateSurveyPreferencesMutation.isPending.value"
-              @click.prevent="handleSubmit"
-            >
-              Review and confirm changes
-            </v-btn>
-          </div>
-        </div>
-      </div>
-      <v-divider class="my-10" />
-      <SurveyConfiguration
-        :default-state="surveyConfigFormValues"
-        mode="Edit"
-        :handle-submit="handleSubmit"
-        @update="handleSurveyConfigUpdate"
-      />
-      <FeedbackModules
-        :default-state="surveyQuery.data.value"
-        :submit="handleSubmit"
-        @update="handleFeedbackModulesUpdate"
-      />
-      <RecallReminders
-        v-if="recallReminderProps"
-        :default-state="recallReminderProps"
-        @update="handleRecallRemindersUpdate"
-      />
-      <Notifications
-        v-if="notificationsProps"
-        :default-state="notificationsProps"
-        @update="handleNotificationsUpdate"
-      />
-      <div class="mt-10 ml-4">
-        <p class="font-weight-medium">Review and save changes</p>
-        <div v-if="formHasChanged" class="text subheading">
-          You have made changes to the master module setup. Review and confirm
-          the changes before you proceed with adding patients or reviewing
-          recall feedback
-        </div>
-        <v-btn
-          color="primary"
-          class="text-none mt-4"
-          :disabled="!formHasChanged"
-          :loading="updateSurveyPreferencesMutation.isPending.value"
-          @click="handleSubmit"
+  <v-container>
+    <div class="wrapper">
+      <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+        <BackButton class="mb-5" />
+        <div
+          class="d-flex flex-column flex-sm-row justify-space-between align-center"
         >
-          Review and confirm changes
-        </v-btn>
+          <div>
+            <h1 class="text heading">
+              Master setup for {{ clinicStore.currentClinic?.surveyName }}
+            </h1>
+            <h3 class="text subheading">
+              Personalise your patient experience by choosing a visual theme,
+              select and tailor feedback modules to suit your preferences. Set a
+              default recall frequency to gather timely recall data, and
+              customise notification preferences for real-time updates when
+              patients complete their recall.
+            </h3>
+          </div>
+          <div class="alert-text">
+            <div v-if="formHasChanged" class="d-flex align-center">
+              <div>
+                <v-icon icon="mdi-alert-outline" size="large" start />
+              </div>
+              <div>
+                There are changes made in master module setup, review and
+                confirm changes before proceeding!
+              </div>
+            </div>
+            <div class="align-self-center">
+              <v-btn
+                color="primary text-none"
+                class="mt-3 mt-sm-0"
+                type="submit"
+                :disabled="!formHasChanged"
+                :loading="updateSurveyPreferencesMutation.isPending.value"
+                @click.prevent="handleSubmit"
+              >
+                Review and confirm changes
+              </v-btn>
+            </div>
+          </div>
+        </div>
+        <v-divider class="my-10" />
+        <SurveyConfiguration
+          :default-state="surveyConfigFormValues"
+          mode="Edit"
+          :handle-submit="handleSubmit"
+          @update="handleSurveyConfigUpdate"
+        />
+        <FeedbackModules
+          :default-state="surveyQuery.data.value"
+          :submit="handleSubmit"
+          @update="handleFeedbackModulesUpdate"
+        />
+        <RecallReminders
+          v-if="recallReminderProps"
+          :default-state="recallReminderProps"
+          @update="handleRecallRemindersUpdate"
+        />
+        <Notifications
+          v-if="notificationsProps"
+          :default-state="notificationsProps"
+          @update="handleNotificationsUpdate"
+        />
+        <div class="mt-10 ml-4">
+          <p class="font-weight-medium">Review and save changes</p>
+          <div v-if="formHasChanged" class="text subheading">
+            You have made changes to the master module setup. Review and confirm
+            the changes before you proceed with adding patients or reviewing
+            recall feedback
+          </div>
+          <v-btn
+            color="primary"
+            class="text-none mt-4"
+            :disabled="!formHasChanged"
+            :loading="updateSurveyPreferencesMutation.isPending.value"
+            @click="handleSubmit"
+          >
+            Review and confirm changes
+          </v-btn>
+        </div>
       </div>
     </div>
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts" setup>

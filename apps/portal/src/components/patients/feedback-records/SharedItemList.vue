@@ -73,7 +73,7 @@ const paginationLength = computed(() => {
 
 const handleViewButtonClick = (shareId: number) => {
   router.push({
-    name: 'Survey Patient View Shared Feedback',
+    name: 'Survey Patient View Feedback',
     params: {
       surveyId: route.params['surveyId'],
       patientId,
