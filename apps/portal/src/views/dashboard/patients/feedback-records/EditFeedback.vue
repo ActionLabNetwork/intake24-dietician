@@ -3,6 +3,7 @@
     <v-container>
       <div class="d-print-none">
         <BackButton
+          v-if="!previewing"
           :to="{
             name: 'Survey Patient Feedback Records',
             params: {
@@ -13,6 +14,20 @@
         >
           Back to {{ patientName }} records
         </BackButton>
+        <BackButton
+          v-else
+          :on-click="
+            () => {
+              previewing = false
+              router.push({
+                query: {
+                  ...router.currentRoute.value.query,
+                  preview: previewing.toString(),
+                },
+              })
+            }
+          "
+        />
       </div>
       <div
         v-if="
@@ -21,7 +36,8 @@
           draftQuery.data.value &&
           allModules &&
           initialAllModules &&
-          isDataLoaded
+          isDataLoaded &&
+          !previewing
         "
         class="d-print-none mt-4"
       >
@@ -37,9 +53,6 @@
           @update:daterange="handleDaterangeUpdate"
           @update:draft="handleDraftUpdate"
         />
-      </div>
-      <div v-else>
-        <BaseProgressCircular />
       </div>
       <div
         v-if="recallStore.hasRecalls && draftQuery.data.value && isDataLoaded"
@@ -85,7 +98,7 @@ import { type Component, computed, ref, watch, reactive, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import ModuleSelectList, {
   ModuleItem,
@@ -120,6 +133,7 @@ const patientStore = usePatientStore()
 const recallStore = useRecallStore()
 
 // Composables
+const router = useRouter()
 const route = useRoute()
 const $toast = useToast()
 
@@ -342,6 +356,11 @@ const handlePreviewButtonClick = () => {
     $toast.warning('Please select at least one module to preview')
     return
   }
+
+  const previewValue = previewing.value ? 'false' : 'true'
+  router.push({
+    query: { ...router.currentRoute.value.query, preview: previewValue },
+  })
   previewing.value = !previewing.value
 }
 

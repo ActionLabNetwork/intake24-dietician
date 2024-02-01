@@ -266,7 +266,6 @@ const handlePreviewButtonClick = () => {
   }
 
   const previewValue = previewing.value ? 'false' : 'true'
-
   router.push({
     query: { ...router.currentRoute.value.query, preview: previewValue },
   })
