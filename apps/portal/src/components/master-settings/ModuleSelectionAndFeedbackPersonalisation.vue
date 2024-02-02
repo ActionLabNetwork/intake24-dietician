@@ -1,5 +1,5 @@
 <template>
-  <v-row class="ml-2">
+  <v-row>
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
         :default-state="defaultState"
@@ -40,11 +40,12 @@
           />
         </div>
 
+        <v-divider class="mx-5 mb-10" />
+
         <!-- Feedback Personalisation -->
         <div>
-          <div class="text feedback-heading">
-            Customise this feedback ({{ selectedModule }})
-          </div>
+          <SetRecommendedLevel />
+
           <!-- Feedback for below recommended level -->
           <FeedbackTextArea
             class="pl-4 pt-4"
@@ -86,6 +87,7 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
+import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,

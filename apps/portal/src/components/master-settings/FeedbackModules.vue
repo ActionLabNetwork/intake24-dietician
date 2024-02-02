@@ -1,6 +1,9 @@
 <template>
   <div>
     <v-container>
+      <pre>
+        {{ feedbackModuleSetup }}
+      </pre>
       <div>
         <v-form ref="form">
           <v-row
@@ -16,7 +19,7 @@
                       <div
                         :class="
                           fieldConfig.heading.class ||
-                          'text section-heading-2 pl-0 pl-sm-5'
+                          'text section-heading-2 pl-0'
                         "
                       >
                         {{ fieldConfig.heading.label }}
@@ -25,7 +28,7 @@
                         v-if="fieldConfig.subheading"
                         :class="
                           fieldConfig.subheading.class ||
-                          'text section-subheading pl-0 pl-sm-5'
+                          'text section-subheading pl-0'
                         "
                       >
                         {{ fieldConfig.subheading.label }}
@@ -216,20 +219,24 @@ onMounted(() => {
   formConfig = {
     visualThemeSelection: {
       heading: {
-        label: 'Visual theme selection',
+        label: 'Feedback template setup',
         class: 'text section-heading',
+      },
+      subheading: {
+        label:
+          'Choose a visual theme, select feedback templates, and compose default messages.',
       },
       class: 'text section-heading',
       column: 2,
     },
     themeSelector: {
-      heading: { label: 'Select a theme relevant for your patients' },
+      heading: { label: 'Visual theme' },
       subheading: {
         label:
-          'Select a theme that is relevant for your patients in general. You can change the theme specific to a patient from patient information page.',
+          "Select your clinic's default theme. Your selected theme will be applied to the feedback design.",
       },
       component: VisualThemeSelector,
-      componentClass: 'ml-5',
+      componentClass: '',
       props: {
         defaultState: theme.value,
         hideLabel: true,
@@ -242,7 +249,7 @@ onMounted(() => {
     },
     sendAutomatedFeedback: {
       heading: {
-        label: 'Send patient automated feedback after every recall',
+        label: 'Automated feedbacks',
         class: 'text section-heading',
       },
       subheading: {
@@ -263,8 +270,13 @@ onMounted(() => {
     // TODO: Add modules component
     moduleSelectionAndFeedbackPersonalisation: {
       heading: {
-        label: 'Module selection and feedback personalisation',
+        label: '',
         class: 'text section-heading',
+      },
+      subheading: {
+        label:
+          'Select the templates relevant to your practise and customise the default messages as per your preference.  ',
+        class: 'font-weight-medium',
       },
       component: ModuleSelectionAndFeedbackPersonalisation,
       column: 1,

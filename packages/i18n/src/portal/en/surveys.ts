@@ -22,8 +22,7 @@ export const surveys = {
       title: 'Survey details',
       name: {
         label: 'Clinic name',
-        description:
-          'This is the name of your new clinic where you can add new patients and manage their recalls.',
+        description: 'This is the name of your current clinic',
       },
       type: 'Type',
       status: 'Status',

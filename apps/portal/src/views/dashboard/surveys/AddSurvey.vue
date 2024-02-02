@@ -30,8 +30,18 @@ import {
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
+const getItemIndex = (index: number) => {
+  return `item.${index + 1}`
+}
+
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
+
+const steps = [
+  { value: 1, title: 'Step One', content: '...' },
+  { value: 2, title: 'Step Two', content: '...' },
+  { value: 3, title: 'Step Three', content: '...' },
+]
 
 const clinicStore = useClinicStore()
 

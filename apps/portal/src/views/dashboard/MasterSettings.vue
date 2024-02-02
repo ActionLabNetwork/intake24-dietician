@@ -8,7 +8,7 @@
         >
           <div>
             <h1 class="text heading">
-              Master setup for {{ clinicStore.currentClinic?.surveyName }}
+              Clinic setup for {{ clinicStore.currentClinic?.surveyName }}
             </h1>
             <h3 class="text subheading">
               Personalise your patient experience by choosing a visual theme,
