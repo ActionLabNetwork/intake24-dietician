@@ -53,6 +53,7 @@
         :suffix="suffix"
         :bordered="bordered"
         :data-cy="dataCy"
+        @update:model-value="updateValue"
         @click:append-inner="handleIconClick"
         @click:append="handleOuterIconClick"
       >
@@ -90,7 +91,12 @@ const props = defineProps<{
 // TODO: Investigate further this weird ts error
 // @ts-ignore
 const { value: fieldValue, errorMessage } = useField<string>(() => props.name)
-
+const emit = defineEmits<{
+  update: [value: string]
+}>()
+const updateValue = (value: string) => {
+  emit('update', value)
+}
 const country = ref('AU')
 </script>
 

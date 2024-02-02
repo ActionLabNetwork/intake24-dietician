@@ -1,12 +1,17 @@
 <template>
   <v-main class="wrapper">
     <v-container>
-      <SurveyConfiguration
+      <SteppedSurveyConfiguration
+        :default-state="surveyConfigFormValues"
+        :handle-submit="handleSubmit"
+        @update="handleSurveyConfigUpdate"
+      />
+      <!-- <SurveyConfiguration
         :default-state="surveyConfigFormValues"
         mode="Add"
         :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
-      />
+      /> -->
     </v-container>
   </v-main>
 </template>
@@ -14,7 +19,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
+// import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
+import SteppedSurveyConfiguration from '@intake24-dietician/portal/components/surveys/SteppedSurveyConfiguration.vue'
 // import { useI18n } from 'vue-i18n'
 // import type { i18nOptions } from '@intake24-dietician/i18n'
 import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
