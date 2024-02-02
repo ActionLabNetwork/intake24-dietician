@@ -1,22 +1,27 @@
 [
   {
     "id": 1,
-    "name": "Meal diary"
+    "name": "Meal diary",
+    "nutrientTypes": []
   },
   {
     "id": 2,
-    "name": "Carbs exchange"
+    "name": "Carbs exchange",
+    "nutrientTypes": [13]
   },
   {
     "id": 3,
-    "name": "Energy intake"
+    "name": "Energy intake",
+    "nutrientTypes": [1, 12]
   },
   {
     "id": 4,
-    "name": "Fibre intake"
+    "name": "Fibre intake",
+    "nutrientTypes": [17]
   },
   {
     "id": 5,
-    "name": "Water intake"
+    "name": "Water intake",
+    "nutrientTypes": [8]
   }
 ]

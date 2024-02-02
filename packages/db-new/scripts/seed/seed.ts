@@ -3,6 +3,7 @@ import 'reflect-metadata'
 import { AppDatabase } from '../../src/database'
 import {
   dieticians,
+  feedbackModuleToNutrientTypes,
   feedbackModules,
   patients,
   recalls,
@@ -38,7 +39,7 @@ async function cleanupTables(sql: ReturnType<typeof initDrizzle>['sql']) {
   const tables =
     await sql`SELECT tablename FROM pg_tables WHERE schemaname='public'`
   for (const table of tables) {
-    const tableName = table['tablename']
+    const tableName = table.tablename
     const statement = `TRUNCATE TABLE "${tableName}" CASCADE`
     const resetSequenceStatement = `
       SELECT setval(pg_get_serial_sequence('${tableName}', 'id'), 1, false);
@@ -130,8 +131,8 @@ async function seedPatients(
     .insert(patients)
     .values({
       surveyId: survey!.id,
-      firstName: `Patient`,
-      middleName: ``,
+      firstName: 'Patient',
+      middleName: '',
       lastName: `1`,
       userId: patientUser!.id,
       mobileNumber: '',
@@ -307,10 +308,29 @@ async function seedSurveyToFeedbackModules(
   )
 }
 
-async function main() {
-  const database = new AppDatabase(
-    'postgres://postgres:postgres@localhost:5433/intake24-dietician-db',
+async function seedFeedbackModuleToNutrientTypes(
+  drizzle: ReturnType<typeof initDrizzle>['drizzle'],
+) {
+  type EnhancedType = typeof feedbackModules.$inferSelect & {
+    nutrientTypes: number[]
+  }
+  const feedbackModulesData = (await readJsonFile(
+    'feedback-modules.json',
+  )) as EnhancedType[]
+
+  await drizzle.insert(feedbackModuleToNutrientTypes).values(
+    feedbackModulesData.flatMap(module => {
+      const moduleId = module.id
+
+      return module.nutrientTypes.map(nutrientTypeId => {
+        return { feedbackModuleId: moduleId, nutrientTypeId: nutrientTypeId }
+      })
+    }),
   )
+}
+
+async function main() {
+  const database = new AppDatabase(env.PG_CONNECTION_STRING)
   container.register(AppDatabase, { useValue: database })
   const { sql, drizzle } = initDrizzle()
 
@@ -323,6 +343,7 @@ async function main() {
   await seedNutrientTypes(drizzle)
   await seedFeedbackModules(drizzle)
   await seedSurveyToFeedbackModules(drizzle, survey)
+  await seedFeedbackModuleToNutrientTypes(drizzle)
 
   database.close()
   process.exit(0)

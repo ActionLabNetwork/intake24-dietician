@@ -9,7 +9,12 @@ import { desc, eq } from 'drizzle-orm'
 import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
-import { feedbackModules, surveyToFeedbackModules, surveys } from '../models'
+import {
+  feedbackModuleToNutrientTypes,
+  feedbackModules,
+  surveyToFeedbackModules,
+  surveys,
+} from '../models'
 
 @singleton()
 export class SurveyRepository {
@@ -45,13 +50,6 @@ export class SurveyRepository {
       })
       if (!survey) return undefined
 
-      const surveyWithPatientsCount = {
-        ...survey,
-        patients: survey.patients.reduce(acc => {
-          return acc + 1
-        }, 0),
-      }
-
       const queriedFeedbackModules = await tx
         .select()
         .from(surveyToFeedbackModules)
@@ -60,8 +58,15 @@ export class SurveyRepository {
           feedbackModules,
           eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
         )
+        .innerJoin(
+          feedbackModuleToNutrientTypes,
+          eq(
+            feedbackModules.id,
+            feedbackModuleToNutrientTypes.feedbackModuleId,
+          ),
+        )
 
-      console.log({ surveyWithPatientsCount })
+      console.log(queriedFeedbackModules)
 
       return { survey, queriedFeedbackModules }
     })
@@ -75,12 +80,15 @@ export class SurveyRepository {
         feedbackAboveRecommendedLevel: '',
         ...row['feedback-module'],
         ...row['survey_feedback_modules'],
+        nutrientTypes: row['feedback_module_nutrient_types'].nutrientTypeId,
       }),
     )
 
     denormalizedFeedbackModules.sort(
       (a, b) => a.feedbackModuleId - b.feedbackModuleId,
     )
+
+    console.log({ denormalizedFeedbackModules })
 
     return {
       ...queryResult.survey,

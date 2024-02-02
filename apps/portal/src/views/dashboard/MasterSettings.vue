@@ -5,6 +5,8 @@
         <pre>{{ values }}</pre>
         <br /><br />
         <pre>{{ formData }}</pre>
+        <br /><br />
+        <pre>{{ surveyQueryData }}</pre>
         <BackButton class="mb-5" />
         <div
           class="d-flex flex-column flex-sm-row justify-space-between align-center"

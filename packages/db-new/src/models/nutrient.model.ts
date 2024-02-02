@@ -1,6 +1,7 @@
 import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { relations } from 'drizzle-orm'
+import { feedbackModuleToNutrientTypes } from './feedback-module.model'
 
 export const nutrientUnits = pgTable('nutrient_units', {
   id: serial('id').primaryKey(),
@@ -22,9 +23,13 @@ export const nutrientTypes = pgTable('nutrient_types', {
   ...timestampFields,
 })
 
-export const nutrientTypesRelations = relations(nutrientTypes, ({ one }) => ({
-  nutrientUnit: one(nutrientUnits, {
-    fields: [nutrientTypes.unitId],
-    references: [nutrientUnits.id],
+export const nutrientTypesRelations = relations(
+  nutrientTypes,
+  ({ one, many }) => ({
+    nutrientUnit: one(nutrientUnits, {
+      fields: [nutrientTypes.unitId],
+      references: [nutrientUnits.id],
+    }),
+    feedbackModules: many(feedbackModuleToNutrientTypes),
   }),
-}))
+)
