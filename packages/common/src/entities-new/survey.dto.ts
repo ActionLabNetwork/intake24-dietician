@@ -16,6 +16,15 @@ export const SurveyFeedbackModuleDtoSchema =
   SurveyFeedbackModuleCreateDtoSchema.extend({
     name: z.string(),
     description: z.string(),
+    nutrientTypes: z.array(
+      z.object({
+        description: z.string(),
+        unit: z.object({
+          description: z.string(),
+          symbol: z.string().nullable(),
+        }),
+      }),
+    ),
   })
 
 export type SurveyFeedbackModuleDto = z.infer<

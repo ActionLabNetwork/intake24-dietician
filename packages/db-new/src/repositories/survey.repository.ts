@@ -3,6 +3,7 @@ import type {
   SurveyCreateDto,
   SurveyDto,
   SurveyFeedbackModuleCreateDto,
+  SurveyFeedbackModuleDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
 import { desc, eq } from 'drizzle-orm'
@@ -12,6 +13,8 @@ import { AppDatabase } from '../database'
 import {
   feedbackModuleToNutrientTypes,
   feedbackModules,
+  nutrientTypes,
+  nutrientUnits,
   surveyToFeedbackModules,
   surveys,
 } from '../models'
@@ -65,30 +68,56 @@ export class SurveyRepository {
             feedbackModuleToNutrientTypes.feedbackModuleId,
           ),
         )
+        .innerJoin(
+          nutrientTypes,
+          eq(nutrientTypes.id, feedbackModuleToNutrientTypes.nutrientTypeId),
+        )
+        .innerJoin(nutrientUnits, eq(nutrientUnits.id, nutrientTypes.unitId))
 
       console.log(queriedFeedbackModules)
-
       return { survey, queriedFeedbackModules }
     })
     if (!queryResult) return undefined
 
-    const denormalizedFeedbackModules = queryResult.queriedFeedbackModules.map(
-      row => ({
-        isActive: false,
-        feedbackModuleId: row['feedback-module'].id,
-        feedbackBelowRecommendedLevel: '',
-        feedbackAboveRecommendedLevel: '',
-        ...row['feedback-module'],
-        ...row['survey_feedback_modules'],
-        nutrientTypes: row['feedback_module_nutrient_types'].nutrientTypeId,
-      }),
-    )
+    const denormalizedFeedbackModules =
+      queryResult.queriedFeedbackModules.reduce(
+        (acc: SurveyFeedbackModuleDto[], row) => {
+          const existingModule = acc.find(
+            module => module.feedbackModuleId === row['feedback-module']?.id,
+          )
+
+          const nutrientType = {
+            description: row.nutrient_types.description,
+            unit: {
+              symbol: row.nutrient_units.symbol,
+              description: row.nutrient_units.description,
+            },
+          }
+
+          if (existingModule) {
+            existingModule.nutrientTypes.push(nutrientType)
+          } else {
+            acc.push({
+              isActive: false,
+              feedbackModuleId: row['feedback-module']?.id ?? 1,
+              feedbackBelowRecommendedLevel: '',
+              feedbackAboveRecommendedLevel: '',
+              ...row['feedback-module'],
+              ...row['survey_feedback_modules'],
+              nutrientTypes: [nutrientType],
+            })
+          }
+
+          return acc
+        },
+        [],
+      )
 
     denormalizedFeedbackModules.sort(
       (a, b) => a.feedbackModuleId - b.feedbackModuleId,
     )
 
-    console.log({ denormalizedFeedbackModules })
+    console.log(denormalizedFeedbackModules)
 
     return {
       ...queryResult.survey,

@@ -1,9 +1,6 @@
 <template>
   <div>
     <v-container>
-      <pre>
-        {{ feedbackModuleSetup }}
-      </pre>
       <div>
         <v-form ref="form">
           <v-row
@@ -144,6 +141,7 @@ const createFeedbackEntry = (key: ModuleName) => {
     feedbackBelow: feedbackModel.feedbackBelowRecommendedLevel,
     feedbackAbove: feedbackModel.feedbackAboveRecommendedLevel,
     isActive: feedbackModel.isActive,
+    nutrientTypes: feedbackModel.nutrientTypes,
   }
 }
 

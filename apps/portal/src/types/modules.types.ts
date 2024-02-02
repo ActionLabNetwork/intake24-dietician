@@ -25,6 +25,10 @@ export type FeedbackAboveAndBelowRecommendedLevels = {
   feedbackAbove: string
   feedbackBelow: string
   isActive: boolean
+  nutrientTypes?: {
+    description: string
+    unit: { description: string; symbol: string | null }
+  }[]
 }
 
 export type ComponentMappingWithFeedback = Record<

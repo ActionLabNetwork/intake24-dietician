@@ -2,22 +2,22 @@
   {
     "id": 1,
     "name": "Meal diary",
-    "nutrientTypes": []
+    "nutrientTypes": [13]
   },
   {
     "id": 2,
     "name": "Carbs exchange",
-    "nutrientTypes": [13]
+    "nutrientTypes": [13, 159, 166, 170]
   },
   {
     "id": 3,
     "name": "Energy intake",
-    "nutrientTypes": [1, 12]
+    "nutrientTypes": [1, 2]
   },
   {
     "id": 4,
     "name": "Fibre intake",
-    "nutrientTypes": [17]
+    "nutrientTypes": [17, 15, 16, 18, 19, 45, 46]
   },
   {
     "id": 5,

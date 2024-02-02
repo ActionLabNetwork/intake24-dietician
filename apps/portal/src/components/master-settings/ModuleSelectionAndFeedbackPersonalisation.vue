@@ -47,34 +47,6 @@
           <SetRecommendedLevel
             v-model="moduleNameToModuleComponentMapping[selectedModule]"
           />
-
-          <!-- Feedback for below recommended level -->
-          <FeedbackTextArea
-            class="pl-4 pt-4"
-            text-area-label="Feedback for below recommended level"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
-            "
-            editable
-            @update:feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow =
-                $event
-            "
-          />
-
-          <!-- Feedback for above recommended level -->
-          <FeedbackTextArea
-            class="pl-4 pt-4"
-            text-area-label="Feedback for above recommended level"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove
-            "
-            editable
-            @update:feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove =
-                $event
-            "
-          />
         </div>
       </v-card>
     </v-col>
@@ -82,7 +54,6 @@
 </template>
 
 <script setup lang="ts">
-import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
 import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
@@ -100,12 +71,10 @@ import ModuleSelectList, {
 } from '../feedback-modules/ModuleSelectList.vue'
 
 export type FeedbackMapping = {
-  [K in keyof typeof moduleNameToModuleComponentMapping]: {
-    name: string
-    feedbackBelow: (typeof moduleNameToModuleComponentMapping)[K]['feedbackBelow']
-    feedbackAbove: (typeof moduleNameToModuleComponentMapping)[K]['feedbackAbove']
-    isActive: boolean
-  }
+  [K in keyof typeof moduleNameToModuleComponentMapping]: Omit<
+    (typeof moduleNameToModuleComponentMapping)[keyof typeof moduleNameToModuleComponentMapping],
+    'component'
+  >
 }
 
 const props = defineProps<{ defaultState: FeedbackMapping }>()
@@ -175,6 +144,7 @@ watch(moduleNameToModuleComponentMapping, newFeedbacks => {
         feedbackBelow: value.feedbackBelow,
         feedbackAbove: value.feedbackAbove,
         isActive: value.isActive,
+        nutrientTypes: value.nutrientTypes,
       },
     ]),
   ) as FeedbackMapping
@@ -192,6 +162,8 @@ watch(
       moduleNameToModuleComponentMapping[routeKey].feedbackAbove =
         value.feedbackAbove
       moduleNameToModuleComponentMapping[routeKey].isActive = value.isActive
+      moduleNameToModuleComponentMapping[routeKey].nutrientTypes =
+        value.nutrientTypes
     })
   },
   { immediate: true },

@@ -3,7 +3,7 @@
     Customise the recommended level and the default messages according to your
     patient's profile
   </div>
-  <div class="d-flex justify-space-between align-center px-5">
+  <div v-if="feedback" class="d-flex justify-space-between align-center px-5">
     <div class="font-weight-medium d-flex align-center w-50">
       <p>Set recommendation level</p>
       <div class="mx-5">=</div>
@@ -12,18 +12,19 @@
         type="number"
         class="mt-5"
         variant="outlined"
-        suffix="g"
+        :suffix="feedback.nutrientTypes?.[0]?.unit.symbol ?? ''"
       ></v-text-field>
     </div>
     <div>
       <BaseButton>Reset values</BaseButton>
     </div>
   </div>
-  <div v-if="feedback">
+  <div v-if="feedback && recommendationLevel">
     <div class="text feedback-heading">Feedback message if:</div>
     <div class="px-4">
       <p class="text-primary font-weight-medium">
-        Fibre intake is above {{ recommendationLevel }}
+        {{ feedback.name }} is above {{ recommendationLevel }}
+        {{ feedback.nutrientTypes?.[0]?.unit.symbol }}
       </p>
       <v-text-field
         v-model="feedback.feedbackAbove"
@@ -34,7 +35,8 @@
     </div>
     <div class="px-4">
       <p class="text-primary font-weight-medium">
-        Fibre intake is below {{ recommendationLevel }}
+        {{ feedback.name }} is below {{ recommendationLevel }}
+        {{ feedback.nutrientTypes?.[0]?.unit.symbol }}
       </p>
       <v-text-field
         v-model="feedback.feedbackBelow"

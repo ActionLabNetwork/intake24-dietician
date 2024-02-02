@@ -198,6 +198,7 @@ async function seedNutrientTypes(
       .where(eq(nutrientUnits.description, type.unit_id))
 
     return drizzle.insert(nutrientTypes).values({
+      id: type.id,
       unitId: unitId[0]!.id,
       description: type.description,
     })
