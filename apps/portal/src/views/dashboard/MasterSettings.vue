@@ -2,6 +2,9 @@
   <v-container>
     <div class="wrapper">
       <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+        <pre>{{ values }}</pre>
+        <br /><br />
+        <pre>{{ formData }}</pre>
         <BackButton class="mb-5" />
         <div
           class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -43,12 +46,7 @@
           </div>
         </div>
         <v-divider class="my-10" />
-        <SurveyConfiguration
-          :default-state="surveyConfigFormValues"
-          mode="Edit"
-          :handle-submit="handleSubmit"
-          @update="handleSurveyConfigUpdate"
-        />
+        <SurveyConfiguration mode="Edit" :handle-submit="handleSubmit" />
         <FeedbackModules
           :default-state="surveyQuery.data.value"
           :submit="handleSubmit"
@@ -104,11 +102,12 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import {
-  SurveyCreateDto,
   SurveyDto,
+  SurveyDtoSchema,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
+import { useForm } from 'vee-validate'
 
 const clinicStore = useClinicStore()
 
@@ -118,23 +117,10 @@ const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const updateSurveyMutation = useUpdateSurvey()
 const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
+const { values, resetForm } = useForm({ validationSchema: SurveyDtoSchema })
+
 const initialFormData = ref<SurveyDto>()
 const formData = ref<SurveyDto>()
-
-const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
-  surveyName: '',
-  intake24Host: '',
-  intake24SurveyId: '',
-  intake24Secret: '',
-  alias: '',
-  isActive: true,
-})
-
-const handleSurveyConfigUpdate = (
-  values: Omit<SurveyCreateDto, 'surveyPreference'>,
-) => {
-  surveyConfigFormValues.value = values
-}
 
 const surveyQueryData = computed(() => {
   return surveyQuery.data.value
@@ -228,14 +214,13 @@ const handleSubmit = async (): Promise<void> => {
   }
 
   const { id, ...survey } = formData.value
-  console.log({ surveyConfigFormValues })
 
   updateSurveyMutation.mutate(
     {
       id,
       survey: {
         ...survey,
-        ...surveyConfigFormValues.value,
+        ...values,
       },
     },
     {
@@ -267,14 +252,16 @@ watch(
     }
 
     // Prefill clinic details
-    surveyConfigFormValues.value = {
-      surveyName: newSurveyQueryData?.surveyName ?? '',
-      intake24Host: newSurveyQueryData?.intake24Host ?? '',
-      intake24SurveyId: newSurveyQueryData?.intake24SurveyId ?? '',
-      intake24Secret: newSurveyQueryData?.intake24Secret ?? '',
-      alias: newSurveyQueryData?.alias ?? '',
-      isActive: newSurveyQueryData?.isActive ?? true,
-    }
+    resetForm({
+      values: {
+        surveyName: newSurveyQueryData?.surveyName ?? '',
+        intake24Host: newSurveyQueryData?.intake24Host ?? '',
+        intake24SurveyId: newSurveyQueryData?.intake24SurveyId ?? '',
+        intake24Secret: newSurveyQueryData?.intake24Secret ?? '',
+        alias: newSurveyQueryData?.alias ?? '',
+        isActive: newSurveyQueryData?.isActive ?? true,
+      },
+    })
 
     // Prefill clinic preferences details
     if (!newSurveyQueryData?.surveyPreference) return

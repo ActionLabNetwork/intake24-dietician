@@ -7,22 +7,37 @@
     <div class="font-weight-medium d-flex align-center w-50">
       <p>Set recommendation level</p>
       <div class="mx-5">=</div>
-      <v-text-field class="mt-5" variant="outlined" suffix="g"></v-text-field>
+      <v-text-field
+        v-model="recommendationLevel"
+        type="number"
+        class="mt-5"
+        variant="outlined"
+        suffix="g"
+      ></v-text-field>
     </div>
     <div>
       <BaseButton>Reset values</BaseButton>
     </div>
   </div>
-  <div>
+  <div v-if="feedback">
     <div class="text feedback-heading">Feedback message if:</div>
     <div class="px-4">
-      <p class="text-primary font-weight-medium">Fibre intake is above</p>
-      <v-text-field class="mt-5" variant="outlined" suffix="g"></v-text-field>
+      <p class="text-primary font-weight-medium">
+        Fibre intake is above {{ recommendationLevel }}
+      </p>
+      <v-text-field
+        v-model="feedback.feedbackAbove"
+        class="mt-5"
+        variant="outlined"
+        suffix="g"
+      ></v-text-field>
     </div>
     <div class="px-4">
-      <p class="text-primary font-weight-medium">Fibre intake is below</p>
+      <p class="text-primary font-weight-medium">
+        Fibre intake is below {{ recommendationLevel }}
+      </p>
       <v-text-field
-        label="Fibre intake is below"
+        v-model="feedback.feedbackBelow"
         class="mt-5"
         variant="outlined"
         suffix="g"
@@ -32,7 +47,12 @@
 </template>
 
 <script setup lang="ts">
+import type { FeedbackAboveAndBelowRecommendedLevels } from '@intake24-dietician/portal/types/modules.types'
 import BaseButton from '../common/BaseButton.vue'
+import { ref } from 'vue'
+
+const feedback = defineModel<FeedbackAboveAndBelowRecommendedLevels>()
+const recommendationLevel = ref('')
 </script>
 
 <style scoped lang="scss">

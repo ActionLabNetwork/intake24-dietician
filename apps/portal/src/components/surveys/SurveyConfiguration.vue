@@ -19,12 +19,10 @@
       >
         <div v-for="(config, fieldName) in formSurveyConfig" :key="fieldName">
           <div v-if="config.type === 'input'" class="mb-5">
-            <BaseInput
+            <VBaseInput
               :type="config.inputType"
               :name="config.key"
-              :rules="config.rules"
               :autocomplete="config.autocomplete"
-              :value="formValues[fieldName]"
               bordered
               :suffix-icon="config.suffixIcon"
               :handle-icon-click="config.handleSuffixIconClick"
@@ -43,7 +41,7 @@
               <div class="input-label description">
                 {{ config.description }}
               </div>
-            </BaseInput>
+            </VBaseInput>
           </div>
         </div>
       </div>
@@ -76,18 +74,14 @@
 </template>
 
 <script setup lang="ts">
-import BaseInput from '@/components/form/BaseInput.vue'
+import VBaseInput from '../form/VBaseInput.vue'
 import BackButton from '../common/BackButton.vue'
 import { ref } from 'vue'
 import type { Form } from '../profile/types'
 import { useDisplay } from 'vuetify'
 import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-import { validateWithZod } from '@intake24-dietician/portal/validators'
-import {
-  SurveyCreateDto,
-  SurveyCreateDtoSchema,
-} from '@intake24-dietician/common/entities-new/survey.dto'
+import { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import BaseButton from '../common/BaseButton.vue'
 import BaseDialog from '../common/BaseDialog.vue'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
@@ -98,13 +92,10 @@ type FormField = keyof Omit<
   'isActive' | 'surveyPreference' | 'feedbackModules'
 >
 
-const props = defineProps<{
-  defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
+defineProps<{
+  defaultState?: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
   mode: 'Add' | 'Edit'
-}>()
-const emit = defineEmits<{
-  update: [value: Omit<SurveyCreateDto, 'surveyPreference'>]
 }>()
 
 const { t } = useI18n<i18nOptions>()
@@ -112,17 +103,7 @@ const { mdAndUp } = useDisplay()
 
 const clinicStore = useClinicStore()
 
-// eslint-disable-next-line vue/no-setup-props-destructure
-const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
-  ...props.defaultState,
-})
-
 const submitDialog = ref(false)
-
-const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
-  formValues.value[fieldName] = newVal
-  emit('update', { ...formValues.value })
-}
 
 const handleDialogConfirm = () => {
   if (window.history.length > 1) {
@@ -141,11 +122,6 @@ const formSurveyConfig: Form<FormField> = {
     labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
     type: 'input',
     inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('surveyName', val),
   },
   intake24SurveyId: {
     key: 'intake24SurveyId',
@@ -157,11 +133,6 @@ const formSurveyConfig: Form<FormField> = {
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24SurveyId, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
   },
   intake24Host: {
     key: 'intake24SurveyHost',
@@ -173,11 +144,6 @@ const formSurveyConfig: Form<FormField> = {
     labelSuffix: t('general.form.requiredSuffix'),
     type: 'input',
     inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24Host, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24Host', val),
   },
   intake24Secret: {
     key: 'intake24Secret',
@@ -189,11 +155,6 @@ const formSurveyConfig: Form<FormField> = {
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24Secret, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24Secret', val),
   },
   alias: {
     key: 'alias',
@@ -203,11 +164,6 @@ const formSurveyConfig: Form<FormField> = {
     labelSuffix: ' (required)',
     type: 'input',
     inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('alias', val),
   },
 }
 </script>

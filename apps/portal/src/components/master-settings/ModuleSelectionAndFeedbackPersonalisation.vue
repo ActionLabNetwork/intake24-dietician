@@ -11,7 +11,7 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div class="ma-4">
+        <div v-if="false" class="ma-4">
           <component
             :is="moduleNameToModuleComponentMapping[selectedModule].component"
             :feedback="
@@ -44,7 +44,9 @@
 
         <!-- Feedback Personalisation -->
         <div>
-          <SetRecommendedLevel />
+          <SetRecommendedLevel
+            v-model="moduleNameToModuleComponentMapping[selectedModule]"
+          />
 
           <!-- Feedback for below recommended level -->
           <FeedbackTextArea
