@@ -133,7 +133,7 @@ async function seedPatients(
       surveyId: survey!.id,
       firstName: 'Patient',
       middleName: '',
-      lastName: `1`,
+      lastName: '1',
       userId: patientUser!.id,
       mobileNumber: '',
       address: '',

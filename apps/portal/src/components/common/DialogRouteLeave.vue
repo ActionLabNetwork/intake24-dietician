@@ -41,7 +41,6 @@ const leaveGuard = useLeaveGuard(dialog.show, props.unsavedChanges)
 watch(
   () => props.unsavedChanges,
   newValue => {
-    console.log({ newValue })
     leaveGuard._unsavedChanges.value = newValue
   },
 )

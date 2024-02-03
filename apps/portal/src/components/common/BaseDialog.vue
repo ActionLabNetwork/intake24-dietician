@@ -19,24 +19,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import BaseButton from './BaseButton.vue'
 
 const props = defineProps<{
-  modelValue: boolean
   onConfirm?: Function
   onCancel?: Function
 }>()
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
 
-// eslint-disable-next-line vue/no-setup-props-destructure
-const dialog = ref(props.modelValue)
+const dialog = defineModel<boolean>()
 const confirmBtn = ref()
 
 const handleConfirm = () => {
-  console.log('Confirming')
   if (props.onConfirm) {
     props.onConfirm()
   }
@@ -52,20 +46,5 @@ const handleCancel = () => {
 
 const closeDialog = () => {
   dialog.value = false
-  emit('update:modelValue', dialog.value)
 }
-
-watch(
-  () => props.modelValue,
-  async newValue => {
-    dialog.value = newValue
-  },
-)
-
-watch(
-  () => dialog.value,
-  newValue => {
-    emit('update:modelValue', newValue)
-  },
-)
 </script>

@@ -117,8 +117,6 @@ export class SurveyRepository {
       (a, b) => a.feedbackModuleId - b.feedbackModuleId,
     )
 
-    console.log(denormalizedFeedbackModules)
-
     return {
       ...queryResult.survey,
       feedbackModules: denormalizedFeedbackModules,
