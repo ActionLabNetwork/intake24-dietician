@@ -20,7 +20,7 @@
     </div>
   </div>
   <div class="py-5 pb-10">
-    {{ newRange }}
+    {{ recommendedLevels }}
     <div>
       <v-table class="pa-5">
         <thead>
@@ -32,7 +32,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(range, index) in ageRanges" :key="index">
+          <tr v-for="(range, index) in recommendedLevels.ranges" :key="index">
             <td>{{ range.start }} - {{ range.end }}</td>
             <td>{{ range.male }}</td>
             <td>{{ range.female }}</td>
@@ -44,14 +44,14 @@
       <form class="px-5" @submit.prevent="onSubmit">
         <h3>Add new age range</h3>
         {{ errors }}
-        {{ ageRanges.at(-1) }}
+        {{ recommendedLevels.ranges?.at(-1) }}
         <v-row class="mt-2">
           <v-col cols="12" sm="6">
             <v-text-field
               v-model.number="start"
               name="start"
               type="number"
-              :error-messages="startErrMsg"
+              :error-messages="startErrMsg || errors.newRange"
               placeholder="Start age"
               variant="outlined"
             />
@@ -67,6 +67,7 @@
             />
           </v-col>
         </v-row>
+
         <h3>Add recommendation level</h3>
         <v-row>
           <v-col cols="12" sm="4">
@@ -140,119 +141,126 @@
 <script setup lang="ts">
 import type { FeedbackAboveAndBelowRecommendedLevels } from '@intake24-dietician/portal/types/modules.types'
 import BaseButton from '../common/BaseButton.vue'
-import { computed, ref } from 'vue'
-import z from 'zod'
+import { ref } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import { VTextField } from 'vuetify/lib/components/index.mjs'
-import { toTypedSchema } from '@vee-validate/zod'
+import * as yup from 'yup'
+import { toTypedSchema } from '@vee-validate/yup'
 
 const feedback = defineModel<FeedbackAboveAndBelowRecommendedLevels>()
 const recommendationLevel = ref('')
 
-const ageRanges = ref([
-  { start: 0, end: 12, male: 100, female: 100, other: 100 },
-  { start: 13, end: 20, male: 150, female: 100, other: 100 },
-  { start: 21, end: 30, male: 180, female: 100, other: 100 },
-])
-
-// const newRange = ref({
-//   start: null,
-//   end: null,
-//   male: null,
-//   female: null,
-//   other: null,
-// })
-
 const errorMessage = ref('')
 
-const getAgeRangeSchema = () => {
-  return z.object({
-    start: z
-      .number()
-      .nonnegative()
-      .min(
-        (ageRanges.value.at(-1)?.end ?? 0) + 1,
-        `Start must be at least ${(ageRanges.value.at(-1)?.end ?? 0) + 1}`,
-      ),
-    end: z.number().nonnegative(),
-    male: z.number().nonnegative(),
-    female: z.number().nonnegative(),
-    other: z.number().nonnegative(),
+const ageRangeSchema = yup
+  .object()
+  .shape({
+    start: yup.number().required().min(0),
+    end: yup.number().required().positive(),
+    male: yup.number().required().positive(),
+    female: yup.number().required().positive(),
+    other: yup.number().required().positive(),
   })
-}
+  .test(
+    'start-end',
+    'Start age must be less than end age.',
+    function (value: { start: number; end: number }) {
+      return value.start < value.end
+    },
+  )
 
-const ageRangeSchema = ref(
-  z.object({
-    start: z
-      .number()
-      .nonnegative()
-      .min(
-        (ageRanges.value.at(-1)?.end ?? 0) + 1,
-        `Start must be at least ${(ageRanges.value.at(-1)?.end ?? 0) + 1}`,
-      ),
-    end: z.number().nonnegative(),
-    male: z.number().nonnegative(),
-    female: z.number().nonnegative(),
-    other: z.number().nonnegative(),
-  }),
-)
+const validationSchema = yup.object().shape({
+  ranges: yup.array().of(ageRangeSchema),
+  newRange: yup
+    .object()
+    .shape({
+      start: yup.number().required().positive(),
+      end: yup.number().required().positive(),
+      male: yup.number().required().positive(),
+      female: yup.number().required().positive(),
+      other: yup.number().required().positive(),
+    })
+    .test(
+      'newRange-start-validation',
+      `Start age must be at least one more than the last age value in the age range`,
+      function (value) {
+        const ranges = this.parent.ranges
+        if (ranges && ranges.length > 0) {
+          const lastRange = ranges[ranges.length - 1]
+          return value.start > lastRange.end
+        }
+        return true
+      },
+    ),
+})
 
 const {
   handleSubmit,
   errors,
-  values: newRange,
+  values: recommendedLevels,
+  setFieldValue,
   resetForm,
 } = useForm({
-  validationSchema: toTypedSchema(ageRangeSchema.value),
+  validationSchema: toTypedSchema(validationSchema),
+  initialValues: {
+    ranges: [
+      { start: 0, end: 12, male: 100, female: 100, other: 100 },
+      { start: 13, end: 20, male: 150, female: 100, other: 100 },
+      { start: 21, end: 30, male: 180, female: 100, other: 100 },
+    ],
+    newRange: {
+      start: undefined,
+      end: undefined,
+      male: undefined,
+      female: undefined,
+      other: undefined,
+    },
+  },
 })
 
-const { value: start, errorMessage: startErrMsg } = useField('start')
-const { value: end, errorMessage: endErrMsg } = useField('end')
-const { value: male, errorMessage: maleErrMsg } = useField('male')
-const { value: female, errorMessage: femaleErrMsg } = useField('female')
-const { value: other, errorMessage: otherErrMsg } = useField('other')
+const { value: start, errorMessage: startErrMsg } = useField('newRange.start')
+const { value: end, errorMessage: endErrMsg } = useField('newRange.end')
+const { value: male, errorMessage: maleErrMsg } = useField('newRange.male')
+const { value: female, errorMessage: femaleErrMsg } =
+  useField('newRange.female')
+const { value: other, errorMessage: otherErrMsg } = useField('newRange.other')
 
-const addRange = () => {
+const addRange = handleSubmit(() => {
   errorMessage.value = ''
-  if (!newRange.start || !newRange.end) return
+  if (
+    !recommendedLevels.newRange?.start ||
+    !recommendedLevels.newRange?.end ||
+    !recommendedLevels.ranges
+  )
+    return
 
-  // if (newRange.value.start >= newRange.value.end) {
-  //   errorMessage.value = 'Start age must be less than end age.'
-  //   return
-  // }
+  setFieldValue('ranges', [
+    ...recommendedLevels.ranges,
+    {
+      start: recommendedLevels.newRange.start,
+      end: recommendedLevels.newRange.end,
+      male: recommendedLevels.newRange.male ?? 0,
+      female: recommendedLevels.newRange.female ?? 0,
+      other: recommendedLevels.newRange.other ?? 0,
+    },
+  ])
 
-  // for (let range of ageRanges.value) {
-  //   if (
-  //     newRange.value.start <= range.end &&
-  //     newRange.value.end >= range.start
-  //   ) {
-  //     errorMessage.value = 'Age ranges cannot overlap.'
-  //     return
-  //   }
-  // }
-
-  ageRanges.value.push({
-    start: newRange.start,
-    end: newRange.end,
-    male: newRange.male ?? 0,
-    female: newRange.female ?? 0,
-    other: newRange.other ?? 0,
+  recommendedLevels.ranges?.push({
+    start: recommendedLevels.newRange.start,
+    end: recommendedLevels.newRange.end,
+    male: recommendedLevels.newRange.male ?? 0,
+    female: recommendedLevels.newRange.female ?? 0,
+    other: recommendedLevels.newRange.other ?? 0,
   })
 
-  resetForm()
-  ageRanges.value.sort((a, b) => a.start - b.start)
-
-  // Update the validation schema
-  ageRangeSchema.value = getAgeRangeSchema()
-  const form = useForm({
-    validationSchema: toTypedSchema(ageRangeSchema.value),
-  })
-}
+  recommendedLevels.ranges?.sort((a, b) => a.start - b.start)
+})
 
 const deleteLatestRange = () => {
-  // Check if there's at least one range to delete
-  if (ageRanges.value.length > 0) {
-    ageRanges.value.pop() // Remove the last age range
+  if (!recommendedLevels.ranges) return
+
+  if (recommendedLevels.ranges.length > 0) {
+    setFieldValue('ranges', recommendedLevels.ranges.slice(0, -1))
   } else {
     errorMessage.value = 'No age ranges to delete.'
   }
