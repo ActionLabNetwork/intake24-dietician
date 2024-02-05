@@ -20,7 +20,6 @@
     </div>
   </div>
   <div class="py-5 pb-10">
-    {{ recommendedLevels }}
     <div>
       <v-table class="pa-5">
         <thead>
@@ -43,8 +42,6 @@
 
       <form class="px-5" @submit.prevent="onSubmit">
         <h3>Add new age range</h3>
-        {{ errors }}
-        {{ recommendedLevels.ranges?.at(-1) }}
         <v-row class="mt-2">
           <v-col cols="12" sm="6">
             <v-text-field
@@ -155,11 +152,31 @@ const errorMessage = ref('')
 const ageRangeSchema = yup
   .object()
   .shape({
-    start: yup.number().required().min(0),
-    end: yup.number().required().positive(),
-    male: yup.number().required().positive(),
-    female: yup.number().required().positive(),
-    other: yup.number().required().positive(),
+    start: yup
+      .number()
+      .typeError('Start age must be a number')
+      .required()
+      .min(0),
+    end: yup
+      .number()
+      .typeError('End age must be a number')
+      .required()
+      .positive(),
+    male: yup
+      .number()
+      .typeError('Male value must be a number')
+      .required()
+      .positive(),
+    female: yup
+      .number()
+      .typeError('Female value must be a number')
+      .required()
+      .positive(),
+    other: yup
+      .number()
+      .typeError('Other value must be a number')
+      .required()
+      .positive(),
   })
   .test(
     'start-end',
@@ -171,27 +188,18 @@ const ageRangeSchema = yup
 
 const validationSchema = yup.object().shape({
   ranges: yup.array().of(ageRangeSchema),
-  newRange: yup
-    .object()
-    .shape({
-      start: yup.number().required().positive(),
-      end: yup.number().required().positive(),
-      male: yup.number().required().positive(),
-      female: yup.number().required().positive(),
-      other: yup.number().required().positive(),
-    })
-    .test(
-      'newRange-start-validation',
-      `Start age must be at least one more than the last age value in the age range`,
-      function (value) {
-        const ranges = this.parent.ranges
-        if (ranges && ranges.length > 0) {
-          const lastRange = ranges[ranges.length - 1]
-          return value.start > lastRange.end
-        }
-        return true
-      },
-    ),
+  newRange: ageRangeSchema.test(
+    'newRange-start-validation',
+    `Start age must be at least one more than the last age value in the age range`,
+    function (value) {
+      const ranges = this.parent.ranges
+      if (ranges && ranges.length > 0) {
+        const lastRange = ranges[ranges.length - 1]
+        return value.start > lastRange.end
+      }
+      return true
+    },
+  ),
 })
 
 const {
