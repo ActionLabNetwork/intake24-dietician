@@ -2,10 +2,10 @@
   <v-container>
     <div class="wrapper">
       <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-        <pre>{{ values }}</pre>
+        <!-- <pre>{{ values }}</pre>
         <br /><br />
         <pre>{{ formData }}</pre>
-        <br /><br />
+        <br /><br /> -->
         <BackButton class="mb-5" />
         <div
           class="d-flex flex-column flex-sm-row justify-space-between align-center"
