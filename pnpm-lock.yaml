@@ -458,6 +458,9 @@ importers:
       lodash.isequal:
         specifier: ^4.5.0
         version: 4.5.0
+      math-expression-evaluator:
+        specifier: ^2.0.5
+        version: 2.0.5
       moment:
         specifier: ^2.30.1
         version: 2.30.1
@@ -9254,6 +9257,10 @@ packages:
     dependencies:
       repeat-string: 1.6.1
     dev: true
+
+  /math-expression-evaluator@2.0.5:
+    resolution: {integrity: sha512-C8Ifr3BpZ1E8ncWiHltndUkimvkzBwEiXPRyDJVxspo/G7zSN8tLHwFVfrGotvWzu2wuRkjnxaEayFblepmN5Q==}
+    dev: false
 
   /media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}

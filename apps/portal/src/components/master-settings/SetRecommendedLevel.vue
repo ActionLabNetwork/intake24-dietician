@@ -41,8 +41,8 @@
       </v-table>
 
       <form class="px-5" @submit.prevent="onSubmit">
-        <h3>Add new age range</h3>
-        <v-row class="mt-2">
+        <h3 class="my-3">Add new age range</h3>
+        <v-row>
           <v-col cols="12" sm="6">
             <v-text-field
               v-model.number="start"
@@ -65,11 +65,48 @@
           </v-col>
         </v-row>
 
-        <h3>Add recommendation level</h3>
+        <h3 class="my-3">Add recommendation level</h3>
+        Expr: {{ expr }}
+        <v-row>
+          <v-col>
+            <v-text-field
+              v-model="formula.value"
+              name="formula-value"
+              placeholder="Recommendation formula"
+              variant="outlined"
+            />
+          </v-col>
+          <v-col>
+            <div>
+              <v-select
+                v-model="formula.variable"
+                variant="outlined"
+                label="Variable"
+                :items="formulaVariables"
+                :item-props="variableProps"
+              />
+              <v-btn color="secondary" @click="handleInsertFormula">
+                Insert variable
+              </v-btn>
+            </div>
+          </v-col>
+          <v-col>
+            <div>
+              <v-select
+                v-model="formula.variable"
+                variant="outlined"
+                label="Gender"
+                :items="formulaVariables"
+                :item-props="variableProps"
+              />
+            </div>
+          </v-col>
+        </v-row>
         <v-row>
           <v-col cols="12" sm="4">
             <v-text-field
               v-model.number="male"
+              readonly
               name="male"
               type="number"
               :error-messages="maleErrMsg"
@@ -80,6 +117,7 @@
           <v-col cols="12" sm="4">
             <v-text-field
               v-model.number="female"
+              readonly
               name="female"
               type="number"
               :error-messages="femaleErrMsg"
@@ -90,11 +128,34 @@
           <v-col cols="12" sm="4">
             <v-text-field
               v-model.number="other"
+              readonly
               name="other"
               type="number"
               :error-messages="otherErrMsg"
               placeholder="Not specified"
               variant="outlined"
+            />
+          </v-col>
+        </v-row>
+
+        <h3 class="my-3">Variable Placeholders</h3>
+        <v-row>
+          <v-col>
+            <v-text-field
+              v-model="variablePreviews['Height (cm)']"
+              label="Height (cm)"
+              placeholder="Height (cm)"
+              variant="outlined"
+              suffix="cm"
+            />
+          </v-col>
+          <v-col>
+            <v-text-field
+              v-model="variablePreviews['Weight (kg)']"
+              label="Weight (kg)"
+              placeholder="Weight (kg)"
+              variant="outlined"
+              suffix="kg"
             />
           </v-col>
         </v-row>
@@ -138,16 +199,69 @@
 <script setup lang="ts">
 import type { FeedbackAboveAndBelowRecommendedLevels } from '@intake24-dietician/portal/types/modules.types'
 import BaseButton from '../common/BaseButton.vue'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import { VTextField } from 'vuetify/lib/components/index.mjs'
 import * as yup from 'yup'
 import { toTypedSchema } from '@vee-validate/yup'
+import Mexp from 'math-expression-evaluator'
+
+type VariablePreview = Record<
+  (typeof formulaVariables)[number]['title'],
+  number
+>
+
+const mexp = new Mexp()
+
+function variableProps(variable: { title: string; subtitle: string }) {
+  return {
+    title: variable.title,
+    subtitle: variable.subtitle,
+  }
+}
 
 const feedback = defineModel<FeedbackAboveAndBelowRecommendedLevels>()
+
+const formulaVariables = [
+  { title: 'Height (cm)', subtitle: 'H' },
+  { title: 'Weight (kg)', subtitle: 'W' },
+] as const
+const formula = ref({
+  variable: formulaVariables[0].title,
+  value: '',
+})
+const variablePreviews = ref<VariablePreview>({
+  'Height (cm)': 170,
+  'Weight (kg)': 70,
+})
 const recommendationLevel = ref('')
 
 const errorMessage = ref('')
+
+const replaceVariablesWithValues = (expression: string) => {
+  return expression
+    .replace(/H/g, variablePreviews.value['Height (cm)'].toString())
+    .replace(/W/g, variablePreviews.value['Weight (kg)'].toString())
+}
+
+const expr = computed(() => {
+  try {
+    const lexed = mexp.lex(replaceVariablesWithValues(formula.value.value))
+    const postfixed = mexp.toPostfix(lexed)
+    const result = mexp.postfixEval(postfixed)
+
+    return result
+  } catch (e) {
+    console.log({ e })
+  }
+
+  return 'Invalid expression'
+})
+
+watch(
+  () => expr.value,
+  () => console.log(expr.value),
+)
 
 const ageRangeSchema = yup
   .object()
@@ -207,7 +321,6 @@ const {
   errors,
   values: recommendedLevels,
   setFieldValue,
-  resetForm,
 } = useForm({
   validationSchema: toTypedSchema(validationSchema),
   initialValues: {
@@ -271,6 +384,15 @@ const deleteLatestRange = () => {
     setFieldValue('ranges', recommendedLevels.ranges.slice(0, -1))
   } else {
     errorMessage.value = 'No age ranges to delete.'
+  }
+}
+
+const handleInsertFormula = () => {
+  formula.value = {
+    variable: formula.value.variable,
+    value:
+      formula.value.value +
+      formulaVariables.find(v => v.title === formula.value.variable)?.subtitle,
   }
 }
 
