@@ -42,7 +42,7 @@
 
 <script setup lang="ts">
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw } from 'vue'
+import { ref, watch, reactive, markRaw, computed } from 'vue'
 import type { FibreIntakeProps } from '@/components/feedback-modules/standard/fibre-intake/FibreIntakeCard.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
@@ -63,6 +63,8 @@ import {
   calculateFoodNutrientsExchange,
   calculateMealNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
+import { useRoute } from 'vue-router'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -75,6 +77,9 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
+const route = useRoute()
+
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
 const totalFibre = ref(0)
@@ -120,11 +125,18 @@ const tabs = ref([
   },
 ])
 
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Fibre intake',
+  )
+})
+
 const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealFibreExchange = usePrecision(
     calculateMealNutrientsExchange(
       meal,
-      NUTRIENTS_DIETARY_FIBRE_ID,
+      module.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_DIETARY_FIBRE_ID,
       recallsCount,
     ),
     2,

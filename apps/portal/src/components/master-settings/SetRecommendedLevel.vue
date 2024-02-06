@@ -197,7 +197,6 @@
 
 <script setup lang="ts">
 import type { FeedbackAboveAndBelowRecommendedLevels } from '@intake24-dietician/portal/types/modules.types'
-import BaseButton from '../common/BaseButton.vue'
 import { computed, ref, watch } from 'vue'
 import { useField, useForm } from 'vee-validate'
 import { VTextField } from 'vuetify/lib/components/index.mjs'

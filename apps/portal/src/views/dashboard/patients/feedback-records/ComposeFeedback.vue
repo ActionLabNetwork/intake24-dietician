@@ -110,7 +110,6 @@ import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { nextTick } from 'vue'
-// import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables
@@ -195,6 +194,7 @@ const selectedModules = ref<
 
 const handleModuleUpdate = (module: ModuleName) => {
   component.value = module
+  console.log({ module })
 }
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {

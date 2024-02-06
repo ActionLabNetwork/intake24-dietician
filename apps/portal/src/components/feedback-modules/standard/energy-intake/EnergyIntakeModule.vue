@@ -70,6 +70,8 @@ import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schem
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { usePrecision } from '@vueuse/math'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useRoute } from 'vue-router'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -83,6 +85,9 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
+const route = useRoute()
+
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
 const isError = computed(() =>
@@ -97,6 +102,11 @@ const isPending = computed(() =>
 )
 
 // Refs
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Energy intake',
+  )
+})
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
 const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
@@ -133,7 +143,8 @@ const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
   const mealEnergy = usePrecision(
     calculateMealNutrientsExchange(
       meal,
-      NUTRIENTS_ENERGY_INTAKE_ID,
+      module.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_ENERGY_INTAKE_ID,
       recallsCount,
     ),
     2,

@@ -83,6 +83,8 @@ import {
   calculateMealNutrientsExchange,
   calculateFoodNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useRoute } from 'vue-router'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -94,7 +96,10 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
+const route = useRoute()
+
 const recallStore = useRecallStore()
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
 const isError = computed(() =>
   props.useSampleRecall
@@ -108,6 +113,11 @@ const isPending = computed(() =>
 )
 
 // Refs
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Carbs exchange',
+  )
+})
 const totalCarbs = ref(0)
 const averageCarbs = computed(() => {
   return Object.entries(mealCards).reduce((total, [, meal]) => {
@@ -148,7 +158,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
       value: usePrecision(
         calculateFoodNutrientsExchange(
           food as RecallMealFood,
-          NUTRIENTS_CARBS_ID,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
           CARBS_EXCHANGE_MULTIPLIER,
         ),
         2,

@@ -18,6 +18,7 @@ import {
   surveyToFeedbackModules,
   surveys,
 } from '../models'
+import type { moduleNames } from '@intake24-dietician/common/types/modules'
 
 @singleton()
 export class SurveyRepository {
@@ -87,6 +88,7 @@ export class SurveyRepository {
           )
 
           const nutrientType = {
+            id: row.nutrient_types.id,
             description: row.nutrient_types.description,
             unit: {
               symbol: row.nutrient_units.symbol,
@@ -105,6 +107,7 @@ export class SurveyRepository {
               ...row['feedback-module'],
               ...row['survey_feedback_modules'],
               nutrientTypes: [nutrientType],
+              name: row['feedback-module'].name as (typeof moduleNames)[number],
             })
           }
 
