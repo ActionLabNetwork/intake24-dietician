@@ -93,11 +93,10 @@
           <v-col>
             <div>
               <v-select
-                v-model="formula.variable"
+                v-model="formula.gender"
                 variant="outlined"
                 label="Gender"
-                :items="formulaVariables"
-                :item-props="variableProps"
+                :items="genders"
               />
             </div>
           </v-col>
@@ -137,6 +136,8 @@
             />
           </v-col>
         </v-row>
+        Recommended levels: {{ recommendedLevels }} <br /><br />
+        Formula: {{ formula }}
 
         <h3 class="my-3">Variable Placeholders</h3>
         <v-row>
@@ -222,13 +223,19 @@ function variableProps(variable: { title: string; subtitle: string }) {
 
 const feedback = defineModel<FeedbackAboveAndBelowRecommendedLevels>()
 
+const genders = ['Male', 'Female', 'Other'] as const
 const formulaVariables = [
   { title: 'Height (cm)', subtitle: 'H' },
   { title: 'Weight (kg)', subtitle: 'W' },
 ] as const
-const formula = ref({
+const formula = ref<{
+  variable: (typeof formulaVariables)[number]['title']
+  value: string
+  gender: (typeof genders)[number]
+}>({
   variable: formulaVariables[0].title,
   value: '',
+  gender: 'Male',
 })
 const variablePreviews = ref<VariablePreview>({
   'Height (cm)': 170,
@@ -257,11 +264,6 @@ const expr = computed(() => {
 
   return 'Invalid expression'
 })
-
-watch(
-  () => expr.value,
-  () => console.log(expr.value),
-)
 
 const ageRangeSchema = yup
   .object()
@@ -389,12 +391,37 @@ const deleteLatestRange = () => {
 
 const handleInsertFormula = () => {
   formula.value = {
-    variable: formula.value.variable,
+    ...formula.value,
     value:
       formula.value.value +
       formulaVariables.find(v => v.title === formula.value.variable)?.subtitle,
   }
 }
+
+watch(
+  () => formula.value.value,
+  newValue => {
+    console.log('Formula changed...')
+    console.log({ newValue })
+    console.log(formula.value)
+
+    if (expr.value === 'Invalid expression') return
+
+    switch (formula.value.gender) {
+      case 'Male':
+        setFieldValue('newRange.male', expr.value)
+        break
+      case 'Female':
+        setFieldValue('newRange.female', expr.value)
+        break
+      case 'Other':
+        setFieldValue('newRange.other', expr.value)
+        break
+      default:
+        break
+    }
+  },
+)
 
 const onSubmit = handleSubmit(values => {
   console.log(values)
