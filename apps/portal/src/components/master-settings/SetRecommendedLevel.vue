@@ -1,9 +1,9 @@
 <template>
-  <div class="text feedback-heading">
+  <!-- <div class="text feedback-heading">
     Customise the recommended level and the default messages according to your
     patient's profile
-  </div>
-  <div v-if="feedback" class="d-flex justify-space-between align-center px-5">
+  </div> -->
+  <!-- <div v-if="feedback" class="d-flex justify-space-between align-center px-5">
     <div class="font-weight-medium d-flex align-center w-50">
       <p>Set recommendation level</p>
       <div class="mx-5">=</div>
@@ -167,13 +167,12 @@
         <p v-if="errorMessage">{{ errorMessage }}</p>
       </form>
     </div>
-  </div>
-  <div v-if="feedback && recommendationLevel">
+  </div> -->
+  <div v-if="feedback">
     <div class="text feedback-heading">Feedback message if:</div>
     <div class="px-4">
       <p class="text-primary font-weight-medium">
-        {{ feedback.name }} is above {{ recommendationLevel }}
-        {{ feedback.nutrientTypes?.[0]?.unit.symbol }}
+        {{ feedback.name }} is above recommended level
       </p>
       <v-text-field
         v-model="feedback.feedbackAbove"
@@ -184,8 +183,7 @@
     </div>
     <div class="px-4">
       <p class="text-primary font-weight-medium">
-        {{ feedback.name }} is below {{ recommendationLevel }}
-        {{ feedback.nutrientTypes?.[0]?.unit.symbol }}
+        {{ feedback.name }} is below recommended level
       </p>
       <v-text-field
         v-model="feedback.feedbackBelow"

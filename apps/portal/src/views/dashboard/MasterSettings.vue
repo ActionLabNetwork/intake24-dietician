@@ -235,7 +235,7 @@ const handleSubmit = async (): Promise<void> => {
     { id, survey },
     {
       onSuccess: () => {
-        $toast.success(`Survey preferences with ID ${id} updated`)
+        $toast.success('Clinic preferences have been updated')
         initialFormData.value = formData.value
       },
       onError: () => {
