@@ -37,7 +37,7 @@ import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from './TimelineSection.vue'
+import TimelineSection from '../../common/TimelineSection.vue'
 import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
@@ -82,7 +82,7 @@ const module = computed(() => {
   )
 })
 
-const tabs = ref([
+const tabs = ref<PieAndTimelineTabs>([
   {
     name: 'Pie chart',
     value: 0,
@@ -92,33 +92,22 @@ const tabs = ref([
       meals: mealCards,
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
+      unitOfMeasure: module.value?.nutrientTypes[0],
     },
     icon: 'mdi-chart-pie',
-    style: {
-      // Specify style
-      color: '#fff',
-      backgroundColor: '#34A749',
-      padding: '0.7rem',
-      borderRadius: '5px',
-    },
   },
   {
     name: 'Timeline',
     value: 1,
     component: markRaw(TimelineSection),
     props: {
+      name: 'Fibre intake',
       meals: mealCards,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       colors: colorPalette,
+      unitOfMeasure: module.value?.nutrientTypes[0],
     },
     icon: 'mdi-calendar-blank-outline',
-    style: {
-      color: '#fff',
-      backgroundColor: '#34A749',
-      padding: '10px',
-      borderRadius: '5px',
-    },
   },
 ])
 

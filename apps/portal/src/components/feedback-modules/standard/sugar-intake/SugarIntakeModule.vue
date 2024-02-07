@@ -35,7 +35,7 @@ import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/sugar-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from './TimelineSection.vue'
+import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
@@ -93,7 +93,7 @@ const tabs = ref<PieAndTimelineTabs>([
       meals: mealCards,
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
+      unitOfMeasure: module.value?.nutrientTypes[0],
     },
     icon: 'mdi-chart-pie',
   },
@@ -106,7 +106,7 @@ const tabs = ref<PieAndTimelineTabs>([
       meals: mealCards,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
+      unitOfMeasure: module.value?.nutrientTypes[0],
     },
     icon: 'mdi-calendar-blank-outline',
   },

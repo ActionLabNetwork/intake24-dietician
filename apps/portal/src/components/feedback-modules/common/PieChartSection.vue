@@ -2,7 +2,11 @@
   <v-row>
     <v-col cols="12" lg="6">
       <PieChartCutlery>
-        <PieChart :name="name" :data="data" :unit-of-measure="unitOfMeasure" />
+        <PieChart
+          :name="name"
+          :data="data"
+          :unit-of-measure="unitOfMeasure?.unit"
+        />
       </PieChartCutlery>
     </v-col>
 
@@ -11,7 +15,7 @@
         v-for="(meal, key, index) in meals"
         :key="index"
         :label="meal.label"
-        :unit-of-measure="unitOfMeasure"
+        :unit-of-measure="unitOfMeasure?.unit"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
         :minutes="meal.minutes"
@@ -37,8 +41,8 @@ const props = defineProps<{
   name: string
   unitOfMeasure:
     | {
-        symbol: string | null
         description: string
+        unit: { symbol: string | null; description: string }
       }
     | undefined
 }>()

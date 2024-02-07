@@ -35,8 +35,8 @@ export type PieAndTimelineTabs = {
     colors: Ref<string[]>
     unitOfMeasure:
       | {
-          symbol: string | null
           description: string
+          unit: { symbol: string | null; description: string }
         }
       | undefined
   }
