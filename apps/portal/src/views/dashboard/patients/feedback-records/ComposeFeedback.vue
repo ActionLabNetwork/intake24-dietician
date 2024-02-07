@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container>
+    <v-container fluid class="px-10">
       <div class="d-print-none">
         <BackButton
           v-if="!previewing"

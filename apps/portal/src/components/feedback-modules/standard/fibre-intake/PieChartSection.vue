@@ -1,12 +1,12 @@
 <template>
   <v-row>
-    <v-col cols="12" lg="5">
+    <v-col cols="12" lg="6">
       <PieChartCutlery>
-        <PieChart :data="data" />
+        <PieChart :data="data" :unit-of-measure="unitOfMeasure" />
       </PieChartCutlery>
     </v-col>
 
-    <v-col cols="12" lg="7" class="pr-6">
+    <v-col cols="12" lg="6" class="pr-6">
       <FibreIntakeCard
         v-for="(meal, key, index) in meals"
         :key="index"
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import FibreIntakeCard from './FibreIntakeCard.vue'
-import PieChart from '@/components/feedback-modules/common/PieChart.vue'
+import PieChart from '../../common/PieChart.vue'
 import PieChartCutlery from '@/components/feedback-modules/standard/fibre-intake/svg/PieChartCutlery.vue'
 import { computed } from 'vue'
 import { FibreIntakeProps } from './FibreIntakeCard.vue'
@@ -33,24 +33,24 @@ const props = defineProps<{
   meals: Record<string, Omit<FibreIntakeProps, 'colors'>>
   recallsCount: number
   colors: string[]
+  unitOfMeasure:
+    | {
+        symbol: string | null
+        description: string
+      }
+    | undefined
 }>()
 
 const data = computed(() => {
-  return {
-    labels: Object.keys(props.meals),
-    datasets: [
-      {
-        backgroundColor: props.colors.map(color =>
-          chroma(color).darken(2).saturate(4).hex(),
-        ),
-        data: Object.values(props.meals).map(
-          meal =>
-            meal.foods.reduce((acc, curr) => acc + curr.value, 0) /
-            Math.max(props.recallsCount, 1),
-        ),
-      },
-    ],
-  }
+  return Object.keys(props.meals).map((meal, index) => {
+    return {
+      label: meal,
+      value:
+        props.meals[meal]!.foods.reduce((acc, curr) => acc + curr.value, 0) /
+        Math.max(props.recallsCount, 1),
+      backgroundColor: chroma(props.colors[index]!).darken(2).saturate(4).hex(),
+    }
+  })
 })
 
 const getColours = (base: string) => {

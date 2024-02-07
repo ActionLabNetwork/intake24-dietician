@@ -87,6 +87,12 @@ const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<FibreIntakeProps, 'colors'>>>({})
 
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Fibre intake',
+  )
+})
+
 const tabs = ref([
   {
     name: 'Pie chart',
@@ -96,6 +102,7 @@ const tabs = ref([
       meals: mealCards,
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+      unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
     },
     icon: 'mdi-chart-pie',
     style: {
@@ -124,12 +131,6 @@ const tabs = ref([
     },
   },
 ])
-
-const module = computed(() => {
-  return surveyQuery.data.value?.feedbackModules.find(
-    module => module.name === 'Fibre intake',
-  )
-})
 
 const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealFibreExchange = usePrecision(
