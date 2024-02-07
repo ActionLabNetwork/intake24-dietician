@@ -82,7 +82,16 @@
 
                     <template #append>
                       <!-- TODO Add onCLick functionality -->
-                      <v-btn v-if="field.quickAction?.append" color="primary">
+                      <v-btn
+                        v-if="field.quickAction?.append"
+                        color="primary"
+                        @click="
+                          () =>
+                            field.quickAction?.append?.action(
+                              formValues[field.key],
+                            )
+                        "
+                      >
                         {{ field.quickAction.append.label }}
                       </v-btn>
                     </template>
@@ -125,7 +134,6 @@
       </v-stepper-window>
 
       <v-stepper-actions style="justify-content: flex-start" disabled="false">
-        // TODO: enable next only if current step is finished without error
         <template #prev>
           <v-btn
             v-if="steps[currentStep - 1]?.prev"
@@ -169,6 +177,55 @@ type FormField = keyof Omit<
   'isActive' | 'surveyPreference' | 'feedbackModules'
 >
 
+type Step = {
+  heading: string
+  subheading: string
+  title: string
+
+  subSteps: Substep[]
+  prev?: {
+    label: string
+    action: () => void
+  }
+  next: {
+    label: string
+    action: () => void
+  }
+}
+
+type Substep = {
+  stepName?: string
+  description?: string
+  fields: Field[]
+}
+
+type Field = {
+  key: FormField
+  required: boolean
+  type: 'input' | 'select'
+  inputType?: string
+  selectOptions?: readonly any[]
+  label: string
+  labelSuffix?: string
+  description?: string
+  placeHolder?: string
+  information?: string
+  quickAction?: {
+    prepend?: {
+      label: string
+      action: (val: any) => void
+    }
+    append?: {
+      label: string
+      action: (val: any) => void
+    }
+  }
+  rules: ((value: string) => true | string)[]
+  handleUpdate: (val: string) => void
+}
+const copyToClipboard = (val: string) => {
+  navigator.clipboard.writeText(val)
+}
 const props = defineProps<{
   defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
@@ -249,7 +306,10 @@ const steps: Step[] = [
             information: 'Integration code information.',
             quickAction: {
               prepend: undefined,
-              append: { label: 'Copy', action: () => {} },
+              append: {
+                label: 'Copy',
+                action: copyToClipboard,
+              },
             },
             rules: [
               (value: string) =>
@@ -273,7 +333,10 @@ const steps: Step[] = [
             information: 'Clinic url information.',
             quickAction: {
               prepend: undefined,
-              append: { label: 'Copy', action: () => {} },
+              append: {
+                label: 'Copy',
+                action: copyToClipboard,
+              },
             },
             rules: [
               (value: string) =>
@@ -406,53 +469,6 @@ const steps: Step[] = [
     },
   },
 ]
-
-type Step = {
-  heading: string
-  subheading: string
-  title: string
-
-  subSteps: Substep[]
-  prev?: {
-    label: string
-    action: () => void
-  }
-  next: {
-    label: string
-    action: () => void
-  }
-}
-
-type Substep = {
-  stepName?: string
-  description?: string
-  fields: Field[]
-}
-
-type Field = {
-  key: FormField
-  required: boolean
-  type: 'input' | 'select'
-  inputType?: string
-  selectOptions?: readonly any[]
-  label: string
-  labelSuffix?: string
-  description?: string
-  placeHolder?: string
-  information?: string
-  quickAction?: {
-    prepend?: {
-      label: string
-      action: () => void
-    }
-    append?: {
-      label: string
-      action: () => void
-    }
-  }
-  rules: ((value: string) => true | string)[]
-  handleUpdate: (val: string) => void
-}
 
 const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   formValues.value[fieldName] = newVal
