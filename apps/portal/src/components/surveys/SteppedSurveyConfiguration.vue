@@ -10,7 +10,6 @@
       </div>
       <v-divider class="my-10"></v-divider>
     </div>
-    {{ nextDisabled }}
     <v-stepper v-model="currentStep">
       <template #default="{ prev, next }">
         <!-- Header -->
@@ -273,7 +272,12 @@ const steps = ref<Step[]>([
     complete: false,
     subtitle:
       'Your practise, your space. Create and tailor the new clinic according to your work needs',
-    formFields: ['intake24Host', 'intake24SurveyId'],
+    formFields: [
+      'intake24Secret',
+      'intake24Host',
+      'intake24SurveyId',
+      'countryCode',
+    ],
     prevText: 'Go Back',
     nextText: 'Contine with clinic setup',
     onPrevClicked: (prev: any) => {
@@ -289,7 +293,7 @@ const steps = ref<Step[]>([
     complete: false,
     subtitle:
       'Your practise, your space. Create and tailor the new clinic according to your work needs',
-    formFields: ['intake24Secret', 'alias'],
+    formFields: ['alias'],
     prevText: 'Go Back',
     nextText: 'Save and continue',
     onPrevClicked: (prev: any) => {
