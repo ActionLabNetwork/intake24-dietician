@@ -14,6 +14,7 @@ export const moduleNames = [
   'Water intake',
   'Sugar intake',
   'Saturated fat intake',
+  'Calcium intake',
 ] as const
 
 const createRoutes = <T extends ReadonlyArray<string>>(

@@ -33,5 +33,10 @@
     "id": 7,
     "name": "Saturated fat intake",
     "nutrientTypes": [50]
+  },
+  {
+    "id": 8,
+    "name": "Calcium intake",
+    "nutrientTypes": [140]
   }
 ]

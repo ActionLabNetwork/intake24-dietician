@@ -103,6 +103,7 @@ import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modu
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -111,7 +112,6 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { nextTick } from 'vue'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables
@@ -159,6 +159,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       component: markRaw(SaturatedFatIntakeModule),
       feedback: '',
     },
+    'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
   })
 
 const allModules = ref<

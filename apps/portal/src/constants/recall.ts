@@ -5,6 +5,7 @@ export const NUTRIENTS_CARBS_ID = '13'
 export const NUTRIENTS_DIETARY_FIBRE_ID = '17'
 export const NUTRIENTS_FREE_SUGARS_ID = '229'
 export const NUTRIENTS_SATURATED_FAT_ID = '50'
+export const NUTRIENTS_CALCIUM_ID = '140'
 export const CARBS_EXCHANGE_MULTIPLIER = 1 / 15
 
 // Water intake

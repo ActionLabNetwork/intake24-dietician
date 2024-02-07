@@ -61,6 +61,7 @@ import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modu
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
@@ -134,6 +135,13 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
     'Saturated fat intake': {
       component: markRaw(SaturatedFatIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Calcium intake': {
+      component: markRaw(CalciumIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',
