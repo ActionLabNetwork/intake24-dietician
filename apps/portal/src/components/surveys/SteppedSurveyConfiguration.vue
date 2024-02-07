@@ -1,329 +1,477 @@
 <template>
   <v-container>
-    <div>
+    <!-- <pre>{{ formValues }}</pre> -->
+    <div class="mb-5">
       <BackButton class="mb-5" />
       <div>
-        <h1 class="text heading">{{ t('surveys.addNewSurvey.title') }}</h1>
+        <h1 class="text heading">{{ steps[currentStep - 1]?.heading }}</h1>
         <h3 class="text subheading">
-          {{ t('surveys.addNewSurvey.subtitle') }}
+          {{ steps[currentStep - 1]?.subheading }}
         </h3>
       </div>
-      <v-divider class="my-10"></v-divider>
     </div>
     <v-stepper v-model="currentStep">
-      <template #default="{ prev, next }">
-        <!-- Header -->
-        <v-stepper-header>
-          <template v-for="step in steps" :key="step.title">
-            <v-stepper-item
-              :complete="step.complete"
-              :title="step.title"
-              :value="step.value"
-              color="primary"
-            />
-          </template>
-        </v-stepper-header>
+      <v-stepper-header>
+        <template v-for="(step, i) in steps" :key="step.heading">
+          <v-stepper-item
+            :title="step.title"
+            :value="i + 1"
+            :complete="currentStep > i + 1"
+            color="primary"
+          />
+          <v-divider v-if="i < steps.length - 1"></v-divider>
+        </template>
+      </v-stepper-header>
 
-        <!-- Content -->
-        <v-stepper-window>
-          <v-form>
+      <v-stepper-window>
+        <v-form>
+          <v-stepper-window-item
+            v-for="(step, i) in steps"
+            :key="step.heading"
+            :value="i + 1"
+          >
+            <!-- <pre>{{ step }}</pre> -->
             <div
-              :width="mdAndUp ? '100%' : '100%'"
-              class="mt-5"
-              style="background: inherit; border: 0"
+              v-for="(subStep, subStepIndex) in step.subSteps"
+              :key="subStepIndex + 'substep'"
+              class="mt-10"
             >
-              <v-stepper-window-item
-                v-for="step in steps"
-                :key="`${step.title}-content`"
-                :value="step.value"
-              >
-                <v-card>
-                  <div v-for="field in step.formFields" :key="field + '-input'">
-                    <VBaseInput
-                      v-if="formSurveyConfig[field].type === 'input'"
-                      :name="formSurveyConfig[field].key"
-                      :type="formSurveyConfig[field].type"
-                      :required="formSurveyConfig[field].required"
-                      :rules="formSurveyConfig[field].rules"
-                      :autocomplete="formSurveyConfig[field].autocomplete"
-                      :value="formValues[field]"
-                      bordered
-                      :suffix-icon="formSurveyConfig[field].suffixIcon"
-                      :handle-icon-click="
-                        formSurveyConfig[field].handleSuffixIconClick
-                      "
-                      :class="formSurveyConfig[field].class"
-                      @update="formSurveyConfig[field].handleUpdate"
-                    >
-                      <div>
-                        <span class="input-label">
-                          {{ formSurveyConfig[field].label }}
-                        </span>
-                        <span
-                          v-if="formSurveyConfig[field].labelSuffix"
-                          class="input-label suffix"
-                        >
-                          {{ formSurveyConfig[field].labelSuffix }}
-                        </span>
-                      </div>
-                      <div class="input-label description">
-                        {{ formSurveyConfig[field].description }}
-                      </div>
-                    </VBaseInput>
-                  </div>
-                </v-card>
-              </v-stepper-window-item>
-            </div>
-          </v-form>
-        </v-stepper-window>
+              <!-- <pre>{{ subStep }}</pre> -->
+              <template v-if="subStep.stepName">
+                <h1 class="text heading">
+                  {{ subStep.stepName }}
+                </h1>
+                <h3 class="text subheading">
+                  {{ subStep.description }}
+                </h3>
+              </template>
+              <div v-for="field in subStep.fields" :key="field.key">
+                <template v-if="field.type === 'input'">
+                  <!-- <pre>{{ field.label }}</pre> -->
+                  <VBaseInput
+                    :name="field.key"
+                    :type="field.inputType"
+                    :placeholder="field.placeHolder"
+                    :rules="field.rules"
+                    :required="field.required"
+                    :value="formValues[field.key as FormField]"
+                    @update="field.handleUpdate"
+                  >
+                    <div>
+                      <span class="input-label">
+                        {{ field.label }}
+                      </span>
+                      <span v-if="field.labelSuffix" class="input-label suffix">
+                        {{ field.labelSuffix }}
+                      </span>
+                      <v-btn
+                        v-if="field.information"
+                        icon="mdi-information-outline"
+                        variant="text"
+                        size="small"
+                      >
+                      </v-btn>
+                    </div>
+                    <div class="input-label description">
+                      {{ field.description }}
+                    </div>
 
-        <!-- Action -->
-        <v-stepper-actions>
-          <template #prev>
-            <v-btn
-              @click="
-                () => {
-                  steps[currentStep > 0 ? currentStep - 1 : 0]?.onPrevClicked?.(
-                    prev,
-                  )
-                }
-              "
-            >
-              {{ steps[currentStep > 0 ? currentStep - 1 : 0]?.prevText }}
-            </v-btn>
-          </template>
-          <template #next>
-            <v-btn
-              :disabled="nextDisabled"
-              @click="
-                () => {
-                  steps[currentStep > 0 ? currentStep - 1 : 0]?.onNextClicked?.(
-                    next,
-                  )
-                }
-              "
-            >
-              {{ steps[currentStep > 0 ? currentStep - 1 : 0]?.nextText }}
-            </v-btn>
-          </template>
-        </v-stepper-actions>
-      </template>
+                    <!-- <template v-if="field.key === 'countryCode'" #prepend-inner>
+                      https://admin.intake24.dev.
+                    </template> -->
+
+                    <template #append>
+                      <!-- TODO Add onCLick functionality -->
+                      <v-btn v-if="field.quickAction?.append" color="primary">
+                        {{ field.quickAction.append.label }}
+                      </v-btn>
+                    </template>
+                  </VBaseInput>
+                </template>
+                <template v-if="field.type === 'select'">
+                  <div class="form-label pb-2">
+                    <span class="input-label">
+                      {{ field.label }}
+                    </span>
+                    <span v-if="field.labelSuffix" class="input-label suffix">
+                      {{ field.labelSuffix }}
+                    </span>
+                  </div>
+                  <v-select
+                    v-model="formValues[field.key]"
+                    density="comfortable"
+                    variant="solo-filled"
+                    label="Select"
+                    :items="field.selectOptions"
+                    item-title="flag"
+                    item-value="code"
+                    :rules="field.rules"
+                  >
+                    <template #append-inner>
+                      {{ formValues[field.key as FormField] }}
+                    </template>
+
+                    <template #append>
+                      {{
+                        field.placeHolder + formValues[field.key as FormField]
+                      }}
+                    </template>
+                  </v-select>
+                </template>
+              </div>
+            </div>
+          </v-stepper-window-item>
+        </v-form>
+      </v-stepper-window>
+
+      <v-stepper-actions style="justify-content: flex-start" disabled="false">
+        // TODO: enable next only if current step is finished without error
+        <template #prev>
+          <v-btn
+            v-if="steps[currentStep - 1]?.prev"
+            class="text-capitalize mr-5"
+            variant="outlined"
+            color="black"
+            @click="steps[currentStep - 1]?.prev?.action"
+            >{{ steps[currentStep - 1]?.prev?.label }}</v-btn
+          >
+        </template>
+
+        <template #next>
+          <v-btn
+            class="text-capitalize"
+            :disabled="isNextdisabled"
+            variant="flat"
+            color="primary"
+            @click="steps[currentStep - 1]?.next.action"
+            >{{ steps[currentStep - 1]?.next.label }}</v-btn
+          >
+        </template>
+      </v-stepper-actions>
     </v-stepper>
   </v-container>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import VBaseInput from '../form/VBaseInput.vue'
+import { ref } from 'vue'
 import BackButton from '../common/BackButton.vue'
-import { useI18n } from 'vue-i18n'
-import type { i18nOptions } from '@intake24-dietician/i18n'
-import { useDisplay } from 'vuetify/lib/framework.mjs'
+import VBaseInput from '../form/VBaseInput.vue'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
+  countryCodes,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
-import type { Form } from '../profile/types'
+import { computed } from 'vue'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
   'isActive' | 'surveyPreference' | 'feedbackModules'
 >
-type Step = {
-  title: string
-  value: string
-  complete: boolean
-  subtitle: string
-  formFields: FormField[]
-  prevText?: string
-  nextText: string
-  onPrevClicked?: (prev: any) => void
-  onNextClicked: (next: any) => void
-}
-const { mdAndUp } = useDisplay()
-const { t } = useI18n<i18nOptions>()
 
 const props = defineProps<{
   defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
   handleSubmit?: () => Promise<unknown>
 }>()
 
+const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+  ...props.defaultState,
+})
+
 const emit = defineEmits<{
   update: [value: Omit<SurveyCreateDto, 'surveyPreference'>]
 }>()
 
-const formSurveyConfig: Form<FormField> = {
-  surveyName: {
-    key: 'surveyName',
-    label: t('surveys.addNewSurvey.surveyDetails.name.label'),
-    description: t('surveys.addNewSurvey.surveyDetails.name.description'),
-    required: true,
-    labelSuffix: t('profile.form.personalDetails.firstName.labelSuffix'),
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
-    ],
-    handleUpdate: val => {
-      handleFieldUpdate('surveyName', val)
-    },
-  },
-  intake24SurveyId: {
-    key: 'intake24SurveyId',
-    label: t('surveys.addNewSurvey.surveyDetails.intake24SurveyId.label'),
-    description: t(
-      'surveys.addNewSurvey.surveyDetails.intake24SurveyId.description',
-    ),
-    required: true,
-    labelSuffix: ' (required)',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24SurveyId, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24SurveyId', val),
-  },
-  intake24Host: {
-    key: 'intake24SurveyHost',
-    label: t('surveys.addNewSurvey.surveyDetails.intake24SurveyHost.label'),
-    description: t(
-      'surveys.addNewSurvey.surveyDetails.intake24SurveyHost.description',
-    ),
-    required: true,
-    labelSuffix: t('general.form.requiredSuffix'),
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24Host, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24Host', val),
-  },
-  intake24Secret: {
-    key: 'intake24Secret',
-    label: t('surveys.addNewSurvey.surveyDetails.intake24Secret.label'),
-    description: t(
-      'surveys.addNewSurvey.surveyDetails.intake24Secret.description',
-    ),
-    required: true,
-    labelSuffix: ' (required)',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.intake24Secret, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('intake24Secret', val),
-  },
-  alias: {
-    key: 'alias',
-    label: t('surveys.addNewSurvey.surveyDetails.alias.label'),
-    description: t('surveys.addNewSurvey.surveyDetails.alias.description'),
-    required: true,
-    labelSuffix: ' (required)',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('alias', val),
-  },
-  countryCode: {
-    key: 'countryCode',
-    label: t('surveys.addNewSurvey.surveyDetails.countryCode.label'),
-    description: t(
-      'surveys.addNewSurvey.surveyDetails.countryCode.description',
-    ),
-    required: true,
-    labelSuffix: ' (required)',
-    type: 'input',
-    inputType: 'text',
-    rules: [
-      (value: string) =>
-        validateWithZod(SurveyCreateDtoSchema.shape.countryCode, value),
-    ],
-    handleUpdate: val => handleFieldUpdate('countryCode', val),
-  },
-}
-
-const currentStep = ref(0)
+const currentStep = ref(1)
 
 // TODO: Replace this when the i18n is setup
-const steps = ref<Step[]>([
+const steps: Step[] = [
   {
-    title: 'Clinic Name',
-    value: '1',
-    complete: false,
-    subtitle:
-      'Your practise, your space. Create and tailor the new clinic according to your work needs',
-    formFields: ['surveyName'],
-    nextText: 'Contine with setup',
-    onNextClicked: (next: any) => {
-      next()
-    },
-  },
-  {
-    title: 'System setup',
-    value: '2',
-    complete: false,
-    subtitle:
-      'Your practise, your space. Create and tailor the new clinic according to your work needs',
-    formFields: [
-      'intake24Secret',
-      'intake24Host',
-      'intake24SurveyId',
-      'countryCode',
-    ],
-    prevText: 'Go Back',
-    nextText: 'Contine with clinic setup',
-    onPrevClicked: (prev: any) => {
-      prev()
-    },
-    onNextClicked: (next: any) => {
-      next()
-    },
-  },
-  {
-    title: 'Clinic setup',
-    value: '3',
-    complete: false,
-    subtitle:
-      'Your practise, your space. Create and tailor the new clinic according to your work needs',
-    formFields: ['alias'],
-    prevText: 'Go Back',
-    nextText: 'Save and continue',
-    onPrevClicked: (prev: any) => {
-      prev()
-    },
-    onNextClicked: () => {
-      props.handleSubmit?.()
-    },
-  },
-])
+    heading: 'Create your new clinic',
+    subheading:
+      'Your practice, your space. Create and tailor the new clinic according to your work needs',
+    title: 'Clinic name',
 
-const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
-  ...props.defaultState,
-})
+    subSteps: [
+      {
+        stepName: undefined,
+        description: undefined,
+        fields: [
+          {
+            key: 'surveyName',
+            required: true,
+            type: 'input',
+            inputType: 'text',
+            label: 'Clinic name',
+            labelSuffix: '(required)',
+            description:
+              'This is the name of your new clinic where you can add new patients and manage their recalls.',
+            placeHolder: 'Name your clinic',
+            information: undefined,
+            quickAction: undefined,
+            rules: [
+              (value: string) =>
+                validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
+            ],
+            handleUpdate: (val: string) => handleFieldUpdate('surveyName', val),
+          },
+        ],
+      },
+    ],
+    next: {
+      label: 'Continue with setup',
+      action: () => {
+        currentStep.value++
+      },
+    },
+  },
+  {
+    heading: 'System setup',
+    subheading:
+      'To ensure the proper functioning of the dietitian tool, it must be linked to the Intake24 system. Follow the steps below to complete this setup process. If you  encounter any difficulties in completing the system setup, please reach out to our support team for assistance.',
+    title: 'System setup',
+
+    subSteps: [
+      {
+        stepName: 'Clinic integration code and clinic url',
+        description:
+          'Copy the integration code and clinic url provided below and paste them in their respective fields in the Intake24 system. For additional details click information icon.',
+        fields: [
+          {
+            key: 'intake24Secret',
+            required: true,
+            type: 'input',
+            inputType: 'text',
+            label: 'Integration code',
+            labelSuffix: '(required)',
+            description: undefined,
+            placeHolder: '123456',
+            information: 'Integration code information.',
+            quickAction: {
+              prepend: undefined,
+              append: { label: 'Copy', action: () => {} },
+            },
+            rules: [
+              (value: string) =>
+                validateWithZod(
+                  SurveyCreateDtoSchema.shape.intake24Secret,
+                  value,
+                ),
+            ],
+            handleUpdate: (val: string) =>
+              handleFieldUpdate('intake24Secret', val),
+          },
+          {
+            key: 'intake24Host',
+            required: true,
+            type: 'input',
+            inputType: 'text',
+            label: 'Clinic url',
+            labelSuffix: '(required)',
+            description: undefined,
+            placeHolder: 'https://myfoodswaps.com/api/recall/{alias}',
+            information: 'Clinic url information.',
+            quickAction: {
+              prepend: undefined,
+              append: { label: 'Copy', action: () => {} },
+            },
+            rules: [
+              (value: string) =>
+                validateWithZod(
+                  SurveyCreateDtoSchema.shape.intake24Host,
+                  value,
+                ),
+            ],
+            handleUpdate: (val: string) =>
+              handleFieldUpdate('intake24Host', val),
+          },
+        ],
+      },
+      {
+        stepName: 'Intake24 system survey ID and country code',
+        description:
+          'First cop and paste survey ID name from Intake24 system in the field below. Then select the country code so that the system can complete the setup process. For additional details click information icon.',
+        fields: [
+          {
+            key: 'intake24SurveyId',
+            required: true,
+            type: 'input',
+            inputType: 'text',
+            label: 'Survey ID',
+            labelSuffix: '(required)',
+            description:
+              'Past the Intake24 survey ID name that you have used to create the survey in Intake24 system.',
+            placeHolder: 'name',
+            information: 'Survey ID information.',
+            quickAction: undefined,
+            rules: [
+              (value: string) =>
+                validateWithZod(
+                  SurveyCreateDtoSchema.shape.intake24SurveyId,
+                  value,
+                ),
+            ],
+            handleUpdate: (val: string) =>
+              handleFieldUpdate('intake24SurveyId', val),
+          },
+          {
+            key: 'countryCode',
+            required: true,
+            type: 'select',
+            inputType: undefined,
+            selectOptions: countryCodes,
+            label: 'Country code',
+            labelSuffix: '(required)',
+            description:
+              'Select your workplace country code to link your clinic with Intake24 system.',
+            placeHolder: 'https://admin.intake24.dev.',
+            information: undefined,
+            quickAction: {
+              prepend: undefined,
+              append: undefined,
+            },
+            rules: [
+              (value: string) =>
+                validateWithZod(SurveyCreateDtoSchema.shape.countryCode, value),
+            ],
+            handleUpdate: (val: string) =>
+              handleFieldUpdate('countryCode', val),
+          },
+        ],
+      },
+    ],
+    prev: {
+      label: 'Go Back',
+      action: () => {
+        currentStep.value--
+      },
+    },
+    next: {
+      label: 'Continue with clinic setup',
+      action: () => {
+        currentStep.value++
+      },
+    },
+  },
+  {
+    heading: 'Clinic Setup for <clinic name>', // TODO: Replace with clinic name
+    subheading:
+      'Personalise your patient experience by choosing a visual theme, select and tailor feedback templates to suit your preferences and set a default recall frequency to gather timely recall data from your patients.',
+    title: 'Clinic setup',
+
+    subSteps: [
+      {
+        stepName: 'Feedback template setup',
+        description:
+          'Choose a visual theme, select feedback templates, and compose default messages',
+        fields: [
+          {
+            key: 'alias',
+            required: true,
+            type: 'input',
+            inputType: 'text',
+            label: 'Alias',
+            labelSuffix: '(required)',
+            description:
+              'This is an alias that you can choose to identify this clinic in the Intake24 system.',
+            placeHolder: 'Clinc alias',
+            information: undefined,
+            quickAction: undefined,
+            rules: [
+              (value: string) =>
+                validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
+            ],
+            handleUpdate: (val: string) => handleFieldUpdate('alias', val),
+          },
+        ],
+      },
+      {
+        stepName: 'Recall reminder setup',
+        description:
+          'Set up how you want to send recall reminders to your patients through email',
+        fields: [],
+      },
+    ],
+    prev: {
+      label: 'Go Back',
+      action: () => {
+        currentStep.value--
+      },
+    },
+    next: {
+      label: 'Save and continue',
+      action: () => {
+        props.handleSubmit?.()
+      },
+    },
+  },
+]
+
+type Step = {
+  heading: string
+  subheading: string
+  title: string
+
+  subSteps: Substep[]
+  prev?: {
+    label: string
+    action: () => void
+  }
+  next: {
+    label: string
+    action: () => void
+  }
+}
+
+type Substep = {
+  stepName?: string
+  description?: string
+  fields: Field[]
+}
+
+type Field = {
+  key: FormField
+  required: boolean
+  type: 'input' | 'select'
+  inputType?: string
+  selectOptions?: readonly any[]
+  label: string
+  labelSuffix?: string
+  description?: string
+  placeHolder?: string
+  information?: string
+  quickAction?: {
+    prepend?: {
+      label: string
+      action: () => void
+    }
+    append?: {
+      label: string
+      action: () => void
+    }
+  }
+  rules: ((value: string) => true | string)[]
+  handleUpdate: (val: string) => void
+}
 
 const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   formValues.value[fieldName] = newVal
   emit('update', { ...formValues.value })
 }
 
-const nextDisabled = computed(
-  () =>
-    !steps.value[
-      currentStep.value > 0 ? currentStep.value - 1 : 0
-    ]?.formFields.every(field =>
-      formSurveyConfig[field].rules?.some(
-        rule => rule(formValues.value[field]) === true,
-      ),
-    ),
-)
+const isNextdisabled = computed(() => {
+  const currentStepFields = steps[currentStep.value - 1]?.subSteps
+    .map(subStep => subStep.fields)
+    .flat()
+  const isDisabled = currentStepFields?.some(field => {
+    return field.rules.some(rule => {
+      const validateResult = rule(formValues.value[field.key as FormField])
+      return validateResult !== true
+    })
+  })
+  // console.log(isDisabled)
+  return isDisabled
+})
 </script>
 
 <style scoped lang="scss">
@@ -362,5 +510,9 @@ const nextDisabled = computed(
     line-height: 140%; /* 19.6px */
     letter-spacing: 0.14px;
   }
+}
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 </style>

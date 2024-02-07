@@ -57,6 +57,18 @@
         @click:append-inner="handleIconClick"
         @click:append="handleOuterIconClick"
       >
+        <template #prepend-inner>
+          <slot name="prepend-inner" />
+        </template>
+        <template #prepend>
+          <slot name="prepend" />
+        </template>
+        <template #append-inner>
+          <slot name="append-inner" />
+        </template>
+        <template #append>
+          <slot name="append" />
+        </template>
       </v-text-field>
     </div>
   </div>
