@@ -28,5 +28,10 @@
     "id": 6,
     "name": "Sugar intake",
     "nutrientTypes": [229, 1]
+  },
+  {
+    "id": 7,
+    "name": "Saturated fat intake",
+    "nutrientTypes": [50]
   }
 ]

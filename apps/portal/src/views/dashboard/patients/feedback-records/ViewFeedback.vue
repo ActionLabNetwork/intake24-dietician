@@ -133,6 +133,10 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Fibre intake': { component: FibreIntakeModule, feedback: '' },
     'Water intake': { component: WaterIntakeModule, feedback: '' },
     'Sugar intake': { component: SugarIntakeModule, feedback: '' },
+    'Saturated fat intake': {
+      component: SugarIntakeModule,
+      feedback: '',
+    },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -167,6 +171,12 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Sugar intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Saturated fat intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',

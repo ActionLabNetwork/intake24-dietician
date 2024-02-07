@@ -102,6 +102,7 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -154,6 +155,10 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
     'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
+    'Saturated fat intake': {
+      component: markRaw(SaturatedFatIntakeModule),
+      feedback: '',
+    },
   })
 
 const allModules = ref<
@@ -196,7 +201,6 @@ const selectedModules = ref<
 
 const handleModuleUpdate = (module: ModuleName) => {
   component.value = module
-  console.log({ module })
 }
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
@@ -273,32 +277,6 @@ const handlePreviewButtonClick = () => {
   })
   previewing.value = !previewing.value
 }
-
-watch(
-  () => allModules.value,
-  newSelectedModules => {
-    console.log({ newSelectedModules })
-  },
-)
-
-watch(
-  () => recallStore.selectedRecallDateRange,
-  newDateRange => {
-    console.log({ newDateRange })
-    console.log({ allModules: allModules.value })
-  },
-)
-
-watch(
-  () => route.query['preview'],
-  newPreviewValue => {
-    if (newPreviewValue === 'true') {
-      nextTick(() => {
-        // window.print()
-      })
-    }
-  },
-)
 </script>
 
 <style scoped lang="scss">
