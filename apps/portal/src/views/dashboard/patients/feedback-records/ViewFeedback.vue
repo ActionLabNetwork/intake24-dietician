@@ -57,6 +57,7 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -131,6 +132,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Energy intake': { component: EnergyIntakeModule, feedback: '' },
     'Fibre intake': { component: FibreIntakeModule, feedback: '' },
     'Water intake': { component: WaterIntakeModule, feedback: '' },
+    'Sugar intake': { component: SugarIntakeModule, feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -159,6 +161,12 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Water intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Sugar intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',

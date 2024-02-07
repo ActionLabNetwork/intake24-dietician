@@ -2,15 +2,16 @@
   <v-row>
     <v-col cols="12" lg="6">
       <PieChartCutlery>
-        <PieChart :data="data" :unit-of-measure="unitOfMeasure" />
+        <PieChart :name="name" :data="data" :unit-of-measure="unitOfMeasure" />
       </PieChartCutlery>
     </v-col>
 
     <v-col cols="12" lg="6" class="pr-6">
-      <FibreIntakeCard
+      <PieChartSectionCard
         v-for="(meal, key, index) in meals"
         :key="index"
         :label="meal.label"
+        :unit-of-measure="unitOfMeasure"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
         :minutes="meal.minutes"
@@ -22,17 +23,18 @@
 </template>
 
 <script setup lang="ts">
-import FibreIntakeCard from './FibreIntakeCard.vue'
-import PieChart from '../../common/PieChart.vue'
-import PieChartCutlery from '@/components/feedback-modules/standard/fibre-intake/svg/PieChartCutlery.vue'
+import PieChart from './PieChart.vue'
+import PieChartCutlery from '@/components/feedback-modules/common/svg/PieChartCutlery.vue'
 import { computed } from 'vue'
-import { FibreIntakeProps } from './FibreIntakeCard.vue'
+import { MealCardProps } from '../types'
 import chroma from 'chroma-js'
+import PieChartSectionCard from './PieChartSectionCard.vue'
 
 const props = defineProps<{
-  meals: Record<string, Omit<FibreIntakeProps, 'colors'>>
+  meals: Record<string, Omit<MealCardProps, 'colors'>>
   recallsCount: number
   colors: string[]
+  name: string
   unitOfMeasure:
     | {
         symbol: string | null

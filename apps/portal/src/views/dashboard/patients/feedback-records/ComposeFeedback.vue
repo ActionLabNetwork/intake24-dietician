@@ -101,6 +101,7 @@ import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-m
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -152,6 +153,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
     'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
+    'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
   })
 
 const allModules = ref<

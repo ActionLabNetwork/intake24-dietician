@@ -11,7 +11,7 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div v-if="false" class="ma-4">
+        <div v-if="true" class="ma-4">
           <component
             :is="moduleNameToModuleComponentMapping[selectedModule].component"
             :feedback="
@@ -59,6 +59,7 @@ import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-m
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
@@ -118,6 +119,13 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
     'Water intake': {
       component: markRaw(WaterIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Sugar intake': {
+      component: markRaw(SugarIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',

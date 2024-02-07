@@ -1,16 +1,15 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Fibre intake" />
+    <ModuleTitle :logo="Logo" title="Sugar intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
         :tabs="tabs as unknown as PieAndTimelineTabs"
         :show-tabs="mode === 'edit'"
-        :background="{ color: '#aabcb1', active: '#34a749' }"
+        :background="{ color: '#D69FB3', active: '#5B0108' }"
       />
     </div>
-
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
       <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
@@ -31,14 +30,12 @@
 <script setup lang="ts">
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw, computed } from 'vue'
-import { MealCardProps } from '../../types'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
+import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
+import Logo from '@/components/feedback-modules/standard/sugar-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from './TimelineSection.vue'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
@@ -53,7 +50,11 @@ import {
 } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { PieAndTimelineTabs } from '../../types'
+import type {
+  PieAndTimelineTabs,
+  MealCardProps,
+} from '@intake24-dietician/portal/components/feedback-modules/types/index'
+import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -71,70 +72,58 @@ const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
-const totalFibre = ref(0)
+const totalSugar = ref(0)
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
-    module => module.name === 'Fibre intake',
+    module => module.name === 'Sugar intake',
   )
 })
 
-const tabs = ref([
+const tabs = ref<PieAndTimelineTabs>([
   {
     name: 'Pie chart',
     value: 0,
     component: markRaw(PieChartSection),
     props: {
-      name: 'Fibre intake',
+      name: 'Sugar intake',
       meals: mealCards,
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
     },
     icon: 'mdi-chart-pie',
-    style: {
-      // Specify style
-      color: '#fff',
-      backgroundColor: '#34A749',
-      padding: '0.7rem',
-      borderRadius: '5px',
-    },
   },
   {
     name: 'Timeline',
     value: 1,
     component: markRaw(TimelineSection),
     props: {
+      name: 'Sugar intake',
       meals: mealCards,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       colors: colorPalette,
+      unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
     },
     icon: 'mdi-calendar-blank-outline',
-    style: {
-      color: '#fff',
-      backgroundColor: '#34A749',
-      padding: '10px',
-      borderRadius: '5px',
-    },
   },
 ])
 
-const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
-  const mealFibreExchange = usePrecision(
+const calculateMealSugarIntake = (meal: RecallMeal, recallsCount = 1) => {
+  const mealSugarExchange = usePrecision(
     calculateMealNutrientsExchange(
       meal,
-      module.value?.nutrientTypes[0]?.id.toString() ??
-        NUTRIENTS_DIETARY_FIBRE_ID,
+      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FREE_SUGARS_ID,
       recallsCount,
     ),
     2,
   ).value
 
   mealCards[meal.name] = {
-    name: 'Fibre intake',
+    name: 'Sugar intake',
     label: meal.name,
     hours: meal.hours,
     minutes: meal.minutes,
@@ -147,14 +136,15 @@ const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
       value: usePrecision(
         calculateFoodNutrientsExchange(
           food as RecallMealFood,
-          NUTRIENTS_DIETARY_FIBRE_ID,
+          module.value?.nutrientTypes[0]?.id.toString() ??
+            NUTRIENTS_FREE_SUGARS_ID,
         ),
         2,
       ).value,
     })),
   }
 
-  return mealFibreExchange
+  return mealSugarExchange
 }
 
 watch(
@@ -169,11 +159,11 @@ watch(
       delete mealCards[key]
     })
 
-    totalFibre.value = Math.floor(
+    totalSugar.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
         return (
           totalEnergy +
-          calculateMealFibreExchange(meal, combinedMeals.recallsCount)
+          calculateMealSugarIntake(meal, combinedMeals.recallsCount)
         )
       }, 0),
     )
@@ -195,28 +185,12 @@ watch(
       delete mealCards[key]
     })
 
-    totalFibre.value = Math.floor(
+    totalSugar.value = Math.floor(
       data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealFibreExchange(meal)
+        return totalEnergy + calculateMealSugarIntake(meal)
       }, 0),
     )
   },
   { immediate: true },
 )
 </script>
-<style scoped lang="scss">
-.total-energy-container {
-  border-radius: 4px;
-  border: 0.5px solid rgba(0, 0, 0, 0.25);
-  background: rgba(241, 241, 241, 0.5);
-  padding: 1rem;
-  font-weight: 500;
-}
-
-.grid-container {
-  margin-top: 1rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-  gap: 1rem;
-}
-</style>

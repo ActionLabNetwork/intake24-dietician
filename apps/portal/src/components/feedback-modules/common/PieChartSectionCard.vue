@@ -1,9 +1,7 @@
 <template>
   <v-row>
     <v-col cols="12" md="3" class="pr-10 d-flex align-center flex-wrap">
-      <div class="font-weight-medium">
-        {{ label }}
-      </div>
+      <div class="font-weight-medium">{{ label }}</div>
     </v-col>
     <v-col
       cols="12"
@@ -26,7 +24,9 @@
                   }}g)
                 </p>
               </div>
-              <div class="font-weight-bold">{{ food.value }}g</div>
+              <div class="font-weight-bold">
+                {{ food.value }}{{ unitOfMeasure?.symbol }}
+              </div>
             </div>
           </div>
         </li>
@@ -44,6 +44,12 @@ export interface FibreIntakeProps {
   label: string
   hours: number
   minutes: number
+  unitOfMeasure:
+    | {
+        symbol: string | null
+        description: string
+      }
+    | undefined
   colors: {
     backgroundColor: string
     valueCardBgColor: string

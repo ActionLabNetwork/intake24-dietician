@@ -21,6 +21,7 @@ const props = defineProps<{
     value: number
     backgroundColor: string
   }[]
+  name: string
   unitOfMeasure:
     | {
         symbol: string | null
@@ -68,7 +69,7 @@ const option = ref({
   },
   series: [
     {
-      name: 'Fibre Intake',
+      name: props.name,
       type: 'pie',
       radius: radius.value,
       center: ['50%', '50%'],

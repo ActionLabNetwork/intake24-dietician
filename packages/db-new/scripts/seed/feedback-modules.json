@@ -23,5 +23,10 @@
     "id": 5,
     "name": "Water intake",
     "nutrientTypes": [8]
+  },
+  {
+    "id": 6,
+    "name": "Sugar intake",
+    "nutrientTypes": [229, 1]
   }
 ]
