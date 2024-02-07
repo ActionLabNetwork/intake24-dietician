@@ -1,5 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  varchar,
+} from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { typedJsonbFromSchema } from './modelUtils'
 import { dieticians, patients } from './user.model'
@@ -12,6 +19,7 @@ export const surveys = pgTable('survey', {
     .references(() => dieticians.id)
     .notNull(),
   surveyName: text('survey_name').notNull(),
+  countryCode: varchar('country_code', { length: 2 }).notNull(),
   intake24Host: text('intake24Host').notNull(),
   // this is called "slug" in code and "survey ID" in UI in Intake24
   intake24SurveyId: text('intake24_survey_id').notNull(),

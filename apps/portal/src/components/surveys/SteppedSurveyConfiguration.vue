@@ -233,6 +233,22 @@ const formSurveyConfig: Form<FormField> = {
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
   },
+  countryCode: {
+    key: 'countryCode',
+    label: t('surveys.addNewSurvey.surveyDetails.countryCode.label'),
+    description: t(
+      'surveys.addNewSurvey.surveyDetails.countryCode.description',
+    ),
+    required: true,
+    labelSuffix: ' (required)',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(SurveyCreateDtoSchema.shape.countryCode, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('countryCode', val),
+  },
 }
 
 const currentStep = ref(0)

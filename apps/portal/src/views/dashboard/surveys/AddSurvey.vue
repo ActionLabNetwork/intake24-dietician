@@ -47,6 +47,7 @@ const addSurveyMutation = useAddSurvey()
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
   intake24Host: '',
+  countryCode: '',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',

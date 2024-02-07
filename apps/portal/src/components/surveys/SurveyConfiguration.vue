@@ -209,6 +209,21 @@ const formSurveyConfig: Form<FormField> = {
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
   },
+  //TODO: Add missing i18n keys for this field
+  countryCode: {
+    key: 'countryCode',
+    label: '',
+    description: '',
+    required: true,
+    labelSuffix: ' (required)',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(SurveyCreateDtoSchema.shape.countryCode, value),
+    ],
+    handleUpdate: val => handleFieldUpdate('countryCode', val),
+  },
 }
 </script>
 
