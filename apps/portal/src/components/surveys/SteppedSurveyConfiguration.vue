@@ -2,7 +2,7 @@
   <v-container>
     <!-- <pre>{{ formValues }}</pre> -->
     <div class="mb-5">
-      <BackButton class="mb-5" />
+      <BackButton class="mb-5" @click="onBackButtonClick" />
       <div>
         <h1 class="text heading">{{ steps[currentStep - 1]?.heading }}</h1>
         <h3 class="text subheading">
@@ -139,6 +139,14 @@
         </template>
       </v-stepper-actions>
     </v-stepper>
+    <BaseDialog
+      v-model="isDialogActive"
+      :on-confirm="onDialogConfirm"
+      :on-cancel="onDialogCancel"
+    >
+      <template #title>{{ dialogTitle }}</template>
+      {{ dialogDescription }}
+    </BaseDialog>
   </v-container>
 </template>
 
@@ -146,6 +154,7 @@
 import { ref } from 'vue'
 import BackButton from '../common/BackButton.vue'
 import VBaseInput from '../form/VBaseInput.vue'
+import BaseDialog from '../common/BaseDialog.vue'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
@@ -226,6 +235,35 @@ const emit = defineEmits<{
 }>()
 
 const currentStep = ref(1)
+const isDialogActive = ref(false)
+const onDialogConfirm = ref<() => void>()
+const dialogTitle = ref('')
+const dialogDescription = ref('')
+
+const handleBackConfirm = () => {
+  if (window.history.length > 1) {
+    window.history.back()
+  }
+}
+
+const handleFormSubmitConfirm = () => {
+  props.handleSubmit?.()
+}
+
+const onBackButtonClick = () => {
+  isDialogActive.value = true
+  dialogTitle.value = 'Changes in clinic setup'
+  dialogDescription.value =
+    'Are you sure you want to go back? Changes made to this clinic setup will not be updated.'
+  onDialogConfirm.value = handleBackConfirm
+}
+
+const onDialogCancel = () => {
+  isDialogActive.value = false
+  dialogTitle.value = ''
+  dialogDescription.value = ''
+  onDialogConfirm.value = undefined
+}
 
 // TODO: Replace this when the i18n is setup
 const steps: Step[] = [
@@ -454,7 +492,11 @@ const steps: Step[] = [
     next: {
       label: 'Save and continue',
       action: () => {
-        props.handleSubmit?.()
+        isDialogActive.value = true
+        onDialogConfirm.value = handleFormSubmitConfirm
+        dialogTitle.value = 'New clinic creation'
+        dialogDescription.value =
+          'Are you sure you want to create a new clinic?'
       },
     },
   },
