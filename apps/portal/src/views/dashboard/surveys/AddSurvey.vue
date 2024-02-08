@@ -46,10 +46,10 @@ const addSurveyMutation = useAddSurvey()
 
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
-  intake24Host: '',
-  countryCode: '',
+  intake24Host: 'https://myfoodswaps.com/api/recall/alias',
+  countryCode: 'au',
   intake24SurveyId: '',
-  intake24Secret: '',
+  intake24Secret: '123456',
   alias: '',
   isActive: true,
 })

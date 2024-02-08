@@ -142,6 +142,10 @@ const props = defineProps<{
 // TODO: Investigate further this weird ts error
 // @ts-ignore
 const { value: fieldValue, errorMessage } = useField<string>(() => props.name)
+
+if (props.type !== 'tel' && typeof props.value === 'string') {
+  fieldValue.value = props.value ?? ''
+}
 const emit = defineEmits<{
   update: [value: string]
 }>()

@@ -51,6 +51,7 @@
                   <VBaseInput
                     :name="field.key"
                     :type="field.inputType"
+                    :readonly="field.readonly"
                     :placeholder="field.placeHolder"
                     :rules="field.rules"
                     :required="field.required"
@@ -195,6 +196,7 @@ type Field = {
   required: boolean
   type: 'input' | 'select'
   inputType?: string
+  readonly?: boolean
   selectConfig?: {
     items: readonly any[]
     itemTitle: string
@@ -323,6 +325,7 @@ const steps: Step[] = [
             required: true,
             type: 'input',
             inputType: 'text',
+            readonly: true,
             label: 'Integration code',
             labelSuffix: '(required)',
             description: undefined,
@@ -350,6 +353,7 @@ const steps: Step[] = [
             required: true,
             type: 'input',
             inputType: 'text',
+            readonly: true,
             label: 'Clinic url',
             labelSuffix: '(required)',
             description: undefined,
