@@ -24,96 +24,120 @@
       </v-stepper-header>
 
       <v-stepper-window>
-        <v-form>
-          <v-stepper-window-item
-            v-for="(step, i) in steps"
-            :key="step.heading"
-            :value="i + 1"
-          >
-            <!-- <pre>{{ step }}</pre> -->
-            <div
-              v-for="(subStep, subStepIndex) in step.subSteps"
-              :key="subStepIndex + 'substep'"
-              class="mt-10"
+        <v-container>
+          <v-form>
+            <v-stepper-window-item
+              v-for="(step, i) in steps"
+              :key="step.heading"
+              :value="i + 1"
             >
-              <!-- <pre>{{ subStep }}</pre> -->
-              <template v-if="subStep.stepName">
-                <h1 class="text heading">
-                  {{ subStep.stepName }}
-                </h1>
-                <h3 class="text subheading">
-                  {{ subStep.description }}
-                </h3>
-              </template>
-              <div v-for="field in subStep.fields" :key="field.key">
-                <template v-if="field.type === 'input'">
-                  <!-- <pre>{{ field.label }}</pre> -->
-                  <VBaseInput
-                    :name="field.key"
-                    :type="field.inputType"
-                    :readonly="field.readonly"
-                    :placeholder="field.placeHolder"
-                    :rules="field.rules"
-                    :required="field.required"
-                    :value="formValues[field.key]"
-                    :select-config="field.selectConfig"
-                    @update="field.handleUpdate"
+              <v-row>
+                <v-col>
+                  <!-- <pre>{{ step }}</pre> -->
+                  <div
+                    v-for="(subStep, subStepIndex) in step.subSteps"
+                    :key="subStepIndex + 'substep'"
+                    class="mt-10"
                   >
-                    <div>
-                      <span class="input-label">
-                        {{ field.label }}
-                      </span>
-                      <span v-if="field.labelSuffix" class="input-label suffix">
-                        {{ field.labelSuffix }}
-                      </span>
-                      <v-btn
-                        v-if="field.information"
-                        icon="mdi-information-outline"
-                        variant="text"
-                        size="small"
-                      >
-                      </v-btn>
-                    </div>
-                    <div class="input-label description">
-                      {{ field.description }}
-                    </div>
-
-                    <template #append>
-                      <template
-                        v-if="
-                          field.key === 'intake24Secret' ||
-                          field.key === 'intake24Host'
-                        "
-                      >
-                        <v-btn
-                          v-if="field.quickAction?.append"
-                          color="primary"
-                          @click="
-                            () =>
-                              field.quickAction?.append?.action(
-                                formValues[field.key],
-                              )
-                          "
+                    <!-- <pre>{{ subStep }}</pre> -->
+                    <template v-if="subStep.stepName">
+                      <h1 class="text heading">
+                        {{ subStep.stepName }}
+                      </h1>
+                      <h3 class="text subheading">
+                        {{ subStep.description }}
+                      </h3>
+                    </template>
+                    <div v-for="field in subStep.fields" :key="field.key">
+                      <template v-if="field.type === 'input'">
+                        <!-- <pre>{{ field.label }}</pre> -->
+                        <VBaseInput
+                          :name="field.key"
+                          :type="field.inputType"
+                          :readonly="field.readonly"
+                          :placeholder="field.placeHolder"
+                          :rules="field.rules"
+                          :required="field.required"
+                          :value="formValues[field.key]"
+                          :select-config="field.selectConfig"
+                          @update="field.handleUpdate"
                         >
-                          {{ field.quickAction.append.label }}
-                        </v-btn>
-                      </template>
-                      <template v-if="field.key === 'countryCode'">
-                        {{ field.placeHolder + formValues[field.key] }}
-                      </template>
-                    </template>
+                          <div>
+                            <span class="input-label">
+                              {{ field.label }}
+                            </span>
+                            <span
+                              v-if="field.labelSuffix"
+                              class="input-label suffix"
+                            >
+                              {{ field.labelSuffix }}
+                            </span>
+                            <v-btn
+                              v-if="field.information"
+                              icon="mdi-information-outline"
+                              variant="text"
+                              size="small"
+                            >
+                            </v-btn>
+                          </div>
+                          <div class="input-label description">
+                            {{ field.description }}
+                          </div>
 
-                    <template #append-inner>
-                      <template v-if="field.key === 'countryCode'">
-                        {{ formValues[field.key] }}
+                          <template #append>
+                            <template
+                              v-if="
+                                field.key === 'intake24Secret' ||
+                                field.key === 'intake24Host'
+                              "
+                            >
+                              <v-btn
+                                v-if="field.quickAction?.append"
+                                color="primary"
+                                @click="
+                                  () =>
+                                    field.quickAction?.append?.action(
+                                      formValues[field.key],
+                                    )
+                                "
+                              >
+                                {{ field.quickAction.append.label }}
+                              </v-btn>
+                            </template>
+                            <template v-if="field.key === 'countryCode'">
+                              {{ field.placeHolder + formValues[field.key] }}
+                            </template>
+                          </template>
+
+                          <template #append-inner>
+                            <template v-if="field.key === 'countryCode'">
+                              {{ formValues[field.key] }}
+                            </template>
+                          </template>
+                        </VBaseInput>
                       </template>
-                    </template>
-                  </VBaseInput>
-                </template>
-              </div>
-            </div>
-          </v-stepper-window-item>
-        </v-form>
+                    </div>
+                  </div>
+                </v-col>
+                <v-col>
+                  <v-col align-self="center">
+                    <v-card class="pa-5 my-5 bg-grey-lighten-4">
+                      Not able to complete system setup?
+                      <br />
+                      Contact -
+                      <i class="text-body-1 text-primary"
+                        >support@intake24.com</i
+                      >
+                    </v-card>
+                  </v-col>
+                </v-col>
+              </v-row>
+            </v-stepper-window-item>
+          </v-form>
+          <v-row>
+            <v-col> </v-col>
+          </v-row>
+        </v-container>
       </v-stepper-window>
 
       <v-stepper-actions style="justify-content: flex-start" disabled="false">
