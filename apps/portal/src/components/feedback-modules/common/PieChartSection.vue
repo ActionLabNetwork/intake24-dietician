@@ -1,19 +1,29 @@
 <template>
   <v-row>
     <v-col cols="12" lg="6">
-      <PieChartCutlery>
+      <div v-if="theme === 'Fun'">
+        <PieChartCutlery>
+          <PieChart
+            :name="name"
+            :data="data"
+            :unit-of-measure="unitOfMeasure?.unit"
+          />
+        </PieChartCutlery>
+      </div>
+      <div v-else>
         <PieChart
           :name="name"
           :data="data"
           :unit-of-measure="unitOfMeasure?.unit"
         />
-      </PieChartCutlery>
+      </div>
     </v-col>
 
     <v-col cols="12" lg="6" class="pr-6">
       <PieChartSectionCard
         v-for="(meal, key, index) in meals"
-        :key="index"
+        :key="key"
+        name="name"
         :label="meal.label"
         :unit-of-measure="unitOfMeasure?.unit"
         :colors="getColours(colors[index]!)"
@@ -33,6 +43,7 @@ import { computed } from 'vue'
 import { MealCardProps } from '../types'
 import chroma from 'chroma-js'
 import PieChartSectionCard from './PieChartSectionCard.vue'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const props = defineProps<{
   meals: Record<string, Omit<MealCardProps, 'colors'>>
@@ -46,6 +57,9 @@ const props = defineProps<{
       }
     | undefined
 }>()
+
+const clinicStore = useClinicStore()
+const theme = computed(() => clinicStore.currentClinic?.surveyPreference.theme)
 
 const data = computed(() => {
   return Object.keys(props.meals).map((meal, index) => {

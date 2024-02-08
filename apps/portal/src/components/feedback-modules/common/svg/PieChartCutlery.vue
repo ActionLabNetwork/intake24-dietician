@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="inner-container">
+    <div class="inner-container w-full">
       <div class="pie-chart"><slot></slot></div>
       <svg
         :width="xlAndUp ? '600px' : '500px'"

@@ -39,6 +39,7 @@
 import { computed } from 'vue'
 import chroma from 'chroma-js'
 import { usePrecision } from '@vueuse/math'
+import { MealCardProps } from '../types'
 
 export interface FibreIntakeProps {
   label: string
@@ -62,7 +63,7 @@ export interface FibreIntakeProps {
   }[]
 }
 
-const props = defineProps<FibreIntakeProps>()
+const props = defineProps<MealCardProps>()
 
 const wrapperStyle = computed(() => ({
   '--line-color': props.colors.valueCardBorderColor,

@@ -1,7 +1,13 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Sugar intake" />
+  <v-card
+    v-if="theme"
+    :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
+  >
+    <ModuleTitle
+      :logo="theme === 'Classic' ? LogoAdult : Logo"
+      title="Sugar intake"
+    />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -34,6 +40,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
 import Logo from '@/components/feedback-modules/standard/sugar-intake/svg/Logo.vue'
+import LogoAdult from '@/components/feedback-modules/standard/sugar-intake/svg/LogoAdult.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
@@ -112,6 +119,8 @@ const tabs = ref<PieAndTimelineTabs>([
   },
 ])
 
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+
 const calculateMealSugarIntake = (meal: RecallMeal, recallsCount = 1) => {
   const mealSugarExchange = usePrecision(
     calculateMealNutrientsExchange(
@@ -179,6 +188,7 @@ watch(
     colorPalette.value = generatePastelPalette(
       data.recall.meals.length + 1,
       data.recall.meals.map(meal => meal.hours),
+      theme.value === 'Fun' ? 0.2 : undefined,
     )
 
     Object.keys(mealCards).forEach(key => {

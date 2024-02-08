@@ -55,7 +55,6 @@ export const SurveyDtoSchema = SurveyCreateDtoSchema.extend({
 export type SurveyDto = z.infer<typeof SurveyDtoSchema>
 
 export const SurveyPlainDtoSchema = SurveyDtoSchema.omit({
-  surveyPreference: true,
   feedbackModules: true,
 })
 
