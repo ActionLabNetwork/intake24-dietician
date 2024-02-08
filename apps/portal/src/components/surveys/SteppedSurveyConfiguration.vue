@@ -54,7 +54,8 @@
                     :placeholder="field.placeHolder"
                     :rules="field.rules"
                     :required="field.required"
-                    :value="formValues[field.key as FormField]"
+                    :value="formValues[field.key]"
+                    :select-config="field.selectConfig"
                     @update="field.handleUpdate"
                   >
                     <div>
@@ -76,56 +77,37 @@
                       {{ field.description }}
                     </div>
 
-                    <!-- <template v-if="field.key === 'countryCode'" #prepend-inner>
-                      https://admin.intake24.dev.
-                    </template> -->
-
                     <template #append>
-                      <!-- TODO Add onCLick functionality -->
-                      <v-btn
-                        v-if="field.quickAction?.append"
-                        color="primary"
-                        @click="
-                          () =>
-                            field.quickAction?.append?.action(
-                              formValues[field.key],
-                            )
+                      <template
+                        v-if="
+                          field.key === 'intake24Secret' ||
+                          field.key === 'intake24Host'
                         "
                       >
-                        {{ field.quickAction.append.label }}
-                      </v-btn>
-                    </template>
-                  </VBaseInput>
-                </template>
-                <template v-if="field.type === 'select'">
-                  <div class="form-label pb-2">
-                    <span class="input-label">
-                      {{ field.label }}
-                    </span>
-                    <span v-if="field.labelSuffix" class="input-label suffix">
-                      {{ field.labelSuffix }}
-                    </span>
-                  </div>
-                  <v-select
-                    v-model="formValues[field.key]"
-                    density="comfortable"
-                    variant="solo-filled"
-                    label="Select"
-                    :items="field.selectOptions"
-                    item-title="flag"
-                    item-value="code"
-                    :rules="field.rules"
-                  >
-                    <template #append-inner>
-                      {{ formValues[field.key as FormField] }}
+                        <v-btn
+                          v-if="field.quickAction?.append"
+                          color="primary"
+                          @click="
+                            () =>
+                              field.quickAction?.append?.action(
+                                formValues[field.key],
+                              )
+                          "
+                        >
+                          {{ field.quickAction.append.label }}
+                        </v-btn>
+                      </template>
+                      <template v-if="field.key === 'countryCode'">
+                        {{ field.placeHolder + formValues[field.key] }}
+                      </template>
                     </template>
 
-                    <template #append>
-                      {{
-                        field.placeHolder + formValues[field.key as FormField]
-                      }}
+                    <template #append-inner>
+                      <template v-if="field.key === 'countryCode'">
+                        {{ formValues[field.key] }}
+                      </template>
                     </template>
-                  </v-select>
+                  </VBaseInput>
                 </template>
               </div>
             </div>
@@ -204,7 +186,11 @@ type Field = {
   required: boolean
   type: 'input' | 'select'
   inputType?: string
-  selectOptions?: readonly any[]
+  selectConfig?: {
+    items: readonly any[]
+    itemTitle: string
+    itemValue: string
+  }
   label: string
   labelSuffix?: string
   description?: string
@@ -380,9 +366,13 @@ const steps: Step[] = [
           {
             key: 'countryCode',
             required: true,
-            type: 'select',
-            inputType: undefined,
-            selectOptions: countryCodes,
+            type: 'input',
+            inputType: 'select',
+            selectConfig: {
+              items: countryCodes,
+              itemTitle: 'flag',
+              itemValue: 'code',
+            },
             label: 'Country code',
             labelSuffix: '(required)',
             description:
@@ -481,7 +471,7 @@ const isNextdisabled = computed(() => {
     .flat()
   const isDisabled = currentStepFields?.some(field => {
     return field.rules.some(rule => {
-      const validateResult = rule(formValues.value[field.key as FormField])
+      const validateResult = rule(formValues.value[field.key])
       return validateResult !== true
     })
   })

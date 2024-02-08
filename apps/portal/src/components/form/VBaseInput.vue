@@ -29,6 +29,40 @@
       />
     </div>
     <div
+      v-else-if="type === 'select'"
+      :style="bordered ? 'background: white' : ''"
+      :class="{
+        'pa-3 my-3 d-flex rounded-lg elevation-1': bordered,
+      }"
+    >
+      <v-select
+        v-model="fieldValue"
+        density="comfortable"
+        variant="solo-filled"
+        :items="selectConfig?.items"
+        :item-title="selectConfig?.itemTitle"
+        :item-value="selectConfig?.itemValue"
+        label="Select"
+        :rules="rules ?? []"
+        :readonly="readonly ?? false"
+        :bordered="bordered"
+        @update:model-value="updateValue"
+      >
+        <template #prepend-inner>
+          <slot name="prepend-inner" />
+        </template>
+        <template #prepend>
+          <slot name="prepend" />
+        </template>
+        <template #append-inner>
+          <slot name="append-inner" />
+        </template>
+        <template #append>
+          <slot name="append" />
+        </template>
+      </v-select>
+    </div>
+    <div
       v-else
       :style="bordered ? 'background: white' : ''"
       :class="{
@@ -96,6 +130,11 @@ const props = defineProps<{
   required?: boolean
   bordered?: boolean
   dataCy?: string
+  selectConfig?: {
+    items: readonly any[]
+    itemTitle: string
+    itemValue: string
+  }
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
