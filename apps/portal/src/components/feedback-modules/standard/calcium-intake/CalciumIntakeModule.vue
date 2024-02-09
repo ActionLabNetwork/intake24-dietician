@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Calcium intake" />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Calcium intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -55,6 +55,7 @@ import type {
   MealCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -68,6 +69,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { themeConfig } = useThemeSelector('Calcium intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()

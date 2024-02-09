@@ -4,6 +4,7 @@ import vue from '@vitejs/plugin-vue'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 import tsconfigPaths from 'vite-tsconfig-paths'
 import VueDevTools from 'vite-plugin-vue-devtools'
+import dynamicImport from 'vite-plugin-dynamic-import'
 
 // Utilities
 import { defineConfig } from 'vite'
@@ -26,6 +27,7 @@ export default defineConfig({
         configFile: 'src/styles/settings.scss',
       },
     }),
+    dynamicImport(),
   ],
   define: { 'process.env': {} },
   resolve: {

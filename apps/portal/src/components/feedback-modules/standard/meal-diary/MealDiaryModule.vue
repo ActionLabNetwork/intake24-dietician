@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Mascot" title="Meal diary" />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Meal diary" />
     <MealDiaryTimeline
       :meals="meals"
       :mode="mode"
@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { usePrecision } from '@vueuse/math'
 
-import Mascot from '@/assets/modules/meal-diary/meal-diary-mascot.svg'
+import Logo from './svg/Logo.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import MealDiaryTimeline from '@/components/feedback-modules/standard/meal-diary/MealDiaryTimeline.vue'
@@ -35,6 +35,7 @@ import MealDiaryTimeline from '@/components/feedback-modules/standard/meal-diary
 import type { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { computed } from 'vue'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -46,6 +47,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
+const { themeConfig } = useThemeSelector('Meal diary')
 const recallStore = useRecallStore()
 const meals = computed(
   () =>

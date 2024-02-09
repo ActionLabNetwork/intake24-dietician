@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="Logo"
+      :logo="{ path: themeConfig.logo }"
       title="Water intake"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -102,6 +102,7 @@ import { usePrecision } from '@vueuse/math'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -115,6 +116,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { themeConfig } = useThemeSelector('Water intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()

@@ -1,7 +1,7 @@
 <template>
   <v-row>
     <v-col cols="12" lg="6">
-      <div v-if="theme === 'Fun'">
+      <div v-if="showCutlery">
         <PieChartCutlery>
           <PieChart
             :name="name"
@@ -43,7 +43,6 @@ import { computed } from 'vue'
 import { MealCardProps } from '../types'
 import chroma from 'chroma-js'
 import PieChartSectionCard from './PieChartSectionCard.vue'
-import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const props = defineProps<{
   meals: Record<string, Omit<MealCardProps, 'colors'>>
@@ -56,10 +55,8 @@ const props = defineProps<{
         unit: { symbol: string | null; description: string }
       }
     | undefined
+  showCutlery?: boolean
 }>()
-
-const clinicStore = useClinicStore()
-const theme = computed(() => clinicStore.currentClinic?.surveyPreference.theme)
 
 const data = computed(() => {
   return Object.keys(props.meals).map((meal, index) => {

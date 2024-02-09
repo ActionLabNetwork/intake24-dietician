@@ -39,6 +39,7 @@ export type PieAndTimelineTabs = {
           unit: { symbol: string | null; description: string }
         }
       | undefined
+    showCutlery?: boolean
   }
   icon: string
 }[]

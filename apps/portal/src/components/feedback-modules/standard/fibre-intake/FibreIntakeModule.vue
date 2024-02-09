@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Fibre intake" />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Fibre intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -35,7 +35,6 @@ import { MealCardProps } from '../../types'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/fibre-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
@@ -54,6 +53,7 @@ import {
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { PieAndTimelineTabs } from '../../types'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -67,6 +67,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { themeConfig } = useThemeSelector('Fibre intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()

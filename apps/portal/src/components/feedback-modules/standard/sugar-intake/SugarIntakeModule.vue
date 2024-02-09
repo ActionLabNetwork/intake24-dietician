@@ -4,10 +4,7 @@
     v-if="theme"
     :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
   >
-    <ModuleTitle
-      :logo="theme === 'Classic' ? LogoAdult : Logo"
-      title="Sugar intake"
-    />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Sugar intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -39,8 +36,6 @@ import { ref, watch, reactive, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/sugar-intake/svg/Logo.vue'
-import LogoAdult from '@/components/feedback-modules/standard/sugar-intake/svg/LogoAdult.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
@@ -62,6 +57,7 @@ import type {
   MealCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -75,6 +71,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { themeConfig } = useThemeSelector('Sugar intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
@@ -101,6 +98,7 @@ const tabs = ref<PieAndTimelineTabs>([
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       unitOfMeasure: module.value?.nutrientTypes[0],
+      showCutlery: themeConfig.value.showCutlery,
     },
     icon: 'mdi-chart-pie',
   },
