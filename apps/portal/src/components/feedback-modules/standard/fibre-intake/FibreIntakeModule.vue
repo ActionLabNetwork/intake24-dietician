@@ -94,6 +94,7 @@ const tabs = ref<PieAndTimelineTabs>([
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       unitOfMeasure: module.value?.nutrientTypes[0],
+      showCutlery: themeConfig.value.showCutlery,
     },
     icon: 'mdi-chart-pie',
   },

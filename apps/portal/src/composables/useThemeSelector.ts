@@ -21,23 +21,23 @@ export function useThemeSelector(moduleName: ModuleName) {
 
   const logo: Logo = {
     'Meal diary': {
-      Classic: 'meal-diary/svg/Logo.vue',
+      Classic: 'meal-diary/svg/LogoAdult.vue',
       Fun: 'meal-diary/svg/Logo.vue',
     },
     'Carbs exchange': {
-      Classic: 'carbs-exchange/svg/Logo.vue',
+      Classic: 'carbs-exchange/svg/LogoAdult.vue',
       Fun: 'carbs-exchange/svg/Logo.vue',
     },
     'Energy intake': {
-      Classic: 'energy-intake/svg/Logo.vue',
+      Classic: 'energy-intake/svg/LogoAdult.vue',
       Fun: 'energy-intake/svg/Logo.vue',
     },
     'Fibre intake': {
-      Classic: 'fibre-intake/svg/Logo.vue',
+      Classic: 'fibre-intake/svg/LogoAdult.vue',
       Fun: 'fibre-intake/svg/Logo.vue',
     },
     'Water intake': {
-      Classic: 'water-intake/svg/Logo.vue',
+      Classic: 'water-intake/svg/LogoAdult.vue',
       Fun: 'water-intake/svg/Logo.vue',
     },
     'Sugar intake': {
@@ -45,11 +45,11 @@ export function useThemeSelector(moduleName: ModuleName) {
       Fun: 'sugar-intake/svg/Logo.vue',
     },
     'Saturated fat intake': {
-      Classic: 'saturated-fat-intake/svg/Logo.vue',
+      Classic: 'saturated-fat-intake/svg/LogoAdult.vue',
       Fun: 'saturated-fat-intake/svg/Logo.vue',
     },
     'Calcium intake': {
-      Classic: 'calcium-intake/svg/Logo.vue',
+      Classic: 'calcium-intake/svg/LogoAdult.vue',
       Fun: 'calcium-intake/svg/Logo.vue',
     },
   } as const

@@ -36,7 +36,6 @@ import { ref, watch, reactive, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_SATURATED_FAT_ID } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/saturated-fat-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
@@ -99,6 +98,7 @@ const tabs = ref<PieAndTimelineTabs>([
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       unitOfMeasure: module.value?.nutrientTypes[0],
+      showCutlery: themeConfig.value.showCutlery,
     },
     icon: 'mdi-chart-pie',
   },

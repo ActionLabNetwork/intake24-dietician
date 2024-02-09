@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Energy intake" />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Energy intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
@@ -72,6 +72,7 @@ import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils
 import { usePrecision } from '@vueuse/math'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -86,6 +87,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const { themeConfig } = useThemeSelector('Energy intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
