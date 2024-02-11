@@ -3,8 +3,8 @@
     <div class="inner-container w-full">
       <div class="pie-chart"><slot></slot></div>
       <svg
-        :width="xlAndUp ? '600px' : '500px'"
-        height="500px"
+        :width="xlAndUp ? '400px' : '400px'"
+        height="300px"
         viewBox="0 0 487 331"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -126,7 +126,7 @@ const { xlAndUp } = useDisplay()
     transform: translateX(-16.5%);
     position: absolute;
     left: 0%;
-    top: 11.5%;
+    top: 0%;
     width: 150%;
     height: 75%;
     z-index: 999;

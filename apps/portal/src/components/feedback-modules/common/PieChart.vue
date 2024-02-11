@@ -32,8 +32,6 @@ const props = defineProps<{
     | undefined
 }>()
 
-console.log({ data: props.data })
-
 const { xlAndUp } = useDisplay()
 
 use([
@@ -56,7 +54,6 @@ const option = ref({
     formatter: '{a} <br/>{b} : {c} ({d}%)',
   },
   label: {
-    position: 'outer',
     formatter: ['{b}', `{bg|{c}${unitSymbol.value} ({d}%)}`].join('\n'),
     // TODO: Figure out how to use the pie slice's color as the background color for each label
     rich: {
@@ -102,7 +99,7 @@ const option = ref({
 
 <style scoped>
 .chart {
-  height: 380px;
+  height: 300px;
   width: 100%;
 }
 </style>
