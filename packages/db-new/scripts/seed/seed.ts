@@ -100,6 +100,7 @@ async function seedSurvey(
       dieticianId: dietician!.id,
       surveyName: 'Demo survey',
       intake24Host: 'https://survey.intake24.dev',
+      intake24AdminBaseUrl: 'https://admin.intake24.dev',
       countryCode: 'au',
       intake24SurveyId: 'demo',
       intake24Secret: 'super_secret_jwt',

@@ -20,6 +20,7 @@ export const surveys = pgTable('survey', {
     .notNull(),
   surveyName: text('survey_name').notNull(),
   countryCode: varchar('country_code', { length: 2 }).notNull(),
+  intake24AdminBaseUrl: text('intake24AdminBaseUrl').notNull(),
   intake24Host: text('intake24Host').notNull(),
   // this is called "slug" in code and "survey ID" in UI in Intake24
   intake24SurveyId: text('intake24_survey_id').notNull(),
