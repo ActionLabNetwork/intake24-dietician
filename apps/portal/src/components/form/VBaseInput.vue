@@ -35,32 +35,36 @@
         'pa-3 my-3 d-flex rounded-lg elevation-1': bordered,
       }"
     >
-      <v-select
-        v-model="fieldValue"
-        density="comfortable"
-        variant="solo-filled"
-        :items="selectConfig?.items"
-        :item-title="selectConfig?.itemTitle"
-        :item-value="selectConfig?.itemValue"
-        label="Select"
-        :rules="rules ?? []"
-        :readonly="readonly ?? false"
-        :bordered="bordered"
-        @update:model-value="updateValue"
-      >
-        <template #prepend-inner>
-          <slot name="prepend-inner" />
-        </template>
-        <template #prepend>
-          <slot name="prepend" />
-        </template>
-        <template #append-inner>
-          <slot name="append-inner" />
-        </template>
-        <template #append>
-          <slot name="append" />
-        </template>
-      </v-select>
+      <v-row>
+        <v-col cols="6">
+          <v-select
+            v-model="fieldValue"
+            density="comfortable"
+            variant="solo-filled"
+            :items="selectConfig?.items"
+            :item-title="selectConfig?.itemTitle"
+            :item-value="selectConfig?.itemValue"
+            label="Select"
+            :rules="rules ?? []"
+            :readonly="readonly ?? false"
+            :bordered="bordered"
+            @update:model-value="updateValue"
+          >
+            <template #prepend-inner>
+              <slot name="prepend-inner" />
+            </template>
+            <template #prepend>
+              <slot name="prepend" />
+            </template>
+            <template #append-inner>
+              <slot name="append-inner" />
+            </template>
+            <template #append>
+              <slot name="append" />
+            </template>
+          </v-select>
+        </v-col>
+      </v-row>
     </div>
     <div
       v-else

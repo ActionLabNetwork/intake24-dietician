@@ -209,6 +209,23 @@ const formSurveyConfig: Form<FormField> = {
     ],
     handleUpdate: val => handleFieldUpdate('alias', val),
   },
+  intake24AdminBaseUrl: {
+    key: 'intake24AdminBaseUrl',
+    label: '',
+    description: '',
+    required: true,
+    labelSuffix: ' (required)',
+    type: 'input',
+    inputType: 'text',
+    rules: [
+      (value: string) =>
+        validateWithZod(
+          SurveyCreateDtoSchema.shape.intake24AdminBaseUrl,
+          value,
+        ),
+    ],
+    handleUpdate: val => handleFieldUpdate('intake24AdminBaseUrl', val),
+  },
   //TODO: Add missing i18n keys for this field
   countryCode: {
     key: 'countryCode',

@@ -430,6 +430,40 @@ const steps: Step[] = [
               handleFieldUpdate('intake24SurveyId', val),
           },
           {
+            key: 'intake24AdminBaseUrl',
+            required: true,
+            type: 'input',
+            inputType: 'select',
+            selectConfig: {
+              items: [
+                'https://admin.intake24.dev',
+                'https://admin.intake24.prod',
+                'https://admin.intake24.staging',
+              ],
+              itemTitle: 'title',
+              itemValue: 'value',
+            },
+            label: 'Intake24 admin base url',
+            labelSuffix: '(required)',
+            description:
+              'Select your workplace base url to link your clinic with Intake24 system.',
+            placeHolder: undefined,
+            information: undefined,
+            quickAction: {
+              prepend: undefined,
+              append: undefined,
+            },
+            rules: [
+              (value: string) =>
+                validateWithZod(
+                  SurveyCreateDtoSchema.shape.intake24AdminBaseUrl,
+                  value,
+                ),
+            ],
+            handleUpdate: (val: string) =>
+              handleFieldUpdate('intake24AdminBaseUrl', val),
+          },
+          {
             key: 'countryCode',
             required: true,
             type: 'input',
