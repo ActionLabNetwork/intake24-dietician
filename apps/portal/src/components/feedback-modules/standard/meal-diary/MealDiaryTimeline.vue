@@ -9,13 +9,12 @@
         width="100%"
         class="timeline-item"
       >
-        <v-chip variant="flat">
+        <v-chip v-if="showTime" variant="flat">
           {{ convertTo12H(formatTime(meal.hours, meal.minutes)) }}
         </v-chip>
         <v-expansion-panels
           v-model="openPanels"
           class="mt-5"
-          variant="inset"
           color="#FFBE99"
           :readonly="mode === 'preview'"
         >
@@ -30,12 +29,19 @@
                 <div class="mt-4">Number of foods: {{ meal.foods.length }}</div>
               </div>
             </v-expansion-panel-title>
-            <v-expansion-panel-text v-for="(food, i) in meal.foods" :key="i">
-              <ul class="font-weight-medium ml-4">
-                <li>
-                  {{ `${food['englishName']} (${getServingWeight(food)})` }}
-                </li>
-              </ul>
+            <v-expansion-panel-text style="background: #fcf9f4">
+              <div class="w-full pa-5">
+                <v-row class="font-weight-medium">
+                  <v-col cols="3" class="table-header"> Serving weight </v-col>
+                  <v-col></v-col>
+                  <v-col cols="8" class="table-header"> Description </v-col>
+                </v-row>
+                <v-row v-for="food in meal.foods" :key="food.id">
+                  <v-col cols="3">{{ getServingWeight(food) }}</v-col>
+                  <v-col></v-col>
+                  <v-col cols="8">{{ food['englishName'] }}</v-col>
+                </v-row>
+              </div>
             </v-expansion-panel-text>
           </v-expansion-panel>
         </v-expansion-panels>
@@ -54,6 +60,7 @@ const props = defineProps<{
   meals: RecallDto['recall']['meals'] | undefined
   mode: FeedbackModulesProps['mode']
   getServingWeight: Function
+  showTime: boolean
 }>()
 
 const openPanels = ref<number[]>([])
@@ -76,3 +83,10 @@ watch(
   { immediate: true },
 )
 </script>
+
+<style scoped lang="scss">
+.table-header {
+  border-radius: 4px;
+  background-color: rgba(255, 196, 153, 0.5) !important;
+}
+</style>

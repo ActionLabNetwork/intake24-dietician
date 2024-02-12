@@ -44,7 +44,8 @@ export const useRecallStore = defineStore('recalls', () => {
     return (
       selectedRecallDateRange.value &&
       selectedRecallDateRange.value[0] &&
-      selectedRecallDateRange.value[1]
+      selectedRecallDateRange.value[1] &&
+      selectedRecallDateRange.value[0] !== selectedRecallDateRange.value[1]
     )
   })
   const colorPalette = computed(() => {

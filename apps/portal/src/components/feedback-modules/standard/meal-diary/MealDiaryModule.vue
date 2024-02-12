@@ -6,6 +6,7 @@
       :meals="meals"
       :mode="mode"
       :get-serving-weight="getServingWeight"
+      :show-time="!recallStore.isDateRange"
     />
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
@@ -27,7 +28,6 @@
 <script setup lang="ts">
 import { usePrecision } from '@vueuse/math'
 
-import Logo from './svg/Logo.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import MealDiaryTimeline from '@/components/feedback-modules/standard/meal-diary/MealDiaryTimeline.vue'
@@ -49,11 +49,10 @@ const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const { themeConfig } = useThemeSelector('Meal diary')
 const recallStore = useRecallStore()
-const meals = computed(
-  () =>
-    props.useSampleRecall
-      ? recallStore.sampleRecallQuery?.data?.recall.meals
-      : recallStore.sampleRecallQuery?.data?.recall.meals, // TODO: Change this once daterange refactoring is done
+const meals = computed(() =>
+  props.useSampleRecall
+    ? recallStore.sampleRecallQuery?.data?.recall.meals
+    : recallStore.recallsGroupedByMeals.meals.toSorted(m => m.hours),
 )
 
 const getServingWeight = (food: { [x: string]: any[] }) => {
