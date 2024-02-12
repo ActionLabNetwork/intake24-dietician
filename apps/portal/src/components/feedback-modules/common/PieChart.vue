@@ -16,6 +16,7 @@ import {
 import VChart from 'vue-echarts'
 import { ref, computed } from 'vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
+import { usePrecision } from '@vueuse/math'
 
 const props = defineProps<{
   data: {
@@ -54,17 +55,29 @@ const option = ref({
     formatter: '{a} <br/>{b} : {c} ({d}%)',
   },
   label: {
-    formatter: ['{b}', `{bg|{c}${unitSymbol.value} ({d}%)}`].join('\n'),
+    formatter: (params: { name: string; value: number; percent: number }) => {
+      const words = params.name.split(' ')
+      let formattedLabel = ''
+
+      // Add a newline after every 2 words
+      for (let i = 0; i < words.length; i += 2) {
+        formattedLabel += words.slice(i, i + 2).join(' ') + '\n'
+      }
+
+      formattedLabel += `{bg|${params.value}${unitSymbol.value} (${params.percent}%)}`
+
+      return formattedLabel
+    },
     // TODO: Figure out how to use the pie slice's color as the background color for each label
     rich: {
       bg: {
         backgroundColor: '#EE672D',
         color: '#fff',
         borderRadius: 4,
-        padding: 7,
+        padding: 5,
       },
     },
-    lineHeight: 25,
+    lineHeight: 20,
   },
   series: [
     {
@@ -74,12 +87,11 @@ const option = ref({
       center: ['50%', '50%'],
       label: {
         position: 'outer',
-        alignTo: 'labelLine',
       },
       data: props.data.map(item => {
         return {
           name: item.label,
-          value: item.value,
+          value: usePrecision(item.value, 2),
           itemStyle: {
             color: item.backgroundColor,
           },

@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <div v-if="!hideExportToPdfButton" class="my-5 ml-0 d-print-none">
+  <div v-if="!hideExportToPdfButton" class="my-5 ml-10 d-print-none">
     <v-btn
       :loading="pdfExportLoading"
       class="text-none"
