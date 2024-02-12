@@ -9,8 +9,15 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="text-none" @click="handleCancel"> Cancel </v-btn>
-        <BaseButton ref="confirmBtn" variant="flat" @click="handleConfirm">
+        <v-btn class="text-none" @click="handleCancel">
+          {{ onCancelText ?? 'Cancel' }}
+        </v-btn>
+        <BaseButton
+          v-if="onConfirm"
+          ref="confirmBtn"
+          variant="flat"
+          @click="handleConfirm"
+        >
           Confirm
         </BaseButton>
       </v-card-actions>
@@ -26,6 +33,7 @@ const props = defineProps<{
   modelValue: boolean
   onConfirm?: Function
   onCancel?: Function
+  onCancelText?: string
 }>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]

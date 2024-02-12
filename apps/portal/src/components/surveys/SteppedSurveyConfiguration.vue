@@ -77,6 +77,16 @@
                               icon="mdi-information-outline"
                               variant="text"
                               size="small"
+                              @click="
+                                () => {
+                                  isDialogActive = true
+                                  dialogTitle = field.information?.title ?? ''
+                                  dialogDescription =
+                                    field.information?.description ?? ''
+                                  onDialogConfirm = undefined
+                                  dialogCancelText = 'Close'
+                                }
+                              "
                             >
                             </v-btn>
                           </div>
@@ -104,9 +114,9 @@
                                 {{ field.quickAction.append.label }}
                               </v-btn>
                             </template>
-                            <template v-if="field.key === 'countryCode'">
-                              {{ field.placeHolder + formValues[field.key] }}
-                            </template>
+                            <!-- <template v-if="field.key === 'countryCode'">
+                              {{ formValues.intake24AdminBaseUrl+'.' + formValues[field.key] }}
+                            </template> -->
                           </template>
 
                           <template #append-inner>
@@ -168,6 +178,7 @@
       v-model="isDialogActive"
       :on-confirm="onDialogConfirm"
       :on-cancel="onDialogCancel"
+      :on-cancel-text="dialogCancelText"
     >
       <template #title>{{ dialogTitle }}</template>
       {{ dialogDescription }}
@@ -230,7 +241,10 @@ type Field = {
   labelSuffix?: string
   description?: string
   placeHolder?: string
-  information?: string
+  information?: {
+    title: string
+    description: string
+  }
   quickAction?: {
     prepend?: {
       label: string
@@ -265,6 +279,7 @@ const isDialogActive = ref(false)
 const onDialogConfirm = ref<() => void>()
 const dialogTitle = ref('')
 const dialogDescription = ref('')
+const dialogCancelText = ref('Cancel')
 
 const handleBackConfirm = () => {
   if (window.history.length > 1) {
@@ -354,7 +369,10 @@ const steps: Step[] = [
             labelSuffix: '(required)',
             description: undefined,
             placeHolder: '123456',
-            information: 'Integration code information.',
+            information: {
+              title: 'Integration code',
+              description: 'Integration code information.',
+            },
             quickAction: {
               prepend: undefined,
               append: {
@@ -382,7 +400,10 @@ const steps: Step[] = [
             labelSuffix: '(required)',
             description: undefined,
             placeHolder: 'https://myfoodswaps.com/api/recall/{alias}',
-            information: 'Clinic url information.',
+            information: {
+              title: 'Clinic url',
+              description: 'Clinic url information.',
+            },
             quickAction: {
               prepend: undefined,
               append: {
@@ -417,7 +438,10 @@ const steps: Step[] = [
             description:
               'Past the Intake24 survey ID name that you have used to create the survey in Intake24 system.',
             placeHolder: 'name',
-            information: 'Survey ID information.',
+            information: {
+              title: 'Survey ID',
+              description: 'Survey ID information.',
+            },
             quickAction: undefined,
             rules: [
               (value: string) =>
@@ -477,7 +501,7 @@ const steps: Step[] = [
             labelSuffix: '(required)',
             description:
               'Select your workplace country code to link your clinic with Intake24 system.',
-            placeHolder: 'https://admin.intake24.dev.',
+            placeHolder: undefined,
             information: undefined,
             quickAction: {
               prepend: undefined,
