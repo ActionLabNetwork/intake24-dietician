@@ -2,7 +2,7 @@
   <div class="text-center">
     <!-- Menu -->
     <v-menu location="bottom">
-      <template v-slot:activator="{ props }">
+      <template #activator="{ props }">
         <!-- TODO: Fix this -->
         <v-btn
           v-show="false"
@@ -45,7 +45,7 @@
           <v-card-text>
             <p>
               Are you sure you want to
-              {{ props.patient?.isArchived ? 'activate' : 'archive' }}
+              {{ _props.patient?.isArchived ? 'activate' : 'archive' }}
               patient:
             </p>
             <p>
@@ -78,8 +78,9 @@ import { computed, ref } from 'vue'
 //   useDeletePatient,
 // } from '@intake24-dietician/portal/mutations/usePatients'
 import { PatientWithUserDto } from '@intake24-dietician/common/entities-new/user.dto'
+import { VList } from 'vuetify/lib/components/index.mjs'
 
-const props = defineProps<{
+const _props = defineProps<{
   patient: PatientWithUserDto | undefined
 }>()
 
@@ -95,7 +96,7 @@ const archiveOrActivateLabel = computed(() => {
 })
 
 const activateOrDelete = computed((): 'activate' | 'delete' => {
-  return props.patient?.isArchived ? 'activate' : 'delete'
+  return _props.patient?.isArchived ? 'activate' : 'delete'
 })
 
 const actions = computed(
@@ -119,7 +120,7 @@ const actions = computed(
 )
 
 const fullName = computed(() => {
-  return `${props.patient?.firstName} ${props.patient?.lastName}`
+  return `${_props.patient?.firstName} ${_props.patient?.lastName}`
 })
 
 const dialog = ref({

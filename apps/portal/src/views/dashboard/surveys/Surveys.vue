@@ -47,8 +47,8 @@
       <div>
         <HomeSummary
           :summary="summary"
-          :summaryKeys="summaryKeys"
-          :addButtonLink="addButtonLink"
+          :summary-keys="summaryKeys"
+          :add-button-link="addButtonLink"
         />
         <!-- <SurveysList :data="dataQuery.data.value ?? []" /> -->
       </div>

@@ -35,7 +35,7 @@
           location="bottom"
           :text="food.mealDate.startTime.toDateString()"
         >
-          <template v-slot:activator="{ props }">
+          <template #activator="{ props }">
             <DetailedCardFoodItem
               v-bind="props"
               :food="food"

@@ -49,7 +49,7 @@ import { useRoute, useRouter } from 'vue-router'
 import BaseProgressCircular from '../../common/BaseProgressCircular.vue'
 import SharedItem from './SharedItem.vue'
 
-const dateFormat = 'MMMM Do YYYY, h:mm:ss a'
+const dateFormat = 'D MMM YYYY, h:mm a'
 const paginationLimit = 3
 
 const router = useRouter()
@@ -73,7 +73,7 @@ const paginationLength = computed(() => {
 
 const handleViewButtonClick = (shareId: number) => {
   router.push({
-    name: 'Survey Patient View Shared Feedback',
+    name: 'Survey Patient View Feedback',
     params: {
       surveyId: route.params['surveyId'],
       patientId,

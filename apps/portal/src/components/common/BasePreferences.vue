@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import LanguageSelect from '@/components/app-bar/LanguageSelect.vue'
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 
 defineProps<{

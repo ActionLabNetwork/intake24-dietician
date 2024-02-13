@@ -106,6 +106,7 @@ import {
   Gender,
   genders,
 } from '@intake24-dietician/common/entities-new/user.dto'
+import { VSelect } from 'vuetify/lib/components/index.mjs'
 
 export interface PersonalDetailsFormValues {
   dateOfBirth: string

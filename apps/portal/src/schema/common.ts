@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from 'zod'
 
 // Mobile number schemas
 const AustralianMobileSchema = z.string().regex(/^(\+61|0)4\d{8}$/, {

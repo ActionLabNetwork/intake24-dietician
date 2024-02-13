@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="Logo" title="Energy intake" />
+    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Energy intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
@@ -39,7 +39,7 @@
       <FeedbackTextArea
         :feedback="feedback"
         :editable="mode === 'edit'"
-        :bgColor="feedbackBgColor"
+        :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
       />
@@ -70,6 +70,9 @@ import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schem
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { usePrecision } from '@vueuse/math'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useRoute } from 'vue-router'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -83,6 +86,10 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
+const route = useRoute()
+const { themeConfig } = useThemeSelector('Energy intake')
+
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
 const isError = computed(() =>
@@ -97,6 +104,11 @@ const isPending = computed(() =>
 )
 
 // Refs
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Energy intake',
+  )
+})
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
 const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
@@ -133,7 +145,8 @@ const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
   const mealEnergy = usePrecision(
     calculateMealNutrientsExchange(
       meal,
-      NUTRIENTS_ENERGY_INTAKE_ID,
+      module.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_ENERGY_INTAKE_ID,
       recallsCount,
     ),
     2,

@@ -14,13 +14,22 @@ import {
 } from 'chart.js'
 import { Bar } from 'vue-chartjs'
 
-defineProps<{
+const props = defineProps<{
   data: {
     labels: string[]
     datasets: {
       data: number[]
     }[]
   }
+  unitOfMeasure:
+    | {
+        description: string
+        unit: {
+          symbol: string | null
+          description: string
+        }
+      }
+    | undefined
 }>()
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
@@ -34,7 +43,9 @@ const options = {
       display: true,
       title: {
         display: true,
-        text: 'Weight (gr)',
+        text:
+          props.unitOfMeasure?.description +
+            `(${props.unitOfMeasure?.unit.symbol ?? '()'})` || 'Weight',
         font: {
           size: 24,
         },

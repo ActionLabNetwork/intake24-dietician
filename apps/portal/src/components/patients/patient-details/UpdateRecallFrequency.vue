@@ -2,12 +2,17 @@
 <template>
   <div>
     <p v-if="!hideLabel" class="font-weight-medium">Update recall frequency</p>
+    <p v-if="!hideLabel" class="subheading">
+      Update the default recall frequency period, when you want this patients to
+      complete and submit their recall data.
+    </p>
     <v-card class="wrapper mt-4" width="100%" flat>
       <div class="v-row align-center">
         <div class="v-col">
           <BaseInput
             type="number"
             name="recallFrequency"
+            class="text-label"
             :value="reminderConditions.reminderEvery.every.toString()"
             @update="
               newVal => {
@@ -47,7 +52,7 @@
       </div>
     </v-card>
     <v-card class="wrapper mt-4" width="100%" flat>
-      <div class="form-label pb-2">
+      <div class="pb-2 form-label text-label">
         Ends <span class="text-primary">(required)</span>
       </div>
       <div class="v-row">
@@ -91,16 +96,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import BaseInput from '../../form/BaseInput.vue'
-import { capitalize } from 'radash'
-import VueDatePicker from '@vuepic/vue-datepicker'
-import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  ReminderEverySchema,
   ReminderCondition,
   ReminderEndCondition,
+  ReminderEverySchema,
 } from '@intake24-dietician/common/entities-new/preferences.dto'
+import VueDatePicker from '@vuepic/vue-datepicker'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { capitalize } from 'radash'
+import { ref, watch } from 'vue'
+import { VSelect } from 'vuetify/lib/components/index.mjs'
+import BaseInput from '../../form/BaseInput.vue'
 
 const props = withDefaults(
   defineProps<{ defaultState: ReminderCondition; hideLabel?: boolean }>(),
@@ -201,6 +207,15 @@ watch(
   font-weight: 400;
   line-height: 135%;
   letter-spacing: 0.14px;
+}
+
+.text-label {
+  color: #555;
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
 }
 
 .card {

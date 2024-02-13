@@ -1,6 +1,6 @@
 <template>
   <v-card>
-    <template v-slot:loader="{ isActive }">
+    <template #loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
         color="orange"

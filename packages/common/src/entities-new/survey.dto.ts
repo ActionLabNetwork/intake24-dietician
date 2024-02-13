@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { SurveyPreferenceSchema } from './preferences.dto'
+import { moduleNames } from '../types/modules'
 
 export const SurveyFeedbackModuleCreateDtoSchema = z.object({
   feedbackModuleId: z.number(),
@@ -14,8 +15,18 @@ export type SurveyFeedbackModuleCreateDto = z.infer<
 
 export const SurveyFeedbackModuleDtoSchema =
   SurveyFeedbackModuleCreateDtoSchema.extend({
-    name: z.string(),
+    name: z.enum(moduleNames),
     description: z.string(),
+    nutrientTypes: z.array(
+      z.object({
+        id: z.number(),
+        description: z.string(),
+        unit: z.object({
+          description: z.string(),
+          symbol: z.string().nullable(),
+        }),
+      }),
+    ),
   })
 
 export type SurveyFeedbackModuleDto = z.infer<
@@ -44,7 +55,6 @@ export const SurveyDtoSchema = SurveyCreateDtoSchema.extend({
 export type SurveyDto = z.infer<typeof SurveyDtoSchema>
 
 export const SurveyPlainDtoSchema = SurveyDtoSchema.omit({
-  surveyPreference: true,
   feedbackModules: true,
 })
 

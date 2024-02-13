@@ -3,29 +3,44 @@
     <p v-if="!hideLabel" class="font-weight-medium">
       Update visual theme for the patient
     </p>
-    <div class="flex-container mt-4">
-      <v-card v-for="theme in themes" :key="theme.title" class="flex-item pb-4">
-        <v-img :src="getImage(theme.img)" cover></v-img>
-        <v-card-title>
-          <div
-            class="d-flex flex-sm-row flex-column align-center justify-space-between"
-          >
-            <div class="title">{{ theme.title }}</div>
-            <div>
-              <v-switch
-                v-model="theme.active"
-                hide-details
-                inset
-                color="success"
-                @update:model-value="
-                  e => handleSwitchUpdate(e ?? false, theme.type)
-                "
-              ></v-switch>
+    <div class="d-flex flex-column flex-sm-row justify-space-between">
+      <div class="flex-container mt-4">
+        <v-card
+          v-for="theme in themes"
+          :key="theme.title"
+          flat
+          :class="theme.active ? 'card active' : 'card'"
+        >
+          <v-card-title>
+            <div class="d-flex align-center justify-space-between">
+              <div>
+                <div class="text-h6">{{ theme.title }}</div>
+                <div class="description">{{ theme.description }}</div>
+              </div>
+              <div>
+                <v-switch
+                  v-model="theme.active"
+                  hide-details
+                  inset
+                  color="success"
+                  @update:model-value="
+                    e => handleSwitchUpdate(e ?? false, theme.type)
+                  "
+                ></v-switch>
+              </div>
             </div>
-          </div>
-        </v-card-title>
-        <div class="description">{{ theme.description }}</div>
-      </v-card>
+          </v-card-title>
+        </v-card>
+      </div>
+      <div class="w-100 w-sm-50 pa-3 preview-bg mt-5 mt-sm-0 ml-0 ml-sm-10">
+        <v-img
+          :src="
+            getImage(themes.find(t => t.active)?.img ?? 'theme-classic.png')
+          "
+          alt="Theme image"
+          cover
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -33,9 +48,10 @@
 <script setup lang="ts">
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { ref, watch } from 'vue'
+import { VSwitch } from 'vuetify/lib/components/index.mjs'
 
 interface ThemeRef {
-  title: `${Theme} theme`
+  title: string
   description: string
   img: string
   active: boolean
@@ -52,16 +68,16 @@ const emit = defineEmits<{
 
 const themes = ref<ThemeRef[]>([
   {
-    title: 'Classic theme',
+    title: 'Classic theme (default)',
     description: 'Suitable for adults',
-    img: 'theme_classic.png',
+    img: 'theme-classic.png',
     active: true,
     type: 'Classic',
   },
   {
-    title: 'Fun theme',
-    description: 'Suitable for children and young adults',
-    img: 'theme_fun.png',
+    title: 'Child theme',
+    description: 'Suitable for children and young people',
+    img: 'theme-fun.png',
     active: false,
     type: 'Fun',
   },
@@ -105,36 +121,44 @@ watch(
 <style scoped lang="scss">
 .flex-container {
   display: flex;
+  min-width: max(40vw, 30%);
   flex-direction: column;
-  gap: 2rem;
-  max-width: min(40rem, 60vw);
+  gap: 1rem;
 
   @media only screen and (min-width: 768px) {
-    flex-direction: row;
-    gap: 0;
-  }
-}
-
-.flex-item {
-  flex: 1;
-
-  &:first-child {
-    margin-right: 1rem;
+    display: flex;
+    flex-direction: column;
   }
 }
 
 .title {
-  font-size: clamp(1rem, 0.462vw + 0.88rem, 1.25rem);
+  font-size: clamp(12px, calc(0.75rem + ((1vw - 7.68px) * 0.3472)), 16px);
+  min-height: 0vw;
   word-wrap: break-word; // Break long words to prevent overflow
   line-height: clamp(1.5rem, 0.231vw + 1.44rem, 1.625rem);
 }
 
 .description {
   color: #555;
-  font-size: 14px;
+  font-size: clamp(10px, calc(0.625rem + ((1vw - 7.68px) * 0.3472)), 14px);
+  min-height: 0vw;
   font-weight: 400;
   line-height: 130%; /* 18.2px */
   letter-spacing: 0.14px;
-  padding: 0 1rem;
+}
+
+.card {
+  border-radius: 8px;
+  background: #fff;
+  border: 0.5px solid #f1f1f1;
+
+  &.active {
+    border: 0.5px solid #000;
+  }
+}
+
+.preview-bg {
+  background: #f1f1f1;
+  border-radius: 8px;
 }
 </style>

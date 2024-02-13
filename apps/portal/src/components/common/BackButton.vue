@@ -1,9 +1,8 @@
 <template>
   <v-btn
     prepend-icon="mdi-chevron-left"
-    flat
-    class="text-none pa-0"
     variant="text"
+    class="text-none pa-0"
     @click="handleBackButtonClick"
   >
     <slot>Go Back</slot>
@@ -18,12 +17,18 @@ const props = defineProps<{
   to?:
     | string
     | { name: string; params?: Record<string, string | string[] | undefined> }
+  onClick?: () => void
 }>()
 
 const clinicStore = useClinicStore()
 const router = useRouter()
 
 const handleBackButtonClick = () => {
+  if (props.onClick) {
+    props.onClick()
+    return
+  }
+
   if (props.to) {
     router.push(props.to)
   } else {

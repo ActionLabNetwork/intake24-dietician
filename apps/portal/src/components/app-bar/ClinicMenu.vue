@@ -1,7 +1,7 @@
 <template>
   <div>
-    <v-menu transition="slide-y-transition" bottom>
-      <template v-slot:activator="{ props }">
+    <v-menu transition="slide-y-transition" location="bottom">
+      <template #activator="{ props }">
         <v-btn class="text-none" v-bind="props">
           Clinics <v-icon class="ml-2" icon="mdi-chevron-down" />
         </v-btn>

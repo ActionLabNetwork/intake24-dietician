@@ -1,9 +1,14 @@
-import { AppRouter } from '@intake24-dietician/api-new/routers/app'
+import type { AppRouter } from '@intake24-dietician/api-new/routers/app'
 import { createTRPCProxyClient, httpBatchLink, httpLink } from '@trpc/client'
 import { env } from '../config/env'
 import superjson from 'superjson'
 import { defineStore } from 'pinia'
-import { Ref, computed, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
+import type { Ref } from 'vue'
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
+
+export type RouterInput = inferRouterInputs<AppRouter>
+export type RouterOutput = inferRouterOutputs<AppRouter>
 
 export type AuthState =
   | { type: 'init' }
@@ -36,7 +41,11 @@ export const useClientStore = defineStore('client', () => {
     return email
   }
 
-  async function register(data: { email: string; password: string }) {
+  async function register(
+    data: Parameters<
+      typeof publicClient.value.authDietician.register.mutate
+    >[0],
+  ) {
     const result = await publicClient.value.authDietician.register.mutate(data)
     authState.value = { type: 'logged_in', email: result.email }
     return result
@@ -75,8 +84,7 @@ export const useClientStore = defineStore('client', () => {
     new Promise<Exclude<AuthState, { type: 'init' }>>(resolve => {
       const state = authState.value
       if (state.type !== 'init') resolve(state)
-      let unwatch: () => void
-      unwatch = watch(authState, state => {
+      const unwatch = watch(authState, state => {
         if (state.type === 'init') return
         unwatch()
         resolve(state)
@@ -102,9 +110,8 @@ export const useClientStore = defineStore('client', () => {
                 ...options,
                 credentials: 'include',
               })
-            } else {
-              return result
             }
+            return result
           },
         }),
       ],

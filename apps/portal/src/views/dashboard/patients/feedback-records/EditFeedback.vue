@@ -3,6 +3,7 @@
     <v-container>
       <div class="d-print-none">
         <BackButton
+          v-if="!previewing"
           :to="{
             name: 'Survey Patient Feedback Records',
             params: {
@@ -13,6 +14,20 @@
         >
           Back to {{ patientName }} records
         </BackButton>
+        <BackButton
+          v-else
+          :on-click="
+            () => {
+              previewing = false
+              router.push({
+                query: {
+                  ...router.currentRoute.value.query,
+                  preview: previewing.toString(),
+                },
+              })
+            }
+          "
+        />
       </div>
       <div
         v-if="
@@ -21,7 +36,8 @@
           draftQuery.data.value &&
           allModules &&
           initialAllModules &&
-          isDataLoaded
+          isDataLoaded &&
+          !previewing
         "
         class="d-print-none mt-4"
       >
@@ -30,16 +46,13 @@
           :initial-date-range="recallStore.selectedRecallDateRange"
           :previewing="previewing"
           feedback-type="Tailored"
-          :draftId="draftQuery.data.value.id"
+          :draft-id="draftQuery.data.value.id"
           :draft="allModules"
-          :editingDraft="{ originalDraft: initialAllModules }"
+          :editing-draft="{ originalDraft: initialAllModules }"
           @click:preview="handlePreviewButtonClick"
           @update:daterange="handleDaterangeUpdate"
           @update:draft="handleDraftUpdate"
         />
-      </div>
-      <div v-else>
-        <BaseProgressCircular />
       </div>
       <div
         v-if="recallStore.hasRecalls && draftQuery.data.value && isDataLoaded"
@@ -85,7 +98,7 @@ import { type Component, computed, ref, watch, reactive, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import ModuleSelectList, {
   ModuleItem,
@@ -95,6 +108,8 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -106,7 +121,6 @@ import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
@@ -120,6 +134,7 @@ const patientStore = usePatientStore()
 const recallStore = useRecallStore()
 
 // Composables
+const router = useRouter()
 const route = useRoute()
 const $toast = useToast()
 
@@ -162,6 +177,12 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
     'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
+    'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
+    'Saturated fat intake': {
+      component: markRaw(SugarIntakeModule),
+      feedback: '',
+    },
+    'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -190,6 +211,24 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Water intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Sugar intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Saturated fat intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Calcium intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
@@ -342,6 +381,11 @@ const handlePreviewButtonClick = () => {
     $toast.warning('Please select at least one module to preview')
     return
   }
+
+  const previewValue = previewing.value ? 'false' : 'true'
+  router.push({
+    query: { ...router.currentRoute.value.query, preview: previewValue },
+  })
   previewing.value = !previewing.value
 }
 

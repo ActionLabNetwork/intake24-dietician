@@ -24,12 +24,11 @@
         <v-form
           v-model="form"
           class="d-flex flex-column justify-center"
-          @submit.prevent="handleSubmit"
+          @submit.prevent="onSubmit"
         >
-          <BaseInput
-            v-for="(input, field) in formConfig"
+          <VBaseInput
+            v-for="input in formConfig"
             :key="input.key"
-            :value="formValues[field]"
             :type="input.inputType"
             :placeholder="input.placeholder"
             :autocomplete="input.autocomplete"
@@ -38,10 +37,9 @@
             :data-cy="input.dataCy"
             :suffix-icon="input.suffixIcon"
             :handle-icon-click="input.handleSuffixIconClick"
-            @update="newVal => (formValues[field] = newVal)"
           >
             {{ input.label }}
-          </BaseInput>
+          </VBaseInput>
           <div
             class="d-flex flex-column flex-lg-row align-center justify-space-between"
           >
@@ -59,15 +57,12 @@
             </div>
           </div>
           <v-btn
-            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0"
+            id="login-form-submit"
+            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0 text-white"
             color="#EE672D"
             size="large"
             variant="flat"
             type="submit"
-            :disabled="
-              !loginForm.isFormValid(formValues) ||
-              loginMutation.isPending.value
-            "
             :loading="loginMutation.isPending.value"
           >
             {{ t('login.form.login') }}
@@ -75,16 +70,14 @@
         </v-form>
       </div>
     </div>
-    <div v-if="loginMutation.data.value === undefined">
-      <div class="text-center">
-        {{ t('login.form.createAccount.label') }}
-        <router-link
-          to="register"
-          class="text-decoration-none text-primary font-weight-bold"
-        >
-          {{ t('login.form.createAccount.link') }}
-        </router-link>
-      </div>
+    <div v-if="loginMutation.data.value === undefined" class="px-16">
+      {{ t('login.form.createAccount.label') }}
+      <router-link
+        to="register"
+        class="text-decoration-none text-primary font-weight-bold"
+      >
+        {{ t('login.form.createAccount.link') }}
+      </router-link>
     </div>
     <div v-else class="pl-16">
       <BaseProgressCircular />
@@ -93,21 +86,20 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, computed, reactive, ref } from 'vue'
-
-import BaseInput from '@intake24-dietician/portal/components/form/BaseInput.vue'
-
 import { useLogin } from '@/mutations/useAuth'
-
-import { useI18n } from 'vue-i18n'
-import type { i18nOptions } from '@intake24-dietician/i18n'
-
-import router from '@/router'
-import { useForm } from '@intake24-dietician/portal/composables/useForm'
-import { validateWithZod } from '@intake24-dietician/portal/validators'
 import type { Form } from '@/types/form.types'
-import BaseProgressCircular from '../common/BaseProgressCircular.vue'
 import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
+import type { i18nOptions } from '@intake24-dietician/i18n'
+import { toTypedSchema } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
+import type { Ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import BaseProgressCircular from '../common/BaseProgressCircular.vue'
+import VBaseInput from './VBaseInput.vue'
+
+const router = useRouter()
 
 // i18n
 const { t } = useI18n<i18nOptions>()
@@ -121,21 +113,10 @@ const error = ref('')
 const errorAlert = ref(false)
 
 // Form fields
-const formValues = reactive({ email: '', password: '' })
-const passwordVisible = ref(false)
-
-const loginForm = useForm<typeof formValues, typeof formValues>({
-  initialValues: formValues,
-  schema: LoginDtoSchema,
-  mutationFn: loginMutation.mutateAsync,
-  onSuccess: () => {
-    router.push('/dashboard/my-profile')
-  },
-  onError: () => {
-    error.value = 'Invalid credentials. Please try again'
-    errorAlert.value = true
-  },
+const { handleSubmit, meta } = useForm({
+  validationSchema: toTypedSchema(LoginDtoSchema),
 })
+const passwordVisible = ref(false)
 
 const formConfig: Ref<Form<['email', 'password'][number]>> = ref({
   email: {
@@ -146,7 +127,6 @@ const formConfig: Ref<Form<['email', 'password'][number]>> = ref({
     autocomplete: 'username',
     key: 'email',
     dataCy: 'email',
-    rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.email, v)],
   },
   password: {
     type: 'input',
@@ -162,14 +142,19 @@ const formConfig: Ref<Form<['email', 'password'][number]>> = ref({
       passwordVisible.value = !passwordVisible.value
     },
     dataCy: 'password',
-    rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.password, v)],
   },
 })
 
 // Functions
-const handleSubmit = () => {
-  loginForm.handleSubmit(formValues, formValues)
-}
+const onSubmit = handleSubmit(values => {
+  loginMutation.mutate(values, {
+    onSuccess: () => router.push({ name: 'My Profile' }),
+    onError: () => {
+      error.value = 'Invalid credentials. Please try again'
+      errorAlert.value = true
+    },
+  })
+})
 </script>
 
 <style scoped lang="scss">

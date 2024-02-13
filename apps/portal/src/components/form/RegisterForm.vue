@@ -24,9 +24,9 @@
         <v-form
           v-model="form"
           class="d-flex flex-column justify-center"
-          @submit.prevent="handleSubmit"
+          @submit.prevent="onSubmit"
         >
-          <BaseInput
+          <VBaseInput
             v-for="(input, field) in formConfig"
             :key="input.key"
             v-model="formValues[field]"
@@ -40,15 +40,15 @@
             @update="newVal => (formValues[field] = newVal)"
           >
             {{ input.label }}
-          </BaseInput>
+          </VBaseInput>
           <!-- Create account button -->
           <v-btn
-            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0"
+            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0 text-white"
             color="#EE672D"
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!form || registerMutation.isPending.value"
+            :disabled="!meta.valid || meta.pending"
             :loading="registerMutation.isPending.value"
           >
             {{ t('register.form.createAccount') }}
@@ -56,16 +56,14 @@
         </v-form>
       </div>
     </div>
-    <div v-if="registerMutation.data.value === undefined">
-      <div class="text-center">
-        {{ t('register.form.login.label') }}
-        <router-link
-          to="login"
-          class="text-decoration-none text-primary font-weight-bold"
-        >
-          {{ t('register.form.login.link') }}
-        </router-link>
-      </div>
+    <div v-if="registerMutation.data.value === undefined" class="px-16">
+      {{ t('register.form.login.label') }}
+      <router-link
+        to="login"
+        class="text-decoration-none text-primary font-weight-bold"
+      >
+        {{ t('register.form.login.link') }}
+      </router-link>
     </div>
     <div v-if="registerMutation.data.value !== undefined">
       <h1 class="px-16">Welcome</h1>
@@ -74,25 +72,29 @@
 </template>
 
 <script lang="ts" setup>
-import { Ref, computed, reactive, ref } from 'vue'
-
-import BaseInput from '@/components/form/BaseInput.vue'
-
+import type { Ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+// import BaseInput from '@/components/form/BaseInput.vue'
 import { useRegister } from '@/mutations/useAuth'
-import { confirmPasswordValidator } from '@/validators/auth'
-
-import { useI18n } from 'vue-i18n'
 import type { i18nOptions } from '@intake24-dietician/i18n'
-import router from '@intake24-dietician/portal/router'
-import { useForm } from '@intake24-dietician/portal/composables/useForm'
-import { RegisterSchema } from '@intake24-dietician/portal/schema/auth'
-import { validateWithZod } from '@intake24-dietician/portal/validators'
+import { useI18n } from 'vue-i18n'
+import VBaseInput from './VBaseInput.vue'
+// import { useForm } from '@intake24-dietician/portal/composables/useForm'
 import type { Form } from '@/types/form.types'
-import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
+import { toTypedSchema } from '@vee-validate/zod'
+import { useForm } from 'vee-validate'
+import type { RegisterDto } from '@intake24-dietician/common/entities-new/auth.dto'
+import { RegisterDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
+// import { useRouter } from 'vue-router'
+
+const emit = defineEmits<{
+  submit: [values: RegisterDto]
+}>()
 
 const { t } = useI18n<i18nOptions>()
 
 const registerMutation = useRegister()
+// const router = useRouter()
 
 const form = ref(null)
 const error = ref('')
@@ -104,19 +106,12 @@ const formValues = reactive({ email: '', password: '', confirmPassword: '' })
 const passwordVisible = ref(false)
 const confirmPasswordVisible = ref(false)
 
-const registerForm = useForm<
-  typeof formValues,
-  Omit<typeof formValues, 'confirmPassword'>
->({
-  initialValues: formValues,
-  schema: RegisterSchema.zodSchema,
-  mutationFn: registerMutation.mutateAsync,
-  onSuccess: () => {
-    router.push('/dashboard/my-profile')
-  },
-  onError: () => {
-    error.value = 'Invalid credentials. Please try again with a different one'
-    errorAlert.value = true
+const { handleSubmit, meta } = useForm({
+  validationSchema: toTypedSchema(RegisterDtoSchema),
+  initialValues: {
+    email: '',
+    password: '',
+    confirmPassword: '',
   },
 })
 
@@ -129,7 +124,6 @@ const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =
       label: t('register.form.email.label'),
       autocomplete: 'username',
       key: 'email',
-      rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.email, v)],
     },
     password: {
       type: 'input',
@@ -144,7 +138,6 @@ const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =
       handleSuffixIconClick: () => {
         passwordVisible.value = !passwordVisible.value
       },
-      rules: [(v: string) => validateWithZod(LoginDtoSchema.shape.password, v)],
     },
     confirmPassword: {
       type: 'input',
@@ -163,22 +156,21 @@ const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =
       handleSuffixIconClick: () => {
         confirmPasswordVisible.value = !confirmPasswordVisible.value
       },
-      rules: [
-        (confirmPwd: string) =>
-          confirmPasswordValidator(formValues.password, confirmPwd),
-      ],
     },
   })
 
-const handleSubmit = () => {
-  registerForm.handleSubmit(
-    {
-      email: formValues.email,
-      password: formValues.password,
-    },
-    { email: formValues.email, password: formValues.password },
-  )
-}
+const onSubmit = handleSubmit(values => {
+  emit('submit', values)
+  // registerMutation.mutate(values, {
+  //   onSuccess: () => {
+  //     router.push({ name: 'My Profile' })
+  //   },
+  //   onError: () => {
+  //     error.value = 'Invalid credentials. Please try again'
+  //     errorAlert.value = true
+  //   },
+  // })
+})
 </script>
 
 <style scoped lang="scss">

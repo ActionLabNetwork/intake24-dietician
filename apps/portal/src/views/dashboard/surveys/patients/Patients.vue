@@ -10,8 +10,8 @@
       <div>
         <HomeSummary
           :summary="summary"
-          :summaryKeys="summaryKeys"
-          :addButtonLink="addButtonLink"
+          :summary-keys="summaryKeys"
+          :add-button-link="addButtonLink"
         />
         <PatientList :patients-data="patientsQuery.data.value ?? []" />
       </div>

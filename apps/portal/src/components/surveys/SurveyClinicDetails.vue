@@ -17,19 +17,21 @@
       </div>
     </div>
     <div v-if="clinic.intake24SurveyId">
-      <v-icon
-        icon="mdi-cog-outline"
-        class="hoverable"
+      <v-btn
+        class="text-none"
+        prepend-icon="mdi-cog-outline"
+        variant="outlined"
         @click="
           () => {
-            console.log(route.params['surveyId'] as string)
             router.push({
               name: 'Survey Master Settings',
               params: { surveyId: route.params['surveyId'] as string },
             })
           }
         "
-      />
+      >
+        Settings
+      </v-btn>
       <v-btn
         v-show="false"
         variant="flat"
@@ -89,6 +91,7 @@ import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { VList } from 'vuetify/lib/components/index.mjs'
 
 const router = useRouter()
 const route = useRoute()

@@ -7,6 +7,7 @@ import {
   SharedDtoSchema,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackService } from '../../services/feedback.service'
+import { PdfService } from '../../services/pdf.service'
 
 @singleton()
 export class DieticianFeedbackRouter {
@@ -190,10 +191,31 @@ export class DieticianFeedbackRouter {
           opts.input.draft,
         )
       }),
+    getPdf: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'GET',
+          path: '/clinics/:clinicId/patients/:patientId/pdf',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary:
+            'Get a pdf of an automated feedback based on the compose feedback page',
+        },
+      })
+      .input(
+        z.object({
+          clinicId: z.number(),
+          patientId: z.number(),
+        }),
+      )
+      .output(z.void())
+      .query(async opts => {
+        return await this.pdfService.getPdf()
+      }),
   })
 
   public constructor(
     @inject(FeedbackService) private feedbackService: FeedbackService,
+    @inject(PdfService) private pdfService: PdfService,
   ) {}
 
   public getRouter() {

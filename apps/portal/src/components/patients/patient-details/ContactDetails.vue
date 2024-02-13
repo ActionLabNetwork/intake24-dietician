@@ -6,7 +6,7 @@
         <!-- Medium viewport and up -->
         <div v-if="mdAndUp">
           <v-row dense justify="center" align="center">
-            <v-col class="v-col-2" align="center">
+            <v-col class="v-col-3" align="center">
               <div class="d-flex flex-column">
                 <ImageUpload
                   :default-state="defaultState.avatar || ''"
@@ -125,21 +125,24 @@
     </v-card>
   </div>
 </template>
+
 <script setup lang="ts">
 import BaseInput from '@/components/form/BaseInput.vue'
 
 import { useDisplay } from 'vuetify'
 
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { ref, watch } from 'vue'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
-import { Form } from '../../profile/types'
+import type { Form } from '../../profile/types'
 import ImageUpload from '../../profile/ImageUpload.vue'
-import {
+import type {
   PatientUpdateDto,
-  PatientUpdateDtoSchema,
   UserCreateDto,
+} from '@intake24-dietician/common/entities-new/user.dto'
+import {
+  PatientUpdateDtoSchema,
   UserCreateDtoSchema,
 } from '@intake24-dietician/common/entities-new/user.dto'
 
@@ -221,19 +224,6 @@ const formConfigNames: Form<['firstName', 'middleName', 'lastName'][number]> = {
 const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
   // eslint-disable-next-line vue/no-setup-props-destructure
   {
-    mobileNumber: {
-      key: 'mobileNumber',
-      autocomplete: 'tel',
-      label: t('profile.form.contactDetails.mobileNumber.label'),
-      required: false,
-      type: 'input',
-      inputType: 'tel',
-      rules: [
-        (value: string) =>
-          validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),
-      ],
-      handleUpdate: val => handleFieldUpdate('mobileNumber', val),
-    },
     email: {
       key: 'email',
       autocomplete: 'email',
@@ -248,6 +238,19 @@ const formConfigContact: Form<['mobileNumber', 'address', 'email'][number]> =
           validateWithZod(UserCreateDtoSchema.shape.email, value),
       ],
       handleUpdate: val => handleFieldUpdate('email', val),
+    },
+    mobileNumber: {
+      key: 'mobileNumber',
+      autocomplete: 'tel',
+      label: t('profile.form.contactDetails.mobileNumber.label'),
+      required: false,
+      type: 'input',
+      inputType: 'tel',
+      rules: [
+        (value: string) =>
+          validateWithZod(PatientUpdateDtoSchema.shape.mobileNumber, value),
+      ],
+      handleUpdate: val => handleFieldUpdate('mobileNumber', val),
     },
     address: {
       key: 'address',

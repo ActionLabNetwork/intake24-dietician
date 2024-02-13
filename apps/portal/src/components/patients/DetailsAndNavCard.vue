@@ -1,6 +1,6 @@
 <template>
   <v-card v-if="patientQuery" :loading="patientQuery.isPending">
-    <template v-slot:loader="{ isActive }">
+    <template #loader="{ isActive }">
       <v-progress-linear
         :active="isActive"
         color="orange"
@@ -12,7 +12,7 @@
       <PatientProfileSummary
         :avatar="avatar"
         :full-name="fullName"
-        :patientId="paddedId"
+        :patient-id="paddedId"
       />
       <v-divider class="border-opacity-100 my-2" />
       <PatientNavItems />

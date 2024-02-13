@@ -5,6 +5,7 @@ export function convertTo12H(time: string) {
     throw new Error('Invalid time format. Expected format is HH:mm')
   }
 
+  // eslint-disable-next-line prefer-const
   let [hours, minutes] = timeParts
   if (hours === undefined || minutes === undefined) {
     throw new Error('Invalid time format. Expected format is HH:mm')
@@ -23,17 +24,8 @@ export function formatTime(
 ): string {
   if (hoursOrDate instanceof Date) {
     const date = hoursOrDate
-    return (
-      date.getHours().toString().padStart(2, '0') +
-      ':' +
-      date.getMinutes().toString().padStart(2, '0')
-    )
-  } else {
-    const hours = hoursOrDate
-    return (
-      hours.toString().padStart(2, '0') +
-      ':' +
-      (minutes ?? 0).toString().padStart(2, '0')
-    )
+    return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
   }
+  const hours = hoursOrDate
+  return `${hours.toString().padStart(2, '0')}:${(minutes ?? 0).toString().padStart(2, '0')}`
 }

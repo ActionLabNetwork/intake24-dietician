@@ -3,33 +3,46 @@
     <v-avatar size="100%" rounded="0" class="avatar mx-auto">
       <v-img :src="avatarImage" alt="Avatar" height="100%" width="100%" />
     </v-avatar>
-    <v-btn
-      class="mt-5 text-center font-weight-medium text-capitalize"
-      flat
-      @click="
-        () => {
-          imageUpload.click()
-        }
-      "
-    >
-      {{ t('profile.form.personalDetails.uploadImage') }}
-    </v-btn>
-    <input
-      ref="imageUpload"
-      type="file"
-      accept="image/*"
-      hidden
-      @change="handleImageUpload"
-    />
+    <div class="d-flex align-center justify-space-around mt-5">
+      <v-btn
+        class="text-center font-weight-medium text-capitalize"
+        variant="outlined"
+        @click="
+          () => {
+            imageUpload.click()
+          }
+        "
+      >
+        {{
+          avatarImage && avatarImage !== getDefaultAvatar()
+            ? 'Update picture'
+            : t('profile.form.personalDetails.uploadImage')
+        }}
+        <input
+          ref="imageUpload"
+          type="file"
+          accept="image/*"
+          hidden
+          @change="handleImageUpload"
+        />
+      </v-btn>
+      <v-btn
+        v-show="avatarImage !== getDefaultAvatar()"
+        icon="mdi-delete-outline"
+        variant="flat"
+        @click="handleAvatarDelete"
+      />
+    </div>
   </div>
 </template>
 <script setup lang="ts">
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
 import { useI18n } from 'vue-i18n'
 import { onMounted, ref } from 'vue'
 import { useToast } from 'vue-toast-notification'
 import { avatarSchema } from '@intake24-dietician/portal/schema/profile'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
+import { getDefaultAvatar } from '@intake24-dietician/portal/utils/profile'
 
 const props = defineProps<{
   defaultState: string
@@ -48,7 +61,7 @@ const avatarImage = ref('')
 const formValues = ref(props.defaultState)
 
 onMounted(() => {
-  avatarImage.value = props.defaultState
+  avatarImage.value = props.defaultState || getDefaultAvatar()
 })
 
 const handleImageUpload = () => {
@@ -73,5 +86,11 @@ const handleImageUpload = () => {
 
     URL.revokeObjectURL(objectURL)
   }
+}
+
+const handleAvatarDelete = () => {
+  formValues.value = ''
+  avatarImage.value = getDefaultAvatar()
+  emit('update', formValues.value)
 }
 </script>

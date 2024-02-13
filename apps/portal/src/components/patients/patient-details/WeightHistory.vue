@@ -23,7 +23,7 @@
         density="compact"
         no-data-text="No previous records"
       >
-        <template v-slot:item="{ item }">
+        <template #item="{ item }">
           <tr>
             <td>{{ item.columns.weight }}</td>
             <td>{{ moment(item.columns.timestamp).format('DD/MM/YYYY') }}</td>

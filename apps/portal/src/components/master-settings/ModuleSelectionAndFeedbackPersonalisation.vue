@@ -1,5 +1,5 @@
 <template>
-  <v-row class="ml-2">
+  <v-row>
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
         :default-state="defaultState"
@@ -11,66 +11,41 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div class="ma-4">
+        <div v-if="true" class="ma-4">
           <component
             :is="moduleNameToModuleComponentMapping[selectedModule].component"
             :feedback="
               moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
             "
             mode="preview"
-            useSampleRecall
+            use-sample-recall
             flat
             :style="{
               'background-color':
                 FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                   .mainBackground,
             }"
-            :mainBgColor="
+            :main-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .mainBackground
             "
-            :feedbackBgColor="
+            :feedback-bg-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .feedback.background
             "
-            :feedbackTextColor="
+            :feedback-text-color="
               FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
                 .feedback.color
             "
           />
         </div>
 
+        <v-divider class="mx-5 mb-10" />
+
         <!-- Feedback Personalisation -->
         <div>
-          <div class="text feedback-heading">
-            Customise this feedback ({{ selectedModule }})
-          </div>
-          <!-- Feedback for below recommended level -->
-          <FeedbackTextArea
-            class="pl-4 pt-4"
-            text-area-label="Feedback for below recommended level"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
-            "
-            editable
-            @update:feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow =
-                $event
-            "
-          />
-
-          <!-- Feedback for above recommended level -->
-          <FeedbackTextArea
-            class="pl-4 pt-4"
-            text-area-label="Feedback for above recommended level"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove
-            "
-            editable
-            @update:feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackAbove =
-                $event
-            "
+          <SetRecommendedLevel
+            v-model="moduleNameToModuleComponentMapping[selectedModule]"
           />
         </div>
       </v-card>
@@ -79,13 +54,16 @@
 </template>
 
 <script setup lang="ts">
-import FeedbackTextArea from '@intake24-dietician/portal/components/feedback-modules/common/FeedbackTextArea.vue'
 import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-modules/standard/carbs-exchange/CarbsExchangeModule.vue'
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
+import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
@@ -96,12 +74,10 @@ import ModuleSelectList, {
 } from '../feedback-modules/ModuleSelectList.vue'
 
 export type FeedbackMapping = {
-  [K in keyof typeof moduleNameToModuleComponentMapping]: {
-    name: string
-    feedbackBelow: (typeof moduleNameToModuleComponentMapping)[K]['feedbackBelow']
-    feedbackAbove: (typeof moduleNameToModuleComponentMapping)[K]['feedbackAbove']
-    isActive: boolean
-  }
+  [K in keyof typeof moduleNameToModuleComponentMapping]: Omit<
+    (typeof moduleNameToModuleComponentMapping)[keyof typeof moduleNameToModuleComponentMapping],
+    'component'
+  >
 }
 
 const props = defineProps<{ defaultState: FeedbackMapping }>()
@@ -150,6 +126,27 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedbackAbove: '',
       isActive: false,
     },
+    'Sugar intake': {
+      component: markRaw(SugarIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Saturated fat intake': {
+      component: markRaw(SaturatedFatIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Calcium intake': {
+      component: markRaw(CalciumIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
   })
 
 const handleModuleChange = (module: ModuleName) => {
@@ -171,6 +168,7 @@ watch(moduleNameToModuleComponentMapping, newFeedbacks => {
         feedbackBelow: value.feedbackBelow,
         feedbackAbove: value.feedbackAbove,
         isActive: value.isActive,
+        nutrientTypes: value.nutrientTypes,
       },
     ]),
   ) as FeedbackMapping
@@ -188,6 +186,8 @@ watch(
       moduleNameToModuleComponentMapping[routeKey].feedbackAbove =
         value.feedbackAbove
       moduleNameToModuleComponentMapping[routeKey].isActive = value.isActive
+      moduleNameToModuleComponentMapping[routeKey].nutrientTypes =
+        value.nutrientTypes
     })
   },
   { immediate: true },

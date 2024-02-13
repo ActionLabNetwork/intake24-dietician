@@ -2,26 +2,29 @@
   <div>
     <div v-if="!hideLabel">
       <p class="font-weight-medium">Automated feedbacks</p>
-      <p class="subheading w-50">
+      <p class="subheading">
         Select this setting if you want your patient to receive automated
-        feedback every time they complete a recall.
+        feedback every time they complete a recall. Turn off this setting if you
+        always want to compose a tailored feedback for this patient.
       </p>
     </div>
 
     <v-card
-      class="card rounded-lg px-4 d-flex justify-space-between align-center mt-5"
-      width="100%"
+      class="card rounded-lg px-4 d-flex flex-column flex-sm-row pa-2 justify-space-between align-center mt-5"
       flat
     >
-      <div>Send automated feedback to the patient?</div>
-      <div class="ml-auto">
+      <div>Send automated feedbacks to this patient?</div>
+      <div class="ml-md-auto d-flex align-center">
         <v-switch
           v-model="sendAutomatedFeedback"
           hide-details
           inset
           color="success"
           @update:model-value="e => emit('update', e ?? false)"
-        ></v-switch>
+        />
+        <div class="ml-4 automated-feedback-switch-label">
+          {{ sendAutomatedFeedback ? 'Yes' : 'No' }}
+        </div>
       </div>
     </v-card>
   </div>
@@ -29,6 +32,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import { VSwitch } from 'vuetify/lib/components/index.mjs'
 
 const props = withDefaults(
   defineProps<{ defaultState: boolean; hideLabel?: boolean }>(),
@@ -57,9 +61,27 @@ watch(
   font-weight: 400;
   line-height: 135%;
   letter-spacing: 0.14px;
+
+  @media only screen and (min-width: 768px) {
+    width: 50vw;
+  }
+}
+
+.automated-feedback-switch-label {
+  color: #555;
+  font-family: Roboto;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
 }
 
 .card {
   border: 0.5px solid rgba(0, 0, 0, 0.25);
+  width: 100%;
+
+  @media only screen and (min-width: 768px) {
+    width: min(100%, 50vw);
+  }
 }
 </style>

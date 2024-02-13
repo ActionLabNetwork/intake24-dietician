@@ -7,13 +7,12 @@
       <v-container>
         <v-row dense justify="center" align="center">
           <v-textarea
-            :model-value="defaultState.shortBio"
+            v-model="value"
+            clearable
+            name="shortBio"
             :label="t('profile.form.shortBio.placeholder')"
-            append-inner-icon="mdi-restore"
+            :error-messages="errorMessage"
             variant="solo-filled"
-            @update:model-value="
-              (val: string) => handleFieldUpdate('shortBio', val || null)
-            "
           ></v-textarea>
         </v-row>
       </v-container>
@@ -21,30 +20,17 @@
   </div>
 </template>
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
-
-import { i18nOptions } from '@intake24-dietician/i18n/index'
+import type { i18nOptions } from '@intake24-dietician/i18n/index'
+import { useField } from 'vee-validate'
 import { useI18n } from 'vue-i18n'
+import { useDisplay } from 'vuetify'
 
 export interface ShortBioFormValues {
   shortBio: string | null
 }
 
-defineProps<{
-  defaultState: ShortBioFormValues
-}>()
-const emit = defineEmits<{
-  update: [value: Partial<ShortBioFormValues>]
-}>()
-
 const { mdAndUp } = useDisplay()
-
 const { t } = useI18n<i18nOptions>()
 
-const handleFieldUpdate = <K extends keyof ShortBioFormValues>(
-  fieldName: K,
-  newVal: ShortBioFormValues[K],
-) => {
-  emit('update', { [fieldName]: newVal })
-}
+const { value, errorMessage } = useField<string>('shortBio')
 </script>
