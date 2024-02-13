@@ -5,6 +5,10 @@ import superjson from 'superjson'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import type { Ref } from 'vue'
+import type { inferRouterInputs, inferRouterOutputs } from '@trpc/server'
+
+export type RouterInput = inferRouterInputs<AppRouter>
+export type RouterOutput = inferRouterOutputs<AppRouter>
 
 export type AuthState =
   | { type: 'init' }

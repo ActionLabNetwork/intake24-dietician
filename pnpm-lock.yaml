@@ -407,6 +407,9 @@ importers:
       '@trpc/client':
         specifier: ^10.45.0
         version: 10.45.0(@trpc/server@10.45.0)
+      '@trpc/server':
+        specifier: ^10.45.0
+        version: 10.45.0
       '@vee-validate/yup':
         specifier: ^4.12.5
         version: 4.12.5(vue@3.4.15)

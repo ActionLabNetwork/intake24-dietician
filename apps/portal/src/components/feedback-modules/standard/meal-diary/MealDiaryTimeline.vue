@@ -1,9 +1,9 @@
 <template>
-  <div v-if="meals" :style="timelineStyle" class="timeline mt-5">
+  <div v-if="mealCards" :style="timelineStyle" class="timeline mt-5">
     <v-timeline side="end" align="start" density="compact">
       <v-timeline-item
-        v-for="meal in meals"
-        :key="meal.id"
+        v-for="(meal, key) in mealCards"
+        :key="key"
         dot-color="orange"
         size="small"
         width="100%"
@@ -23,10 +23,13 @@
               <div>
                 <div class="d-flex align-center">
                   <div class="font-weight-medium text-h6">
-                    <p>{{ meal.name }}</p>
+                    <p>{{ meal.label }}</p>
                   </div>
                 </div>
                 <div class="mt-4">Number of foods: {{ meal.foods.length }}</div>
+                <div class="mt-2">
+                  Total carbs: {{ meal.value }}{{ meal.unitOfMeasure?.symbol }}
+                </div>
               </div>
             </v-expansion-panel-title>
             <v-expansion-panel-text style="background: #fcf9f4">
@@ -36,10 +39,10 @@
                   <v-col></v-col>
                   <v-col cols="8" class="table-header"> Description </v-col>
                 </v-row>
-                <v-row v-for="food in meal.foods" :key="food.id">
-                  <v-col cols="3">{{ getServingWeight(food) }}</v-col>
+                <v-row v-for="(food, index) in meal.foods" :key="index">
+                  <v-col cols="3">{{ food.servingWeight }}</v-col>
                   <v-col></v-col>
-                  <v-col cols="8">{{ food['englishName'] }}</v-col>
+                  <v-col cols="8">{{ food.name }}</v-col>
                 </v-row>
               </div>
             </v-expansion-panel-text>
@@ -52,15 +55,16 @@
 
 <script setup lang="ts">
 import { convertTo12H, formatTime } from '@/utils/datetime'
-import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { computed, CSSProperties, ref, watch } from 'vue'
+import { MealCardProps } from '../../types'
 
 const props = defineProps<{
-  meals: RecallDto['recall']['meals'] | undefined
+  mealCards: Record<string, Omit<MealCardProps, 'colors'> & { value: number }>
   mode: FeedbackModulesProps['mode']
   getServingWeight: Function
   showTime: boolean
+  totalNutrients: number
 }>()
 
 const openPanels = ref<number[]>([])
@@ -74,8 +78,8 @@ const timelineStyle = computed<CSSProperties>(() => {
 watch(
   () => props.mode,
   newMode => {
-    if (newMode === 'preview' && props.meals) {
-      openPanels.value = props.meals.map((_, index) => index)
+    if (newMode === 'preview' && props.mealCards) {
+      openPanels.value = Object.keys(props.mealCards).map((_, index) => index)
     } else {
       openPanels.value = []
     }
