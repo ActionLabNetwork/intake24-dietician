@@ -126,7 +126,7 @@ interface FormConfig {
 }
 
 const props = defineProps<{
-  defaultState: {
+  defaultState?: {
     reminderCondition: ReminderCondition
     reminderMessage: string
   }
@@ -140,15 +140,18 @@ const emit = defineEmits<{
 
 const form = ref()
 const frequencyReminderMessage = ref(
-  toRefs(props).defaultState.value.reminderMessage,
+  toRefs(props).defaultState.value?.reminderMessage,
 )
 // eslint-disable-next-line vue/no-setup-props-destructure
 const recallReminder = ref<ReminderCondition>(
-  props.defaultState.reminderCondition,
+  props.defaultState?.reminderCondition ?? {
+    reminderEvery: { every: 5, unit: 'days' },
+    reminderEnds: { type: 'never' },
+  },
 )
 
 const debouncedFrequencyReminderMessage = computed({
-  get: () => frequencyReminderMessage.value,
+  get: () => frequencyReminderMessage.value ?? '',
   set: useDebounceFn((newReminderMessage: string) => {
     frequencyReminderMessage.value = newReminderMessage
   }, INPUT_DEBOUNCE_TIME),
@@ -178,7 +181,7 @@ onMounted(() => {
         recallReminder.value = newRecallReminder
         emit('update', {
           reminderCondition: recallReminder.value,
-          reminderMessage: frequencyReminderMessage.value,
+          reminderMessage: frequencyReminderMessage.value ?? '',
         })
       },
     },
@@ -209,7 +212,7 @@ watch(
       reminderMessage: string
     } = {
       reminderCondition: recallReminder,
-      reminderMessage: frequencyReminderMessage,
+      reminderMessage: frequencyReminderMessage ?? '',
     }
 
     emit('update', formData)

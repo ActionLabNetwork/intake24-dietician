@@ -86,12 +86,12 @@ export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
 }
 
 const props = defineProps<{
-  defaultState: SurveyDto
+  defaultState?: SurveyDto
   submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  update: [value: SurveyDto]
+  update: [value: SurveyDto | undefined]
 }>()
 
 type CSSClass = string | string[] | object
@@ -120,7 +120,9 @@ interface FormConfig {
 }
 
 const findFeedbackModel = (name: ModuleName) => {
-  return props.defaultState.feedbackModules.find(module => module.name === name)
+  return props.defaultState?.feedbackModules.find(
+    module => module.name === name,
+  )
 }
 
 const createFeedbackEntry = (key: ModuleName) => {
@@ -149,10 +151,11 @@ const $toast = useToast()
 const feedbackModuleSetup = ref(toRefs(props).defaultState.value)
 
 const theme = ref<Theme>(
-  toRefs(props).defaultState.value.surveyPreference.theme as Theme,
+  toRefs(props).defaultState.value?.surveyPreference.theme as Theme,
 )
 const sendAutomatedFeedback = ref<boolean>(
-  toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
+  toRefs(props).defaultState.value?.surveyPreference.sendAutomatedFeedback ??
+    false,
 )
 const feedbackMapping = ref<FeedbackMapping>({
   'Meal diary': createFeedbackEntry('Meal diary'),
@@ -163,6 +166,8 @@ const feedbackMapping = ref<FeedbackMapping>({
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {
+  if (!feedbackModuleSetup.value) return
+
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
     surveyPreference: {
@@ -174,6 +179,8 @@ const handleVisualThemeUpdate = (_theme: Theme) => {
 }
 
 const handleSendAutomatedFeedback = (automatedFeedback: boolean) => {
+  if (!feedbackModuleSetup.value) return
+
   feedbackModuleSetup.value = {
     ...feedbackModuleSetup.value,
     surveyPreference: {
@@ -185,9 +192,11 @@ const handleSendAutomatedFeedback = (automatedFeedback: boolean) => {
 }
 
 const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
+  if (!feedbackModuleSetup.value) return
+
   const updatedFeedbackModules = Object.values(feedbackMapping).reduce(
     (acc, updatedModule) => {
-      const feedbackModule = feedbackModuleSetup.value.feedbackModules.find(
+      const feedbackModule = feedbackModuleSetup.value?.feedbackModules.find(
         module => module.name === updatedModule.name,
       )
 
@@ -260,7 +269,6 @@ onMounted(() => {
         handleSendAutomatedFeedback(isEnabled)
       },
     },
-    // TODO: Add modules component
     moduleSelectionAndFeedbackPersonalisation: {
       heading: {
         label: 'Module selection and feedback personalisation',

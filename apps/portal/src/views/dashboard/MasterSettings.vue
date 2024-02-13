@@ -180,8 +180,8 @@ const formHasChanged = computed(() => {
   )
 })
 
-const handleFeedbackModulesUpdate = (value: SurveyDto) => {
-  if (!formData.value) {
+const handleFeedbackModulesUpdate = (value: SurveyDto | undefined) => {
+  if (!formData.value || !value) {
     return
   }
   formData.value = { ...formData.value, ...value }

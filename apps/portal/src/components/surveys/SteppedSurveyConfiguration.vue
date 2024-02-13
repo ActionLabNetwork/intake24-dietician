@@ -35,14 +35,12 @@
               :value="i + 1"
             >
               <v-row class="align-center mt-10">
-                <v-col>
-                  <!-- <pre>{{ step }}</pre> -->
+                <v-col :cols="currentStep < 3 ? 8 : 12">
                   <div
                     v-for="(subStep, subStepIndex) in step.subSteps"
                     :key="subStepIndex + 'substep'"
                     class="mb-16"
                   >
-                    <!-- <pre>{{ subStep }}</pre> -->
                     <template v-if="subStep.stepName">
                       <h1 class="text step-heading">
                         {{ subStep.stepName }}
@@ -51,6 +49,7 @@
                         {{ subStep.description }}
                       </h3>
                     </template>
+                    <!-- Input fields -->
                     <div v-for="field in subStep.fields" :key="field.key">
                       <template v-if="field.type === 'input'">
                         <VBaseInput
@@ -129,7 +128,19 @@
                       </template>
                     </div>
                   </div>
+                  <div v-if="currentStep === 3 && handleSubmit">
+                    <FeedbackModules
+                      :submit="async () => {}"
+                      @update="handleFeedbackModulesUpdate"
+                    />
+                    <!-- <RecallReminders
+                      v-if="recallReminderProps"
+                      :default-state="recallReminderProps"
+                      @update="handleRecallRemindersUpdate"
+                    /> -->
+                  </div>
                 </v-col>
+                <!-- Contact / help with system setup -->
                 <v-col>
                   <v-col align-self="center">
                     <v-card
@@ -161,6 +172,7 @@
       </v-stepper-window>
 
       <v-stepper-actions style="justify-content: flex-start" disabled="false">
+        <!-- Back button -->
         <template #prev>
           <v-btn
             v-if="steps[currentStep - 1]?.prev"
@@ -173,6 +185,7 @@
           </v-btn>
         </template>
 
+        <!-- Next button -->
         <template #next>
           <v-btn
             class="text-none ml-4"
@@ -206,11 +219,14 @@ import BaseDialog from '../common/BaseDialog.vue'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
+  SurveyDto,
   countryCodes,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { computed } from 'vue'
 import { useAuthStore } from '@intake24-dietician/portal/stores/auth'
+import FeedbackModules from '../master-settings/FeedbackModules.vue'
+import RecallReminders from '../master-settings/RecallReminders.vue'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
@@ -295,6 +311,13 @@ const onDialogConfirm = ref<() => void>()
 const dialogTitle = ref('')
 const dialogDescription = ref('')
 const dialogCancelText = ref('Cancel')
+
+const handleFeedbackModulesUpdate = (value: SurveyDto | undefined) => {
+  if (!formValues.value || !value) {
+    return
+  }
+  formValues.value = { ...formValues.value, ...value }
+}
 
 const handleBackConfirm = () => {
   if (window.history.length > 1) {
