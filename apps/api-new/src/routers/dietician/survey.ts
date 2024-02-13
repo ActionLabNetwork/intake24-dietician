@@ -7,6 +7,7 @@ import {
   SurveyPlainDtoSchema,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyService } from '../../services/survey.service'
+import { HashingService } from '../../services/hashing.service'
 
 @singleton()
 export class DieticianSurveyRouter {
@@ -114,10 +115,39 @@ export class DieticianSurveyRouter {
           opts.ctx.dieticianId,
         )
       }),
+    generateClinicSecret: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/generate/secret',
+          tags: ['dietician', 'clinics'],
+          summary: 'Generate a clinic secret',
+        },
+      })
+      .input(z.void())
+      .output(z.string())
+      .mutation(async () => {
+        return await this.hashingService.generateRandomSecret()
+      }),
+    generateClinicUUID: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'POST',
+          path: '/generate/uuid',
+          tags: ['dietician', 'clinics'],
+          summary: 'Generate a clinic uuid',
+        },
+      })
+      .input(z.void())
+      .output(z.string())
+      .mutation(async () => {
+        return await this.hashingService.generateUUID()
+      }),
   })
 
   public constructor(
     @inject(SurveyService) private surveyService: SurveyService,
+    @inject(HashingService) private hashingService: HashingService,
   ) {}
 
   public getRouter() {

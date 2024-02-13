@@ -2,6 +2,7 @@
   <v-main class="wrapper">
     <v-container>
       <SteppedSurveyConfiguration
+        v-if="secretGenerated"
         :default-state="surveyConfigFormValues"
         :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
@@ -17,13 +18,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 // import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import SteppedSurveyConfiguration from '@intake24-dietician/portal/components/surveys/SteppedSurveyConfiguration.vue'
 // import { useI18n } from 'vue-i18n'
 // import type { i18nOptions } from '@intake24-dietician/i18n'
-import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
+import {
+  useAddSurvey,
+  useGenerateSurveySecret,
+  useGenerateSurveyUUID,
+} from '@intake24-dietician/portal/mutations/useSurvey'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -42,15 +47,18 @@ const $toast = useToast()
 const clinicStore = useClinicStore()
 
 const queryClient = useQueryClient()
+const surveySecretMutation = useGenerateSurveySecret()
+const surveyUUIDMutation = useGenerateSurveyUUID()
 const addSurveyMutation = useAddSurvey()
 
+const secretGenerated = ref(false)
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
   intake24Host: 'https://myfoodswaps.com/api/recall/alias',
   intake24AdminBaseUrl: 'https://admin.intake24.dev',
   countryCode: 'au',
   intake24SurveyId: '',
-  intake24Secret: '123456',
+  intake24Secret: '',
   alias: '',
   isActive: true,
 })
@@ -97,6 +105,15 @@ const handleSubmit = async () => {
     )
   })
 }
+
+onMounted(async () => {
+  surveyConfigFormValues.value = {
+    ...surveyConfigFormValues.value,
+    intake24Secret: await surveySecretMutation.mutateAsync(),
+    alias: await surveyUUIDMutation.mutateAsync(),
+  }
+  secretGenerated.value = true
+})
 </script>
 
 <style scoped lang="scss">

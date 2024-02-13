@@ -77,3 +77,27 @@ export const useDeleteSurvey = () => {
     mutate,
   }
 }
+
+export const useGenerateSurveySecret = () => {
+  const { authenticatedClient } = useClientStore()
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return authenticatedClient.dieticianSurvey.generateClinicSecret.mutate()
+    },
+  })
+
+  return { ...mutation }
+}
+
+export const useGenerateSurveyUUID = () => {
+  const { authenticatedClient } = useClientStore()
+
+  const mutation = useMutation({
+    mutationFn: async () => {
+      return authenticatedClient.dieticianSurvey.generateClinicUUID.mutate()
+    },
+  })
+
+  return { ...mutation }
+}
