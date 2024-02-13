@@ -3,7 +3,7 @@
     <div :class="['form-label pb-2', labelClass]">
       <slot />
     </div>
-    <div v-if="type === 'tel'" class="">
+    <div v-if="type === 'tel'">
       <v-phone-input
         v-model="fieldValue"
         label=""
@@ -39,6 +39,7 @@
         <v-col cols="6">
           <v-select
             v-model="fieldValue"
+            flat
             density="comfortable"
             variant="solo-filled"
             :items="selectConfig?.items"
@@ -53,7 +54,7 @@
             <template #prepend-inner>
               <slot name="prepend-inner" />
             </template>
-            <template #prepend>
+            <template v-if="$slots.prepend" #prepend>
               <slot name="prepend" />
             </template>
             <template #append-inner>
@@ -82,7 +83,7 @@
         :error-messages="errorMessage"
         :autocomplete="autocomplete ?? 'off'"
         variant="solo-filled"
-        density="comfortable"
+        density="default"
         :append-inner-icon="suffixIcon"
         :append-icon="suffixIconOuter"
         :name="name"
@@ -98,7 +99,7 @@
         <template #prepend-inner>
           <slot name="prepend-inner" />
         </template>
-        <template #prepend>
+        <template v-if="$slots.prepend" #prepend>
           <slot name="prepend" />
         </template>
         <template #append-inner>

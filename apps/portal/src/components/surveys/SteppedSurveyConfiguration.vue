@@ -1,17 +1,20 @@
 <template>
   <v-container>
-    <!-- <pre>{{ formValues }}</pre> -->
+    <pre>{{ formValues }}</pre>
     <div class="mb-5">
       <BackButton class="mb-5" @click="onBackButtonClick" />
-      <div>
-        <h1 class="text heading">{{ steps[currentStep - 1]?.heading }}</h1>
-        <h3 class="text subheading">
+      <div class="text heading">Hi {{ authStore.profile?.firstName }},</div>
+      <div class="w-50">
+        <h1 class="text subheading">
+          {{ steps[currentStep - 1]?.heading }}
+        </h1>
+        <h3 class="text description">
           {{ steps[currentStep - 1]?.subheading }}
         </h3>
       </div>
     </div>
     <v-stepper v-model="currentStep">
-      <v-stepper-header>
+      <v-stepper-header style="background-color: #fcf9f4">
         <template v-for="(step, i) in steps" :key="step.heading">
           <v-stepper-item
             :title="step.title"
@@ -31,26 +34,25 @@
               :key="step.heading"
               :value="i + 1"
             >
-              <v-row>
+              <v-row class="align-center mt-10">
                 <v-col>
                   <!-- <pre>{{ step }}</pre> -->
                   <div
                     v-for="(subStep, subStepIndex) in step.subSteps"
                     :key="subStepIndex + 'substep'"
-                    class="mt-10"
+                    class="mb-16"
                   >
                     <!-- <pre>{{ subStep }}</pre> -->
                     <template v-if="subStep.stepName">
-                      <h1 class="text heading">
+                      <h1 class="text step-heading">
                         {{ subStep.stepName }}
                       </h1>
-                      <h3 class="text subheading">
+                      <h3 class="text description mb-10">
                         {{ subStep.description }}
                       </h3>
                     </template>
                     <div v-for="field in subStep.fields" :key="field.key">
                       <template v-if="field.type === 'input'">
-                        <!-- <pre>{{ field.label }}</pre> -->
                         <VBaseInput
                           :name="field.key"
                           :type="field.inputType"
@@ -60,6 +62,7 @@
                           :required="field.required"
                           :value="formValues[field.key]"
                           :select-config="field.selectConfig"
+                          class="mt-3"
                           @update="field.handleUpdate"
                         >
                           <div>
@@ -70,7 +73,7 @@
                               v-if="field.labelSuffix"
                               class="input-label suffix"
                             >
-                              {{ field.labelSuffix }}
+                              {{ ' ' }}{{ field.labelSuffix }}
                             </span>
                             <v-btn
                               v-if="field.information"
@@ -103,6 +106,7 @@
                             >
                               <v-btn
                                 v-if="field.quickAction?.append"
+                                class="text-none"
                                 color="primary"
                                 @click="
                                   () =>
@@ -114,9 +118,6 @@
                                 {{ field.quickAction.append.label }}
                               </v-btn>
                             </template>
-                            <!-- <template v-if="field.key === 'countryCode'">
-                              {{ formValues.intake24AdminBaseUrl+'.' + formValues[field.key] }}
-                            </template> -->
                           </template>
 
                           <template #append-inner>
@@ -131,13 +132,22 @@
                 </v-col>
                 <v-col>
                   <v-col align-self="center">
-                    <v-card class="pa-5 my-5 bg-grey-lighten-4">
+                    <v-card
+                      class="pa-5 bg-grey-lighten-4 mx-auto"
+                      flat
+                      style="width: fit-content"
+                    >
                       Not able to complete system setup?
                       <br />
                       Contact -
-                      <i class="text-body-1 text-primary"
-                        >support@intake24.com</i
-                      >
+                      <em>
+                        <a
+                          href="mailto:support@intake24.com"
+                          class="text-body-1 text-primary"
+                        >
+                          support@intake24.com
+                        </a>
+                      </em>
                     </v-card>
                   </v-col>
                 </v-col>
@@ -154,23 +164,25 @@
         <template #prev>
           <v-btn
             v-if="steps[currentStep - 1]?.prev"
-            class="text-capitalize mr-5"
+            class="text-capitalize ml-4"
             variant="outlined"
             color="black"
             @click="steps[currentStep - 1]?.prev?.action"
-            >{{ steps[currentStep - 1]?.prev?.label }}</v-btn
           >
+            {{ steps[currentStep - 1]?.prev?.label }}
+          </v-btn>
         </template>
 
         <template #next>
           <v-btn
-            class="text-capitalize"
+            class="text-none ml-4"
             :disabled="isNextdisabled"
             variant="flat"
             color="primary"
             @click="steps[currentStep - 1]?.next.action"
-            >{{ steps[currentStep - 1]?.next.label }}</v-btn
           >
+            {{ steps[currentStep - 1]?.next.label }}
+          </v-btn>
         </template>
       </v-stepper-actions>
     </v-stepper>
@@ -198,6 +210,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
 import { computed } from 'vue'
+import { useAuthStore } from '@intake24-dietician/portal/stores/auth'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
@@ -208,7 +221,6 @@ type Step = {
   heading: string
   subheading: string
   title: string
-
   subSteps: Substep[]
   prev?: {
     label: string
@@ -258,6 +270,9 @@ type Field = {
   rules: ((value: string) => true | string)[]
   handleUpdate: (val: string) => void
 }
+
+const authStore = useAuthStore()
+
 const copyToClipboard = (val: string) => {
   navigator.clipboard.writeText(val)
 }
@@ -309,15 +324,12 @@ const onDialogCancel = () => {
 // TODO: Replace this when the i18n is setup
 const steps: Step[] = [
   {
-    heading: 'Create your new clinic',
+    heading: 'Welcome to Intake24 clinical tool',
     subheading:
-      'Your practice, your space. Create and tailor the new clinic according to your work needs',
+      'This is  your dedicated space for receiving recall data and providing tailored dietary feedback to your patients. Let’s create and customise your first clinic where you can start adding  your patients.',
     title: 'Clinic name',
-
     subSteps: [
       {
-        stepName: undefined,
-        description: undefined,
         fields: [
           {
             key: 'surveyName',
@@ -329,8 +341,6 @@ const steps: Step[] = [
             description:
               'This is the name of your new clinic where you can add new patients and manage their recalls.',
             placeHolder: 'Name your clinic',
-            information: undefined,
-            quickAction: undefined,
             rules: [
               (value: string) =>
                 validateWithZod(SurveyCreateDtoSchema.shape.surveyName, value),
@@ -352,7 +362,6 @@ const steps: Step[] = [
     subheading:
       'To ensure the proper functioning of the dietitian tool, it must be linked to the Intake24 system. Follow the steps below to complete this setup process. If you  encounter any difficulties in completing the system setup, please reach out to our support team for assistance.',
     title: 'System setup',
-
     subSteps: [
       {
         stepName: 'Clinic integration code and clinic url',
@@ -366,7 +375,7 @@ const steps: Step[] = [
             inputType: 'text',
             readonly: true,
             label: 'Integration code',
-            labelSuffix: '(required)',
+            labelSuffix: '',
             description: undefined,
             placeHolder: '123456',
             information: {
@@ -397,7 +406,7 @@ const steps: Step[] = [
             inputType: 'text',
             readonly: true,
             label: 'Clinic url',
-            labelSuffix: '(required)',
+            labelSuffix: '',
             description: undefined,
             placeHolder: 'https://myfoodswaps.com/api/recall/{alias}',
             information: {
@@ -426,17 +435,17 @@ const steps: Step[] = [
       {
         stepName: 'Intake24 system survey ID and country code',
         description:
-          'First cop and paste survey ID name from Intake24 system in the field below. Then select the country code so that the system can complete the setup process. For additional details click information icon.',
+          'First copy and paste survey ID name from Intake24 system in the field provided below. Then select the country code so that the system can complete the setup process. For additional details click information icon.',
         fields: [
           {
             key: 'intake24SurveyId',
             required: true,
             type: 'input',
             inputType: 'text',
-            label: 'Survey ID',
+            label: 'Intake24 Survey ID',
             labelSuffix: '(required)',
             description:
-              'Past the Intake24 survey ID name that you have used to create the survey in Intake24 system.',
+              'Pass the Intake24 survey ID name that you have used to create the survey in Intake24 system.',
             placeHolder: 'name',
             information: {
               title: 'Survey ID',
@@ -635,7 +644,25 @@ const isNextdisabled = computed(() => {
     line-height: normal;
   }
 
+  &.step-heading {
+    color: #000;
+    font-family: Roboto;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: normal;
+  }
+
   &.subheading {
+    color: #1e1e1e;
+    font-family: Roboto;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+  }
+
+  &.description {
     color: #555;
     font-family: Roboto;
     font-size: 14px;
