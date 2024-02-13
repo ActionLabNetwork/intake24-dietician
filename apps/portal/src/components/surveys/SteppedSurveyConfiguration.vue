@@ -227,6 +227,7 @@ import { computed } from 'vue'
 import { useAuthStore } from '@intake24-dietician/portal/stores/auth'
 import FeedbackModules from '../master-settings/FeedbackModules.vue'
 import RecallReminders from '../master-settings/RecallReminders.vue'
+import { useToast } from 'vue-toast-notification'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
@@ -276,11 +277,11 @@ type Field = {
   quickAction?: {
     prepend?: {
       label: string
-      action: (val: any) => void
+      action: (val: string) => void
     }
     append?: {
       label: string
-      action: (val: any) => void
+      action: (val: string) => void
     }
   }
   rules: ((value: string) => true | string)[]
@@ -288,6 +289,7 @@ type Field = {
 }
 
 const authStore = useAuthStore()
+const $toast = useToast()
 
 const copyToClipboard = (val: string) => {
   navigator.clipboard.writeText(val)
@@ -409,7 +411,10 @@ const steps: Step[] = [
               prepend: undefined,
               append: {
                 label: 'Copy',
-                action: copyToClipboard,
+                action: str => {
+                  copyToClipboard(str)
+                  $toast.info('Copied to clipboard')
+                },
               },
             },
             rules: [
@@ -440,7 +445,10 @@ const steps: Step[] = [
               prepend: undefined,
               append: {
                 label: 'Copy',
-                action: copyToClipboard,
+                action: str => {
+                  copyToClipboard(str)
+                  $toast.info('Copied to clipboard')
+                },
               },
             },
             rules: [
@@ -563,7 +571,7 @@ const steps: Step[] = [
     },
   },
   {
-    heading: 'Clinic Setup for <clinic name>', // TODO: Replace with clinic name
+    heading: `Clinic Setup for ${formValues.value.surveyName}`,
     subheading:
       'Personalise your patient experience by choosing a visual theme, select and tailor feedback templates to suit your preferences and set a default recall frequency to gather timely recall data from your patients.',
     title: 'Clinic setup',
@@ -573,26 +581,7 @@ const steps: Step[] = [
         stepName: 'Feedback template setup',
         description:
           'Choose a visual theme, select feedback templates, and compose default messages',
-        fields: [
-          {
-            key: 'alias',
-            required: true,
-            type: 'input',
-            inputType: 'text',
-            label: 'Alias',
-            labelSuffix: '(required)',
-            description:
-              'This is an alias that you can choose to identify this clinic in the Intake24 system.',
-            placeHolder: 'Clinc alias',
-            information: undefined,
-            quickAction: undefined,
-            rules: [
-              (value: string) =>
-                validateWithZod(SurveyCreateDtoSchema.shape.alias, value),
-            ],
-            handleUpdate: (val: string) => handleFieldUpdate('alias', val),
-          },
-        ],
+        fields: [],
       },
       {
         stepName: 'Recall reminder setup',

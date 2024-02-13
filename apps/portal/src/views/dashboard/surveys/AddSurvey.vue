@@ -2,7 +2,7 @@
   <v-main class="wrapper">
     <v-container>
       <SteppedSurveyConfiguration
-        v-if="secretGenerated"
+        v-if="secretsGenerated"
         :default-state="surveyConfigFormValues"
         :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
@@ -51,7 +51,7 @@ const surveySecretMutation = useGenerateSurveySecret()
 const surveyUUIDMutation = useGenerateSurveyUUID()
 const addSurveyMutation = useAddSurvey()
 
-const secretGenerated = ref(false)
+const secretsGenerated = ref(false)
 const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   surveyName: '',
   intake24Host: 'https://myfoodswaps.com/api/recall/alias',
@@ -107,12 +107,14 @@ const handleSubmit = async () => {
 }
 
 onMounted(async () => {
+  const alias = await surveyUUIDMutation.mutateAsync()
   surveyConfigFormValues.value = {
     ...surveyConfigFormValues.value,
+    intake24Host: `https://myfoodswaps.com/api/recall/${alias}`,
     intake24Secret: await surveySecretMutation.mutateAsync(),
-    alias: await surveyUUIDMutation.mutateAsync(),
+    alias: alias,
   }
-  secretGenerated.value = true
+  secretsGenerated.value = true
 })
 </script>
 
