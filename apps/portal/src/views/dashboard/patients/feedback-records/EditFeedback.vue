@@ -311,7 +311,6 @@ const handleModulesUpdate = (modules: ModuleItem[]) => {
 const handleDaterangeUpdate = (
   _daterange: [Date | undefined, Date | undefined],
 ) => {
-  console.log({ newDatteRange: _daterange })
   daterange.value = _daterange
 
   if (allModules.value) {

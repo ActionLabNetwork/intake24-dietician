@@ -61,8 +61,6 @@ export class SurveyRepository {
           eq(surveyToFeedbackModules.feedbackModuleId, feedbackModules.id),
         )
 
-      console.log({ surveyWithPatientsCount })
-
       return { survey, queriedFeedbackModules }
     })
     if (!queryResult) return undefined
@@ -97,7 +95,6 @@ export class SurveyRepository {
   ) {
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
-      console.log({ feedbackModules })
       const [insertedSurvey] = await tx
         .insert(surveys)
         .values({
@@ -128,8 +125,6 @@ export class SurveyRepository {
             }
           },
         )
-
-        console.log({ feedbackModulesToBeInserted })
 
         feedbackModulesToBeInserted.forEach(async module => {
           const { id: _, ...withoutId } = module

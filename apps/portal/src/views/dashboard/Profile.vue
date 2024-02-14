@@ -151,7 +151,6 @@ const onSubmit = () => {
 
   const submit = handleSubmit(
     async values => {
-      console.log({ currentFormData, values })
       if (!currentFormData.value) return
 
       updateProfileMutation.mutate(
@@ -170,9 +169,7 @@ const onSubmit = () => {
         },
       )
     },
-    ({ values, errors, results }) => {
-      console.log({ values, errors, results })
-    },
+    () => {},
   )
 
   return { showConfirmDialog, submit }

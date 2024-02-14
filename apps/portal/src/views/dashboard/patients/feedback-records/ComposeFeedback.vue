@@ -273,21 +273,6 @@ const handlePreviewButtonClick = () => {
 }
 
 watch(
-  () => allModules.value,
-  newSelectedModules => {
-    console.log({ newSelectedModules })
-  },
-)
-
-watch(
-  () => recallStore.selectedRecallDateRange,
-  newDateRange => {
-    console.log({ newDateRange })
-    console.log({ allModules: allModules.value })
-  },
-)
-
-watch(
   () => route.query['preview'],
   newPreviewValue => {
     if (newPreviewValue === 'true') {

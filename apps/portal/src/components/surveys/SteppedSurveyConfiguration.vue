@@ -613,7 +613,6 @@ const isNextdisabled = computed(() => {
       return validateResult !== true
     })
   })
-  // console.log(isDisabled)
   return isDisabled
 })
 </script>

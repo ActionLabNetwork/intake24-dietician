@@ -101,11 +101,6 @@ const handleSubmit = async () => {
         onSuccess: async surveyId => {
           $toast.success('Survey added to records')
           await queryClient.invalidateQueries({ queryKey: ['surveys'] })
-          const allClinics = queryClient.getQueryData([
-            'surveys',
-          ]) as SurveyDto[]
-          const newClinic = allClinics.find(clinic => clinic.id === surveyId)
-          console.log({ newClinic })
           clinicStore.switchCurrentClinic(surveyId)
           resolve('Survey added to records')
           router.push({

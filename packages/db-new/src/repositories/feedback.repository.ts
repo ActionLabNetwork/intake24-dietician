@@ -115,7 +115,6 @@ export class FeedbackRepository {
 
         if (draft) {
           // Check if draft belongs to patient
-          console.log({ draft })
           if (draft.patientId !== patientId) {
             throw new Error('Draft does not belong to patient')
           }
