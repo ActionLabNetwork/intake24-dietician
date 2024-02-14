@@ -110,11 +110,7 @@ const handleProfileStepSubmit = (values: DieticianCreateDto) => {
       },
     },
     {
-      onError: () => {
-        console.log('error')
-      },
       onSuccess: () => {
-        console.log('success')
         router.push({ name: 'My Profile' })
       },
     },

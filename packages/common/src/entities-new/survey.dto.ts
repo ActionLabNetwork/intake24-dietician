@@ -2,6 +2,8 @@ import { z } from 'zod'
 import { SurveyPreferenceSchema } from './preferences.dto'
 
 export const SurveyFeedbackModuleCreateDtoSchema = z.object({
+  name: z.string(),
+  description: z.string(),
   feedbackModuleId: z.number(),
   isActive: z.boolean(),
   feedbackBelowRecommendedLevel: z.string(),
@@ -12,6 +14,7 @@ export type SurveyFeedbackModuleCreateDto = z.infer<
   typeof SurveyFeedbackModuleCreateDtoSchema
 >
 
+// TODO: No longer needed since it is the same as Create
 export const SurveyFeedbackModuleDtoSchema =
   SurveyFeedbackModuleCreateDtoSchema.extend({
     name: z.string(),
@@ -50,9 +53,8 @@ export const SurveyCreateDtoSchema = z.object({
     }),
   alias: z.string().min(1, 'Alias is required'),
   isActive: z.boolean(),
-  // The survey creation process is multi-step so this can take optional values
-  surveyPreference: SurveyPreferenceSchema.optional(),
-  feedbackModules: SurveyFeedbackModuleCreateDtoSchema.array().optional(),
+  surveyPreference: SurveyPreferenceSchema,
+  feedbackModules: SurveyFeedbackModuleCreateDtoSchema.array(),
 })
 export type SurveyCreateDto = z.infer<typeof SurveyCreateDtoSchema>
 

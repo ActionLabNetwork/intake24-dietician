@@ -38,8 +38,8 @@ export class SurveyService {
       reminderMessage: '',
     }
     return await this.surveyRepository.createSurvey(dieticianId, {
-      surveyPreference: surveyDto.surveyPreference ?? defaultPreference,
       ...surveyDto,
+      surveyPreference: surveyDto.surveyPreference ?? defaultPreference,
       feedbackModules: surveyDto.feedbackModules ?? [],
     })
   }

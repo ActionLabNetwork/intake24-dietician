@@ -72,7 +72,10 @@ import ModuleSelectionAndFeedbackPersonalisation, {
 } from './ModuleSelectionAndFeedbackPersonalisation.vue'
 import { SurveyPreferencesDTO } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { FeedbackModuleDto } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import {
+  SurveyCreateDto,
+  SurveyDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 // const { t } = useI18n<i18nOptions>()
 
@@ -86,12 +89,12 @@ export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
 }
 
 const props = defineProps<{
-  defaultState?: SurveyDto
+  defaultState: Omit<SurveyDto, 'id'>
   submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  update: [value: SurveyDto | undefined]
+  update: [value: SurveyCreateDto | undefined]
 }>()
 
 type CSSClass = string | string[] | object
@@ -151,11 +154,10 @@ const $toast = useToast()
 const feedbackModuleSetup = ref(toRefs(props).defaultState.value)
 
 const theme = ref<Theme>(
-  toRefs(props).defaultState.value?.surveyPreference.theme as Theme,
+  toRefs(props).defaultState.value.surveyPreference.theme as Theme,
 )
 const sendAutomatedFeedback = ref<boolean>(
-  toRefs(props).defaultState.value?.surveyPreference.sendAutomatedFeedback ??
-    false,
+  toRefs(props).defaultState.value.surveyPreference.sendAutomatedFeedback,
 )
 const feedbackMapping = ref<FeedbackMapping>({
   'Meal diary': createFeedbackEntry('Meal diary'),

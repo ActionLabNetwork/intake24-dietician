@@ -1,6 +1,5 @@
 <template>
   <v-container>
-    <pre>{{ formValues }}</pre>
     <div class="mb-5">
       <BackButton class="mb-5" @click="onBackButtonClick" />
       <div class="text heading">Hi {{ authStore.profile?.firstName }},</div>
@@ -128,8 +127,10 @@
                       </template>
                     </div>
                   </div>
+                  <!-- TODO: Make this config driven? -->
                   <div v-if="currentStep === 3 && handleSubmit">
                     <FeedbackModules
+                      :default-state="formValues"
                       :submit="async () => {}"
                       @update="handleFeedbackModulesUpdate"
                     />
@@ -219,7 +220,6 @@ import BaseDialog from '../common/BaseDialog.vue'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
-  SurveyDto,
   countryCodes,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { validateWithZod } from '@intake24-dietician/portal/validators'
@@ -238,7 +238,7 @@ type Step = {
   heading: string
   subheading: string
   title: string
-  subSteps: Substep[]
+  subSteps?: Substep[]
   prev?: {
     label: string
     action: () => void
@@ -295,16 +295,16 @@ const copyToClipboard = (val: string) => {
   navigator.clipboard.writeText(val)
 }
 const props = defineProps<{
-  defaultState: Omit<SurveyCreateDto, 'surveyPreference'>
+  defaultState: SurveyCreateDto
   handleSubmit?: () => Promise<unknown>
 }>()
 
-const formValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+const formValues = ref<SurveyCreateDto>({
   ...props.defaultState,
 })
 
 const emit = defineEmits<{
-  update: [value: Omit<SurveyCreateDto, 'surveyPreference'>]
+  update: [value: SurveyCreateDto]
 }>()
 
 const currentStep = ref(1)
@@ -314,11 +314,12 @@ const dialogTitle = ref('')
 const dialogDescription = ref('')
 const dialogCancelText = ref('Cancel')
 
-const handleFeedbackModulesUpdate = (value: SurveyDto | undefined) => {
+const handleFeedbackModulesUpdate = (value: SurveyCreateDto | undefined) => {
   if (!formValues.value || !value) {
     return
   }
   formValues.value = { ...formValues.value, ...value }
+  emit('update', { ...formValues.value })
 }
 
 const handleBackConfirm = () => {
@@ -575,21 +576,6 @@ const steps: Step[] = [
     subheading:
       'Personalise your patient experience by choosing a visual theme, select and tailor feedback templates to suit your preferences and set a default recall frequency to gather timely recall data from your patients.',
     title: 'Clinic setup',
-
-    subSteps: [
-      {
-        stepName: 'Feedback template setup',
-        description:
-          'Choose a visual theme, select feedback templates, and compose default messages',
-        fields: [],
-      },
-      {
-        stepName: 'Recall reminder setup',
-        description:
-          'Set up how you want to send recall reminders to your patients through email',
-        fields: [],
-      },
-    ],
     prev: {
       label: 'Go Back',
       action: () => {
@@ -615,7 +601,10 @@ const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
 }
 
 const isNextdisabled = computed(() => {
-  const currentStepFields = steps[currentStep.value - 1]?.subSteps
+  const _currentStep = steps[currentStep.value - 1]
+  if (!_currentStep?.subSteps) return false
+
+  const currentStepFields = _currentStep?.subSteps
     .map(subStep => subStep.fields)
     .flat()
   const isDisabled = currentStepFields?.some(field => {

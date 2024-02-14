@@ -103,7 +103,6 @@ export class DieticianPatientRouter {
       .output(z.void())
       .mutation(async opts => {
         const { id, email, patient } = opts.input
-        console.log({ patient })
         await this.authService.updatePatient(
           opts.ctx.dieticianId,
           id,

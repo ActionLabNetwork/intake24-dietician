@@ -44,7 +44,6 @@ const dialog = ref(props.modelValue)
 const confirmBtn = ref()
 
 const handleConfirm = () => {
-  console.log('Confirming')
   if (props.onConfirm) {
     props.onConfirm()
   }

@@ -1,6 +1,9 @@
 <template>
   <v-container>
     <div class="wrapper">
+      <pre>
+        {{ surveyQuery.data }}
+      </pre>
       <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
         <BackButton class="mb-5" />
         <div
@@ -130,6 +133,7 @@ const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   intake24Secret: '',
   alias: '',
   isActive: true,
+  feedbackModules: [],
 })
 
 const handleSurveyConfigUpdate = (
@@ -180,7 +184,9 @@ const formHasChanged = computed(() => {
   )
 })
 
-const handleFeedbackModulesUpdate = (value: SurveyDto | undefined) => {
+const handleFeedbackModulesUpdate = (
+  value: Omit<SurveyDto, 'id'> | undefined,
+) => {
   if (!formData.value || !value) {
     return
   }
@@ -230,8 +236,6 @@ const handleSubmit = async (): Promise<void> => {
   }
 
   const { id, ...survey } = formData.value
-  console.log({ surveyConfigFormValues })
-
   updateSurveyMutation.mutate(
     {
       id,
@@ -278,6 +282,7 @@ watch(
       intake24Secret: newSurveyQueryData?.intake24Secret ?? '',
       alias: newSurveyQueryData?.alias ?? '',
       isActive: newSurveyQueryData?.isActive ?? true,
+      feedbackModules: newSurveyQueryData?.feedbackModules ?? [],
     }
 
     // Prefill clinic preferences details

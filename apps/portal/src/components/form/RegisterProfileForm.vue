@@ -136,9 +136,7 @@ const onSubmit = () => {
     async values => {
       emit('submit', values)
     },
-    ({ values, errors, results }) => {
-      console.log({ values, errors, results })
-    },
+    () => {},
   )
 
   return { showConfirmDialog, submit }

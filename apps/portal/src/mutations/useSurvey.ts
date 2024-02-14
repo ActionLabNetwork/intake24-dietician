@@ -5,9 +5,7 @@ import { useClientStore } from '../trpc/trpc'
 export const useAddSurvey = () => {
   const { authenticatedClient } = useClientStore()
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: {
-      survey: Omit<SurveyCreateDto, 'surveyPreference'>
-    }) => {
+    mutationFn: (body: { survey: SurveyCreateDto }) => {
       return authenticatedClient.dieticianSurvey.createSurvey.mutate(body)
     },
   })

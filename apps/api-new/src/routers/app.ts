@@ -6,6 +6,7 @@ import { DieticianProfileRouter } from './dietician/profile'
 import { DieticianSurveyRouter } from './dietician/survey'
 import { DieticianPatientRouter } from './dietician/patient'
 import { DieticianFeedbackRouter } from './dietician/feedback'
+import { DieticianFeedbackModuleRouter } from './dietician/feedback-module'
 
 export const createAppRouter = () =>
   router({
@@ -15,6 +16,9 @@ export const createAppRouter = () =>
     dieticianPatient: container.resolve(DieticianPatientRouter).getRouter(),
     dieticianSurvey: container.resolve(DieticianSurveyRouter).getRouter(),
     dieticianFeedback: container.resolve(DieticianFeedbackRouter).getRouter(),
+    dieticianFeedbackModule: container
+      .resolve(DieticianFeedbackModuleRouter)
+      .getRouter(),
   })
 
 export type AppRouter = ReturnType<typeof createAppRouter>

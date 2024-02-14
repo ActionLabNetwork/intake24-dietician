@@ -2,7 +2,7 @@
   <v-main class="wrapper">
     <v-container>
       <SteppedSurveyConfiguration
-        v-if="secretsGenerated"
+        v-if="renderChild"
         :default-state="surveyConfigFormValues"
         :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 
 // import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import SteppedSurveyConfiguration from '@intake24-dietician/portal/components/surveys/SteppedSurveyConfiguration.vue'
@@ -40,6 +40,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
+import { useFeedbackModules } from '@intake24-dietician/portal/queries/UseFeedbackModule'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
@@ -47,12 +48,13 @@ const $toast = useToast()
 const clinicStore = useClinicStore()
 
 const queryClient = useQueryClient()
+const feedbackModulesQuery = useFeedbackModules()
 const surveySecretMutation = useGenerateSurveySecret()
 const surveyUUIDMutation = useGenerateSurveyUUID()
 const addSurveyMutation = useAddSurvey()
 
-const secretsGenerated = ref(false)
-const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+const renderChild = ref(false)
+const surveyConfigFormValues = ref<SurveyCreateDto>({
   surveyName: '',
   intake24Host: 'https://myfoodswaps.com/api/recall/alias',
   intake24AdminBaseUrl: 'https://admin.intake24.dev',
@@ -61,11 +63,24 @@ const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
   intake24Secret: '',
   alias: '',
   isActive: true,
+  surveyPreference: {
+    theme: 'Classic',
+    reminderCondition: {
+      reminderEvery: {
+        every: 5,
+        unit: 'days',
+      },
+      reminderEnds: { type: 'never' },
+    },
+    reminderMessage: '',
+    sendAutomatedFeedback: true,
+    notifySMS: false,
+    notifyEmail: true,
+  },
+  feedbackModules: [],
 })
 
-const handleSurveyConfigUpdate = (
-  values: Omit<SurveyCreateDto, 'surveyPreference'>,
-) => {
+const handleSurveyConfigUpdate = (values: SurveyCreateDto) => {
   surveyConfigFormValues.value = values
 }
 
@@ -106,16 +121,31 @@ const handleSubmit = async () => {
   })
 }
 
-onMounted(async () => {
-  const alias = await surveyUUIDMutation.mutateAsync()
-  surveyConfigFormValues.value = {
-    ...surveyConfigFormValues.value,
-    intake24Host: `https://myfoodswaps.com/api/recall/${alias}`,
-    intake24Secret: await surveySecretMutation.mutateAsync(),
-    alias: alias,
-  }
-  secretsGenerated.value = true
-})
+watch(
+  () => feedbackModulesQuery.data.value,
+  async newFeedbackModules => {
+    if (!newFeedbackModules) return
+
+    const alias = await surveyUUIDMutation.mutateAsync()
+    surveyConfigFormValues.value = {
+      ...surveyConfigFormValues.value,
+      intake24Host: `https://myfoodswaps.com/api/recall/${alias}`,
+      intake24Secret: await surveySecretMutation.mutateAsync(),
+      alias: alias,
+      feedbackModules:
+        newFeedbackModules.map(module => ({
+          feedbackModuleId: module.id,
+          name: module.name,
+          description: module.description,
+          isActive: true,
+          feedbackAboveRecommendedLevel: '',
+          feedbackBelowRecommendedLevel: '',
+        })) ?? [],
+    }
+    renderChild.value = true
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">
