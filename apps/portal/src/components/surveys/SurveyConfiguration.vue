@@ -124,12 +124,15 @@ const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   emit('update', { ...formValues.value })
 }
 
-const handleDialogConfirm = () => {
-  if (window.history.length > 1) {
-    window.history.back()
-  } else {
-    clinicStore.navigateToSurveyPatientList()
-  }
+const handleDialogConfirm = (): Promise<void> => {
+  return new Promise(resolve => {
+    if (window.history.length > 1) {
+      window.history.back()
+    } else {
+      clinicStore.navigateToSurveyPatientList()
+    }
+    resolve()
+  })
 }
 
 const formSurveyConfig: Form<FormField> = {

@@ -128,7 +128,7 @@
                     </div>
                   </div>
                   <!-- TODO: Make this config driven? -->
-                  <div v-if="currentStep === 3 && handleSubmit">
+                  <div v-if="currentStep === 3">
                     <FeedbackModules
                       :default-state="formValues"
                       :submit="async () => {}"
@@ -296,7 +296,7 @@ const copyToClipboard = (val: string) => {
 }
 const props = defineProps<{
   defaultState: SurveyCreateDto
-  handleSubmit?: () => Promise<unknown>
+  handleSubmit: () => Promise<void>
 }>()
 
 const formValues = ref<SurveyCreateDto>({
@@ -309,7 +309,7 @@ const emit = defineEmits<{
 
 const currentStep = ref(1)
 const isDialogActive = ref(false)
-const onDialogConfirm = ref<() => void>()
+const onDialogConfirm = ref<() => Promise<void>>()
 const dialogTitle = ref('')
 const dialogDescription = ref('')
 const dialogCancelText = ref('Cancel')
@@ -341,14 +341,17 @@ const handleRecallRemindersUpdate = (value: {
   emit('update', { ...formValues.value })
 }
 
-const handleBackConfirm = () => {
-  if (window.history.length > 1) {
-    window.history.back()
-  }
+const handleBackConfirm = (): Promise<void> => {
+  return new Promise(resolve => {
+    if (window.history.length > 1) {
+      window.history.back()
+    }
+    resolve()
+  })
 }
 
-const handleFormSubmitConfirm = () => {
-  props.handleSubmit?.()
+const handleFormSubmitConfirm = async () => {
+  await props.handleSubmit()
 }
 
 const onBackButtonClick = () => {

@@ -27,9 +27,12 @@ const dialog = {
   close: () => {
     dialogVisible.value = false
   },
-  handleDialogConfirm: () => {
-    leaveGuard.switchOffGuard()
-    router.push(leaveGuard.destinationRoute.value)
+  handleDialogConfirm: (): Promise<void> => {
+    return new Promise(resolve => {
+      leaveGuard.switchOffGuard()
+      router.push(leaveGuard.destinationRoute.value)
+      resolve()
+    })
   },
   handleDialogCancel: () => {
     dialog.close()

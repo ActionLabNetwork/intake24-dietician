@@ -16,6 +16,7 @@
           v-if="onConfirm"
           ref="confirmBtn"
           variant="flat"
+          :loading="isLoading"
           @click="handleConfirm"
         >
           Confirm
@@ -31,7 +32,7 @@ import BaseButton from './BaseButton.vue'
 
 const props = defineProps<{
   modelValue: boolean
-  onConfirm?: Function
+  onConfirm?: () => Promise<void>
   onCancel?: Function
   onCancelText?: string
 }>()
@@ -41,13 +42,18 @@ const emit = defineEmits<{
 
 // eslint-disable-next-line vue/no-setup-props-destructure
 const dialog = ref(props.modelValue)
+const isLoading = ref(false)
 const confirmBtn = ref()
 
-const handleConfirm = () => {
+const handleConfirm = async () => {
   if (props.onConfirm) {
-    props.onConfirm()
+    isLoading.value = true
+    await props.onConfirm()
+    isLoading.value = false
   }
-  closeDialog()
+  if (!isLoading.value) {
+    closeDialog()
+  }
 }
 
 const handleCancel = () => {

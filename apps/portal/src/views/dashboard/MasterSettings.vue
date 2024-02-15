@@ -1,9 +1,6 @@
 <template>
   <v-container>
     <div class="wrapper">
-      <pre>
-        {{ surveyQuery.data }}
-      </pre>
       <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
         <BackButton class="mb-5" />
         <div

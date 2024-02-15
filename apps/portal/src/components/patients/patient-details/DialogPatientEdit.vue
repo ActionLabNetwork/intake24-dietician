@@ -15,7 +15,7 @@ import { ref, watch, onMounted } from 'vue'
 const props = defineProps<{
   fullName: string
   modelValue: boolean
-  onConfirm: Function
+  onConfirm: () => Promise<void>
 }>()
 const emits = defineEmits<{
   'update:modelValue': [value: boolean]

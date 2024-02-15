@@ -150,7 +150,7 @@ const onSubmit = () => {
   }
 
   const submit = handleSubmit(
-    async values => {
+    values => {
       if (!currentFormData.value) return
 
       updateProfileMutation.mutate(

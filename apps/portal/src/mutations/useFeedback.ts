@@ -4,11 +4,12 @@ import { useClientStore } from '../trpc/trpc'
 
 export const useSaveDraft = () => {
   const { authenticatedClient } = useClientStore()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: { patientId: number; draft: DraftCreateDto }) => {
-      return authenticatedClient.dieticianFeedback.saveDraft.mutate(body)
-    },
-  })
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (body: { patientId: number; draft: DraftCreateDto }) => {
+        return authenticatedClient.dieticianFeedback.saveDraft.mutate(body)
+      },
+    })
 
   return {
     data,
@@ -17,20 +18,22 @@ export const useSaveDraft = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 
 export const useEditDraft = () => {
   const { authenticatedClient } = useClientStore()
   const queryClient = useQueryClient()
-  const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: { draftId: number; draft: DraftCreateDto }) => {
-      return authenticatedClient.dieticianFeedback.editDraft.mutate(body)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['drafts'] })
-    },
-  })
+  const { data, isPending, isError, error, isSuccess, mutate, mutateAsync } =
+    useMutation({
+      mutationFn: (body: { draftId: number; draft: DraftCreateDto }) => {
+        return authenticatedClient.dieticianFeedback.editDraft.mutate(body)
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['drafts'] })
+      },
+    })
 
   return {
     data,
@@ -39,6 +42,7 @@ export const useEditDraft = () => {
     error,
     isSuccess,
     mutate,
+    mutateAsync,
   }
 }
 

@@ -25,7 +25,6 @@ import {
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import router from '@intake24-dietician/portal/router'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
@@ -76,14 +75,14 @@ const handleSurveyConfigUpdate = (values: SurveyCreateDto) => {
   surveyConfigFormValues.value = values
 }
 
-const handleSubmit = async () => {
+const handleSubmit = (): Promise<void> => {
   return new Promise((resolve, reject) => {
     // Validate with zod
     const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
+      reject(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
       return
     }
 
@@ -94,14 +93,12 @@ const handleSubmit = async () => {
           $toast.success('Survey added to records')
           await queryClient.invalidateQueries({ queryKey: ['surveys'] })
           clinicStore.switchCurrentClinic(surveyId)
-          resolve('Survey added to records')
-          router.push({
-            name: 'Survey Master Settings',
-            params: { surveyId },
-          })
+          resolve()
+          clinicStore.navigateToSurveyPatientList()
         },
         onError: () => {
           $toast.error(DEFAULT_ERROR_MESSAGE)
+          reject(DEFAULT_ERROR_MESSAGE)
         },
       },
     )
