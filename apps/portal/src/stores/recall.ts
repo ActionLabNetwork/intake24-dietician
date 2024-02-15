@@ -9,9 +9,11 @@ import { useRoute } from 'vue-router'
 import moment from 'moment'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { generatePastelPalette } from '../utils/colors'
+import { useClinicStore } from './clinic'
 
 export const useRecallStore = defineStore('recalls', () => {
   const route = useRoute()
+  const clinicStore = useClinicStore()
 
   const patientId = ref('')
   const recallIds = ref<number[]>([])
@@ -42,14 +44,17 @@ export const useRecallStore = defineStore('recalls', () => {
     return (
       selectedRecallDateRange.value &&
       selectedRecallDateRange.value[0] &&
-      selectedRecallDateRange.value[1]
+      selectedRecallDateRange.value[1] &&
+      selectedRecallDateRange.value[0] !== selectedRecallDateRange.value[1]
     )
   })
   const colorPalette = computed(() => {
     if (!recallsGroupedByMeals.value) return []
+
     return generatePastelPalette(
       recallsGroupedByMeals.value.meals.length + 1,
       recallsGroupedByMeals.value.meals.map(meal => meal.hours),
+      clinicStore.currentClinic?.surveyPreference.theme === 'Fun' ? 0.7 : 0.2,
     )
   })
 

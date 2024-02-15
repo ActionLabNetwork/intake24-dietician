@@ -1,6 +1,8 @@
 import { z } from 'zod'
 import { SurveyPreferenceSchema } from './preferences.dto'
+import { moduleNames } from '../types/modules'
 
+// TODO: Remove name, description, nutrientTypes from here as it should be derived from the created feedback modules
 export const SurveyFeedbackModuleCreateDtoSchema = z.object({
   name: z.string(),
   description: z.string(),
@@ -8,6 +10,16 @@ export const SurveyFeedbackModuleCreateDtoSchema = z.object({
   isActive: z.boolean(),
   feedbackBelowRecommendedLevel: z.string(),
   feedbackAboveRecommendedLevel: z.string(),
+  nutrientTypes: z.array(
+    z.object({
+      id: z.number(),
+      description: z.string(),
+      unit: z.object({
+        description: z.string(),
+        symbol: z.string().nullable(),
+      }),
+    }),
+  ),
 })
 
 export type SurveyFeedbackModuleCreateDto = z.infer<
@@ -17,8 +29,18 @@ export type SurveyFeedbackModuleCreateDto = z.infer<
 // TODO: No longer needed since it is the same as Create
 export const SurveyFeedbackModuleDtoSchema =
   SurveyFeedbackModuleCreateDtoSchema.extend({
-    name: z.string(),
+    name: z.enum(moduleNames),
     description: z.string(),
+    nutrientTypes: z.array(
+      z.object({
+        id: z.number(),
+        description: z.string(),
+        unit: z.object({
+          description: z.string(),
+          symbol: z.string().nullable(),
+        }),
+      }),
+    ),
   })
 
 export type SurveyFeedbackModuleDto = z.infer<
@@ -67,7 +89,6 @@ export const SurveyDtoSchema = SurveyCreateDtoSchema.extend({
 export type SurveyDto = z.infer<typeof SurveyDtoSchema>
 
 export const SurveyPlainDtoSchema = SurveyDtoSchema.omit({
-  surveyPreference: true,
   feedbackModules: true,
 })
 

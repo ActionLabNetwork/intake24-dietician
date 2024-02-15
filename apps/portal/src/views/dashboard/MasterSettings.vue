@@ -2,13 +2,17 @@
   <v-container>
     <div class="wrapper">
       <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+        <!-- <pre>{{ values }}</pre>
+        <br /><br />
+        <pre>{{ formData }}</pre>
+        <br /><br /> -->
         <BackButton class="mb-5" />
         <div
           class="d-flex flex-column flex-sm-row justify-space-between align-center"
         >
           <div>
             <h1 class="text heading">
-              Master setup for {{ clinicStore.currentClinic?.surveyName }}
+              Clinic setup for {{ clinicStore.currentClinic?.surveyName }}
             </h1>
             <h3 class="text subheading">
               Personalise your patient experience by choosing a visual theme,
@@ -43,12 +47,6 @@
           </div>
         </div>
         <v-divider class="my-10" />
-        <SurveyConfiguration
-          :default-state="surveyConfigFormValues"
-          mode="Edit"
-          :handle-submit="handleSubmit"
-          @update="handleSurveyConfigUpdate"
-        />
         <FeedbackModules
           :default-state="surveyQuery.data.value"
           :submit="handleSubmit"
@@ -90,7 +88,6 @@
 import FeedbackModules from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
 import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
-import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -104,11 +101,12 @@ import 'vue-toast-notification/dist/theme-sugar.css'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 import {
-  SurveyCreateDto,
   SurveyDto,
+  SurveyDtoSchema,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
+import { useForm } from 'vee-validate'
 
 const clinicStore = useClinicStore()
 
@@ -118,10 +116,13 @@ const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const updateSurveyMutation = useUpdateSurvey()
 const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
+const { values, resetForm } = useForm({ validationSchema: SurveyDtoSchema })
+
 const initialFormData = ref<SurveyDto>()
 const formData = ref<SurveyDto>()
 
-const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+const surveyConfigFormValues = ref<Omit<SurveyDto, 'surveyPreference'>>({
+  id: 0,
   surveyName: '',
   intake24Host: '',
   intake24AdminBaseUrl: '',
@@ -134,7 +135,7 @@ const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
 })
 
 const handleSurveyConfigUpdate = (
-  values: Omit<SurveyCreateDto, 'surveyPreference'>,
+  values: Omit<SurveyDto, 'surveyPreference'>,
 ) => {
   surveyConfigFormValues.value = values
 }
@@ -181,9 +182,7 @@ const formHasChanged = computed(() => {
   )
 })
 
-const handleFeedbackModulesUpdate = (
-  value: Omit<SurveyDto, 'id'> | undefined,
-) => {
+const handleFeedbackModulesUpdate = (value: SurveyDto) => {
   if (!formData.value || !value) {
     return
   }
@@ -238,7 +237,7 @@ const handleSubmit = async (): Promise<void> => {
       id,
       survey: {
         ...survey,
-        ...surveyConfigFormValues.value,
+        ...values,
       },
     },
     {
@@ -252,7 +251,7 @@ const handleSubmit = async (): Promise<void> => {
     { id, survey },
     {
       onSuccess: () => {
-        $toast.success(`Survey preferences with ID ${id} updated`)
+        $toast.success('Clinic preferences have been updated')
         initialFormData.value = formData.value
       },
       onError: () => {
@@ -271,6 +270,7 @@ watch(
 
     // Prefill clinic details
     surveyConfigFormValues.value = {
+      id: newSurveyQueryData?.id ?? 0,
       surveyName: newSurveyQueryData?.surveyName ?? '',
       intake24Host: newSurveyQueryData?.intake24Host ?? '',
       intake24AdminBaseUrl: newSurveyQueryData?.intake24AdminBaseUrl ?? '',

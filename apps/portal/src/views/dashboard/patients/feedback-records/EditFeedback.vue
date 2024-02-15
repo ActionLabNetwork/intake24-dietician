@@ -108,6 +108,8 @@ import CarbsExchangeModule from '@intake24-dietician/portal/components/feedback-
 import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/energy-intake/EnergyIntakeModule.vue'
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -119,7 +121,6 @@ import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
@@ -176,6 +177,12 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
     'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
+    'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
+    'Saturated fat intake': {
+      component: markRaw(SugarIntakeModule),
+      feedback: '',
+    },
+    'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -204,6 +211,24 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Water intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Sugar intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Saturated fat intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Calcium intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',

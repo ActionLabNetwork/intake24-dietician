@@ -11,6 +11,7 @@ import { timestampFields } from './model.common'
 import { surveys } from './survey.model'
 import { typedJsonbFromSchema } from './modelUtils'
 import { FeedbackLevelRootSchema } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { nutrientTypes } from './nutrient.model'
 
 export const feedbackModules = pgTable('feedback-module', {
   id: serial('id').primaryKey(),
@@ -23,6 +24,7 @@ export const feedbackModulesRelations = relations(
   feedbackModules,
   ({ many }) => ({
     surveyToFeedbackModules: many(surveyToFeedbackModules),
+    nutrientTypes: many(feedbackModuleToNutrientTypes),
   }),
 )
 
@@ -61,6 +63,34 @@ export const surveyPreferencesFeedbackModulesRelations = relations(
     feedbackModule: one(feedbackModules, {
       fields: [surveyToFeedbackModules.feedbackModuleId],
       references: [feedbackModules.id],
+    }),
+  }),
+)
+
+export const feedbackModuleToNutrientTypes = pgTable(
+  'feedback_module_nutrient_types',
+  {
+    id: serial('id').primaryKey(),
+    feedbackModuleId: integer('feedback_module_id')
+      .notNull()
+      .references(() => feedbackModules.id),
+    nutrientTypeId: integer('nutrient_type_id')
+      .notNull()
+      .references(() => nutrientTypes.id),
+    ...timestampFields,
+  },
+)
+
+export const feedbackModuleToNutrientTypesRelations = relations(
+  feedbackModuleToNutrientTypes,
+  ({ one }) => ({
+    feedbackModule: one(feedbackModules, {
+      fields: [feedbackModuleToNutrientTypes.feedbackModuleId],
+      references: [feedbackModules.id],
+    }),
+    nutrientType: one(nutrientTypes, {
+      fields: [feedbackModuleToNutrientTypes.nutrientTypeId],
+      references: [nutrientTypes.id],
     }),
   }),
 )

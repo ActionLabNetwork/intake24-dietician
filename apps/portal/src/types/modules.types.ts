@@ -3,7 +3,7 @@ import {
   modules,
   moduleRoutes,
   moduleNames,
-} from '@intake24-dietician/common/types/modules'
+} from '@intake24-dietician/common/src/types/modules'
 
 export interface FeedbackModulesProps {
   feedback: string
@@ -19,6 +19,18 @@ export type ModuleName = (typeof moduleNames)[number]
 export type ModuleRoute = (typeof moduleRoutes)[number]
 export type ComponentMapping = Record<ModuleRoute, Component>
 
+export type FeedbackAboveAndBelowRecommendedLevels = {
+  component: Component
+  name: string
+  feedbackAbove: string
+  feedbackBelow: string
+  isActive: boolean
+  nutrientTypes?: {
+    description: string
+    unit: { description: string; symbol: string | null }
+  }[]
+}
+
 export type ComponentMappingWithFeedback = Record<
   ModuleRoute,
   { component: Component; feedback: string }
@@ -26,13 +38,7 @@ export type ComponentMappingWithFeedback = Record<
 
 export type ComponentMappingWithFeedbackAboveAndBelowRecommendedLevels = Record<
   ModuleRoute,
-  {
-    component: Component
-    name: string
-    feedbackAbove: string
-    feedbackBelow: string
-    isActive: boolean
-  }
+  FeedbackAboveAndBelowRecommendedLevels
 >
 
 export type ModuleNameToComponentMappingWithFeedback = Record<
@@ -41,13 +47,4 @@ export type ModuleNameToComponentMappingWithFeedback = Record<
 >
 
 export type ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels =
-  Record<
-    ModuleName,
-    {
-      component: Component
-      name: string
-      feedbackAbove: string
-      feedbackBelow: string
-      isActive: boolean
-    }
-  >
+  Record<ModuleName, FeedbackAboveAndBelowRecommendedLevels>

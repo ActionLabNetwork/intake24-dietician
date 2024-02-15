@@ -24,8 +24,8 @@
   <v-window v-model="activeTab" class="content pt-10">
     <v-window-item v-for="tab in tabs" :key="tab.name" :value="tab.value">
       <component
-        :is="tabs[activeTab]!.component"
-        v-bind="tabs[activeTab]!.props"
+        :is="tabs[activeTab]?.component"
+        v-bind="tabs[activeTab]?.props"
       ></component>
     </v-window-item>
   </v-window>

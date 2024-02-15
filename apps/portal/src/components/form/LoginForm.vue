@@ -57,12 +57,12 @@
             </div>
           </div>
           <v-btn
+            id="login-form-submit"
             class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0 text-white"
             color="#EE672D"
             size="large"
             variant="flat"
             type="submit"
-            :disabled="!meta.valid || meta.pending"
             :loading="loginMutation.isPending.value"
           >
             {{ t('login.form.login') }}

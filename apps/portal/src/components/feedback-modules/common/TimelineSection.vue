@@ -1,17 +1,26 @@
 <template>
-  <BarChart :data="data" />
+  <BarChart :data="data" :unit-of-measure="unitOfMeasure" />
 </template>
 
 <script setup lang="ts">
 import BarChart from '@/components/feedback-modules/common/BarChart.vue'
 import { computed } from 'vue'
-import { FibreIntakeProps } from './FibreIntakeCard.vue'
+import { MealCardProps } from '../types'
 import chroma from 'chroma-js'
 
 const props = defineProps<{
-  meals: Record<string, Omit<FibreIntakeProps, 'colors'>>
+  meals: Record<string, Omit<MealCardProps, 'colors'>>
   recallsCount: number
   colors: string[]
+  unitOfMeasure:
+    | {
+        description: string
+        unit: {
+          symbol: string | null
+          description: string
+        }
+      }
+    | undefined
 }>()
 
 const data = computed(() => {

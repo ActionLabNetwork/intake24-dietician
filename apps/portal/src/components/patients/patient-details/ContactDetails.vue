@@ -6,7 +6,7 @@
         <!-- Medium viewport and up -->
         <div v-if="mdAndUp">
           <v-row dense justify="center" align="center">
-            <v-col class="v-col-2" align="center">
+            <v-col class="v-col-3" align="center">
               <div class="d-flex flex-column">
                 <ImageUpload
                   :default-state="defaultState.avatar || ''"

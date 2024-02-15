@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="Logo"
+      :logo="{ path: themeConfig.logo }"
       title="Water intake"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -100,6 +100,9 @@ import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schem
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { usePrecision } from '@vueuse/math'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
+import { useRoute } from 'vue-router'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -112,6 +115,10 @@ const emit = defineEmits<{
   'update:feedback': [feedback: string]
 }>()
 
+const route = useRoute()
+const { themeConfig } = useThemeSelector('Water intake')
+
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
@@ -143,12 +150,18 @@ const getColor = (number: number, target: number) => {
 const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Water intake',
+  )
+})
 
 const calculateMealWaterContent = (meal: RecallMeal, recallsCount = 1) => {
   const mealWaterContent = usePrecision(
     calculateMealNutrientsExchange(
       meal,
-      NUTRIENTS_WATER_INTAKE_ID,
+      module.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_WATER_INTAKE_ID,
       recallsCount,
     ),
     2,

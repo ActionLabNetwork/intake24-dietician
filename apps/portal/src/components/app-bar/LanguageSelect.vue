@@ -1,10 +1,9 @@
 <template>
   <!-- Language selection dropdown -->
   <v-select
+    v-model="selectedLanguage"
     label="Language"
     :items="_languages"
-    :model-value="selectedLanguage"
-    @update:model-value="newVal => (selectedLanguage = newVal)"
   ></v-select>
 </template>
 

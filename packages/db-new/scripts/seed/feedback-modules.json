@@ -1,22 +1,42 @@
 [
   {
     "id": 1,
-    "name": "Meal diary"
+    "name": "Meal diary",
+    "nutrientTypes": [13, 1, 17, 8, 229, 50, 140]
   },
   {
     "id": 2,
-    "name": "Carbs exchange"
+    "name": "Carbs exchange",
+    "nutrientTypes": [13, 159, 166, 170]
   },
   {
     "id": 3,
-    "name": "Energy intake"
+    "name": "Energy intake",
+    "nutrientTypes": [1, 2]
   },
   {
     "id": 4,
-    "name": "Fibre intake"
+    "name": "Fibre intake",
+    "nutrientTypes": [17, 15, 16, 18, 19, 45, 46]
   },
   {
     "id": 5,
-    "name": "Water intake"
+    "name": "Water intake",
+    "nutrientTypes": [8]
+  },
+  {
+    "id": 6,
+    "name": "Sugar intake",
+    "nutrientTypes": [229, 1]
+  },
+  {
+    "id": 7,
+    "name": "Saturated fat intake",
+    "nutrientTypes": [50]
+  },
+  {
+    "id": 8,
+    "name": "Calcium intake",
+    "nutrientTypes": [140]
   }
 ]

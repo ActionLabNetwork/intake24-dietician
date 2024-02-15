@@ -8,10 +8,10 @@
         <v-row dense justify="center" align="center">
           <v-textarea
             v-model="value"
+            clearable
             name="shortBio"
             :label="t('profile.form.shortBio.placeholder')"
             :error-messages="errorMessage"
-            append-inner-icon="mdi-restore"
             variant="solo-filled"
           ></v-textarea>
         </v-row>

@@ -3,10 +3,10 @@ import chroma from 'chroma-js'
 export function generatePastelPalette(
   numColors: number,
   mealHours: number[],
+  baseSaturation = 0.6,
 ): string[] {
   const palette: { hue: number; hex: string }[] = []
   const baseLightness = 0.9
-  const baseSaturation = 0.5
   const contrastRatioThreshold = 4.5
 
   for (let i = 0; i < numColors; i++) {

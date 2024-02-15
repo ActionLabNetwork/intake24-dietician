@@ -1,7 +1,7 @@
 import { inject, singleton } from 'tsyringe'
 import { z } from 'zod'
 import { protectedDieticianProcedure, router } from '../../trpc'
-import { FeedbackModuleDtoSchema } from '@intake24-dietician/common/entities-new/feedback-module.dto'
+import { FeedbackModuleWithNutrientTypesDtoSchema } from '@intake24-dietician/common/entities-new/feedback-module.dto'
 import { FeedbackModuleService } from '../../services/feedback-module.service'
 
 @singleton()
@@ -17,7 +17,7 @@ export class DieticianFeedbackModuleRouter {
         },
       })
       .input(z.void())
-      .output(z.array(FeedbackModuleDtoSchema))
+      .output(z.array(FeedbackModuleWithNutrientTypesDtoSchema))
       .query(async () => {
         return await this.feedbackModuleService.getAllFeedbackModules()
       }),

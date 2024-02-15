@@ -29,6 +29,7 @@
     </v-list>
   </v-navigation-drawer>
 </template>
+
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import BasePreferences from '../common/BasePreferences.vue'

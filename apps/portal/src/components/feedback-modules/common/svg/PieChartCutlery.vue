@@ -1,10 +1,10 @@
 <template>
   <div class="container">
-    <div class="inner-container">
+    <div class="inner-container w-full">
       <div class="pie-chart"><slot></slot></div>
       <svg
-        :width="xlAndUp ? '600px' : '400px'"
-        height="500px"
+        :width="xlAndUp ? '400px' : '400px'"
+        height="300px"
         viewBox="0 0 487 331"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -123,10 +123,11 @@ const { xlAndUp } = useDisplay()
   position: relative;
 
   & > .pie-chart {
+    transform: translateX(-16.5%);
     position: absolute;
-    top: 11.5%;
-    left: 25%;
-    width: 50%;
+    left: 0%;
+    top: 0%;
+    width: 150%;
     height: 75%;
     z-index: 999;
   }

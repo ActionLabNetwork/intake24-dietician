@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-container>
+    <v-container fluid class="px-10">
       <div class="d-print-none">
         <BackButton
           v-if="!previewing"
@@ -101,6 +101,9 @@ import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-m
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import MealDiaryModule from '@intake24-dietician/portal/components/feedback-modules/standard/meal-diary/MealDiaryModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
+import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
+import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -109,8 +112,6 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { nextTick } from 'vue'
-// import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables
@@ -153,6 +154,12 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Energy intake': { component: markRaw(EnergyIntakeModule), feedback: '' },
     'Fibre intake': { component: markRaw(FibreIntakeModule), feedback: '' },
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
+    'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
+    'Saturated fat intake': {
+      component: markRaw(SaturatedFatIntakeModule),
+      feedback: '',
+    },
+    'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
   })
 
 const allModules = ref<
@@ -271,17 +278,6 @@ const handlePreviewButtonClick = () => {
   })
   previewing.value = !previewing.value
 }
-
-watch(
-  () => route.query['preview'],
-  newPreviewValue => {
-    if (newPreviewValue === 'true') {
-      nextTick(() => {
-        // window.print()
-      })
-    }
-  },
-)
 </script>
 
 <style scoped lang="scss">

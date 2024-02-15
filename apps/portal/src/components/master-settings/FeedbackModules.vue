@@ -16,7 +16,7 @@
                       <div
                         :class="
                           fieldConfig.heading.class ||
-                          'text section-heading-2 pl-0 pl-sm-5'
+                          'text section-heading-2 pl-0'
                         "
                       >
                         {{ fieldConfig.heading.label }}
@@ -25,7 +25,7 @@
                         v-if="fieldConfig.subheading"
                         :class="
                           fieldConfig.subheading.class ||
-                          'text section-subheading pl-0 pl-sm-5'
+                          'text section-subheading pl-0'
                         "
                       >
                         {{ fieldConfig.subheading.label }}
@@ -77,6 +77,7 @@ import {
   SurveyDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
+import { moduleNames } from '@intake24-dietician/common/types/modules'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -88,13 +89,18 @@ export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
   })[]
 }
 
+function isSurveyDto(obj: any): obj is SurveyDto {
+  return typeof obj.id === 'number'
+}
+
 const props = defineProps<{
-  defaultState: Omit<SurveyDto, 'id'>
+  defaultState: SurveyCreateDto | SurveyDto
   submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
-  update: [value: SurveyCreateDto | undefined]
+  update: [value: SurveyDto]
+  updateCreate: [value: SurveyCreateDto]
 }>()
 
 type CSSClass = string | string[] | object
@@ -146,12 +152,15 @@ const createFeedbackEntry = (key: ModuleName) => {
     feedbackBelow: feedbackModel.feedbackBelowRecommendedLevel,
     feedbackAbove: feedbackModel.feedbackAboveRecommendedLevel,
     isActive: feedbackModel.isActive,
+    nutrientTypes: feedbackModel.nutrientTypes ?? [],
   }
 }
 
 const $toast = useToast()
 
-const feedbackModuleSetup = ref(toRefs(props).defaultState.value)
+const feedbackModuleSetup = ref<SurveyCreateDto | SurveyDto>(
+  toRefs(props).defaultState.value,
+)
 
 const theme = ref<Theme>(
   toRefs(props).defaultState.value.surveyPreference.theme as Theme,
@@ -165,6 +174,9 @@ const feedbackMapping = ref<FeedbackMapping>({
   'Energy intake': createFeedbackEntry('Energy intake'),
   'Fibre intake': createFeedbackEntry('Fibre intake'),
   'Water intake': createFeedbackEntry('Water intake'),
+  'Sugar intake': createFeedbackEntry('Sugar intake'),
+  'Saturated fat intake': createFeedbackEntry('Saturated fat intake'),
+  'Calcium intake': createFeedbackEntry('Calcium intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {
@@ -205,6 +217,7 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
       if (feedbackModule) {
         acc.push({
           ...feedbackModule,
+          name: updatedModule.name as (typeof moduleNames)[number],
           isActive: updatedModule.isActive,
           feedbackAboveRecommendedLevel: updatedModule.feedbackAbove,
           feedbackBelowRecommendedLevel: updatedModule.feedbackBelow,
@@ -227,20 +240,24 @@ onMounted(() => {
   formConfig = {
     visualThemeSelection: {
       heading: {
-        label: 'Visual theme selection',
+        label: 'Feedback template setup',
         class: 'text section-heading',
+      },
+      subheading: {
+        label:
+          'Choose a visual theme, select feedback templates, and compose default messages.',
       },
       class: 'text section-heading',
       column: 2,
     },
     themeSelector: {
-      heading: { label: 'Select a theme relevant for your patients' },
+      heading: { label: 'Visual theme' },
       subheading: {
         label:
-          'Select a theme that is relevant for your patients in general. You can change the theme specific to a patient from patient information page.',
+          "Select your clinic's default theme. Your selected theme will be applied to the feedback design.",
       },
       component: VisualThemeSelector,
-      componentClass: 'ml-5',
+      componentClass: '',
       props: {
         defaultState: theme.value,
         hideLabel: true,
@@ -253,7 +270,7 @@ onMounted(() => {
     },
     sendAutomatedFeedback: {
       heading: {
-        label: 'Send patient automated feedback after every recall',
+        label: 'Automated feedbacks',
         class: 'text section-heading',
       },
       subheading: {
@@ -273,8 +290,13 @@ onMounted(() => {
     },
     moduleSelectionAndFeedbackPersonalisation: {
       heading: {
-        label: 'Module selection and feedback personalisation',
+        label: '',
         class: 'text section-heading',
+      },
+      subheading: {
+        label:
+          'Select the templates relevant to your practise and customise the default messages as per your preference.  ',
+        class: 'font-weight-medium',
       },
       component: ModuleSelectionAndFeedbackPersonalisation,
       column: 1,
@@ -287,7 +309,11 @@ onMounted(() => {
 })
 
 watch(feedbackModuleSetup, formData => {
-  emit('update', formData)
+  if (isSurveyDto(formData)) {
+    emit('update', formData)
+  } else {
+    emit('updateCreate', formData)
+  }
 })
 
 // Helpers

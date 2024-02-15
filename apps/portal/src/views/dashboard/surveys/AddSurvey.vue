@@ -31,7 +31,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
-import { useFeedbackModules } from '@intake24-dietician/portal/queries/UseFeedbackModule'
+import { useFeedbackModules } from '@intake24-dietician/portal/queries/useFeedbackModule'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
@@ -124,6 +124,14 @@ watch(
           isActive: true,
           feedbackAboveRecommendedLevel: '',
           feedbackBelowRecommendedLevel: '',
+          nutrientTypes: module.nutrientTypes.map(nutrient => ({
+            id: nutrient.id,
+            description: '',
+            unit: {
+              description: '',
+              symbol: '',
+            },
+          })),
         })) ?? [],
     }
     renderChild.value = true
@@ -174,3 +182,4 @@ watch(
   }
 }
 </style>
+@intake24-dietician/portal/queries/useFeedbackModule

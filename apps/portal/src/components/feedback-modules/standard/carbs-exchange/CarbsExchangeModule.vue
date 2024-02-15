@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="Logo"
+      :logo="{ path: themeConfig.logo }"
       title="Carbs Exchange"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -30,7 +30,7 @@
             :label="meal.label"
             :colors="getColours(colorPalette[index]!)"
             :foods="meal.foods"
-            :mascot="Mascot"
+            :mascot="mascot"
             :mean="meal.mean"
           />
         </div>
@@ -58,6 +58,7 @@
 import { usePrecision } from '@vueuse/math'
 import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
+import MascotAdult from './svg/MascotAdult.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
@@ -83,6 +84,9 @@ import {
   calculateMealNutrientsExchange,
   calculateFoodNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useRoute } from 'vue-router'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -94,7 +98,11 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
+const route = useRoute()
+const { themeConfig } = useThemeSelector('Carbs exchange')
+
 const recallStore = useRecallStore()
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
 const isError = computed(() =>
   props.useSampleRecall
@@ -108,6 +116,17 @@ const isPending = computed(() =>
 )
 
 // Refs
+const module = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Carbs exchange',
+  )
+})
+const theme = computed(() => {
+  return surveyQuery.data.value?.surveyPreference.theme
+})
+const mascot = computed(() => {
+  return theme.value === 'Classic' ? MascotAdult : Mascot
+})
 const totalCarbs = ref(0)
 const averageCarbs = computed(() => {
   return Object.entries(mealCards).reduce((total, [, meal]) => {
@@ -148,7 +167,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
       value: usePrecision(
         calculateFoodNutrientsExchange(
           food as RecallMealFood,
-          NUTRIENTS_CARBS_ID,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
           CARBS_EXCHANGE_MULTIPLIER,
         ),
         2,
@@ -156,7 +175,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
       mealDate: food['mealDate'],
     })),
     mean: mealCarbsExchange,
-    mascot: Mascot,
+    mascot: mascot.value,
   }
 
   return mealCarbsExchange

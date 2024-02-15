@@ -10,6 +10,8 @@ export class FeedbackModuleRepository {
   }
 
   public async getAllFeedbackModules() {
-    return await this.drizzle.query.feedbackModules.findMany()
+    return await this.drizzle.query.feedbackModules.findMany({
+      with: { nutrientTypes: true },
+    })
   }
 }
