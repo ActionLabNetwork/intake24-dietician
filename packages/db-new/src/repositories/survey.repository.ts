@@ -1,8 +1,6 @@
-import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type {
   SurveyCreateDto,
   SurveyDto,
-  SurveyFeedbackModuleCreateDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
 import { desc, eq } from 'drizzle-orm'
@@ -86,13 +84,7 @@ export class SurveyRepository {
     }
   }
 
-  public async createSurvey(
-    dieticianId: number,
-    surveyDto: SurveyCreateDto & {
-      surveyPreference: SurveyPreference
-      feedbackModules: SurveyFeedbackModuleCreateDto[]
-    },
-  ) {
+  public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
       const [insertedSurvey] = await tx
@@ -129,6 +121,13 @@ export class SurveyRepository {
         feedbackModulesToBeInserted.forEach(async module => {
           const { id: _, ...withoutId } = module
           await tx.insert(surveyToFeedbackModules).values(withoutId)
+        })
+      } else {
+        feedbackModules.forEach(module => {
+          const { name: _, description: _1, ...rest } = module
+          tx.insert(surveyToFeedbackModules)
+            .values({ ...rest, surveyId: insertedSurvey.id })
+            .execute()
         })
       }
 

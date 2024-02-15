@@ -134,11 +134,10 @@
                       :submit="async () => {}"
                       @update="handleFeedbackModulesUpdate"
                     />
-                    <!-- <RecallReminders
-                      v-if="recallReminderProps"
-                      :default-state="recallReminderProps"
+                    <RecallReminders
+                      :default-state="formValues.surveyPreference"
                       @update="handleRecallRemindersUpdate"
-                    /> -->
+                    />
                   </div>
                 </v-col>
                 <!-- Contact / help with system setup -->
@@ -228,6 +227,7 @@ import { useAuthStore } from '@intake24-dietician/portal/stores/auth'
 import FeedbackModules from '../master-settings/FeedbackModules.vue'
 import RecallReminders from '../master-settings/RecallReminders.vue'
 import { useToast } from 'vue-toast-notification'
+import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
@@ -319,6 +319,25 @@ const handleFeedbackModulesUpdate = (value: SurveyCreateDto | undefined) => {
     return
   }
   formValues.value = { ...formValues.value, ...value }
+  emit('update', { ...formValues.value })
+}
+
+const handleRecallRemindersUpdate = (value: {
+  reminderCondition: ReminderCondition
+  reminderMessage: string
+}) => {
+  if (!formValues.value) {
+    return
+  }
+
+  formValues.value = {
+    ...formValues.value,
+    surveyPreference: {
+      ...formValues.value.surveyPreference,
+      reminderCondition: value.reminderCondition,
+      reminderMessage: value.reminderMessage,
+    },
+  }
   emit('update', { ...formValues.value })
 }
 

@@ -1,5 +1,4 @@
 import { NotFoundError, UnauthorizedError } from '../utils/trpc'
-import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { inject, singleton } from 'tsyringe'
@@ -26,22 +25,7 @@ export class SurveyService {
   }
 
   public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
-    const defaultPreference: SurveyPreference = {
-      theme: 'Classic',
-      sendAutomatedFeedback: true,
-      notifyEmail: true,
-      notifySMS: true,
-      reminderCondition: {
-        reminderEvery: { every: 5, unit: 'days' },
-        reminderEnds: { type: 'never' },
-      },
-      reminderMessage: '',
-    }
-    return await this.surveyRepository.createSurvey(dieticianId, {
-      ...surveyDto,
-      surveyPreference: surveyDto.surveyPreference ?? defaultPreference,
-      feedbackModules: surveyDto.feedbackModules ?? [],
-    })
+    return await this.surveyRepository.createSurvey(dieticianId, surveyDto)
   }
 
   public async updateSurvey(
