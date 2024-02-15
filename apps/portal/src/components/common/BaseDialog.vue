@@ -37,8 +37,7 @@ const props = defineProps<{
   onCancelText?: string
 }>()
 
-// eslint-disable-next-line vue/no-setup-props-destructure
-const dialog = ref(props.modelValue)
+const dialog = defineModel<boolean>()
 const isLoading = ref(false)
 const confirmBtn = ref()
 

@@ -57,7 +57,11 @@
       <DialogRouteLeave :unsaved-changes="hasFormChanged" />
       <DialogProfileEdit
         v-model="confirmDialog"
-        :on-confirm="() => onSubmit().submit()"
+        :on-confirm="
+          async () => {
+            await onSubmit().submit()
+          }
+        "
       />
     </v-container>
   </v-main>
@@ -149,28 +153,25 @@ const onSubmit = () => {
     confirmDialog.value = true
   }
 
-  const submit = handleSubmit(
-    values => {
-      if (!currentFormData.value) return
+  const submit = handleSubmit(async values => {
+    if (!currentFormData.value) return
 
-      updateProfileMutation.mutate(
-        {
-          emailAddress: currentFormData.value.email,
-          dieticianProfile: values,
+    await updateProfileMutation.mutateAsync(
+      {
+        emailAddress: currentFormData.value.email,
+        dieticianProfile: values,
+      },
+      {
+        onSuccess: () => {
+          $toast.success('Profile updated successfully')
+          resetForm({ values })
         },
-        {
-          onSuccess: () => {
-            $toast.success('Profile updated successfully')
-            resetForm({ values })
-          },
-          onError: () => {
-            $toast.error('Failed to update dietician profile')
-          },
+        onError: () => {
+          $toast.error('Failed to update dietician profile')
         },
-      )
-    },
-    () => {},
-  )
+      },
+    )
+  })
 
   return { showConfirmDialog, submit }
 }

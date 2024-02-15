@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div>
     <div class="mb-5">
       <BackButton class="mb-5" @click="onBackButtonClick" />
       <div class="text heading">Hi {{ authStore.profile?.firstName }},</div>
@@ -26,149 +26,147 @@
       </v-stepper-header>
 
       <v-stepper-window>
-        <v-container>
-          <v-form>
-            <v-stepper-window-item
-              v-for="(step, i) in steps"
-              :key="step.heading"
-              :value="i + 1"
-            >
-              <v-row class="align-center mt-10">
-                <v-col :cols="currentStep < 3 ? 8 : 12">
-                  <div
-                    v-for="(subStep, subStepIndex) in step.subSteps"
-                    :key="subStepIndex + 'substep'"
-                    class="mb-16"
-                  >
-                    <template v-if="subStep.stepName">
-                      <h1 class="text step-heading">
-                        {{ subStep.stepName }}
-                      </h1>
-                      <h3 class="text description mb-10">
-                        {{ subStep.description }}
-                      </h3>
-                    </template>
-                    <!-- Input fields -->
-                    <div v-for="field in subStep.fields" :key="field.key">
-                      <template v-if="field.type === 'input'">
-                        <VBaseInput
-                          :name="field.key"
-                          :type="field.inputType"
-                          :readonly="field.readonly"
-                          :placeholder="field.placeHolder"
-                          :rules="field.rules"
-                          :required="field.required"
-                          :value="formValues[field.key]"
-                          :select-config="field.selectConfig"
-                          class="mt-3"
-                          @update="field.handleUpdate"
-                        >
-                          <div>
-                            <span class="input-label">
-                              {{ field.label }}
-                            </span>
-                            <span
-                              v-if="field.labelSuffix"
-                              class="input-label suffix"
-                            >
-                              {{ ' ' }}{{ field.labelSuffix }}
-                            </span>
+        <v-form>
+          <v-stepper-window-item
+            v-for="(step, i) in steps"
+            :key="step.heading"
+            :value="i + 1"
+          >
+            <v-row class="align-center mt-10">
+              <v-col :cols="currentStep < 3 ? 8 : 12">
+                <div
+                  v-for="(subStep, subStepIndex) in step.subSteps"
+                  :key="subStepIndex + 'substep'"
+                  class="mb-16"
+                >
+                  <template v-if="subStep.stepName">
+                    <h1 class="text step-heading">
+                      {{ subStep.stepName }}
+                    </h1>
+                    <h3 class="text description mb-10">
+                      {{ subStep.description }}
+                    </h3>
+                  </template>
+                  <!-- Input fields -->
+                  <div v-for="field in subStep.fields" :key="field.key">
+                    <template v-if="field.type === 'input'">
+                      <VBaseInput
+                        :name="field.key"
+                        :type="field.inputType"
+                        :readonly="field.readonly"
+                        :placeholder="field.placeHolder"
+                        :rules="field.rules"
+                        :required="field.required"
+                        :value="formValues[field.key]"
+                        :select-config="field.selectConfig"
+                        class="mt-3"
+                        @update="field.handleUpdate"
+                      >
+                        <div>
+                          <span class="input-label">
+                            {{ field.label }}
+                          </span>
+                          <span
+                            v-if="field.labelSuffix"
+                            class="input-label suffix"
+                          >
+                            {{ ' ' }}{{ field.labelSuffix }}
+                          </span>
+                          <v-btn
+                            v-if="field.information"
+                            icon="mdi-information-outline"
+                            variant="text"
+                            size="small"
+                            @click="
+                              () => {
+                                isDialogActive = true
+                                dialogTitle = field.information?.title ?? ''
+                                dialogDescription =
+                                  field.information?.description ?? ''
+                                onDialogConfirm = undefined
+                                dialogCancelText = 'Close'
+                              }
+                            "
+                          >
+                          </v-btn>
+                        </div>
+                        <div class="input-label description">
+                          {{ field.description }}
+                        </div>
+
+                        <template #append>
+                          <template
+                            v-if="
+                              field.key === 'intake24Secret' ||
+                              field.key === 'intake24Host'
+                            "
+                          >
                             <v-btn
-                              v-if="field.information"
-                              icon="mdi-information-outline"
-                              variant="text"
-                              size="small"
+                              v-if="field.quickAction?.append"
+                              class="text-none"
+                              color="primary"
                               @click="
-                                () => {
-                                  isDialogActive = true
-                                  dialogTitle = field.information?.title ?? ''
-                                  dialogDescription =
-                                    field.information?.description ?? ''
-                                  onDialogConfirm = undefined
-                                  dialogCancelText = 'Close'
-                                }
+                                () =>
+                                  field.quickAction?.append?.action(
+                                    formValues[field.key],
+                                  )
                               "
                             >
+                              {{ field.quickAction.append.label }}
                             </v-btn>
-                          </div>
-                          <div class="input-label description">
-                            {{ field.description }}
-                          </div>
-
-                          <template #append>
-                            <template
-                              v-if="
-                                field.key === 'intake24Secret' ||
-                                field.key === 'intake24Host'
-                              "
-                            >
-                              <v-btn
-                                v-if="field.quickAction?.append"
-                                class="text-none"
-                                color="primary"
-                                @click="
-                                  () =>
-                                    field.quickAction?.append?.action(
-                                      formValues[field.key],
-                                    )
-                                "
-                              >
-                                {{ field.quickAction.append.label }}
-                              </v-btn>
-                            </template>
                           </template>
+                        </template>
 
-                          <template #append-inner>
-                            <template v-if="field.key === 'countryCode'">
-                              {{ formValues[field.key] }}
-                            </template>
+                        <template #append-inner>
+                          <template v-if="field.key === 'countryCode'">
+                            {{ formValues[field.key] }}
                           </template>
-                        </VBaseInput>
-                      </template>
-                    </div>
+                        </template>
+                      </VBaseInput>
+                    </template>
                   </div>
-                  <!-- TODO: Make this config driven? -->
-                  <div v-if="currentStep === 3">
-                    <FeedbackModules
-                      :default-state="formValues"
-                      :submit="async () => {}"
-                      @update="handleFeedbackModulesUpdate"
-                    />
-                    <RecallReminders
-                      :default-state="formValues.surveyPreference"
-                      @update="handleRecallRemindersUpdate"
-                    />
-                  </div>
+                </div>
+                <!-- TODO: Make this config driven? -->
+                <div v-if="currentStep === 3">
+                  <FeedbackModules
+                    :default-state="formValues"
+                    :submit="async () => {}"
+                    @update="handleFeedbackModulesUpdate"
+                  />
+                  <RecallReminders
+                    :default-state="formValues.surveyPreference"
+                    @update="handleRecallRemindersUpdate"
+                  />
+                </div>
+              </v-col>
+              <!-- Contact / help with system setup -->
+              <v-col>
+                <v-col align-self="center">
+                  <v-card
+                    class="pa-5 bg-grey-lighten-4 mx-auto"
+                    flat
+                    style="width: fit-content"
+                  >
+                    Not able to complete system setup?
+                    <br />
+                    Contact -
+                    <em>
+                      <a
+                        href="mailto:support@intake24.com"
+                        class="text-body-1 text-primary"
+                      >
+                        support@intake24.com
+                      </a>
+                    </em>
+                  </v-card>
                 </v-col>
-                <!-- Contact / help with system setup -->
-                <v-col>
-                  <v-col align-self="center">
-                    <v-card
-                      class="pa-5 bg-grey-lighten-4 mx-auto"
-                      flat
-                      style="width: fit-content"
-                    >
-                      Not able to complete system setup?
-                      <br />
-                      Contact -
-                      <em>
-                        <a
-                          href="mailto:support@intake24.com"
-                          class="text-body-1 text-primary"
-                        >
-                          support@intake24.com
-                        </a>
-                      </em>
-                    </v-card>
-                  </v-col>
-                </v-col>
-              </v-row>
-            </v-stepper-window-item>
-          </v-form>
-          <v-row>
-            <v-col> </v-col>
-          </v-row>
-        </v-container>
+              </v-col>
+            </v-row>
+          </v-stepper-window-item>
+        </v-form>
+        <v-row>
+          <v-col> </v-col>
+        </v-row>
       </v-stepper-window>
 
       <v-stepper-actions style="justify-content: flex-start" disabled="false">
@@ -176,7 +174,7 @@
         <template #prev>
           <v-btn
             v-if="steps[currentStep - 1]?.prev"
-            class="text-capitalize ml-4"
+            class="text-capitalize mr-4"
             variant="outlined"
             color="black"
             @click="steps[currentStep - 1]?.prev?.action"
@@ -188,7 +186,7 @@
         <!-- Next button -->
         <template #next>
           <v-btn
-            class="text-none ml-4"
+            class="text-none"
             :disabled="isNextdisabled"
             variant="flat"
             color="primary"
@@ -208,7 +206,7 @@
       <template #title>{{ dialogTitle }}</template>
       {{ dialogDescription }}
     </BaseDialog>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">

@@ -6,8 +6,8 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore",
-    "cypress:open": "cypress open"
+    "test": "pnpm exec playwright test",
+    "lint": "eslint . --fix --ignore-path .gitignore"
   },
   "dependencies": {
     "@mdi/font": "7.4.47",
@@ -25,7 +25,6 @@
     "chart.js": "^4.4.1",
     "chroma-js": "^2.4.2",
     "core-js": "^3.35.1",
-    "cypress": "^13.6.4",
     "echarts": "^5.4.3",
     "flag-icons": "^7.1.0",
     "html2canvas": "^1.4.1",
@@ -59,6 +58,7 @@
     "@babel/eslint-parser": "^7.23.9",
     "@babel/types": "^7.23.9",
     "@biomejs/biome": "1.5.3",
+    "@playwright/test": "^1.41.2",
     "@total-typescript/ts-reset": "^0.5.1",
     "@types/chroma-js": "^2.4.3",
     "@types/jest": "^29.5.11",

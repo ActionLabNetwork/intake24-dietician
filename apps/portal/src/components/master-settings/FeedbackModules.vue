@@ -1,61 +1,59 @@
 <template>
-  <div>
-    <v-container>
-      <div>
-        <v-form ref="form">
-          <v-row
-            v-for="(fieldConfig, fieldName) in formConfig"
-            :key="fieldName"
-            class="mt-5"
-          >
-            <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
-              <div :class="fieldConfig.class">
-                <div class="d-flex justify-start align-start">
+  <v-container fluid>
+    <div>
+      <v-form ref="form">
+        <v-row
+          v-for="(fieldConfig, fieldName) in formConfig"
+          :key="fieldName"
+          class="mt-5"
+        >
+          <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
+            <div :class="fieldConfig.class">
+              <div class="d-flex justify-start align-start">
+                <div>
                   <div>
-                    <div>
-                      <div
-                        :class="
-                          fieldConfig.heading.class ||
-                          'text section-heading-2 pl-0'
-                        "
-                      >
-                        {{ fieldConfig.heading.label }}
-                      </div>
-                      <div
-                        v-if="fieldConfig.subheading"
-                        :class="
-                          fieldConfig.subheading.class ||
-                          'text section-subheading pl-0'
-                        "
-                      >
-                        {{ fieldConfig.subheading.label }}
-                      </div>
+                    <div
+                      :class="
+                        fieldConfig.heading.class ||
+                        'text section-heading-2 pl-0'
+                      "
+                    >
+                      {{ fieldConfig.heading.label }}
+                    </div>
+                    <div
+                      v-if="fieldConfig.subheading"
+                      :class="
+                        fieldConfig.subheading.class ||
+                        'text section-subheading pl-0'
+                      "
+                    >
+                      {{ fieldConfig.subheading.label }}
                     </div>
                   </div>
                 </div>
               </div>
-            </v-col>
-            <v-spacer />
-            <v-col
-              cols="12"
-              :sm="smColOptions(fieldConfig.column)"
-              class="self-end"
-            >
-              <div>
-                <component
-                  :is="fieldConfig.component"
-                  v-bind="fieldConfig.props"
-                  :value="fieldConfig.value"
-                  :class="fieldConfig.componentClass"
-                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
-                />
-              </div>
-            </v-col>
-          </v-row>
-        </v-form>
-      </div>
-    </v-container>
-  </div>
+            </div>
+          </v-col>
+          <v-spacer />
+          <v-col
+            cols="12"
+            :sm="smColOptions(fieldConfig.column)"
+            class="self-end"
+          >
+            <div>
+              <component
+                :is="fieldConfig.component"
+                v-bind="fieldConfig.props"
+                :value="fieldConfig.value"
+                :class="fieldConfig.componentClass"
+                @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+              />
+            </div>
+          </v-col>
+        </v-row>
+      </v-form>
+    </div>
+  </v-container>
 </template>
 
 <script lang="ts" setup>

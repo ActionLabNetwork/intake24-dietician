@@ -6,6 +6,7 @@
       :logo="{ path: themeConfig.logo }"
       title="Meal diary"
       :metrics="nutrientType"
+      show-metrics
     />
     <MealDiaryTimeline
       :meal-cards="mealCards"
@@ -55,7 +56,7 @@ import {
 import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
 import { MealCardProps } from '../../types'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -98,8 +99,20 @@ const getServingWeight = (food: { [x: string]: any[] }) => {
 }
 
 const totalNutrients = computed(() => {
-  const combinedMeals = recallStore.recallsGroupedByMeals
+  if (!recallStore.sampleRecallQuery.data) {
+    return 0
+  }
 
+  if (props.useSampleRecall) {
+    return recallStore.sampleRecallQuery.data.recall.meals.reduce(
+      (total, meal) => {
+        return total + calculateMealNutrientIntake(meal)
+      },
+      0,
+    )
+  }
+
+  const combinedMeals = recallStore.recallsGroupedByMeals
   return Math.floor(
     combinedMeals.meals.reduce((total, meal) => {
       return (

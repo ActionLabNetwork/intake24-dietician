@@ -61,6 +61,7 @@
             class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0 text-white"
             color="#EE672D"
             size="large"
+            :disabled="!meta.valid"
             variant="flat"
             type="submit"
             :loading="loginMutation.isPending.value"

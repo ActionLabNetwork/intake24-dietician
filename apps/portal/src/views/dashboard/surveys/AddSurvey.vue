@@ -1,6 +1,6 @@
 <template>
   <v-main class="wrapper">
-    <v-container>
+    <v-container fluid>
       <SteppedSurveyConfiguration
         v-if="renderChild"
         :default-state="surveyConfigFormValues"

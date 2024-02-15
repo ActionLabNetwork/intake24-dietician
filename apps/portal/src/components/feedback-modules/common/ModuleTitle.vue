@@ -13,15 +13,18 @@
       />
       <div class="ml-4 font-weight-medium w-100">{{ title }}</div>
     </div>
-    <div>
+    <div v-if="showMetrics">
       <v-menu
         transition="scale-transition"
         location="bottom"
         :close-on-content-click="false"
       >
         <template #activator="{ props: _props }">
-          <v-btn class="text-none" variant="outlined" v-bind="_props">
+          <v-btn class="text-none bg-white" variant="outlined" v-bind="_props">
             Metrics
+            <template #append>
+              <v-icon icon="mdi-chevron-down" />
+            </template>
           </v-btn>
         </template>
 
@@ -64,6 +67,7 @@ const props = defineProps<{
       description: string
     }
   }[]
+  showMetrics?: boolean
 }>()
 
 // const metric = ref<string | null>(items.value[0] ?? null)
