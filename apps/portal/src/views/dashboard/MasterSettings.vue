@@ -1,84 +1,75 @@
 <template>
   <v-container>
-    <div class="wrapper">
-      <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-        <!-- <pre>{{ values }}</pre>
-        <br /><br />
-        <pre>{{ formData }}</pre>
-        <br /><br /> -->
-        <BackButton class="mb-5" />
-        <div
-          class="d-flex flex-column flex-sm-row justify-space-between align-center"
+    <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
+      <!-- <pre>{{ formData }}</pre> -->
+      <br /><br />
+      <BackButton class="mb-5" />
+      <div
+        class="d-flex flex-column flex-sm-row justify-space-between align-center"
+      >
+        <div>
+          <h1 class="text heading">
+            Clinic setup for {{ clinicStore.currentClinic?.surveyName }}
+          </h1>
+          <h3 class="text subheading">
+            Personalise your patient experience by choosing a visual theme,
+            select and tailor feedback modules to suit your preferences. Set a
+            default recall frequency to gather timely recall data, and customise
+            notification preferences for real-time updates when patients
+            complete their recall.
+          </h3>
+        </div>
+        <div class="alert-text">
+          <div v-if="formHasChanged" class="d-flex align-center">
+            <div>
+              <v-icon icon="mdi-alert-outline" size="large" start />
+            </div>
+            <div>
+              There are changes made in master module setup, review and confirm
+              changes before proceeding!
+            </div>
+          </div>
+          <div class="align-self-center">
+            <v-btn
+              color="primary text-none"
+              class="mt-3 mt-sm-0"
+              type="submit"
+              :disabled="!formHasChanged"
+              :loading="updateSurveyPreferencesMutation.isPending.value"
+              @click.prevent="handleSubmit"
+            >
+              Review and confirm changes
+            </v-btn>
+          </div>
+        </div>
+      </div>
+      <v-divider class="my-10" />
+      <FeedbackModules
+        :default-state="surveyQuery.data.value"
+        :submit="handleSubmit"
+        @update="handleFeedbackModulesUpdate"
+      />
+      <RecallReminders
+        v-if="recallReminderProps"
+        :default-state="recallReminderProps"
+        @update="handleRecallRemindersUpdate"
+      />
+      <div class="mt-10 ml-4">
+        <p class="font-weight-medium">Review and save changes</p>
+        <div v-if="formHasChanged" class="text subheading">
+          You have made changes to the master module setup. Review and confirm
+          the changes before you proceed with adding patients or reviewing
+          recall feedback
+        </div>
+        <v-btn
+          color="primary"
+          class="text-none mt-4"
+          :disabled="!formHasChanged"
+          :loading="updateSurveyPreferencesMutation.isPending.value"
+          @click="handleSubmit"
         >
-          <div>
-            <h1 class="text heading">
-              Clinic setup for {{ clinicStore.currentClinic?.surveyName }}
-            </h1>
-            <h3 class="text subheading">
-              Personalise your patient experience by choosing a visual theme,
-              select and tailor feedback modules to suit your preferences. Set a
-              default recall frequency to gather timely recall data, and
-              customise notification preferences for real-time updates when
-              patients complete their recall.
-            </h3>
-          </div>
-          <div class="alert-text">
-            <div v-if="formHasChanged" class="d-flex align-center">
-              <div>
-                <v-icon icon="mdi-alert-outline" size="large" start />
-              </div>
-              <div>
-                There are changes made in master module setup, review and
-                confirm changes before proceeding!
-              </div>
-            </div>
-            <div class="align-self-center">
-              <v-btn
-                color="primary text-none"
-                class="mt-3 mt-sm-0"
-                type="submit"
-                :disabled="!formHasChanged"
-                :loading="updateSurveyPreferencesMutation.isPending.value"
-                @click.prevent="handleSubmit"
-              >
-                Review and confirm changes
-              </v-btn>
-            </div>
-          </div>
-        </div>
-        <v-divider class="my-10" />
-        <FeedbackModules
-          :default-state="surveyQuery.data.value"
-          :submit="handleSubmit"
-          @update="handleFeedbackModulesUpdate"
-        />
-        <RecallReminders
-          v-if="recallReminderProps"
-          :default-state="recallReminderProps"
-          @update="handleRecallRemindersUpdate"
-        />
-        <Notifications
-          v-if="notificationsProps"
-          :default-state="notificationsProps"
-          @update="handleNotificationsUpdate"
-        />
-        <div class="mt-10 ml-4">
-          <p class="font-weight-medium">Review and save changes</p>
-          <div v-if="formHasChanged" class="text subheading">
-            You have made changes to the master module setup. Review and confirm
-            the changes before you proceed with adding patients or reviewing
-            recall feedback
-          </div>
-          <v-btn
-            color="primary"
-            class="text-none mt-4"
-            :disabled="!formHasChanged"
-            :loading="updateSurveyPreferencesMutation.isPending.value"
-            @click="handleSubmit"
-          >
-            Review and confirm changes
-          </v-btn>
-        </div>
+          Review and confirm changes
+        </v-btn>
       </div>
     </div>
   </v-container>
@@ -87,7 +78,6 @@
 <script lang="ts" setup>
 import FeedbackModules from '@intake24-dietician/portal/components/master-settings/FeedbackModules.vue'
 import RecallReminders from '@intake24-dietician/portal/components/master-settings/RecallReminders.vue'
-import Notifications from '@intake24-dietician/portal/components/master-settings/Notifications.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -134,12 +124,6 @@ const surveyConfigFormValues = ref<Omit<SurveyDto, 'surveyPreference'>>({
   feedbackModules: [],
 })
 
-const handleSurveyConfigUpdate = (
-  values: Omit<SurveyDto, 'surveyPreference'>,
-) => {
-  surveyConfigFormValues.value = values
-}
-
 const surveyQueryData = computed(() => {
   return surveyQuery.data.value
 })
@@ -154,22 +138,6 @@ const recallReminderProps = computed(() => {
     return {
       reminderCondition: surveyPreference.reminderCondition,
       reminderMessage: surveyPreference.reminderMessage,
-    }
-  }
-
-  return undefined
-})
-
-const notificationsProps = computed(() => {
-  const surveyPreference = surveyQuery.data.value?.surveyPreference
-
-  if (
-    surveyPreference?.notifyEmail !== undefined &&
-    surveyPreference?.notifySMS !== undefined
-  ) {
-    return {
-      notifyEmail: surveyPreference.notifyEmail,
-      notifySms: surveyPreference.notifySMS,
     }
   }
 
@@ -207,24 +175,6 @@ const handleRecallRemindersUpdate = (value: {
   }
 }
 
-const handleNotificationsUpdate = (channels: {
-  email: boolean
-  sms: boolean
-}) => {
-  if (!formData.value) {
-    return
-  }
-
-  formData.value = {
-    ...formData.value,
-    surveyPreference: {
-      ...formData.value.surveyPreference,
-      notifyEmail: channels.email,
-      notifySMS: channels.sms,
-    },
-  }
-}
-
 const handleSubmit = async (): Promise<void> => {
   if (!formData.value) {
     $toast.error('No data to submit')
@@ -232,21 +182,6 @@ const handleSubmit = async (): Promise<void> => {
   }
 
   const { id, ...survey } = formData.value
-  updateSurveyMutation.mutate(
-    {
-      id,
-      survey: {
-        ...survey,
-        ...values,
-      },
-    },
-    {
-      onError: () => {
-        $toast.error(DEFAULT_ERROR_MESSAGE)
-      },
-    },
-  )
-
   updateSurveyPreferencesMutation.mutate(
     { id, survey },
     {
@@ -254,11 +189,14 @@ const handleSubmit = async (): Promise<void> => {
         $toast.success('Clinic preferences have been updated')
         initialFormData.value = formData.value
       },
-      onError: () => {
+      onError: error => {
+        console.log({ error })
         $toast.error(DEFAULT_ERROR_MESSAGE)
       },
     },
   )
+
+  resetForm({ values: formData.value })
 }
 
 watch(
@@ -291,26 +229,6 @@ watch(
 </script>
 
 <style scoped lang="scss">
-.wrapper {
-  background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
-}
-
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

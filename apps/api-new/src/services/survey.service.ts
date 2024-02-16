@@ -1,5 +1,8 @@
 import { NotFoundError, UnauthorizedError } from '../utils/trpc'
-import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import type {
+  SurveyCreateDto,
+  SurveyDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
 import { inject, singleton } from 'tsyringe'
 
@@ -31,7 +34,7 @@ export class SurveyService {
   public async updateSurvey(
     surveyId: number,
     dieticianId: number,
-    surveyDto: Partial<SurveyCreateDto>,
+    surveyDto: Partial<SurveyDto>,
   ) {
     const survey = await this.surveyRepository.getSurveyById(surveyId)
     if (!survey) {

@@ -28,7 +28,8 @@
                 </div>
                 <div class="mt-4">Number of foods: {{ meal.foods.length }}</div>
                 <div class="mt-2">
-                  Total carbs: {{ meal.value }}{{ meal.unitOfMeasure?.symbol }}
+                  Total {{ meal.name.toLowerCase() }}: {{ meal.value
+                  }}{{ meal.unitOfMeasure?.symbol }}
                 </div>
               </div>
             </v-expansion-panel-title>

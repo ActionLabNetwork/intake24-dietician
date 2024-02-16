@@ -29,6 +29,7 @@ export type SurveyFeedbackModuleCreateDto = z.infer<
 // TODO: No longer needed since it is the same as Create
 export const SurveyFeedbackModuleDtoSchema =
   SurveyFeedbackModuleCreateDtoSchema.extend({
+    id: z.number(),
     name: z.enum(moduleNames),
     description: z.string(),
     nutrientTypes: z.array(

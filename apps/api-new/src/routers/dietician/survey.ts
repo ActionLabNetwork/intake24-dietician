@@ -82,7 +82,7 @@ export class DieticianSurveyRouter {
       .input(
         z.object({
           id: z.number().int(),
-          survey: SurveyCreateDtoSchema.partial(),
+          survey: SurveyDtoSchema.partial(),
         }),
       )
       .output(z.void())

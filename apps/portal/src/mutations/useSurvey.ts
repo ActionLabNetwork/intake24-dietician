@@ -1,5 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
-import type { SurveyCreateDto } from '@intake24-dietician/common/entities-new/survey.dto'
+import type {
+  SurveyCreateDto,
+  SurveyDto,
+} from '@intake24-dietician/common/entities-new/survey.dto'
 import { useClientStore } from '../trpc/trpc'
 
 export const useAddSurvey = () => {
@@ -25,7 +28,7 @@ export const useUpdateSurvey = () => {
   const mutation = useMutation({
     mutationFn: (body: {
       id: number
-      survey: Omit<SurveyCreateDto, 'surveyPreference'>
+      survey: Omit<SurveyDto, 'surveyPreference'>
     }) => {
       return authenticatedClient.dieticianSurvey.updateSurvey.mutate(body)
     },
@@ -41,7 +44,7 @@ export const useUpdateSurveyPreferences = () => {
   const queryClient = useQueryClient()
 
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
-    mutationFn: (body: { id: number; survey: Partial<SurveyCreateDto> }) =>
+    mutationFn: (body: { id: number; survey: Partial<SurveyDto> }) =>
       authenticatedClient.dieticianSurvey.updateSurvey.mutate(body),
     onSuccess: async () => {
       await queryClient.invalidateQueries()

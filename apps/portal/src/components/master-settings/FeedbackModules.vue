@@ -224,7 +224,7 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
 
       return acc
     },
-    [] as typeof feedbackModuleSetup.value.feedbackModules,
+    [] as any,
   )
 
   feedbackModuleSetup.value = {

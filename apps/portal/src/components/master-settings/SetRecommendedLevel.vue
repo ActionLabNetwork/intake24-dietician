@@ -398,10 +398,6 @@ const handleInsertFormula = () => {
 watch(
   () => formula.value.value,
   newValue => {
-    console.log('Formula changed...')
-    console.log({ newValue })
-    console.log(formula.value)
-
     if (expr.value === 'Invalid expression') return
 
     switch (formula.value.gender) {

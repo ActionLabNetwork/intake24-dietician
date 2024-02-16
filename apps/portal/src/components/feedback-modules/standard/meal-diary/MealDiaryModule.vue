@@ -137,7 +137,7 @@ const calculateMealNutrientIntake = (meal: RecallMeal, recallsCount = 1) => {
   ).value
 
   mealCards[meal.name] = {
-    name: 'Sugar intake',
+    name: selectedNutrient.value?.description ?? '',
     label: meal.name,
     hours: meal.hours,
     minutes: meal.minutes,
