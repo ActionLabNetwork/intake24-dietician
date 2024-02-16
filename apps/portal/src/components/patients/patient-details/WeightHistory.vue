@@ -2,7 +2,7 @@
   <BaseInput
     type="number"
     name="weight"
-    :value="props.modelValue.at(-1)?.weight ?? 0"
+    :value="sortedWeightHistory[0]?.weight ?? 0"
     class="base-input"
     suffix="kg"
     @update="(newVal: string) => onWeightEdit(parseInt(newVal))"
@@ -20,19 +20,19 @@
       <v-data-table
         :headers="tableHeaders"
         :items="previousEntries"
-        density="compact"
+        density="comfortable"
         no-data-text="No previous records"
       >
         <template #item="{ item }">
           <tr>
-            <td>{{ item.columns.weight }}</td>
-            <td>{{ moment(item.columns.timestamp).format('DD/MM/YYYY') }}</td>
+            <td>{{ item.weight }}</td>
+            <td>{{ moment(item.timestamp).format('DD/MM/YYYY') }}</td>
             <td>
               <v-btn
                 icon="mdi-minus"
                 variant="text"
                 class="ml-2"
-                @click="removeHistoryByTimestamp(item.columns.timestamp)"
+                @click="removeHistoryByTimestamp(item.timestamp)"
               />
             </td>
           </tr>
@@ -63,6 +63,11 @@ const emit = defineEmits<{
 
 const isDialogOpen = ref(false)
 const isWeightEdited = ref(false)
+const sortedWeightHistory = computed(() => {
+  return props.modelValue.toSorted(
+    (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+  )
+})
 
 const onWeightEdit = (weight: number) => {
   if (weight === props.modelValue.at(-1)?.weight) return
@@ -86,13 +91,13 @@ const tableHeaders = [
   {
     title: 'Weight (kg)',
     key: 'weight',
-    order: 'desc',
     width: '40px',
   },
   {
     title: 'Date',
     key: 'timestamp',
     width: '80px',
+    order: 'desc',
   },
   {
     title: '',
@@ -101,7 +106,7 @@ const tableHeaders = [
   },
 ]
 
-const previousEntries = computed(() => props.modelValue.slice(0, -1))
+const previousEntries = computed(() => sortedWeightHistory.value.slice(1))
 </script>
 
 <style scoped lang="scss">

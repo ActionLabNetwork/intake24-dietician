@@ -224,15 +224,13 @@ export class UserRepository {
   }
 
   public async getPatient(patientId: number) {
-    return await this.drizzle.query.patients
-      .findFirst({
-        where: eq(patients.id, patientId),
-        with: {
-          user: true,
-          survey: true,
-        },
-      })
-      .execute()
+    return await this.drizzle.query.patients.findFirst({
+      where: eq(patients.id, patientId),
+      with: {
+        user: true,
+        survey: true,
+      },
+    })
   }
 
   public async getPatientByUserIdAndEmail(userId: number, email: string) {

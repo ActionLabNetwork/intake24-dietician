@@ -48,7 +48,7 @@ export const useRecallsByRecallIds = (
         recallIds: recallIds.value.join(','),
       })
     },
-    enabled: recallIds.value.length > 0,
+    enabled: !!recallIds.value,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   })
 
@@ -87,7 +87,7 @@ export const useRecallDatesByUserId = (userId: Ref<string>) => {
         patientId: Number(userId.value),
       })
     },
-    enabled: !!userId && userId.value !== '',
+    enabled: !!userId,
   })
 
   return { ...query }
