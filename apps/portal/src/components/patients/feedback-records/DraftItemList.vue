@@ -18,6 +18,7 @@
       >
         <div v-for="draft in feedbackDraftsQuery.data.value" :key="draft.id">
           <DraftItem
+            :draft-id="draft.id"
             :modified="moment(draft.updatedAt).format(dateFormat)"
             :recall-dates="
               draft.draft.recallDaterange.map(date =>

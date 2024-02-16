@@ -19,20 +19,33 @@
         >
           Edit draft
         </v-btn>
-        <v-btn icon="mdi-delete-outline" class="ml-2" variant="flat" />
+        <v-btn
+          icon="mdi-delete-outline"
+          class="ml-2"
+          variant="flat"
+          @click="deleteDraft"
+        />
       </div>
     </div>
   </v-card>
 </template>
 
 <script setup lang="ts">
+import { useDeleteDraft } from '@intake24-dietician/portal/mutations/useFeedback'
 interface DraftItem {
+  draftId: number
   modified: string
   recallDates: string[]
 }
 
-defineProps<DraftItem>()
+const props = defineProps<DraftItem>()
 defineEmits<{ buttonClick: [] }>()
+
+const deleteDraftMutation = useDeleteDraft()
+
+const deleteDraft = () => {
+  deleteDraftMutation.mutate(props.draftId)
+}
 </script>
 
 <style scoped lang="scss">

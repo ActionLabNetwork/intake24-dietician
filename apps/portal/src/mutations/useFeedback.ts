@@ -62,3 +62,22 @@ export const useShareDraft = () => {
     ...mutation,
   }
 }
+
+export const useDeleteDraft = () => {
+  const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+  const mutation = useMutation({
+    mutationFn: (draftId: number) => {
+      return authenticatedClient.dieticianFeedback.deleteDraft.mutate({
+        draftId,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['drafts'] })
+    },
+  })
+
+  return {
+    ...mutation,
+  }
+}

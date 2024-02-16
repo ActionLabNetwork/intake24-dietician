@@ -52,8 +52,8 @@
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
+              v-model:module="component"
               show-switches
-              @update="handleModuleUpdate"
               @update:modules="handleModulesUpdate"
             />
           </v-col>
@@ -199,10 +199,6 @@ const selectedModules = ref<
     }
   | undefined
 >(undefined)
-
-const handleModuleUpdate = (module: ModuleName) => {
-  component.value = module
-}
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = {

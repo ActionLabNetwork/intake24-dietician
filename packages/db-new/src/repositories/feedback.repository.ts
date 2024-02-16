@@ -102,6 +102,12 @@ export class FeedbackRepository {
     return updatedDraft
   }
 
+  public async deleteDraft(draftId: number) {
+    return await this.drizzle
+      .delete(feedbackDrafts)
+      .where(eq(feedbackDrafts.id, draftId))
+  }
+
   public async saveShared(
     patientId: number,
     draftId: number | undefined,

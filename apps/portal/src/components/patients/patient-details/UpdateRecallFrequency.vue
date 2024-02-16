@@ -192,6 +192,7 @@ watch(
       occurencesCount.value = newVal.reminderEnds.occurrences
     }
   },
+  { immediate: true },
 )
 </script>
 
