@@ -13,8 +13,8 @@
             <template #item="{ element }">
               <v-list-item
                 :key="element.value"
-                :value="element.value"
-                :active="element.value === selectedModule"
+                :value="element.title"
+                :active="element.title === selectedModule"
                 rounded="xl"
                 class="ma-2"
                 @click="() => handleModuleSelect(element.title)"
@@ -58,43 +58,38 @@ export interface ModuleItem {
   selected: boolean
 }
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
-    defaultState?: FeedbackMapping
     showSwitches: boolean
   }>(),
   {
-    defaultState: undefined,
     showSwitches: false,
   },
 )
 
 const emit = defineEmits<{
-  update: [value: ModuleName]
   'update:modules': [items: ModuleItem[]]
 }>()
+
+const defaultState = defineModel<FeedbackMapping>('defaultState')
+const selectedModule = defineModel<ModuleName>('module')
 
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
 const drag = ref(false)
-
 const items = ref<ModuleItem[]>([])
-
-const selectedModule = ref(1)
-
 const handleModuleSelect = (title: ModuleName) => {
   const item = items.value.find(i => i.title === title)
 
   if (!item) return
-  selectedModule.value = item.value
-  emit('update', item.title)
+  selectedModule.value = item.title
 }
 
 const initWithDefaultValues = () => {
-  if (!props.defaultState) return
+  if (!defaultState.value) return
 
-  items.value = Object.entries(props.defaultState).map(
+  items.value = Object.entries(defaultState.value).map(
     ([key, value], index) => {
       return {
         title: key as ModuleName,
@@ -122,7 +117,7 @@ watch(
   () => surveyQuery.data.value,
   newData => {
     // We are using default state
-    if (props.defaultState) {
+    if (defaultState.value) {
       initWithDefaultValues()
       emit('update:modules', items.value)
       return

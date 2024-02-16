@@ -2,9 +2,9 @@
   <v-row>
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
-        :default-state="defaultState"
+        v-model:default-state="defaultState"
+        v-model:module="selectedModule"
         show-switches
-        @update="handleModuleChange"
         @update:modules="handleModulesChange"
       />
     </v-col>
@@ -80,12 +80,7 @@ export type FeedbackMapping = {
   >
 }
 
-const props = defineProps<{ defaultState: FeedbackMapping }>()
-
-const emit = defineEmits<{
-  update: [presetModulesFeedbacks: FeedbackMapping]
-}>()
-
+const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
 
 // TODO: Figure out a way to show preview of the modules. Maybe use a test data for sample?
@@ -149,35 +144,17 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
   })
 
-const handleModuleChange = (module: ModuleName) => {
-  selectedModule.value = module
-}
-
 const handleModulesChange = (modules: ModuleItem[]) => {
   modules.forEach(module => {
     moduleNameToModuleComponentMapping[module.title].isActive = module.selected
   })
 }
 
-watch(moduleNameToModuleComponentMapping, newFeedbacks => {
-  const feedbackMapping = Object.fromEntries(
-    Object.entries(newFeedbacks).map(([key, value]) => [
-      key,
-      {
-        name: value.name,
-        feedbackBelow: value.feedbackBelow,
-        feedbackAbove: value.feedbackAbove,
-        isActive: value.isActive,
-        nutrientTypes: value.nutrientTypes,
-      },
-    ]),
-  ) as FeedbackMapping
-  emit('update', feedbackMapping)
-})
-
 watch(
-  () => props.defaultState,
+  () => defaultState.value,
   newDefaultState => {
+    if (!newDefaultState) return
+
     Object.entries(newDefaultState).forEach(([key, value]) => {
       const routeKey = key as keyof typeof moduleNameToModuleComponentMapping
       moduleNameToModuleComponentMapping[routeKey].name = value.name

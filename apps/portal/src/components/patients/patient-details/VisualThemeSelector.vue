@@ -6,25 +6,25 @@
     <div class="d-flex flex-column flex-sm-row justify-space-between">
       <div class="flex-container mt-4">
         <v-card
-          v-for="theme in themes"
-          :key="theme.title"
+          v-for="_theme in themes"
+          :key="_theme.title"
           flat
-          :class="theme.active ? 'card active' : 'card'"
+          :class="_theme.active ? 'card active' : 'card'"
         >
           <v-card-title>
             <div class="d-flex align-center justify-space-between">
               <div>
-                <div class="text-h6">{{ theme.title }}</div>
-                <div class="description">{{ theme.description }}</div>
+                <div class="text-h6">{{ _theme.title }}</div>
+                <div class="description">{{ _theme.description }}</div>
               </div>
               <div>
                 <v-switch
-                  v-model="theme.active"
+                  v-model="_theme.active"
                   hide-details
                   inset
                   color="success"
                   @update:model-value="
-                    e => handleSwitchUpdate(e ?? false, theme.type)
+                    e => handleSwitchUpdate(e ?? false, _theme.type)
                   "
                 ></v-switch>
               </div>
@@ -58,14 +58,14 @@ interface ThemeRef {
   type: Theme
 }
 
-const props = withDefaults(
-  defineProps<{ defaultState: Theme; hideLabel?: boolean }>(),
-  { hideLabel: false },
-)
+withDefaults(defineProps<{ modelValue: Theme; hideLabel?: boolean }>(), {
+  hideLabel: false,
+})
 const emit = defineEmits<{
   update: [theme: Theme]
 }>()
 
+const theme = defineModel<Theme>()
 const themes = ref<ThemeRef[]>([
   {
     title: 'Classic theme (default)',
@@ -108,10 +108,10 @@ const handleSwitchUpdate = (value: boolean, theme: string) => {
 }
 
 watch(
-  () => props.defaultState,
-  () => {
+  () => theme.value,
+  newTheme => {
     themes.value.forEach(theme => {
-      theme.active = theme.type === props.defaultState
+      theme.active = theme.type === newTheme
     })
   },
   { immediate: true },

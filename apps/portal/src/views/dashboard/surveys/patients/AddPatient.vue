@@ -48,7 +48,7 @@
             "
           />
           <VisualThemeSelector
-            :default-state="patientForm.formValues.value.theme"
+            v-model="patientForm.formValues.value.theme"
             class="mt-10"
             @update="patientForm.handleFormUpdate('theme', $event)"
           />

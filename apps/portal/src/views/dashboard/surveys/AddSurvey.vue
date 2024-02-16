@@ -77,7 +77,6 @@ const handleSurveyConfigUpdate = (values: SurveyCreateDto) => {
 
 const handleSubmit = (): Promise<void> => {
   return new Promise((resolve, reject) => {
-    // Validate with zod
     const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
     if (!result.success) {
