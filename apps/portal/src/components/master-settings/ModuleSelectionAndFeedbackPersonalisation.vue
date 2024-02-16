@@ -80,6 +80,10 @@ export type FeedbackMapping = {
   >
 }
 
+const emit = defineEmits<{
+  update: [presetModulesFeedbacks: FeedbackMapping]
+}>()
+
 const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
 
@@ -148,6 +152,7 @@ const handleModulesChange = (modules: ModuleItem[]) => {
   modules.forEach(module => {
     moduleNameToModuleComponentMapping[module.title].isActive = module.selected
   })
+  emit('update', moduleNameToModuleComponentMapping)
 }
 
 watch(

@@ -76,7 +76,9 @@ export const useRecallStore = defineStore('recalls', () => {
 
     if (matchingRecallDates) {
       recallIds.value = matchingRecallDates.map(recall => recall.id)
-      recallsQuery.refetch()
+      if (recallIds.value.length > 0) {
+        recallsQuery.refetch()
+      }
     }
   }
 

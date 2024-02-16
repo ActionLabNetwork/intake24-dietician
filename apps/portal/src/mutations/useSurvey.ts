@@ -46,10 +46,7 @@ export const useUpdateSurveyPreferences = () => {
   const { data, isPending, isError, error, isSuccess, mutate } = useMutation({
     mutationFn: (body: { id: number; survey: Partial<SurveyDto> }) =>
       authenticatedClient.dieticianSurvey.updateSurvey.mutate(body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries()
-      await queryClient.refetchQueries()
-    },
+    onSuccess: async () => {},
   })
 
   return {

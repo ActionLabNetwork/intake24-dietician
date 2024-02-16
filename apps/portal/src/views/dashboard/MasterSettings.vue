@@ -1,8 +1,6 @@
 <template>
   <v-container>
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
-      <!-- <pre>{{ formData }}</pre> -->
-      <br /><br />
       <BackButton class="mb-5" />
       <div
         class="d-flex flex-column flex-sm-row justify-space-between align-center"
@@ -180,6 +178,17 @@ const handleSubmit = async (): Promise<void> => {
     $toast.error('No data to submit')
     return
   }
+
+  const uniqueFeedbackModules = formData.value.feedbackModules.filter(
+    module =>
+      !initialFormData.value?.feedbackModules.some(
+        initialModule =>
+          JSON.stringify(initialModule) === JSON.stringify(module),
+      ),
+  )
+
+  // This is so that we're not updating the feedback modules if there are no changes
+  formData.value.feedbackModules = uniqueFeedbackModules
 
   const { id, ...survey } = formData.value
   updateSurveyPreferencesMutation.mutate(

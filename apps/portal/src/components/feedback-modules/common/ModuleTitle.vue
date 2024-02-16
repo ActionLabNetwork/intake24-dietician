@@ -13,7 +13,7 @@
       />
       <div class="ml-4 font-weight-medium w-100">{{ title }}</div>
     </div>
-    <div v-if="showMetrics">
+    <div v-if="showMetrics && props.metrics && props.metrics.length > 0">
       <v-menu
         transition="scale-transition"
         location="bottom"
