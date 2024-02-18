@@ -1,5 +1,5 @@
 <template>
-  <v-main class="wrapper">
+  <v-main>
     <v-row class="ml-1">
       <SurveyClinicDetails v-if="!hideSurveyDetails" />
     </v-row>
@@ -28,6 +28,7 @@ const hideSurveyDetails = computed(() => {
   const routeNames = [
     'Survey Master Settings',
     'Survey Patient Compose New Feedback',
+    'Survey Patient Edit Draft Feedback',
   ]
   return routeNames.includes(route.name as string)
 })

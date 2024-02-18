@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container fluid class="px-10">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
       <BackButton class="mb-5" />
       <div

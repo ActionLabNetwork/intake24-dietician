@@ -108,5 +108,6 @@ const dynamicLogo = computed<Component | string>(() => {
   border-radius: 6px;
   max-height: 15rem;
   overflow-y: scroll;
+  background-color: white;
 }
 </style>

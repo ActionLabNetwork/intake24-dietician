@@ -14,12 +14,12 @@
     </div>
     <v-divider class="my-10"></v-divider>
     <v-form>
-      <PersonalDetails :avatar="currentFormData?.avatar ?? null" />
+      <PersonalDetails :avatar="null" />
       <ContactDetails
         class="mt-10"
         :email="{
-          current: values.currentEmail ?? currentFormData?.email ?? '',
-          new: values.newEmail ?? currentFormData?.email ?? '',
+          current: values.currentEmail ?? '',
+          new: values.newEmail ?? '',
         }"
         :allow-email-change="false"
       />
@@ -65,19 +65,8 @@ const emit = defineEmits<{
   submit: [values: DieticianCreateDto]
 }>()
 
-onMounted(async () => {
-  if (!authStore.profile) {
-    await authStore.refetch()
-  }
-})
-
 // i18n
 // const { t } = useI18n<i18nOptions>()
-
-// Stores
-const authStore = useAuthStore()
-
-const { profile: savedProfile } = storeToRefs(authStore)
 
 // Composables
 // const $toast = useToast()
@@ -106,13 +95,7 @@ const { values, handleSubmit, meta, resetForm } = useForm({
 })
 
 const confirmDialog = ref(false)
-const currentFormData = ref<typeof savedFormData.value>(undefined)
-
-const savedFormData = computed(() => {
-  if (!savedProfile.value) return undefined
-  const { user, ...rest } = savedProfile.value
-  return { ...rest, email: user.email }
-})
+const currentFormData = ref(undefined)
 
 const hasFormChanged = computed<boolean>(() => {
   const initialValues = cloneDeep(meta.value.initialValues)
@@ -141,25 +124,6 @@ const onSubmit = () => {
 
   return { showConfirmDialog, submit }
 }
-
-watch(
-  savedFormData,
-  () => {
-    if (!savedFormData.value) return
-
-    const email = savedFormData.value.email
-
-    currentFormData.value = savedFormData.value
-    resetForm({
-      values: {
-        ...savedFormData.value,
-        currentEmail: email,
-        newEmail: email,
-      },
-    })
-  },
-  { immediate: true },
-)
 
 watch(
   () => props.email,
