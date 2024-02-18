@@ -161,15 +161,6 @@ const formConfig: Ref<Form<['email', 'password', 'confirmPassword'][number]>> =
 
 const onSubmit = handleSubmit(values => {
   emit('submit', values)
-  // registerMutation.mutate(values, {
-  //   onSuccess: () => {
-  //     router.push({ name: 'My Profile' })
-  //   },
-  //   onError: () => {
-  //     error.value = 'Invalid credentials. Please try again'
-  //     errorAlert.value = true
-  //   },
-  // })
 })
 </script>
 

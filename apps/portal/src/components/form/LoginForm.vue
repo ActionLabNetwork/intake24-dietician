@@ -99,6 +99,7 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseProgressCircular from '../common/BaseProgressCircular.vue'
 import VBaseInput from './VBaseInput.vue'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const router = useRouter()
 
@@ -149,7 +150,17 @@ const formConfig: Ref<Form<['email', 'password'][number]>> = ref({
 // Functions
 const onSubmit = handleSubmit(values => {
   loginMutation.mutate(values, {
-    onSuccess: () => router.push({ name: 'My Profile' }),
+    onSuccess: async () => {
+      const clinicStore = useClinicStore()
+      await clinicStore.refetchClinics()
+
+      if (clinicStore.clinics.length < 1) {
+        router.push({ name: 'Add Survey' })
+      } else {
+        clinicStore.switchToFirstClinic()
+        clinicStore.navigateToSurveyPatientList()
+      }
+    },
     onError: () => {
       error.value = 'Invalid credentials. Please try again'
       errorAlert.value = true

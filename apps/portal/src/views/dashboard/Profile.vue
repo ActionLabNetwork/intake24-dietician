@@ -1,5 +1,8 @@
 <template>
-  <v-main v-if="isProfileLoading && !profileQuerySucceeded" align="center">
+  <v-main
+    v-if="isProfileLoading && !profileQuerySucceeded && !profileHasLoaded"
+    align="center"
+  >
     <v-container>
       <v-progress-circular indeterminate />
     </v-container>
@@ -126,6 +129,7 @@ const { values, handleSubmit, meta, resetForm } = useForm({
   ),
 })
 
+const profileHasLoaded = ref(false)
 const confirmDialog = ref(false)
 const currentFormData = ref<typeof savedFormData.value>(undefined)
 
@@ -184,7 +188,6 @@ watch(
     const email = savedFormData.value.email
 
     currentFormData.value = savedFormData.value
-    // setValues(savedFormData.value)
     resetForm({
       values: {
         ...savedFormData.value,
@@ -192,6 +195,10 @@ watch(
         newEmail: email,
       },
     })
+
+    if (!profileHasLoaded.value) {
+      profileHasLoaded.value = true
+    }
   },
   { immediate: true },
 )

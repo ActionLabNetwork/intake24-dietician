@@ -28,6 +28,7 @@ export class SurveyRepository {
   public async getSurveysOfDietician(dieticianId: number) {
     return await this.drizzle.query.surveys.findMany({
       where: eq(surveys.dieticianId, dieticianId),
+      orderBy: surveys.createdAt,
     })
   }
 

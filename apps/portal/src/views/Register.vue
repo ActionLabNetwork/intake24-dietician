@@ -41,9 +41,8 @@
 import RegisterForm from '@/components/form/RegisterForm.vue'
 import RegisterClinicForm from '@/components/form/RegisterClinicForm.vue'
 import RegisterProfileForm from '@/components/form/RegisterProfileForm.vue'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
-import { ref } from 'vue'
 import type { DieticianCreateDto } from '@intake24-dietician/common/entities-new/user.dto'
 import type { RegisterDto } from '@intake24-dietician/common/entities-new/auth.dto'
 import { useRegister } from '../mutations/useAuth'
@@ -111,7 +110,7 @@ const handleProfileStepSubmit = (values: DieticianCreateDto) => {
     },
     {
       onSuccess: () => {
-        router.push({ name: 'My Profile' })
+        router.push({ name: 'Add Survey' })
       },
     },
   )
