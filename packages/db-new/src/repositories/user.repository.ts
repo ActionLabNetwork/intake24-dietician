@@ -184,7 +184,6 @@ export class UserRepository {
           middleName: profile.middleName,
           lastName: profile.lastName,
           mobileNumber: profile.mobileNumber,
-          businessNumber: profile.businessNumber,
           businessAddress: profile.businessAddress,
           shortBio: profile.shortBio,
         })

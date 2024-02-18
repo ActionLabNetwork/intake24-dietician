@@ -44,10 +44,8 @@
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
-import { useAuthStore } from '@/stores/auth'
 // import type { i18nOptions } from '@intake24-dietician/i18n/index'
-import { storeToRefs } from 'pinia'
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 // import { useI18n } from 'vue-i18n'
 // import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -88,14 +86,12 @@ const { values, handleSubmit, meta, resetForm } = useForm({
     lastName: '',
     avatar: '',
     mobileNumber: '',
-    businessNumber: '',
     businessAddress: '',
     shortBio: '',
   },
 })
 
 const confirmDialog = ref(false)
-const currentFormData = ref(undefined)
 
 const hasFormChanged = computed<boolean>(() => {
   const initialValues = cloneDeep(meta.value.initialValues)

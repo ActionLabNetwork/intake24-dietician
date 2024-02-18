@@ -39,7 +39,6 @@ export const DieticianCreateDto = z.object({
   middleName: z.string().nullable(),
   lastName: z.string().nullable(),
   mobileNumber: z.string().nullable(),
-  businessNumber: z.string().nullable(),
   businessAddress: z.string().nullable(),
   shortBio: z.string().nullable(),
   avatar: z.string().nullable(),

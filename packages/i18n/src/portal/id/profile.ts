@@ -27,9 +27,6 @@ export const profile = {
         label: 'Nomor seluler',
         labelSuffix: ' (wajib)',
       },
-      businessNumber: {
-        label: 'Nomor bisnis',
-      },
       businessAddress: {
         label: 'Alamat bisnis',
       },

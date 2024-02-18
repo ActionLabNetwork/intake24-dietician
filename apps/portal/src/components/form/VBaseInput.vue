@@ -105,7 +105,7 @@
         <template #append-inner>
           <slot name="append-inner" />
         </template>
-        <template #append>
+        <template v-if="$slots.append" #append>
           <slot name="append" />
         </template>
       </v-text-field>
