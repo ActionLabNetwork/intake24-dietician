@@ -1,8 +1,8 @@
 <template>
-  <div class="d-flex flex-column justify-space-around h-screen">
+  <div class="h-screen d-flex flex-column justify-space-around">
     <div
       v-if="loginMutation.data.value === undefined"
-      class="wrapper py-15 px-16 d-flex flex-column"
+      class="px-16 wrapper py-15 d-flex flex-column"
     >
       <div class="pb-16">
         <v-img max-width="10rem" src="@/assets/logo.svg" />
@@ -20,10 +20,10 @@
           :text="error"
         ></v-alert>
       </div>
-      <div class="d-flex flex-column mt-16">
+      <div class="mt-16 d-flex flex-column">
         <v-form
           v-model="form"
-          class="d-flex flex-column justify-center"
+          class="justify-center d-flex flex-column"
           @submit.prevent="onSubmit"
         >
           <VBaseInput
@@ -45,7 +45,7 @@
           >
             <div>
               <v-switch
-                class="d-flex justify-center"
+                class="justify-center d-flex"
                 :label="t('login.form.keepLoggedIn')"
                 color="success"
               />
@@ -58,7 +58,7 @@
           </div>
           <v-btn
             id="login-form-submit"
-            class="text-subtitle-1 w-75 mt-6 mx-auto mx-md-0 text-white"
+            class="mx-auto mt-6 text-white text-subtitle-1 w-75 mx-md-0"
             color="#EE672D"
             size="large"
             :disabled="!meta.valid"
@@ -91,6 +91,7 @@ import { useLogin } from '@/mutations/useAuth'
 import type { Form } from '@/types/form.types'
 import { LoginDtoSchema } from '@intake24-dietician/common/entities-new/auth.dto'
 import type { i18nOptions } from '@intake24-dietician/i18n'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm } from 'vee-validate'
 import type { Ref } from 'vue'
@@ -99,7 +100,6 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import BaseProgressCircular from '../common/BaseProgressCircular.vue'
 import VBaseInput from './VBaseInput.vue'
-import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 const router = useRouter()
 

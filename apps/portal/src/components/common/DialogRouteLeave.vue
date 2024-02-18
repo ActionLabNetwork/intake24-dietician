@@ -38,7 +38,7 @@ const dialog = {
     dialog.close()
   },
 }
-// eslint-disable-next-line vue/no-setup-props-destructure
+
 const leaveGuard = useLeaveGuard(dialog.show, props.unsavedChanges)
 
 watch(

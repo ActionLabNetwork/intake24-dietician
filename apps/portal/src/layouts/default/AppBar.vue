@@ -26,7 +26,7 @@
     </template>
   </v-app-bar>
   <NavigationDrawer
-    :drawer="drawer"
+    v-model:drawer="drawer"
     @change="
       newVal => {
         drawer = newVal

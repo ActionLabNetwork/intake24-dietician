@@ -1,10 +1,5 @@
 <template>
-  <v-navigation-drawer
-    v-model="_drawer"
-    temporary
-    location="right"
-    @update:model-value="() => emit('change', _drawer)"
-  >
+  <v-navigation-drawer v-model="drawer" temporary location="right">
     <v-list-item
       class="py-5"
       :prepend-avatar="profile?.avatar ?? getDefaultAvatar()"
@@ -31,16 +26,13 @@
 </template>
 
 <script setup lang="ts">
+import { useLogout } from '@/mutations/useAuth'
+import { useProfile } from '@/queries/useAuth'
+import router from '@/router'
+import { getDefaultAvatar, getFullName, getInitials } from '@/utils/profile'
+import { useQueryClient } from '@tanstack/vue-query'
 import { ref, watch } from 'vue'
 import BasePreferences from '../common/BasePreferences.vue'
-import { useLogout } from '@/mutations/useAuth'
-import router from '@/router'
-import { useProfile } from '@/queries/useAuth'
-import { useQueryClient } from '@tanstack/vue-query'
-import { getInitials, getFullName, getDefaultAvatar } from '@/utils/profile'
-
-const props = defineProps<{ drawer: boolean }>()
-const emit = defineEmits<{ change: [val: boolean] }>()
 
 const queryClient = useQueryClient()
 queryClient.invalidateQueries({ queryKey: ['auth'] })
@@ -67,14 +59,7 @@ const navItems = [
   },
 ]
 
-const _drawer = ref(false)
-
-watch(
-  () => props.drawer,
-  newVal => {
-    _drawer.value = newVal
-  },
-)
+const drawer = defineModel<boolean>('drawer')
 
 const _user = ref({
   initials: '',

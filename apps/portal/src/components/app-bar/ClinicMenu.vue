@@ -6,7 +6,6 @@
           Clinics <v-icon class="ml-2" icon="mdi-chevron-down" />
         </v-btn>
       </template>
-
       <v-card class="my-menu pa-2">
         <div v-if="clinics.length === 0" class="pa-2">
           <p class="text-center text-body-1">No clinics...</p>
@@ -29,7 +28,6 @@
             <ClinicMenuItem
               v-for="clinic in otherClinics"
               :key="clinic.id"
-              :value="clinic"
               :clinic="clinic"
               variant="plain"
               @click="
@@ -61,10 +59,10 @@
 
 <script setup lang="ts">
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
-import ClinicMenuItem from './ClinicMenuItem.vue'
 import { storeToRefs } from 'pinia'
-import { useRouter, useRoute } from 'vue-router'
 import { watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import ClinicMenuItem from './ClinicMenuItem.vue'
 
 const router = useRouter()
 const route = useRoute()
