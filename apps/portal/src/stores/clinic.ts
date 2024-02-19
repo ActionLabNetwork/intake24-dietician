@@ -19,7 +19,6 @@ export const useClinicStore = defineStore('clinic', () => {
   )
 
   const switchToFirstClinic = () => {
-    console.log('Clinics: ', clinics.value)
     const firstClinic = clinics.value[0]
     if (!firstClinic) return
 
@@ -48,7 +47,6 @@ export const useClinicStore = defineStore('clinic', () => {
   }
 
   const navigateToSurveyPatientList = () => {
-    console.log({ currentClinic })
     if (!currentClinic.value) return
 
     router.push({
