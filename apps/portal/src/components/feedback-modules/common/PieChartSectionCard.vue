@@ -1,69 +1,130 @@
 <template>
   <v-row>
-    <v-col cols="12" md="3" class="pr-10 d-flex align-center flex-wrap">
+    <v-col
+      cols="12"
+      md="12"
+      class="d-flex align-center flex-wrap justify-space-between px-3 px-lg-0"
+    >
       <div class="font-weight-medium">{{ label }}</div>
+      <div>
+        <v-btn
+          :class="{
+            'rotate-expand-icon': !isPlusIcon,
+            transition: isTransition,
+          }"
+          icon="mdi-close"
+          variant="flat"
+          @click="toggleIcon"
+        />
+      </div>
     </v-col>
     <v-col
       cols="12"
-      md="9"
+      md="12"
       class="wrapper d-flex flex-column mx-auto"
-      :style="[wrapperStyle, { background: colors.backgroundColor }]"
+      :style="[
+        wrapperStyle,
+        { background: expand ? colors.backgroundColor : 'white' },
+      ]"
     >
-      <ul>
-        <li
-          v-for="food in props.foods"
-          :key="food.name + food.servingWeight + food.value"
-          class="energy-value d-flex"
-        >
-          <div class="w-100">
-            <div class="d-flex justify-space-between">
-              <div>
-                <p>
-                  {{ food.name }} ({{
-                    usePrecision(parseFloat(food.servingWeight), 2)
-                  }}g)
-                </p>
-              </div>
-              <div class="font-weight-bold">
-                {{ food.value }}{{ unitOfMeasure?.symbol }}
+      <v-expand-transition>
+        <ul v-show="expand">
+          <li
+            v-for="food in formattedFoods"
+            :key="food.name + food.servingWeight + food.value"
+            class="energy-value d-flex"
+          >
+            <div class="w-100">
+              <div class="d-flex justify-space-between">
+                <div class="w-75">
+                  <p>{{ food.name }} {{ food.servingWeight }}</p>
+                </div>
+                <div class="font-weight-bold">
+                  {{ food.value }}{{ unitOfMeasure?.symbol }}
+                </div>
               </div>
             </div>
-          </div>
-        </li>
-      </ul>
+          </li>
+        </ul>
+      </v-expand-transition>
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import chroma from 'chroma-js'
 import { usePrecision } from '@vueuse/math'
 import { MealCardProps } from '../types'
-
-export interface FibreIntakeProps {
-  label: string
-  hours: number
-  minutes: number
-  unitOfMeasure:
-    | {
-        symbol: string | null
-        description: string
-      }
-    | undefined
-  colors: {
-    backgroundColor: string
-    valueCardBgColor: string
-    valueCardBorderColor: string
-  }
-  foods: {
-    name: string
-    value: number
-    servingWeight: string
-  }[]
-}
+import { sort } from 'radash'
 
 const props = defineProps<MealCardProps>()
+
+const isPlusIcon = ref(true)
+const isTransition = ref(true)
+const expand = ref(true)
+
+const formattedFoods = computed(() => {
+  // Sort the foods in descending order of value
+  const sortedFoods = sort(props.foods, food => food.value, true)
+  const topContributors = sortedFoods.filter(food => food.value > 0)
+  const n = 3
+
+  // Take top n contributors
+  const topNContributors = topContributors.slice(0, n).map(food => ({
+    name: food.name,
+    value: food.value,
+    servingWeight: roundServingWeight(food.servingWeight),
+  }))
+
+  // Calculate the value and servingWeight for 'Others'
+  const othersValue = topContributors
+    .slice(n)
+    .reduce((total, food) => total + food.value, 0)
+  const othersCount =
+    sortedFoods.length -
+    topContributors.length +
+    topContributors.slice(n).length
+
+  console.log({
+    sortedFoods,
+    topContributors,
+    topNContributors,
+    othersValue,
+    othersCount,
+  })
+
+  return othersCount > 0
+    ? [
+        ...topNContributors,
+        {
+          name: 'Others',
+          value: othersValue,
+          servingWeight: `(${othersCount} foods)`,
+        },
+      ]
+    : topNContributors
+})
+
+const toggleIcon = () => {
+  isTransition.value = true
+  isPlusIcon.value = !isPlusIcon.value
+
+  if (isPlusIcon.value) {
+    expand.value = true
+  } else {
+    expand.value = false
+  }
+
+  setTimeout(() => {
+    isTransition.value = false
+  }, 300)
+}
+
+const roundServingWeight = (servingWeight: string) => {
+  const rounded = usePrecision(parseFloat(servingWeight), 2)
+  return rounded.value ? `(${rounded.value}g)` : ''
+}
 
 const wrapperStyle = computed(() => ({
   '--line-color': props.colors.valueCardBorderColor,
@@ -77,7 +138,7 @@ const wrapperStyle = computed(() => ({
 <style scoped>
 .wrapper {
   padding: 1rem;
-  border-radius: 10px;
+  border-radius: 2px;
   height: 100%;
   position: relative;
   width: 90%;
@@ -85,17 +146,17 @@ const wrapperStyle = computed(() => ({
   &::before {
     content: '';
     position: absolute;
-    left: -10px;
-    top: 0;
-    bottom: 0;
-    width: 4px;
+    top: -10px;
+    left: 0;
+    right: 0;
+    height: 4px;
     background: var(--bg-color);
     border-radius: 20px;
   }
 }
 
 .energy-value {
-  border-radius: 8px;
+  border-radius: 2px;
   padding: 1rem;
   line-height: 1;
 
@@ -104,23 +165,14 @@ const wrapperStyle = computed(() => ({
     margin-right: 5px;
   }
 }
-
-.carb-counter {
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  justify-content: center;
-  align-items: center;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  font-weight: 800;
-}
-
-.exchange-text {
-  transform: translateY(25%);
-}
-
 .flex-wrap {
   flex-wrap: wrap;
+}
+
+.rotate-expand-icon {
+  transform: rotate(45deg);
+}
+.transition {
+  transition: transform 0.3s ease-in-out;
 }
 </style>

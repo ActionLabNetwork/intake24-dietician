@@ -48,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'

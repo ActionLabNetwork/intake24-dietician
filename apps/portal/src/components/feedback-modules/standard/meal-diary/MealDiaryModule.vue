@@ -224,11 +224,11 @@ const generateMealCards = (
   mealCards[meal.name] = sortedMealCard
 }
 
-function sortFoodsByNutrient(
+const sortFoodsByNutrient = (
   mealCard: Omit<MealCardMultipleNutrientsProps, 'colors'>,
   nutrientKey: string,
   sortOrder: 'asc' | 'desc' = 'asc',
-): Omit<MealCardMultipleNutrientsProps, 'colors'> {
+): Omit<MealCardMultipleNutrientsProps, 'colors'> => {
   const sortedMealCard = { ...mealCard, foods: [...mealCard.foods] }
 
   sortedMealCard.foods.sort((a, b) => {
