@@ -54,7 +54,7 @@ import {
   calculateMealNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
 import { MealCardMultipleNutrientsProps } from '../../types'
-import { nutrientTypes } from '@intake24-dietician/db-new/models'
+import { sort } from 'radash'
 
 export type NutrientType = {
   id: number
@@ -121,7 +121,6 @@ const totalNutrients = computed(() => {
   return Math.floor(
     combinedMeals.meals.reduce((total, meal) => {
       generateMealCards(meal, selectedNutrients.value)
-      console.log({ mealCards })
       return (
         total +
         calculateMealNutrientIntake(
@@ -158,6 +157,7 @@ const generateMealCards = (
   selectedNutrients: NutrientType[],
   recallsCount = 1,
 ) => {
+  // Calculate nutrient type(s) of meal
   const mealCard = selectedNutrients.reduce(
     (acc, nutrientType) => {
       const mealNutrientIntake = usePrecision(
@@ -179,22 +179,6 @@ const generateMealCards = (
             value: mealNutrientIntake,
           },
         },
-        // foods: meal.foods.map(food => ({
-        //   name: food['englishName'],
-        //   servingWeight: getServingWeight(food),
-        //   valueByNutrientType: {
-        //     ...food.valueByNutrientType,
-        //     [nutrientType.description]: {
-        //       value: usePrecision(
-        //         calculateFoodNutrientsExchange(
-        //           food as RecallMealFood,
-        //           nutrientType.id.toString(),
-        //         ),
-        //         2,
-        //       ).value,
-        //     },
-        //   },
-        // })),
       } satisfies Omit<MealCardMultipleNutrientsProps, 'colors'>
     },
     {
@@ -204,6 +188,7 @@ const generateMealCards = (
     } as Omit<MealCardMultipleNutrientsProps, 'colors'>,
   )
 
+  // For each food, calculate nutrient intake of nutrient type(s)
   const foods = meal.foods.map(food => {
     return selectedNutrients.reduce(
       (acc, nutrientType) => {
@@ -230,14 +215,40 @@ const generateMealCards = (
     )
   })
 
-  mealCards[meal.name] = { ...mealCard, foods }
+  const sortedMealCard = sortFoodsByNutrient(
+    { ...mealCard, foods: foods },
+    selectedNutrients[0]?.description ?? '',
+    'desc',
+  )
+
+  mealCards[meal.name] = sortedMealCard
+}
+
+function sortFoodsByNutrient(
+  mealCard: Omit<MealCardMultipleNutrientsProps, 'colors'>,
+  nutrientKey: string,
+  sortOrder: 'asc' | 'desc' = 'asc',
+): Omit<MealCardMultipleNutrientsProps, 'colors'> {
+  const sortedMealCard = { ...mealCard, foods: [...mealCard.foods] }
+
+  sortedMealCard.foods.sort((a, b) => {
+    const valueA = a.valueByNutrientType[nutrientKey]?.value || 0
+    const valueB = b.valueByNutrientType[nutrientKey]?.value || 0
+
+    if (sortOrder === 'asc') {
+      return valueA - valueB
+    } else {
+      return valueB - valueA
+    }
+  })
+
+  return sortedMealCard
 }
 
 watch(
   () => nutrientType.value,
   newNutrientType => {
     if (newNutrientType.length > 0) {
-      console.log({ newNutrientType })
       allNutrients.value = newNutrientType
       selectedNutrients.value = [newNutrientType[0]!]
     }
