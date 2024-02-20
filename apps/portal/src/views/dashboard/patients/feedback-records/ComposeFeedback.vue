@@ -104,6 +104,9 @@ import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
+import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
+import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
+import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -160,6 +163,15 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
     'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
+    'Fruit intake': { component: markRaw(FruitIntakeModule), feedback: '' },
+    'Vegetable intake': {
+      component: markRaw(VegetableIntakeModule),
+      feedback: '',
+    },
+    'Fruit and vegetable intake': {
+      component: markRaw(FruitAndVegetableIntakeModule),
+      feedback: '',
+    },
   })
 
 const allModules = ref<

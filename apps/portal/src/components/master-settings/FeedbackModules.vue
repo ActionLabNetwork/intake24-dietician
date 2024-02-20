@@ -172,6 +172,11 @@ const feedbackMapping = ref<FeedbackMapping>({
   'Sugar intake': createFeedbackEntry('Sugar intake'),
   'Saturated fat intake': createFeedbackEntry('Saturated fat intake'),
   'Calcium intake': createFeedbackEntry('Calcium intake'),
+  'Fruit intake': createFeedbackEntry('Fruit intake'),
+  'Vegetable intake': createFeedbackEntry('Vegetable intake'),
+  'Fruit and vegetable intake': createFeedbackEntry(
+    'Fruit and vegetable intake',
+  ),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {

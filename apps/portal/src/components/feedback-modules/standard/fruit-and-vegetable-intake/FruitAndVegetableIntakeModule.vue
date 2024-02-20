@@ -1,10 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card
-    v-if="theme"
-    :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
-  >
-    <ModuleTitle :logo="logo" title="Sugar intake" />
+  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+    <ModuleTitle :logo="logo" title="Fruit and vegetable intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -34,7 +31,10 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_FREE_SUGARS_ID } from '@intake24-dietician/portal/constants/recall'
+import {
+  NUTRIENTS_FRUIT_ID,
+  NUTRIENTS_VEGETABLE_ID,
+} from '@intake24-dietician/portal/constants/recall'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
@@ -70,20 +70,39 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
-const { themeConfig } = useThemeSelector('Sugar intake')
+const { themeConfig } = useThemeSelector('Fruit and vegetable intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
-const totalSugar = ref(0)
+const totalFruitAndVegetable = ref(0)
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
-    module => module.name === 'Sugar intake',
+    module => module.name === 'Fruit and vegetable intake',
   )
+})
+const combinedUnitOfMeasure = computed(() => {
+  if (!module.value || (module.value?.nutrientTypes.length ?? 0) < 2) return
+  return {
+    id: module.value.nutrientTypes[0]!.id,
+    description:
+      module.value.nutrientTypes[0]!.description +
+      ' and ' +
+      module.value.nutrientTypes[1]!.description,
+    unit: {
+      symbol: module.value.nutrientTypes[0]!.unit.symbol,
+      description: module.value.nutrientTypes[0]!.unit.description,
+    },
+  }
 })
 
 const tabs = ref<PieAndTimelineTabs>([
@@ -92,7 +111,7 @@ const tabs = ref<PieAndTimelineTabs>([
     value: 0,
     component: markRaw(PieChartSection),
     props: {
-      name: 'Sugar intake',
+      name: 'Fruit and vegetable intake',
       meals: mealCards,
       colors: colorPalette,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
@@ -106,56 +125,69 @@ const tabs = ref<PieAndTimelineTabs>([
     value: 1,
     component: markRaw(TimelineSection),
     props: {
-      name: 'Sugar intake',
+      name: 'Fruit and vegetable intake',
       meals: mealCards,
       recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
       colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0],
+      unitOfMeasure:
+        combinedUnitOfMeasure.value ?? module.value?.nutrientTypes[0],
     },
     icon: 'mdi-calendar-blank-outline',
   },
 ])
 
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
-const logo = computed(() =>
-  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
-    ? themeConfig.value.logo
-    : { path: themeConfig.value.logo },
-)
+const calculateMealFruitAndVegetableIntake = (
+  meal: RecallMeal,
+  recallsCount = 1,
+) => {
+  const mealFruitExchange = calculateMealNutrientsExchange(
+    meal,
+    module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+    recallsCount,
+  )
 
-const calculateMealSugarIntake = (meal: RecallMeal, recallsCount = 1) => {
-  const mealSugarExchange = usePrecision(
-    calculateMealNutrientsExchange(
-      meal,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FREE_SUGARS_ID,
-      recallsCount,
-    ),
+  const mealVegetableExchange = calculateMealNutrientsExchange(
+    meal,
+    module.value?.nutrientTypes[1]?.id.toString() ?? NUTRIENTS_VEGETABLE_ID,
+    recallsCount,
+  )
+
+  const mealFruitAndVegetableExchange = usePrecision(
+    mealFruitExchange + mealVegetableExchange,
     2,
   ).value
 
   mealCards[meal.name] = {
-    name: 'Sugar intake',
+    name: 'Fruit and vegetable intake',
     label: meal.name,
     hours: meal.hours,
     minutes: meal.minutes,
     unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ??
-            NUTRIENTS_FREE_SUGARS_ID,
-        ),
+    foods: meal.foods.map(food => {
+      const foodFruitNutrientsExchange = calculateFoodNutrientsExchange(
+        food as RecallMealFood,
+        module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+      )
+      const foodVegetablesNutrientsExchange = calculateFoodNutrientsExchange(
+        food as RecallMealFood,
+        module.value?.nutrientTypes[1]?.id.toString() ?? NUTRIENTS_VEGETABLE_ID,
+      )
+      const foodFruitAndVegetablesNutrientsExchange = usePrecision(
+        foodFruitNutrientsExchange + foodVegetablesNutrientsExchange,
         2,
-      ).value,
-    })),
+      ).value
+
+      return {
+        name: food['englishName'],
+        servingWeight: food['portionSizes']?.find(
+          (item: { name: string }) => item.name === 'servingWeight',
+        )?.value,
+        value: foodFruitAndVegetablesNutrientsExchange,
+      }
+    }),
   }
 
-  return mealSugarExchange
+  return mealFruitAndVegetableExchange
 }
 
 watch(
@@ -170,11 +202,11 @@ watch(
       delete mealCards[key]
     })
 
-    totalSugar.value = Math.floor(
+    totalFruitAndVegetable.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
         return (
           totalEnergy +
-          calculateMealSugarIntake(meal, combinedMeals.recallsCount)
+          calculateMealFruitAndVegetableIntake(meal, combinedMeals.recallsCount)
         )
       }, 0),
     )
@@ -190,16 +222,15 @@ watch(
     colorPalette.value = generatePastelPalette(
       data.recall.meals.length + 1,
       data.recall.meals.map(meal => meal.hours),
-      theme.value === 'Fun' ? 0.2 : undefined,
     )
 
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })
 
-    totalSugar.value = Math.floor(
+    totalFruitAndVegetable.value = Math.floor(
       data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealSugarIntake(meal)
+        return totalEnergy + calculateMealFruitAndVegetableIntake(meal)
       }, 0),
     )
   },

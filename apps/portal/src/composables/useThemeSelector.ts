@@ -52,6 +52,18 @@ export function useThemeSelector(moduleName: ModuleName) {
       Classic: '/feedback-modules/calcium-intake/CI-LogoAdult.png',
       Fun: 'calcium-intake/svg/Logo.vue',
     },
+    'Fruit intake': {
+      Classic: '/feedback-modules/fruit-intake/FI-LogoAdult.png',
+      Fun: 'fruit-intake/svg/Logo.vue',
+    },
+    'Vegetable intake': {
+      Classic: '/feedback-modules/vegetable-intake/VI-LogoAdult.png',
+      Fun: 'vegetable-intake/svg/Logo.vue',
+    },
+    'Fruit and vegetable intake': {
+      Classic: '/feedback-modules/fruit-and-vegetable-intake/FVI-LogoAdult.png',
+      Fun: 'fruit-and-vegetable-intake/svg/Logo.vue',
+    },
   } as const
 
   const theme = computed(() => clinicQuery.data?.value?.surveyPreference.theme)

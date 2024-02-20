@@ -24,12 +24,15 @@
 import type { PieAndTimelineTabs } from '../types/index'
 import BaseTabs from '../../common/BaseTabs.vue'
 
-defineProps<{
-  tabs: PieAndTimelineTabs
-  showTabs: boolean
-  background: {
-    color: string
-    active: string
-  }
-}>()
+withDefaults(
+  defineProps<{
+    tabs: PieAndTimelineTabs
+    showTabs: boolean
+    background?: {
+      color: string
+      active: string
+    }
+  }>(),
+  { background: () => ({ color: '#55555540', active: '#555555' }) },
+)
 </script>

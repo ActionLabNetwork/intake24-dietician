@@ -36,4 +36,16 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
     mainBackground: '#ffffff',
     feedback: { background: '#ffffff', color: '#000' },
   },
+  'Fruit intake': {
+    mainBackground: '#ffffff',
+    feedback: { background: '#ffffff', color: '#000' },
+  },
+  'Vegetable intake': {
+    mainBackground: '#ffffff',
+    feedback: { background: '#ffffff', color: '#000' },
+  },
+  'Fruit and vegetable intake': {
+    mainBackground: '#ffffff',
+    feedback: { background: '#ffffff', color: '#000' },
+  },
 }

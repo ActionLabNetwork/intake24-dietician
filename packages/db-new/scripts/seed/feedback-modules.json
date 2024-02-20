@@ -38,5 +38,16 @@
     "id": 8,
     "name": "Calcium intake",
     "nutrientTypes": [140]
+  },
+  {
+    "id": 9,
+    "name": "Fruit intake",
+    "nutrientTypes": [252]
+  },
+  { "id": 10, "name": "Vegetable intake", "nutrientTypes": [262] },
+  {
+    "id": 11,
+    "name": "Fruit and vegetable intake",
+    "nutrientTypes": [252, 262]
   }
 ]

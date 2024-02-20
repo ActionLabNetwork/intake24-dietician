@@ -110,6 +110,9 @@ import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
+import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
+import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
+import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -183,6 +186,15 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
     'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
+    'Fruit intake': { component: markRaw(FruitIntakeModule), feedback: '' },
+    'Vegetable intake': {
+      component: markRaw(VegetableIntakeModule),
+      feedback: '',
+    },
+    'Fruit and vegetable intake': {
+      component: markRaw(FruitAndVegetableIntakeModule),
+      feedback: '',
+    },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -229,6 +241,24 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Calcium intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Fruit intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Vegetable intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Fruit and vegetable intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
