@@ -112,6 +112,10 @@ const totalNutrients = computed(() => {
     return 0
   }
 
+  if (selectedNutrients.value.length === 0) {
+    return 0
+  }
+
   if (props.useSampleRecall) {
     return recallStore.sampleRecallQuery.data.recall.meals.reduce(
       (total, meal) => {

@@ -15,7 +15,7 @@
                 :key="element.value"
                 :value="element.title"
                 :active="element.title === selectedModule"
-                rounded="xl"
+                rounded="lg"
                 class="ma-2"
                 @click="() => handleModuleSelect(element.title)"
               >

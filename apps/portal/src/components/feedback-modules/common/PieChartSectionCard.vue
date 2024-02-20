@@ -14,6 +14,7 @@
           }"
           icon="mdi-close"
           variant="flat"
+          style="background: inherit"
           @click="toggleIcon"
         />
       </div>
@@ -24,7 +25,7 @@
       class="wrapper d-flex flex-column mx-auto"
       :style="[
         wrapperStyle,
-        { background: expand ? colors.backgroundColor : 'white' },
+        { background: expand ? colors.backgroundColor : 'inherit' },
       ]"
     >
       <v-expand-transition>
