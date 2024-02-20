@@ -68,7 +68,6 @@ export const SurveyCreateDtoSchema = z.object({
   intake24Host: z.string().url(),
   intake24SurveyId: z.string().min(1, 'Intake24 survey ID is required'),
   intake24Secret: z.string().min(1, 'Intake24 secret is required'),
-  intake24AdminBaseUrl: z.string().url(),
   countryCode: z
     .string()
     .refine(val => countryCodes.some(c => c.code === val), {

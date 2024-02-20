@@ -31,7 +31,8 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
-import { useFeedbackModules } from '@intake24-dietician/portal/queries/useFeedbackModule'
+import { useFeedbackModules } from '@intake24-dietician/portal/queries/UseFeedbackModule'
+import { allowedIntake24Hosts } from '@intake24-dietician/portal/constants/integration'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
@@ -47,8 +48,7 @@ const addSurveyMutation = useAddSurvey()
 const renderChild = ref(false)
 const surveyConfigFormValues = ref<SurveyCreateDto>({
   surveyName: '',
-  intake24Host: 'https://myfoodswaps.com/api/recall/alias',
-  intake24AdminBaseUrl: 'https://admin.intake24.dev',
+  intake24Host: allowedIntake24Hosts[0],
   countryCode: 'au',
   intake24SurveyId: '',
   intake24Secret: '',
@@ -112,7 +112,7 @@ watch(
     const alias = await surveyUUIDMutation.mutateAsync()
     surveyConfigFormValues.value = {
       ...surveyConfigFormValues.value,
-      intake24Host: `https://myfoodswaps.com/api/recall/${alias}`,
+      intake24Host: allowedIntake24Hosts[0],
       intake24Secret: await surveySecretMutation.mutateAsync(),
       alias: alias,
       feedbackModules:

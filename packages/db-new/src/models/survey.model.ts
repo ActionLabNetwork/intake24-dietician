@@ -20,12 +20,13 @@ export const surveys = pgTable('survey', {
     .notNull(),
   surveyName: text('survey_name').notNull(),
   countryCode: varchar('country_code', { length: 2 }).notNull(),
-  intake24AdminBaseUrl: text('intake24AdminBaseUrl').notNull(),
+  // This is called called "admin base url" in our UI.
+  // For generating the survey link, the subdomain should be changed to "survey"
   intake24Host: text('intake24Host').notNull(),
-  // this is called "slug" in code and "survey ID" in UI in Intake24
+  // In Intake24, this is the "slug" in code and "survey ID" in UI.
   intake24SurveyId: text('intake24_survey_id').notNull(),
   intake24Secret: text('intake24_secret').notNull(),
-  // the path parameter used for Intake24 to return the survey
+  // The path parameter used for Intake24 to post the recall
   alias: text('alias').notNull().unique(),
   isActive: boolean('is_active').default(true).notNull(),
   surveyPreference: typedJsonbFromSchema(SurveyPreferenceSchema)(

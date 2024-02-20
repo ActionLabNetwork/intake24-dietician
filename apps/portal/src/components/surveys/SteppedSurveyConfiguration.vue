@@ -57,7 +57,11 @@
                         :placeholder="field.placeHolder"
                         :rules="field.rules"
                         :required="field.required"
-                        :value="formValues[field.key]"
+                        :value="
+                          field.render
+                            ? field.render(formValues)
+                            : formValues[field.key]
+                        "
                         :select-config="field.selectConfig"
                         class="mt-3"
                         @update="field.handleUpdate"
@@ -226,6 +230,8 @@ import FeedbackModules from '../master-settings/FeedbackModules.vue'
 import RecallReminders from '../master-settings/RecallReminders.vue'
 import { useToast } from 'vue-toast-notification'
 import { ReminderCondition } from '@intake24-dietician/common/entities-new/preferences.dto'
+import { allowedIntake24Hosts } from '@intake24-dietician/portal/constants/integration'
+import { env } from '../../config/env'
 
 type FormField = keyof Omit<
   SurveyCreateDto,
@@ -255,6 +261,8 @@ type Substep = {
 
 type Field = {
   key: FormField
+  /** renders the field specified by the key if not specified. */
+  render?: (value: SurveyCreateDto) => number | string
   required: boolean
   type: 'input' | 'select'
   inputType?: string
@@ -445,11 +453,12 @@ const steps: Step[] = [
                   value,
                 ),
             ],
-            handleUpdate: (val: string) =>
-              handleFieldUpdate('intake24Secret', val),
+            handleUpdate: () => {},
           },
           {
             key: 'intake24Host',
+            render: values =>
+              env.VITE_AUTH_API_HOST + '/recall/' + values['alias'],
             required: true,
             type: 'input',
             inputType: 'text',
@@ -457,7 +466,6 @@ const steps: Step[] = [
             label: 'Clinic url',
             labelSuffix: '',
             description: undefined,
-            placeHolder: 'https://myfoodswaps.com/api/recall/{alias}',
             information: {
               title: 'Clinic url',
               description: 'Clinic url information.',
@@ -479,8 +487,7 @@ const steps: Step[] = [
                   value,
                 ),
             ],
-            handleUpdate: (val: string) =>
-              handleFieldUpdate('intake24Host', val),
+            handleUpdate: () => {},
           },
         ],
       },
@@ -515,16 +522,12 @@ const steps: Step[] = [
               handleFieldUpdate('intake24SurveyId', val),
           },
           {
-            key: 'intake24AdminBaseUrl',
+            key: 'intake24Host',
             required: true,
             type: 'input',
             inputType: 'select',
             selectConfig: {
-              items: [
-                'https://admin.intake24.dev',
-                'https://admin.intake24.prod',
-                'https://admin.intake24.staging',
-              ],
+              items: allowedIntake24Hosts,
               itemTitle: 'title',
               itemValue: 'value',
             },
@@ -541,12 +544,12 @@ const steps: Step[] = [
             rules: [
               (value: string) =>
                 validateWithZod(
-                  SurveyCreateDtoSchema.shape.intake24AdminBaseUrl,
+                  SurveyCreateDtoSchema.shape.intake24Host,
                   value,
                 ),
             ],
             handleUpdate: (val: string) =>
-              handleFieldUpdate('intake24AdminBaseUrl', val),
+              handleFieldUpdate('intake24Host', val),
           },
           {
             key: 'countryCode',
