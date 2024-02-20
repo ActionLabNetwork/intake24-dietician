@@ -14,6 +14,7 @@
       :get-serving-weight="getServingWeight"
       :show-time="!recallStore.isDateRange"
       :total-nutrients="totalNutrients"
+      :theme="theme ?? 'Classic'"
     />
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
@@ -79,6 +80,7 @@ const recallStore = useRecallStore()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo

@@ -4,22 +4,27 @@
       <v-timeline-item
         v-for="(meal, key) in mealCards"
         :key="key"
-        dot-color="orange"
+        :dot-color="colors.dotColor"
         size="small"
         width="100%"
         class="timeline-item"
       >
-        <v-chip v-if="showTime" variant="flat">
+        <v-chip
+          v-if="showTime"
+          variant="flat"
+          :style="`background-color: ${colors.dotColor};
+  font-weight: 500;`"
+        >
           {{ convertTo12H(formatTime(meal.hours, meal.minutes)) }}
         </v-chip>
         <v-expansion-panels
           v-model="openPanels"
           class="mt-5"
-          color="#FFBE99"
+          :color="colors.contentBackground"
           :readonly="mode === 'preview'"
         >
           <v-expansion-panel>
-            <v-expansion-panel-title color="#FFBE99">
+            <v-expansion-panel-title :color="colors.titleBackground">
               <div>
                 <div class="d-flex align-center">
                   <div class="font-weight-medium text-h6">
@@ -39,15 +44,28 @@
                 </div>
               </div>
             </v-expansion-panel-title>
-            <v-expansion-panel-text style="background: #fcf9f4">
+            <v-expansion-panel-text
+              :style="`background: ${colors.contentBackground}`"
+            >
               <div class="w-full pa-5">
                 <v-row class="font-weight-medium">
-                  <v-col class="table-header"> Description </v-col>
-                  <v-col class="table-header"> Serving weight </v-col>
+                  <v-col
+                    class="table-header"
+                    :style="`background: ${colors.contentHeaderBackground}`"
+                  >
+                    Description
+                  </v-col>
+                  <v-col
+                    class="table-header"
+                    :style="`background: ${colors.contentHeaderBackground}`"
+                  >
+                    Serving weight
+                  </v-col>
                   <v-col
                     v-for="nutrientType in meal.nutrientType"
                     :key="nutrientType.name"
                     class="table-header"
+                    :style="`background: ${colors.contentHeaderBackground}`"
                   >
                     {{ nutrientType.name }}
                   </v-col>
@@ -78,6 +96,7 @@ import { convertTo12H, formatTime } from '@/utils/datetime'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { computed, CSSProperties, ref, watch } from 'vue'
 import { MealCardMultipleNutrientsProps } from '../../types'
+import { Theme } from '@intake24-dietician/common/types/theme'
 
 const props = defineProps<{
   mealCards: Record<string, Omit<MealCardMultipleNutrientsProps, 'colors'>>
@@ -85,6 +104,7 @@ const props = defineProps<{
   getServingWeight: Function
   showTime: boolean
   totalNutrients: number
+  theme: Theme
 }>()
 
 const openPanels = ref<number[]>([])
@@ -93,6 +113,23 @@ const timelineStyle = computed<CSSProperties>(() => {
   return props.mode === 'preview'
     ? { maxHeight: 'none', overflowY: 'scroll' }
     : { maxHeight: '50vh', overflowY: 'scroll' }
+})
+
+const colors = computed(() => {
+  if (props.theme === 'Classic') {
+    return {
+      dotColor: '#A13917',
+      titleBackground: '#EFD1C8',
+      contentHeaderBackground: '#EFD1C8',
+      contentBackground: '#fcf9f4',
+    }
+  }
+  return {
+    dotColor: '#C1921A',
+    titleBackground: '#FDE4A5',
+    contentHeaderBackground: '#FEF3D7',
+    contentBackground: '#FCF9F4',
+  }
 })
 
 watch(
@@ -111,7 +148,6 @@ watch(
 <style scoped lang="scss">
 .table-header {
   border-radius: 4px;
-  background-color: rgba(255, 196, 153, 0.5) !important;
   margin: 0.5rem;
 }
 .table-row {
