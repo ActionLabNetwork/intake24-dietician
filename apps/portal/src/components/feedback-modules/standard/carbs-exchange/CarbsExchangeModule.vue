@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="{ path: themeConfig.logo }"
+      :logo="logo"
       title="Carbs Exchange"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -113,6 +113,11 @@ const isPending = computed(() =>
   props.useSampleRecall
     ? recallStore.sampleRecallQuery.isPending
     : recallStore.recallsQuery.isPending,
+)
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
 )
 
 // Refs

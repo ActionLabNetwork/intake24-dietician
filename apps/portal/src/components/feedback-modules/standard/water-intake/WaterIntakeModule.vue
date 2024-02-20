@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="{ path: themeConfig.logo }"
+      :logo="logo"
       title="Water intake"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -133,6 +133,11 @@ const isPending = computed(() =>
 
 const totalWaterIntake = ref(0)
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const actualToRecommendedProportion = computed(() => {
   return (
     Math.floor(

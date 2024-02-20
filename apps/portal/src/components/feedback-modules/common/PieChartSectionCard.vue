@@ -86,14 +86,6 @@ const formattedFoods = computed(() => {
     topContributors.length +
     topContributors.slice(n).length
 
-  console.log({
-    sortedFoods,
-    topContributors,
-    topNContributors,
-    othersValue,
-    othersCount,
-  })
-
   return othersCount > 0
     ? [
         ...topNContributors,

@@ -7,10 +7,12 @@
       <component
         :is="logoIsComponent ? dynamicLogo : 'img'"
         :src="!logoIsComponent ? logo : undefined"
-        :width="90"
+        :width="130"
         aspect-ratio="16/9"
-        class="w-100 h-100"
+        :class="logoIsComponent ? 'w-100 h-100' : ''"
       />
+
+      <Logo />
       <div class="ml-4 font-weight-medium w-100">{{ title }}</div>
     </div>
     <div v-if="showMetrics && allMetrics && allMetrics.length > 0">

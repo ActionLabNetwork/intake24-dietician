@@ -103,6 +103,11 @@ const isPending = computed(() =>
 )
 
 // Refs
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Energy intake',

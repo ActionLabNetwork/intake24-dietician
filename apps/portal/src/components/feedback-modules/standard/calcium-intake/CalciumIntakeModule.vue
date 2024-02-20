@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Calcium intake" />
+    <ModuleTitle :logo="logo" title="Calcium intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -33,7 +33,6 @@ import { ref, watch, reactive, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_CALCIUM_ID } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/calcium-intake/svg/Logo.vue'
 import PieChartSection from '../../common/PieChartSection.vue'
 import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
@@ -79,6 +78,11 @@ const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Calcium intake',

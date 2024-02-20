@@ -4,7 +4,7 @@
     <ModuleTitle
       v-model:metrics="selectedNutrients"
       :all-metrics="allNutrients"
-      :logo="{ path: themeConfig.logo }"
+      :logo="logo"
       title="Meal diary"
       show-metrics
     />
@@ -54,7 +54,6 @@ import {
   calculateMealNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
 import { MealCardMultipleNutrientsProps } from '../../types'
-import { sort } from 'radash'
 
 export type NutrientType = {
   id: number
@@ -80,6 +79,11 @@ const recallStore = useRecallStore()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const modules = computed(() => {
   return surveyQuery.data.value?.feedbackModules
 })

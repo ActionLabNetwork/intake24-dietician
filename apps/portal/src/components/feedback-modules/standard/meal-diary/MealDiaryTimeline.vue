@@ -106,14 +106,6 @@ watch(
   },
   { immediate: true },
 )
-
-watch(
-  props,
-  () => {
-    console.log({ props })
-  },
-  { immediate: true },
-)
 </script>
 
 <style scoped lang="scss">

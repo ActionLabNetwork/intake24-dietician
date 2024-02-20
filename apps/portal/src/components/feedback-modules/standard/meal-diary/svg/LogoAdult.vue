@@ -17,7 +17,7 @@
         height="1"
       >
         <use
-          xlink:href="#image0_3283_85856"
+          href="#image0_3283_85856"
           transform="translate(-0.25) scale(0.003125)"
         />
       </pattern>

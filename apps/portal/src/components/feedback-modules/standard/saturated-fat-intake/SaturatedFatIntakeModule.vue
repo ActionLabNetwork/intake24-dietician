@@ -1,10 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      :logo="{ path: themeConfig.logo }"
-      title="Saturated fat intake"
-    />
+    <ModuleTitle :logo="logo" title="Saturated fat intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
@@ -81,6 +78,11 @@ const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Saturated fat intake',
