@@ -32,6 +32,7 @@
             :foods="meal.foods"
             :mascot="mascot"
             :mean="meal.mean"
+            :theme="theme"
           />
         </div>
       </div>
@@ -56,7 +57,6 @@
 
 <script setup lang="ts">
 import { usePrecision } from '@vueuse/math'
-import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
 import MascotAdult from './svg/MascotAdult.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
@@ -127,7 +127,7 @@ const module = computed(() => {
   )
 })
 const theme = computed(() => {
-  return surveyQuery.data.value?.surveyPreference.theme
+  return surveyQuery.data.value?.surveyPreference.theme ?? 'Classic'
 })
 const mascot = computed(() => {
   return theme.value === 'Classic' ? MascotAdult : Mascot
@@ -181,6 +181,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
     })),
     mean: mealCarbsExchange,
     mascot: mascot.value,
+    theme: theme.value,
   }
 
   return mealCarbsExchange
