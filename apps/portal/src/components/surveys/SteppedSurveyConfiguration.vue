@@ -134,7 +134,6 @@
                 <div v-if="currentStep === 3">
                   <FeedbackModules
                     :default-state="formValues"
-                    :submit="async () => {}"
                     @update="handleFeedbackModulesUpdate"
                   />
                   <RecallReminders

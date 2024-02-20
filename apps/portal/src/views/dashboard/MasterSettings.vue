@@ -34,7 +34,7 @@
               type="submit"
               :disabled="!formHasChanged"
               :loading="updateSurveyPreferencesMutation.isPending.value"
-              @click.prevent="handleSubmit"
+              @click.prevent="showDialog"
             >
               Review and confirm changes
             </v-btn>
@@ -44,7 +44,6 @@
       <v-divider class="my-10" />
       <FeedbackModules
         :default-state="surveyQuery.data.value"
-        :submit="handleSubmit"
         @update="handleFeedbackModulesUpdate"
       />
       <RecallReminders
@@ -64,12 +63,21 @@
           class="text-none mt-4"
           :disabled="!formHasChanged"
           :loading="updateSurveyPreferencesMutation.isPending.value"
-          @click="handleSubmit"
+          @click="showDialog"
         >
           Review and confirm changes
         </v-btn>
       </div>
     </div>
+    <DialogSettingsEdit
+      v-model="confirmDialog"
+      :on-confirm="
+        async () => {
+          await handleSubmit()
+        }
+      "
+    />
+    <DialogRouteLeave :unsaved-changes="formHasChanged" />
   </v-container>
 </template>
 
@@ -95,6 +103,8 @@ import {
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 import { useForm } from 'vee-validate'
+import DialogSettingsEdit from '@intake24-dietician/portal/components/master-settings/DialogSettingsEdit.vue'
+import DialogRouteLeave from '@intake24-dietician/portal/components/common/DialogRouteLeave.vue'
 
 const clinicStore = useClinicStore()
 
@@ -106,6 +116,7 @@ const updateSurveyPreferencesMutation = useUpdateSurveyPreferences()
 
 const { values, resetForm } = useForm({ validationSchema: SurveyDtoSchema })
 
+const confirmDialog = ref(false)
 const initialFormData = ref<SurveyDto>()
 const formData = ref<SurveyDto>()
 
@@ -170,6 +181,10 @@ const handleRecallRemindersUpdate = (value: {
       reminderMessage: value.reminderMessage,
     },
   }
+}
+
+const showDialog = () => {
+  confirmDialog.value = true
 }
 
 const handleSubmit = async (): Promise<void> => {
@@ -253,7 +268,8 @@ watch(
     color: #555;
     font-size: 14px;
     font-weight: 400;
-    line-height: 140%; /* 19.6px */
+    line-height: 140%;
+    /* 19.6px */
     letter-spacing: 0.14px;
     max-width: 40vw;
   }
@@ -274,10 +290,12 @@ watch(
     color: #555;
     font-size: 14px;
     font-weight: 400;
-    line-height: 140%; /* 19.6px */
+    line-height: 140%;
+    /* 19.6px */
     letter-spacing: 0.14px;
   }
 }
+
 .alert-text {
   display: flex;
   flex-direction: column;

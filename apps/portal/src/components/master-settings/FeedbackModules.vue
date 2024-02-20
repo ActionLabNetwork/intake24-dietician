@@ -90,7 +90,6 @@ function isSurveyDto(obj: any): obj is SurveyDto {
 
 const props = defineProps<{
   defaultState: SurveyCreateDto | SurveyDto
-  submit: () => Promise<void>
 }>()
 
 const emit = defineEmits<{
