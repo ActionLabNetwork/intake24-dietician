@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="{ path: themeConfig.logo }"
+      :logo="logo"
       title="Water intake"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -88,7 +88,6 @@ import {
   NUMBER_OF_GLASSES,
   NUTRIENTS_WATER_INTAKE_ID,
 } from '@intake24-dietician/portal/constants/recall'
-import Logo from '@/components/feedback-modules/standard/water-intake/svg/Logo.vue'
 import Mascot from '@/components/feedback-modules/standard/water-intake/svg/Mascot.vue'
 import MascotSad from '@/components/feedback-modules/standard/water-intake/svg/MascotSad.vue'
 // import MascotHalf from '@/components/feedback-modules/standard/water-intake/svg/MascotHalf.vue'
@@ -147,6 +146,11 @@ const getColor = (number: number, target: number) => {
   return colorScale(ratio).hex()
 }
 
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))

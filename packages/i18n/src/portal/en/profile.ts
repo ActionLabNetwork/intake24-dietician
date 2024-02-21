@@ -27,9 +27,6 @@ export const profile = {
         label: 'Mobile number',
         labelSuffix: ' (required)',
       },
-      businessNumber: {
-        label: 'Business number',
-      },
       businessAddress: {
         label: 'Business address',
       },

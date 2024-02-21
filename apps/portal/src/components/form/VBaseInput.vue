@@ -3,7 +3,7 @@
     <div :class="['form-label pb-2', labelClass]">
       <slot />
     </div>
-    <div v-if="type === 'tel'" class="">
+    <div v-if="type === 'tel'">
       <v-phone-input
         v-model="fieldValue"
         label=""
@@ -29,6 +29,45 @@
       />
     </div>
     <div
+      v-else-if="type === 'select'"
+      :style="bordered ? 'background: white' : ''"
+      :class="{
+        'pa-3 my-3 d-flex rounded-lg elevation-1': bordered,
+      }"
+    >
+      <v-row>
+        <v-col cols="6">
+          <v-select
+            v-model="fieldValue"
+            flat
+            density="comfortable"
+            variant="solo-filled"
+            :items="selectConfig?.items"
+            :item-title="selectConfig?.itemTitle"
+            :item-value="selectConfig?.itemValue"
+            label="Select"
+            :rules="rules ?? []"
+            :readonly="readonly ?? false"
+            :bordered="bordered"
+            @update:model-value="updateValue"
+          >
+            <template #prepend-inner>
+              <slot name="prepend-inner" />
+            </template>
+            <template v-if="$slots.prepend" #prepend>
+              <slot name="prepend" />
+            </template>
+            <template #append-inner>
+              <slot name="append-inner" />
+            </template>
+            <template #append>
+              <slot name="append" />
+            </template>
+          </v-select>
+        </v-col>
+      </v-row>
+    </div>
+    <div
       v-else
       :style="bordered ? 'background: white' : ''"
       :class="{
@@ -44,7 +83,7 @@
         :error-messages="errorMessage"
         :autocomplete="autocomplete ?? 'off'"
         variant="solo-filled"
-        density="comfortable"
+        density="default"
         :append-inner-icon="suffixIcon"
         :append-icon="suffixIconOuter"
         :name="name"
@@ -53,9 +92,22 @@
         :suffix="suffix"
         :bordered="bordered"
         :data-cy="dataCy"
+        @update:model-value="updateValue"
         @click:append-inner="handleIconClick"
         @click:append="handleOuterIconClick"
       >
+        <template #prepend-inner>
+          <slot name="prepend-inner" />
+        </template>
+        <template v-if="$slots.prepend" #prepend>
+          <slot name="prepend" />
+        </template>
+        <template #append-inner>
+          <slot name="append-inner" />
+        </template>
+        <template v-if="$slots.append" #append>
+          <slot name="append" />
+        </template>
       </v-text-field>
     </div>
   </div>
@@ -83,6 +135,11 @@ const props = defineProps<{
   required?: boolean
   bordered?: boolean
   dataCy?: string
+  selectConfig?: {
+    items: readonly any[]
+    itemTitle: string
+    itemValue: string
+  }
   handleIconClick?: () => void
   handleOuterIconClick?: () => void
 }>()
@@ -91,6 +148,15 @@ const props = defineProps<{
 // @ts-ignore
 const { value: fieldValue, errorMessage } = useField<string>(() => props.name)
 
+if (props.type !== 'tel' && typeof props.value === 'string') {
+  fieldValue.value = props.value ?? ''
+}
+const emit = defineEmits<{
+  update: [value: string]
+}>()
+const updateValue = (value: string) => {
+  emit('update', value)
+}
 const country = ref('AU')
 </script>
 

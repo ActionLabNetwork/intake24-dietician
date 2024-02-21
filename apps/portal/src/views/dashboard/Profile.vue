@@ -1,5 +1,8 @@
 <template>
-  <v-main v-if="isProfileLoading && !profileQuerySucceeded" align="center">
+  <v-main
+    v-if="isProfileLoading && !profileQuerySucceeded && !profileHasLoaded"
+    align="center"
+  >
     <v-container>
       <v-progress-circular indeterminate />
     </v-container>
@@ -57,7 +60,11 @@
       <DialogRouteLeave :unsaved-changes="hasFormChanged" />
       <DialogProfileEdit
         v-model="confirmDialog"
-        :on-confirm="() => onSubmit().submit()"
+        :on-confirm="
+          async () => {
+            await onSubmit().submit()
+          }
+        "
       />
     </v-container>
   </v-main>
@@ -122,6 +129,7 @@ const { values, handleSubmit, meta, resetForm } = useForm({
   ),
 })
 
+const profileHasLoaded = ref(false)
 const confirmDialog = ref(false)
 const currentFormData = ref<typeof savedFormData.value>(undefined)
 
@@ -149,31 +157,25 @@ const onSubmit = () => {
     confirmDialog.value = true
   }
 
-  const submit = handleSubmit(
-    async values => {
-      console.log({ currentFormData, values })
-      if (!currentFormData.value) return
+  const submit = handleSubmit(async values => {
+    if (!currentFormData.value) return
 
-      updateProfileMutation.mutate(
-        {
-          emailAddress: currentFormData.value.email,
-          dieticianProfile: values,
+    await updateProfileMutation.mutateAsync(
+      {
+        emailAddress: currentFormData.value.email,
+        dieticianProfile: values,
+      },
+      {
+        onSuccess: () => {
+          $toast.success('Profile updated successfully')
+          resetForm({ values })
         },
-        {
-          onSuccess: () => {
-            $toast.success('Profile updated successfully')
-            resetForm({ values })
-          },
-          onError: () => {
-            $toast.error('Failed to update dietician profile')
-          },
+        onError: () => {
+          $toast.error('Failed to update dietician profile')
         },
-      )
-    },
-    ({ values, errors, results }) => {
-      console.log({ values, errors, results })
-    },
-  )
+      },
+    )
+  })
 
   return { showConfirmDialog, submit }
 }
@@ -186,7 +188,6 @@ watch(
     const email = savedFormData.value.email
 
     currentFormData.value = savedFormData.value
-    // setValues(savedFormData.value)
     resetForm({
       values: {
         ...savedFormData.value,
@@ -194,6 +195,10 @@ watch(
         newEmail: email,
       },
     })
+
+    if (!profileHasLoaded.value) {
+      profileHasLoaded.value = true
+    }
   },
   { immediate: true },
 )

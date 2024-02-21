@@ -1,85 +1,83 @@
 <template>
-  <div>
-    <v-container>
-      <div
-        class="d-flex flex-column flex-sm-row justify-space-between align-center"
-      >
-        <div>
-          <h1 class="text heading">Recall reminder setup</h1>
-          <h3 class="text subheading">
-            Select a default recall frequency when you want your patients to
-            complete and share recall data with you. The frequency can be
-            personalised within patient information page.
-          </h3>
-        </div>
-      </div>
-
-      <v-divider class="my-10" />
+  <v-container fluid>
+    <div
+      class="d-flex flex-column flex-sm-row justify-space-between align-center"
+    >
       <div>
-        <v-form ref="form">
-          <v-row
-            v-for="(fieldConfig, fieldName) in formConfig"
-            :key="fieldName"
-            class="mt-5"
-          >
-            <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
-              <div :class="fieldConfig.class">
-                <div class="d-flex justify-start align-start">
+        <h1 class="text section-heading">Recall reminder setup</h1>
+        <h3 class="text subheading">
+          Select a default recall frequency when you want your patients to
+          complete and share recall data with you. The frequency can be
+          personalised within patient information page.
+        </h3>
+      </div>
+    </div>
+
+    <v-divider class="my-10" />
+    <div>
+      <v-form ref="form">
+        <v-row
+          v-for="(fieldConfig, fieldName) in formConfig"
+          :key="fieldName"
+          class="mt-5"
+        >
+          <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
+            <div :class="fieldConfig.class">
+              <div class="d-flex justify-start align-start">
+                <div>
                   <div>
-                    <div>
-                      <div
-                        :class="
-                          fieldConfig.heading.class ||
-                          'text section-heading-2 pl-0 pl-sm-5'
-                        "
-                      >
-                        {{ fieldConfig.heading.label }}
-                      </div>
-                      <div
-                        v-if="fieldConfig.subheading"
-                        :class="
-                          fieldConfig.subheading.class ||
-                          'text section-subheading pl-0 pl-sm-5'
-                        "
-                      >
-                        {{ fieldConfig.subheading.label }}
-                      </div>
+                    <div
+                      :class="
+                        fieldConfig.heading.class ||
+                        'text section-heading-2 pl-0 pl-sm-5'
+                      "
+                    >
+                      {{ fieldConfig.heading.label }}
+                    </div>
+                    <div
+                      v-if="fieldConfig.subheading"
+                      :class="
+                        fieldConfig.subheading.class ||
+                        'text section-subheading pl-0 pl-sm-5'
+                      "
+                    >
+                      {{ fieldConfig.subheading.label }}
                     </div>
                   </div>
                 </div>
               </div>
-            </v-col>
-            <v-spacer />
-            <v-col
-              cols="12"
-              :sm="smColOptions(fieldConfig.column)"
-              class="self-end"
+            </div>
+          </v-col>
+          <v-spacer />
+          <v-col
+            cols="12"
+            :sm="smColOptions(fieldConfig.column)"
+            class="self-end"
+          >
+            <div
+              v-if="fieldConfig.element === 'textarea'"
+              style="background: inherit"
+              class="survey-id-input"
             >
-              <div
-                v-if="fieldConfig.element === 'textarea'"
-                style="background: inherit"
-                class="survey-id-input"
-              >
-                <v-textarea
-                  v-model="debouncedFrequencyReminderMessage"
-                  variant="solo-filled"
-                  label="Write something here..."
-                ></v-textarea>
-              </div>
-              <div v-else>
-                <component
-                  :is="fieldConfig.component"
-                  v-bind="fieldConfig.props"
-                  :value="fieldConfig.value"
-                  @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
-                />
-              </div>
-            </v-col>
-          </v-row>
-        </v-form>
-      </div>
-    </v-container>
-  </div>
+              <v-textarea
+                v-model="debouncedFrequencyReminderMessage"
+                variant="solo-filled"
+                label="Write something here..."
+              ></v-textarea>
+            </div>
+            <div v-else>
+              <component
+                :is="fieldConfig.component"
+                v-bind="fieldConfig.props"
+                :value="fieldConfig.value"
+                @update="fieldConfig.onUpdate && fieldConfig.onUpdate($event)"
+              />
+            </div>
+          </v-col>
+        </v-row>
+      </v-form>
+    </div>
+  </v-container>
 </template>
 
 <script lang="ts" setup>
@@ -126,7 +124,7 @@ interface FormConfig {
 }
 
 const props = defineProps<{
-  defaultState: {
+  defaultState?: {
     reminderCondition: ReminderCondition
     reminderMessage: string
   }
@@ -140,15 +138,18 @@ const emit = defineEmits<{
 
 const form = ref()
 const frequencyReminderMessage = ref(
-  toRefs(props).defaultState.value.reminderMessage,
+  toRefs(props).defaultState.value?.reminderMessage,
 )
 // eslint-disable-next-line vue/no-setup-props-destructure
 const recallReminder = ref<ReminderCondition>(
-  props.defaultState.reminderCondition,
+  props.defaultState?.reminderCondition ?? {
+    reminderEvery: { every: 5, unit: 'days' },
+    reminderEnds: { type: 'never' },
+  },
 )
 
 const debouncedFrequencyReminderMessage = computed({
-  get: () => frequencyReminderMessage.value,
+  get: () => frequencyReminderMessage.value ?? '',
   set: useDebounceFn((newReminderMessage: string) => {
     frequencyReminderMessage.value = newReminderMessage
   }, INPUT_DEBOUNCE_TIME),
@@ -178,7 +179,7 @@ onMounted(() => {
         recallReminder.value = newRecallReminder
         emit('update', {
           reminderCondition: recallReminder.value,
-          reminderMessage: frequencyReminderMessage.value,
+          reminderMessage: frequencyReminderMessage.value ?? '',
         })
       },
     },
@@ -209,7 +210,7 @@ watch(
       reminderMessage: string
     } = {
       reminderCondition: recallReminder,
-      reminderMessage: frequencyReminderMessage,
+      reminderMessage: frequencyReminderMessage ?? '',
     }
 
     emit('update', formData)

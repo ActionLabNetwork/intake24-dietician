@@ -203,6 +203,15 @@ export class PatientService {
 
     const survey = patient.survey
     const startSurveyUrl = new URL(survey.intake24Host)
+
+    // currently when a dietician creates a survey, the UI displays the subdomain 'admin'
+    // and the API saves it as-is. The assumption here is the survey creation endpoint always
+    // only differs by the subdomain.
+    const subdomains = startSurveyUrl.hostname.split('.')
+    if (subdomains[0] === 'admin') {
+      subdomains[0] = 'survey'
+    }
+    startSurveyUrl.hostname = subdomains.join('.')
     startSurveyUrl.pathname = `${survey.intake24SurveyId}/create-user/${jwt}`
     return {
       ...patient,

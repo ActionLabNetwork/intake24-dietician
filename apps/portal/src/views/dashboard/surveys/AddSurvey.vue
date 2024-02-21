@@ -1,9 +1,9 @@
 <template>
   <v-main class="wrapper">
-    <v-container>
-      <SurveyConfiguration
+    <v-container fluid>
+      <SteppedSurveyConfiguration
+        v-if="renderChild"
         :default-state="surveyConfigFormValues"
-        mode="Add"
         :handle-submit="handleSubmit"
         @update="handleSurveyConfigUpdate"
       />
@@ -12,65 +12,76 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-import SurveyConfiguration from '@intake24-dietician/portal/components/surveys/SurveyConfiguration.vue'
+import SteppedSurveyConfiguration from '@intake24-dietician/portal/components/surveys/SteppedSurveyConfiguration.vue'
 // import { useI18n } from 'vue-i18n'
 // import type { i18nOptions } from '@intake24-dietician/i18n'
-import { useAddSurvey } from '@intake24-dietician/portal/mutations/useSurvey'
+import {
+  useAddSurvey,
+  useGenerateSurveySecret,
+  useGenerateSurveyUUID,
+} from '@intake24-dietician/portal/mutations/useSurvey'
 import { DEFAULT_ERROR_MESSAGE } from '@intake24-dietician/portal/constants'
 import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
-import router from '@intake24-dietician/portal/router'
 import {
   SurveyCreateDto,
   SurveyCreateDtoSchema,
-  SurveyDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
-
-const getItemIndex = (index: number) => {
-  return `item.${index + 1}`
-}
+import { useFeedbackModules } from '@intake24-dietician/portal/queries/useFeedbackModule'
+import { allowedIntake24Hosts } from '@intake24-dietician/portal/constants/integration'
 
 const $toast = useToast()
 // const { t } = useI18n<i18nOptions>()
 
-const steps = [
-  { value: 1, title: 'Step One', content: '...' },
-  { value: 2, title: 'Step Two', content: '...' },
-  { value: 3, title: 'Step Three', content: '...' },
-]
-
 const clinicStore = useClinicStore()
 
 const queryClient = useQueryClient()
+const feedbackModulesQuery = useFeedbackModules()
+const surveySecretMutation = useGenerateSurveySecret()
+const surveyUUIDMutation = useGenerateSurveyUUID()
 const addSurveyMutation = useAddSurvey()
 
-const surveyConfigFormValues = ref<Omit<SurveyCreateDto, 'surveyPreference'>>({
+const renderChild = ref(false)
+const surveyConfigFormValues = ref<SurveyCreateDto>({
   surveyName: '',
-  intake24Host: '',
+  intake24Host: allowedIntake24Hosts[0],
+  countryCode: 'au',
   intake24SurveyId: '',
   intake24Secret: '',
   alias: '',
   isActive: true,
+  surveyPreference: {
+    theme: 'Classic',
+    reminderCondition: {
+      reminderEvery: {
+        every: 5,
+        unit: 'days',
+      },
+      reminderEnds: { type: 'never' },
+    },
+    reminderMessage: '',
+    sendAutomatedFeedback: true,
+    notifySMS: false,
+    notifyEmail: true,
+  },
+  feedbackModules: [],
 })
 
-const handleSurveyConfigUpdate = (
-  values: Omit<SurveyCreateDto, 'surveyPreference'>,
-) => {
+const handleSurveyConfigUpdate = (values: SurveyCreateDto) => {
   surveyConfigFormValues.value = values
 }
 
-const handleSubmit = async () => {
+const handleSubmit = (): Promise<void> => {
   return new Promise((resolve, reject) => {
-    // Validate with zod
     const result = SurveyCreateDtoSchema.safeParse(surveyConfigFormValues.value)
 
     if (!result.success) {
       $toast.error(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
-      reject(new Error('Form validation failed'))
+      reject(result.error.errors[0]?.message ?? DEFAULT_ERROR_MESSAGE)
       return
     }
 
@@ -80,25 +91,52 @@ const handleSubmit = async () => {
         onSuccess: async surveyId => {
           $toast.success('Survey added to records')
           await queryClient.invalidateQueries({ queryKey: ['surveys'] })
-          const allClinics = queryClient.getQueryData([
-            'surveys',
-          ]) as SurveyDto[]
-          const newClinic = allClinics.find(clinic => clinic.id === surveyId)
-          console.log({ newClinic })
           clinicStore.switchCurrentClinic(surveyId)
-          resolve('Survey added to records')
-          router.push({
-            name: 'Survey Master Settings',
-            params: { surveyId },
-          })
+          resolve()
+          clinicStore.navigateToSurveyPatientList()
         },
         onError: () => {
           $toast.error(DEFAULT_ERROR_MESSAGE)
+          reject(DEFAULT_ERROR_MESSAGE)
         },
       },
     )
   })
 }
+
+watch(
+  () => feedbackModulesQuery.data.value,
+  async newFeedbackModules => {
+    if (!newFeedbackModules) return
+
+    const alias = await surveyUUIDMutation.mutateAsync()
+    surveyConfigFormValues.value = {
+      ...surveyConfigFormValues.value,
+      intake24Host: allowedIntake24Hosts[0],
+      intake24Secret: await surveySecretMutation.mutateAsync(),
+      alias: alias,
+      feedbackModules:
+        newFeedbackModules.map(module => ({
+          feedbackModuleId: module.id,
+          name: module.name,
+          description: module.description,
+          isActive: true,
+          feedbackAboveRecommendedLevel: '',
+          feedbackBelowRecommendedLevel: '',
+          nutrientTypes: module.nutrientTypes.map(nutrient => ({
+            id: nutrient.id,
+            description: '',
+            unit: {
+              description: '',
+              symbol: '',
+            },
+          })),
+        })) ?? [],
+    }
+    renderChild.value = true
+  },
+  { immediate: true },
+)
 </script>
 
 <style scoped lang="scss">
@@ -143,3 +181,4 @@ const handleSubmit = async () => {
   }
 }
 </style>
+@intake24-dietician/portal/queries/useFeedbackModule

@@ -21,15 +21,15 @@ export function useThemeSelector(moduleName: ModuleName) {
 
   const logo: Logo = {
     'Meal diary': {
-      Classic: 'meal-diary/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/meal-diary/MD-LogoAdult.png',
       Fun: 'meal-diary/svg/Logo.vue',
     },
     'Carbs exchange': {
-      Classic: 'carbs-exchange/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/carbs-exchange/CE-LogoAdult.png',
       Fun: 'carbs-exchange/svg/Logo.vue',
     },
     'Energy intake': {
-      Classic: 'energy-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/calorie-intake/CI-LogoAdult.png',
       Fun: 'energy-intake/svg/Logo.vue',
     },
     'Fibre intake': {
@@ -37,20 +37,40 @@ export function useThemeSelector(moduleName: ModuleName) {
       Fun: 'fibre-intake/svg/Logo.vue',
     },
     'Water intake': {
-      Classic: 'water-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/water-intake/WI-LogoAdult.png',
       Fun: 'water-intake/svg/Logo.vue',
     },
     'Sugar intake': {
-      Classic: 'sugar-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/sugar-intake/SI-LogoAdult.png',
       Fun: 'sugar-intake/svg/Logo.vue',
     },
     'Saturated fat intake': {
-      Classic: 'saturated-fat-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/saturated-fat-intake/SFI-LogoAdult.png',
       Fun: 'saturated-fat-intake/svg/Logo.vue',
     },
     'Calcium intake': {
-      Classic: 'calcium-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/calcium-intake/CI-LogoAdult.png',
       Fun: 'calcium-intake/svg/Logo.vue',
+    },
+    'Fruit intake': {
+      Classic: '/feedback-modules/fruit-intake/FI-LogoAdult.png',
+      Fun: 'fruit-intake/svg/Logo.vue',
+    },
+    'Vegetable intake': {
+      Classic: '/feedback-modules/vegetable-intake/VI-LogoAdult.png',
+      Fun: 'vegetable-intake/svg/Logo.vue',
+    },
+    'Fruit and vegetable intake': {
+      Classic: '/feedback-modules/fruit-and-vegetable-intake/FVI-LogoAdult.png',
+      Fun: 'fruit-and-vegetable-intake/svg/Logo.vue',
+    },
+    'Calorie intake': {
+      Classic: '/feedback-modules/calorie-intake/CI-LogoAdult.png',
+      Fun: 'calorie-intake/svg/Logo.vue',
+    },
+    'Protein intake': {
+      Classic: '/feedback-modules/protein-intake/PI-LogoAdult.png',
+      Fun: 'protein-intake/svg/Logo.vue',
     },
   } as const
 

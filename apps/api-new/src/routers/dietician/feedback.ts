@@ -167,6 +167,20 @@ export class DieticianFeedbackRouter {
           opts.input.draft,
         )
       }),
+    deleteDraft: protectedDieticianProcedure
+      .meta({
+        openapi: {
+          method: 'DELETE',
+          path: '/feedbacks/draft/:draftId',
+          tags: ['dietician', 'surveys', 'feedbacks'],
+          summary: 'Delete a draft of a tailored feedback',
+        },
+      })
+      .input(z.object({ draftId: z.number() }))
+      .output(z.void())
+      .mutation(async opts => {
+        return await this.feedbackService.deleteDraft(opts.input.draftId)
+      }),
     shareDraft: protectedDieticianProcedure
       .meta({
         openapi: {

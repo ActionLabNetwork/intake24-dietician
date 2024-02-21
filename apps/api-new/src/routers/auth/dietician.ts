@@ -25,7 +25,6 @@ export class AuthDieticianRouter {
       .input(z.object({ test: z.date() }))
       .output(z.string())
       .mutation(({ ctx }) => {
-        console.log({ accessToken: ctx.accessToken })
         return 'Hello TRPC'
       }),
     register: publicProcedure

@@ -52,8 +52,8 @@
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
+              v-model:module="component"
               show-switches
-              @update="handleModuleUpdate"
               @update:modules="handleModulesUpdate"
             />
           </v-col>
@@ -86,7 +86,7 @@
 
 <script lang="ts" setup>
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
-import { computed, reactive, ref, watch, type Component, markRaw } from 'vue'
+import { computed, reactive, ref, type Component, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import type {
@@ -104,6 +104,11 @@ import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
+import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
+import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
+import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
+import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -160,6 +165,23 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
     'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
+    'Fruit intake': { component: markRaw(FruitIntakeModule), feedback: '' },
+    'Vegetable intake': {
+      component: markRaw(VegetableIntakeModule),
+      feedback: '',
+    },
+    'Fruit and vegetable intake': {
+      component: markRaw(FruitAndVegetableIntakeModule),
+      feedback: '',
+    },
+    'Calorie intake': {
+      component: markRaw(CalorieIntakeModule),
+      feedback: '',
+    },
+    'Protein intake': {
+      component: markRaw(ProteinIntakeModule),
+      feedback: '',
+    },
   })
 
 const allModules = ref<
@@ -199,10 +221,6 @@ const selectedModules = ref<
     }
   | undefined
 >(undefined)
-
-const handleModuleUpdate = (module: ModuleName) => {
-  component.value = module
-}
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   allModules.value = {

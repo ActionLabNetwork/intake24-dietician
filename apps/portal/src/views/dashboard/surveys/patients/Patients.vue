@@ -53,7 +53,6 @@ const addButtonLink = `/dashboard/my-surveys/survey-details/${route.params['surv
 
 const summary = computed((): Summary => {
   const patients = patientsQuery.data.value ?? []
-  console.log({ patients })
 
   if (!isArray(patients)) {
     return { total: 0, active: 0, archived: 0 }

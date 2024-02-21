@@ -9,7 +9,7 @@
     "precommit-build": "pnpm --filter ./apps/api-new build && pnpm --filter ./apps/portal build",
     "prepare": "pnpm simple-git-hooks",
     "clean": "rimraf --glob **/coverage **/dist **/node_modules",
-    "build": "pnpm --filter ./apps build",
+    "build": "pnpm --filter ./apps/**",
     "lint:md": "prettier --write **/*.md",
     "lint:ts": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
     "lint": "run-s lint:md lint:ts",

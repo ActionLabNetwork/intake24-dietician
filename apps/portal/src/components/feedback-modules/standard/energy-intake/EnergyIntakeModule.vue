@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Energy intake" />
+    <ModuleTitle :logo="logo" title="Energy intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
@@ -48,7 +48,6 @@
 </template>
 
 <script setup lang="ts">
-import Logo from '@/assets/modules/energy-intake/energy-intake-logo.svg'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
@@ -104,6 +103,11 @@ const isPending = computed(() =>
 )
 
 // Refs
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Energy intake',

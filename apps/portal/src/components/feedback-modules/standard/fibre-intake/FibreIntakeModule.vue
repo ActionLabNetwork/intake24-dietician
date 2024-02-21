@@ -7,7 +7,6 @@
         v-if="tabs"
         :tabs="tabs as unknown as PieAndTimelineTabs"
         :show-tabs="mode === 'edit'"
-        :background="{ color: '#aabcb1', active: '#34a749' }"
       />
     </div>
 

@@ -1,13 +1,10 @@
-import type { SurveyPreference } from '@intake24-dietician/common/entities-new/preferences.dto'
 import type {
   SurveyCreateDto,
   SurveyDto,
-  SurveyFeedbackModuleCreateDto,
   SurveyFeedbackModuleDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import assert from 'assert'
 import { desc, eq } from 'drizzle-orm'
-import moment from 'moment'
 import { inject, singleton } from 'tsyringe'
 import { AppDatabase } from '../database'
 import {
@@ -31,6 +28,7 @@ export class SurveyRepository {
   public async getSurveysOfDietician(dieticianId: number) {
     return await this.drizzle.query.surveys.findMany({
       where: eq(surveys.dieticianId, dieticianId),
+      orderBy: surveys.createdAt,
     })
   }
 
@@ -75,7 +73,6 @@ export class SurveyRepository {
         )
         .innerJoin(nutrientUnits, eq(nutrientUnits.id, nutrientTypes.unitId))
 
-      console.log(queriedFeedbackModules)
       return { survey, queriedFeedbackModules }
     })
     if (!queryResult) return undefined
@@ -126,16 +123,9 @@ export class SurveyRepository {
     }
   }
 
-  public async createSurvey(
-    dieticianId: number,
-    surveyDto: SurveyCreateDto & {
-      surveyPreference: SurveyPreference
-      feedbackModules: SurveyFeedbackModuleCreateDto[]
-    },
-  ) {
+  public async createSurvey(dieticianId: number, surveyDto: SurveyCreateDto) {
     return await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
-      console.log({ feedbackModules })
       const [insertedSurvey] = await tx
         .insert(surveys)
         .values({
@@ -167,11 +157,16 @@ export class SurveyRepository {
           },
         )
 
-        console.log({ feedbackModulesToBeInserted })
-
         feedbackModulesToBeInserted.forEach(async module => {
           const { id: _, ...withoutId } = module
           await tx.insert(surveyToFeedbackModules).values(withoutId)
+        })
+      } else {
+        feedbackModules.forEach(module => {
+          const { name: _, description: _1, ...rest } = module
+          tx.insert(surveyToFeedbackModules)
+            .values({ ...rest, surveyId: insertedSurvey.id })
+            .execute()
         })
       }
 
@@ -179,12 +174,11 @@ export class SurveyRepository {
     })
   }
 
-  public async updateSurvey(
-    surveyId: number,
-    surveyDto: Partial<SurveyCreateDto>,
-  ) {
+  // TODO: This db transaction runs quite slow, find a way to optimize it
+  public async updateSurvey(surveyId: number, surveyDto: Partial<SurveyDto>) {
     await this.drizzle.transaction(async tx => {
       const { feedbackModules, ...surveyDtoWithoutModules } = surveyDto
+
       await tx
         .update(surveys)
         .set({
@@ -193,20 +187,28 @@ export class SurveyRepository {
         })
         .where(eq(surveys.id, surveyId))
         .execute()
+
       if (!feedbackModules) return
-      feedbackModules.forEach(module => {
-        const { feedbackModuleId: _, ...rest } = module
-        tx.insert(surveyToFeedbackModules)
-          .values({ ...module, surveyId })
-          .onConflictDoUpdate({
-            target: [
-              surveyToFeedbackModules.feedbackModuleId,
-              surveyToFeedbackModules.surveyId,
-            ],
-            set: { ...rest, updatedAt: moment().toDate() },
-          })
-          .execute()
-      })
+
+      await Promise.all(
+        feedbackModules.map(async module => {
+          const {
+            id,
+            feedbackModuleId: _,
+            name: _1,
+            nutrientTypes: _2,
+            description: _3,
+            ...rest
+          } = module
+          await tx
+            .update(surveyToFeedbackModules)
+            .set({
+              ...rest,
+              updatedAt: new Date(),
+            })
+            .where(eq(surveyToFeedbackModules.id, id))
+        }),
+      )
     })
   }
 
@@ -216,6 +218,4 @@ export class SurveyRepository {
       .where(eq(surveys.id, surveyId))
       .execute()
   }
-
-  private getSurveyPatients() {}
 }

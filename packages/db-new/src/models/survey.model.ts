@@ -1,5 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { boolean, integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import {
+  boolean,
+  integer,
+  pgTable,
+  serial,
+  text,
+  varchar,
+} from 'drizzle-orm/pg-core'
 import { timestampFields } from './model.common'
 import { typedJsonbFromSchema } from './modelUtils'
 import { dieticians, patients } from './user.model'
@@ -12,11 +19,14 @@ export const surveys = pgTable('survey', {
     .references(() => dieticians.id)
     .notNull(),
   surveyName: text('survey_name').notNull(),
+  countryCode: varchar('country_code', { length: 2 }).notNull(),
+  // This is called called "admin base url" in our UI.
+  // For generating the survey link, the subdomain should be changed to "survey"
   intake24Host: text('intake24Host').notNull(),
-  // this is called "slug" in code and "survey ID" in UI in Intake24
+  // In Intake24, this is the "slug" in code and "survey ID" in UI.
   intake24SurveyId: text('intake24_survey_id').notNull(),
   intake24Secret: text('intake24_secret').notNull(),
-  // the path parameter used for Intake24 to return the survey
+  // The path parameter used for Intake24 to post the recall
   alias: text('alias').notNull().unique(),
   isActive: boolean('is_active').default(true).notNull(),
   surveyPreference: typedJsonbFromSchema(SurveyPreferenceSchema)(

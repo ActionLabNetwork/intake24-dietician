@@ -51,8 +51,8 @@
           "
         />
         <VisualThemeSelector
+          v-model="patientForm.formValues.value.theme"
           class="mt-10"
-          :default-state="patientForm.formValues.value.theme"
           @update="patientForm.handleFormUpdate('theme', $event)"
         />
         <SendAutomatedFeedbackToggle

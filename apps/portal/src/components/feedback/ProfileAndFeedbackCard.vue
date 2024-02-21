@@ -98,7 +98,6 @@
   />
 </template>
 <script setup lang="ts">
-import DialogFeedbackShare from './DialogFeedbackShare.vue'
 import {
   DraftCreateDto,
   FeedbackType,
@@ -114,6 +113,7 @@ import isEqual from 'lodash.isequal'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import DialogRouteLeave from '../common/DialogRouteLeave.vue'
+import DialogFeedbackShare from './DialogFeedbackShare.vue'
 
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
@@ -145,7 +145,6 @@ const emit = defineEmits<{
 
 const router = useRouter()
 const route = useRoute()
-
 const $toast = useToast()
 
 const patientStore = usePatientStore()
@@ -192,9 +191,9 @@ const showDialog = (dialog: 'edit' | 'save' | 'share') => {
   }
 }
 
-const handleSaveDraftClick = () => {
+const handleSaveDraftClick = async () => {
   isSubmitting.value = true
-  saveDraftMutation.mutate(
+  await saveDraftMutation.mutateAsync(
     {
       patientId: Number(patient.value?.id),
       draft: props.draft,
@@ -214,8 +213,8 @@ const handleSaveDraftClick = () => {
   )
 }
 
-const handleEditDraftClick = () => {
-  editDraftMutation.mutate(
+const handleEditDraftClick = async () => {
+  await editDraftMutation.mutateAsync(
     {
       draftId: Number(route.params['feedbackId'] as string),
       draft: props.draft,
@@ -229,9 +228,9 @@ const handleEditDraftClick = () => {
   )
 }
 
-const handleShareDraftClick = () => {
+const handleShareDraftClick = async () => {
   isSubmitting.value = true
-  shareDraftMutation.mutate(
+  await shareDraftMutation.mutateAsync(
     {
       patientId: Number(patient.value?.id),
       draftId: props.draftId,

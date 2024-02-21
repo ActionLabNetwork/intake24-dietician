@@ -11,34 +11,12 @@
 
 <script setup lang="ts">
 import BaseDialog from '@intake24-dietician/portal/components/common/BaseDialog.vue'
-import { ref, watch, onMounted } from 'vue'
 
 const props = defineProps<{
   modelValue: boolean
   fullName: string
-  onConfirm: Function
-}>()
-const emits = defineEmits<{
-  'update:modelValue': [value: boolean]
+  onConfirm: () => Promise<void>
 }>()
 
-const dialog = ref(false)
-
-onMounted(() => {
-  dialog.value = props.modelValue
-})
-
-watch(
-  () => props.modelValue,
-  newValue => {
-    dialog.value = newValue
-  },
-)
-
-watch(
-  () => dialog.value,
-  newValue => {
-    emits('update:modelValue', newValue)
-  },
-)
+const dialog = defineModel<boolean>()
 </script>

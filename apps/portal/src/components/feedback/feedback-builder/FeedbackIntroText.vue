@@ -6,8 +6,8 @@
         Great job on completing your recall. Below, you can find a quick
         feedback based on your recall data submitted between
         <br />
-        {{ recallDaterange[0]?.toDateString() }} -
-        {{ recallDaterange[1]?.toDateString() }}
+        {{ recallDateRange[0]?.toDateString() }} -
+        {{ recallDateRange[1]?.toDateString() }}
       </p>
     </div>
   </div>
@@ -16,7 +16,7 @@
 <script setup lang="ts">
 defineProps<{
   patientName: string
-  recallDaterange: [Date | undefined, Date | undefined]
+  recallDateRange: [Date | undefined, Date | undefined]
 }>()
 </script>
 

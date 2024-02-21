@@ -9,10 +9,9 @@ export function typedJsonbFromSchema<T>(schema: z.Schema<T>) {
   })
 }
 
- export const byteaAsBase64 = customType<{ data: string; driverData: Buffer }>({
+export const byteaAsBase64 = customType<{ data: string; driverData: Buffer }>({
   dataType: () => 'bytea',
   toDriver: val => {
-    console.log(`val is ${val}`)
     return Buffer.from(val, 'base64')
   },
   fromDriver: (value: Buffer) => value.toString('base64'),

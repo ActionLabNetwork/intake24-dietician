@@ -31,12 +31,10 @@ const handleBackButtonClick = () => {
 
   if (props.to) {
     router.push(props.to)
+  } else if (window.history.length > 1) {
+    window.history.back()
   } else {
-    if (window.history.length > 1) {
-      window.history.back()
-    } else {
-      clinicStore.navigateToSurveyPatientList()
-    }
+    clinicStore.navigateToSurveyPatientList()
   }
 }
 </script>

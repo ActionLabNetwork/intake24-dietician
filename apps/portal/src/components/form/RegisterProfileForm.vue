@@ -14,12 +14,12 @@
     </div>
     <v-divider class="my-10"></v-divider>
     <v-form>
-      <PersonalDetails :avatar="currentFormData?.avatar ?? null" />
+      <PersonalDetails :avatar="null" />
       <ContactDetails
         class="mt-10"
         :email="{
-          current: values.currentEmail ?? currentFormData?.email ?? '',
-          new: values.newEmail ?? currentFormData?.email ?? '',
+          current: values.currentEmail ?? '',
+          new: values.newEmail ?? '',
         }"
         :allow-email-change="false"
       />
@@ -44,10 +44,8 @@
 import ContactDetails from '@/components/profile/ContactDetails.vue'
 import PersonalDetails from '@/components/profile/PersonalDetails.vue'
 import ShortBio from '@/components/profile/ShortBio.vue'
-import { useAuthStore } from '@/stores/auth'
 // import type { i18nOptions } from '@intake24-dietician/i18n/index'
-import { storeToRefs } from 'pinia'
-import { onMounted, ref, watch } from 'vue'
+import { ref, watch } from 'vue'
 // import { useI18n } from 'vue-i18n'
 // import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -65,19 +63,8 @@ const emit = defineEmits<{
   submit: [values: DieticianCreateDto]
 }>()
 
-onMounted(async () => {
-  if (!authStore.profile) {
-    await authStore.refetch()
-  }
-})
-
 // i18n
 // const { t } = useI18n<i18nOptions>()
-
-// Stores
-const authStore = useAuthStore()
-
-const { profile: savedProfile } = storeToRefs(authStore)
 
 // Composables
 // const $toast = useToast()
@@ -99,20 +86,12 @@ const { values, handleSubmit, meta, resetForm } = useForm({
     lastName: '',
     avatar: '',
     mobileNumber: '',
-    businessNumber: '',
     businessAddress: '',
     shortBio: '',
   },
 })
 
 const confirmDialog = ref(false)
-const currentFormData = ref<typeof savedFormData.value>(undefined)
-
-const savedFormData = computed(() => {
-  if (!savedProfile.value) return undefined
-  const { user, ...rest } = savedProfile.value
-  return { ...rest, email: user.email }
-})
 
 const hasFormChanged = computed<boolean>(() => {
   const initialValues = cloneDeep(meta.value.initialValues)
@@ -136,32 +115,11 @@ const onSubmit = () => {
     async values => {
       emit('submit', values)
     },
-    ({ values, errors, results }) => {
-      console.log({ values, errors, results })
-    },
+    () => {},
   )
 
   return { showConfirmDialog, submit }
 }
-
-watch(
-  savedFormData,
-  () => {
-    if (!savedFormData.value) return
-
-    const email = savedFormData.value.email
-
-    currentFormData.value = savedFormData.value
-    resetForm({
-      values: {
-        ...savedFormData.value,
-        currentEmail: email,
-        newEmail: email,
-      },
-    })
-  },
-  { immediate: true },
-)
 
 watch(
   () => props.email,

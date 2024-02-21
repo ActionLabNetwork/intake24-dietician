@@ -2,7 +2,7 @@
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
-      :logo="{ path: themeConfig.logo }"
+      :logo="logo"
       title="Carbs Exchange"
       :class="{ 'text-white': mode === 'preview' }"
     />
@@ -32,6 +32,7 @@
             :foods="meal.foods"
             :mascot="mascot"
             :mean="meal.mean"
+            :theme="theme"
           />
         </div>
       </div>
@@ -56,7 +57,6 @@
 
 <script setup lang="ts">
 import { usePrecision } from '@vueuse/math'
-import Logo from '@/assets/modules/carbs-exchange/carbs-exchange-logo.svg'
 import Mascot from '@/components/feedback-modules/standard/carbs-exchange/svg/Mascot.vue'
 import MascotAdult from './svg/MascotAdult.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
@@ -114,6 +114,11 @@ const isPending = computed(() =>
     ? recallStore.sampleRecallQuery.isPending
     : recallStore.recallsQuery.isPending,
 )
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 
 // Refs
 const module = computed(() => {
@@ -122,7 +127,7 @@ const module = computed(() => {
   )
 })
 const theme = computed(() => {
-  return surveyQuery.data.value?.surveyPreference.theme
+  return surveyQuery.data.value?.surveyPreference.theme ?? 'Classic'
 })
 const mascot = computed(() => {
   return theme.value === 'Classic' ? MascotAdult : Mascot
@@ -176,6 +181,7 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
     })),
     mean: mealCarbsExchange,
     mascot: mascot.value,
+    theme: theme.value,
   }
 
   return mealCarbsExchange

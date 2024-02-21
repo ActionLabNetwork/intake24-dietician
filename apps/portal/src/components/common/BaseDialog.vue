@@ -9,8 +9,16 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer></v-spacer>
-        <v-btn class="text-none" @click="handleCancel"> Cancel </v-btn>
-        <BaseButton ref="confirmBtn" variant="flat" @click="handleConfirm">
+        <v-btn class="text-none" @click="handleCancel">
+          {{ onCancelText ?? 'Cancel' }}
+        </v-btn>
+        <BaseButton
+          v-if="onConfirm"
+          ref="confirmBtn"
+          variant="flat"
+          :loading="isLoading"
+          @click="handleConfirm"
+        >
           Confirm
         </BaseButton>
       </v-card-actions>
@@ -23,18 +31,29 @@ import { ref } from 'vue'
 import BaseButton from './BaseButton.vue'
 
 const props = defineProps<{
-  onConfirm?: Function
+  modelValue: boolean
+  onConfirm?: () => Promise<void>
   onCancel?: Function
+  onCancelText?: string
 }>()
 
 const dialog = defineModel<boolean>()
+const isLoading = ref(false)
 const confirmBtn = ref()
 
-const handleConfirm = () => {
+const handleConfirm = async () => {
   if (props.onConfirm) {
-    props.onConfirm()
+    isLoading.value = true
+    await props.onConfirm()
+    isLoading.value = false
+
+    console.log({ isLoading: isLoading.value })
+    if (!isLoading.value) {
+      closeDialog()
+    }
+  } else {
+    closeDialog()
   }
-  closeDialog()
 }
 
 const handleCancel = () => {
@@ -45,6 +64,7 @@ const handleCancel = () => {
 }
 
 const closeDialog = () => {
+  console.log('Closing dialog...')
   dialog.value = false
 }
 </script>

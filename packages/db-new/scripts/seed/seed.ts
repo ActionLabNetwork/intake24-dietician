@@ -83,6 +83,7 @@ async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {
       userId: user!.id,
       firstName: 'John',
       lastName: 'Smith',
+      onboardingFinished: false,
     })
     .returning()
     .execute()
@@ -99,10 +100,11 @@ async function seedSurvey(
     .insert(surveys)
     .values({
       dieticianId: dietician!.id,
-      surveyName: 'Demo survey',
-      intake24Host: 'https://survey.intake24.dev',
+      surveyName: 'Action Clinic',
+      intake24Host: 'https://admin.intake24.dev',
+      countryCode: 'au',
       intake24SurveyId: 'demo',
-      intake24Secret: 'super_secret_jwt',
+      intake24Secret: 'super_secret_secret',
       alias: 'demo_clinic',
       surveyPreference: preference,
     })

@@ -19,20 +19,57 @@
         >
           Edit draft
         </v-btn>
-        <v-btn icon="mdi-delete-outline" class="ml-2" variant="flat" />
+        <v-btn
+          icon="mdi-delete-outline"
+          class="ml-2"
+          variant="flat"
+          @click="deleteDraft().showConfirmDialog()"
+        />
       </div>
     </div>
   </v-card>
+  <DialogDraftDelete
+    v-model="confirmDialog"
+    :on-confirm="
+      async () => {
+        await deleteDraft().submit()
+      }
+    "
+  />
 </template>
 
 <script setup lang="ts">
+import { useDeleteDraft } from '@intake24-dietician/portal/mutations/useFeedback'
+import DialogDraftDelete from './DialogDraftDelete.vue'
+import { ref } from 'vue'
+import { useToast } from 'vue-toast-notification'
+
 interface DraftItem {
+  draftId: number
   modified: string
   recallDates: string[]
 }
 
-defineProps<DraftItem>()
+const props = defineProps<DraftItem>()
 defineEmits<{ buttonClick: [] }>()
+
+const deleteDraftMutation = useDeleteDraft()
+const $toast = useToast()
+
+const confirmDialog = ref(false)
+
+const deleteDraft = () => {
+  const showConfirmDialog = () => {
+    confirmDialog.value = true
+  }
+
+  const submit = async () =>
+    await deleteDraftMutation.mutateAsync(props.draftId, {
+      onSuccess: () => $toast.success('Draft deleted'),
+    })
+
+  return { showConfirmDialog, submit }
+}
 </script>
 
 <style scoped lang="scss">

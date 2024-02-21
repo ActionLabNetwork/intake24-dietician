@@ -24,6 +24,36 @@ export interface MealCardProps {
   }[]
 }
 
+export interface MealCardMultipleNutrientsProps {
+  label: string
+  hours: number
+  minutes: number
+  colors: {
+    backgroundColor: string
+    valueCardBgColor: string
+    valueCardBorderColor: string
+  }
+  nutrientType: {
+    [K: string]: {
+      name: string
+      unitOfMeasure:
+        | {
+            symbol: string | null
+            description: string
+          }
+        | undefined
+      value: number
+    }
+  }
+  foods: {
+    name: string
+    servingWeight: string
+    valueByNutrientType: {
+      [K: string]: { value: number }
+    }
+  }[]
+}
+
 export type PieAndTimelineTabs = {
   name: string
   value: number

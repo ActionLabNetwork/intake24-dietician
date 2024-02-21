@@ -4,13 +4,12 @@
     v-if="theme"
     :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
   >
-    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Sugar intake" />
+    <ModuleTitle :logo="logo" title="Sugar intake" />
     <div v-if="mealCards" class="mt-2">
       <PieChartAndTimelineTab
         v-if="tabs"
         :tabs="tabs as unknown as PieAndTimelineTabs"
         :show-tabs="mode === 'edit'"
-        :background="{ color: '#D69FB3', active: '#5B0108' }"
       />
     </div>
     <div v-if="mode !== 'view'">
@@ -118,6 +117,11 @@ const tabs = ref<PieAndTimelineTabs>([
 ])
 
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 
 const calculateMealSugarIntake = (meal: RecallMeal, recallsCount = 1) => {
   const mealSugarExchange = usePrecision(

@@ -83,7 +83,6 @@ import type { Form, Layout } from './types'
 export interface ContactDetailsFormValues {
   currentEmail: string
   mobileNumber: string | null
-  businessNumber: string | null
   businessAddress: string | null
 }
 
@@ -135,7 +134,7 @@ const formConfig = computed<Form<keyof ContactDetailsFormValues>>(() => ({
     readonly: true,
     type: 'input',
     inputType: 'email',
-    layout: { cols: 12, md: 4 },
+    layout: { cols: 12, md: 6 },
     suffixIcon: _allowEmailChange.value ? 'mdi-mail' : '',
     handleSuffixIconClick: () => {
       changeEmailDialog.value = true
@@ -148,15 +147,7 @@ const formConfig = computed<Form<keyof ContactDetailsFormValues>>(() => ({
     required: true,
     type: 'input',
     inputType: 'tel',
-    layout: { cols: 12, md: 4 },
-  },
-  businessNumber: {
-    key: 'businessNumber',
-    label: t('profile.form.contactDetails.businessNumber.label'),
-    required: false,
-    type: 'input',
-    inputType: 'tel',
-    layout: { cols: 12, md: 4 },
+    layout: { cols: 12, md: 6 },
   },
   businessAddress: {
     key: 'businessAddress',

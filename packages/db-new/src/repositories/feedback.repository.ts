@@ -102,6 +102,12 @@ export class FeedbackRepository {
     return updatedDraft
   }
 
+  public async deleteDraft(draftId: number) {
+    return await this.drizzle
+      .delete(feedbackDrafts)
+      .where(eq(feedbackDrafts.id, draftId))
+  }
+
   public async saveShared(
     patientId: number,
     draftId: number | undefined,
@@ -115,7 +121,6 @@ export class FeedbackRepository {
 
         if (draft) {
           // Check if draft belongs to patient
-          console.log({ draft })
           if (draft.patientId !== patientId) {
             throw new Error('Draft does not belong to patient')
           }

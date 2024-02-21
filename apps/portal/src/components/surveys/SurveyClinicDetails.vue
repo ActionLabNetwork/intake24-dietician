@@ -18,6 +18,7 @@
     </div>
     <div v-if="clinic.intake24SurveyId">
       <v-btn
+        id="clinic-settings-btn"
         class="text-none"
         prepend-icon="mdi-cog-outline"
         variant="outlined"

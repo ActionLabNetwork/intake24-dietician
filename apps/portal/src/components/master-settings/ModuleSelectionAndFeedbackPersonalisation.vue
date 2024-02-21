@@ -2,9 +2,9 @@
   <v-row>
     <v-col cols="4" md="4" lg="3">
       <ModuleSelectList
-        :default-state="defaultState"
+        v-model:default-state="defaultState"
+        v-model:module="selectedModule"
         show-switches
-        @update="handleModuleChange"
         @update:modules="handleModulesChange"
       />
     </v-col>
@@ -62,6 +62,11 @@ import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
+import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
+import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
+import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
+import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
@@ -80,12 +85,11 @@ export type FeedbackMapping = {
   >
 }
 
-const props = defineProps<{ defaultState: FeedbackMapping }>()
-
 const emit = defineEmits<{
   update: [presetModulesFeedbacks: FeedbackMapping]
 }>()
 
+const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
 
 // TODO: Figure out a way to show preview of the modules. Maybe use a test data for sample?
@@ -147,37 +151,55 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedbackAbove: '',
       isActive: false,
     },
+    'Fruit intake': {
+      component: markRaw(FruitIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Vegetable intake': {
+      component: markRaw(VegetableIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Fruit and vegetable intake': {
+      component: markRaw(FruitAndVegetableIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Calorie intake': {
+      component: markRaw(CalorieIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Protein intake': {
+      component: markRaw(ProteinIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
   })
-
-const handleModuleChange = (module: ModuleName) => {
-  selectedModule.value = module
-}
 
 const handleModulesChange = (modules: ModuleItem[]) => {
   modules.forEach(module => {
     moduleNameToModuleComponentMapping[module.title].isActive = module.selected
   })
+  emit('update', moduleNameToModuleComponentMapping)
 }
 
-watch(moduleNameToModuleComponentMapping, newFeedbacks => {
-  const feedbackMapping = Object.fromEntries(
-    Object.entries(newFeedbacks).map(([key, value]) => [
-      key,
-      {
-        name: value.name,
-        feedbackBelow: value.feedbackBelow,
-        feedbackAbove: value.feedbackAbove,
-        isActive: value.isActive,
-        nutrientTypes: value.nutrientTypes,
-      },
-    ]),
-  ) as FeedbackMapping
-  emit('update', feedbackMapping)
-})
-
 watch(
-  () => props.defaultState,
+  () => defaultState.value,
   newDefaultState => {
+    if (!newDefaultState) return
+
     Object.entries(newDefaultState).forEach(([key, value]) => {
       const routeKey = key as keyof typeof moduleNameToModuleComponentMapping
       moduleNameToModuleComponentMapping[routeKey].name = value.name

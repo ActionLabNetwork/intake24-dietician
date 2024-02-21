@@ -60,6 +60,7 @@ export const dieticians = pgTable('dietician', {
   businessAddress: text('business_address'),
   shortBio: text('short_bio'),
   avatar: text('avatar'),
+  onboardingFinished: boolean('onboarding_finished').notNull(),
   ...timestampFields,
 })
 

@@ -184,9 +184,9 @@ export class UserRepository {
           middleName: profile.middleName,
           lastName: profile.lastName,
           mobileNumber: profile.mobileNumber,
-          businessNumber: profile.businessNumber,
           businessAddress: profile.businessAddress,
           shortBio: profile.shortBio,
+          onboardingFinished: profile.onboardingFinished,
         })
         .execute()
       return user
@@ -224,15 +224,13 @@ export class UserRepository {
   }
 
   public async getPatient(patientId: number) {
-    return await this.drizzle.query.patients
-      .findFirst({
-        where: eq(patients.id, patientId),
-        with: {
-          user: true,
-          survey: true,
-        },
-      })
-      .execute()
+    return await this.drizzle.query.patients.findFirst({
+      where: eq(patients.id, patientId),
+      with: {
+        user: true,
+        survey: true,
+      },
+    })
   }
 
   public async getPatientByUserIdAndEmail(userId: number, email: string) {

@@ -7,7 +7,6 @@ export function useLeaveGuard(showDialog: () => void, unsavedChanges: boolean) {
   const _unsavedChanges = ref(unsavedChanges)
 
   onBeforeRouteLeave(async (to, from, next) => {
-    console.log({ _unsavedChanges })
     if (!_unsavedChanges.value) {
       next()
     } else {

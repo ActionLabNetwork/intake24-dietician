@@ -7,38 +7,47 @@
       <component
         :is="logoIsComponent ? dynamicLogo : 'img'"
         :src="!logoIsComponent ? logo : undefined"
-        :width="90"
+        :width="130"
         aspect-ratio="16/9"
-        class="w-100 h-100"
+        :class="logoIsComponent ? 'w-100 h-100' : ''"
       />
+
+      <Logo />
       <div class="ml-4 font-weight-medium w-100">{{ title }}</div>
     </div>
-    <div>
+    <div v-if="showMetrics && allMetrics && allMetrics.length > 0">
       <v-menu
         transition="scale-transition"
         location="bottom"
         :close-on-content-click="false"
       >
         <template #activator="{ props: _props }">
-          <v-btn class="text-none" variant="outlined" v-bind="_props">
+          <v-btn class="text-none bg-white" variant="outlined" v-bind="_props">
             Metrics
+            <template #append>
+              <v-icon icon="mdi-chevron-down" />
+            </template>
           </v-btn>
         </template>
-
         <div class="menu">
-          <p class="px-2 pt-2 font-weight-medium">Manage metrics</p>
+          <p class="px-2 pt-2 font-weight-medium">
+            Manage metrics ({{ metrics?.length ?? 0 }}/{{ MAX_METRICS }})
+          </p>
           <v-list>
-            <v-list-item v-for="(item, i) in props.metrics" :key="i">
+            <v-list-item v-for="metric in allMetrics" :key="metric.id">
               <v-list-item-title>
-                <v-radio-group v-model="metric">
-                  <v-radio :value="item">
-                    <template #label>
-                      <div>
-                        <p>{{ item.description }}</p>
-                      </div>
-                    </template>
-                  </v-radio>
-                </v-radio-group>
+                <v-checkbox
+                  v-model="metrics"
+                  :label="metric.description"
+                  :value="metric"
+                  :disabled="
+                    (disableCheckbox &&
+                      metrics?.length === 1 &&
+                      metrics.includes(metric)) ||
+                    (metrics?.length === MAX_METRICS &&
+                      !metrics.includes(metric))
+                  "
+                />
               </v-list-item-title>
             </v-list-item>
           </v-list>
@@ -52,32 +61,19 @@
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { type Component, computed, defineAsyncComponent } from 'vue'
 import { VMenu } from 'vuetify/lib/components/index.mjs'
+import { NutrientType } from '../standard/meal-diary/MealDiaryModule.vue'
+
+const MAX_METRICS = 3
 
 const props = defineProps<{
   logo: string | Component | { path: ModuleName }
   title: string
-  metrics?: {
-    id: number
-    description: string
-    unit: {
-      symbol: string | null
-      description: string
-    }
-  }[]
+  allMetrics?: NutrientType[]
+  showMetrics?: boolean
 }>()
 
 // const metric = ref<string | null>(items.value[0] ?? null)
-const metric = defineModel<
-  | {
-      id: number
-      description: string
-      unit: {
-        symbol: string | null
-        description: string
-      }
-    }
-  | undefined
->()
+const metrics = defineModel<NutrientType[]>('metrics')
 
 function isLogoPath(
   logo: string | Component | { path: ModuleName },
@@ -95,6 +91,7 @@ const dynamicLogo = computed<Component | string>(() => {
   }
   return props.logo
 })
+const disableCheckbox = computed(() => metrics.value?.length ?? 0 <= 1)
 </script>
 
 <style scoped lang="scss">
@@ -104,5 +101,6 @@ const dynamicLogo = computed<Component | string>(() => {
   border-radius: 6px;
   max-height: 15rem;
   overflow-y: scroll;
+  background-color: white;
 }
 </style>

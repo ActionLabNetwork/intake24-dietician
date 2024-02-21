@@ -61,8 +61,13 @@ export class FeedbackService {
   public async saveDraft(patientId: number, draft: DraftCreateDto) {
     return (await this.feedbackRepository.saveDraft(patientId, draft))?.id
   }
+
   public async editDraft(draftId: number, draft: DraftCreateDto) {
     return (await this.feedbackRepository.editDraft(draftId, draft))?.id
+  }
+
+  public async deleteDraft(draftId: number) {
+    await this.feedbackRepository.deleteDraft(draftId)
   }
 
   public async shareDraft(

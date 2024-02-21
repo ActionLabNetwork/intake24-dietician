@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <div v-if="!hideExportToPdfButton" class="my-5 ml-10 d-print-none">
     <v-btn
@@ -27,7 +26,7 @@
           <FeedbackIntroText
             v-if="index === 0"
             :patient-name="patientName"
-            :recall-daterange="recallDaterange"
+            :recall-date-range="recallDaterange"
           />
           <component
             :is="module.component"
@@ -67,7 +66,6 @@ import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
-import { useRoute } from 'vue-router'
 
 interface Props {
   patientName: string
@@ -83,7 +81,6 @@ withDefaults(defineProps<Props>(), {
   constrainOutputHeight: false,
 })
 
-const route = useRoute()
 const { exportToPdf } = usePdfExport()
 
 const pdfExportLoading = ref(false)
