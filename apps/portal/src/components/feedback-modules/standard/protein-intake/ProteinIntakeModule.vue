@@ -21,7 +21,8 @@
         </TotalNutrientsDisplay>
         <div class="d-flex justify-space-between align-center background mt-3">
           <div class="pa-2 d-flex align-center">
-            <MascotWithBackgroundAdult />
+            <MascotWithBackgroundAdult v-if="theme === 'Classic'" />
+            <MascotWithBackground v-if="theme === 'Fun'" />
             <div class="ml-4">
               <p class="font-weight-bold">
                 {{ adviceText }}
@@ -55,18 +56,38 @@
             "
             class="flex-container pr-10"
           >
-            <MascotAdult
-              v-for="i in Math.min(
-                actualToRecommendedProportion,
-                NUMBER_OF_GLASSES,
-              )"
-              :key="i"
-            />
-            <MascotSadAdult
-              v-for="i in NUMBER_OF_GLASSES -
-              Math.min(actualToRecommendedProportion, NUMBER_OF_GLASSES)"
-              :key="i"
-            />
+            <div v-if="theme === 'Classic'">
+              <MascotAdult
+                v-for="i in Math.min(
+                  actualToRecommendedProportion,
+                  NUMBER_OF_GLASSES,
+                )"
+                :key="i"
+              />
+            </div>
+            <div v-if="theme === 'Fun'">
+              <Mascot
+                v-for="i in Math.min(
+                  actualToRecommendedProportion,
+                  NUMBER_OF_GLASSES,
+                )"
+                :key="i"
+              />
+            </div>
+            <div v-if="theme === 'Classic'">
+              <MascotSadAdult
+                v-for="i in NUMBER_OF_GLASSES -
+                Math.min(actualToRecommendedProportion, NUMBER_OF_GLASSES)"
+                :key="i"
+              />
+            </div>
+            <div v-if="theme === 'Fun'">
+              <MascotSad
+                v-for="i in NUMBER_OF_GLASSES -
+                Math.min(actualToRecommendedProportion, NUMBER_OF_GLASSES)"
+                :key="i"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -96,7 +117,6 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import {
-  DAILY_WATER_AMOUNT,
   NUMBER_OF_GLASSES,
   NUTRIENTS_WATER_INTAKE_ID,
 } from '@intake24-dietician/portal/constants/recall'
@@ -150,6 +170,7 @@ const isPending = computed(() =>
 
 const totalProteinIntake = ref(0)
 
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const requiredProteinAmount = computed(() => {
   // Let's consider 0.8grams of protein per kilogram of body weight
   const patientWeight = patientStore.patientQuery.data?.weightHistory[0]?.weight
