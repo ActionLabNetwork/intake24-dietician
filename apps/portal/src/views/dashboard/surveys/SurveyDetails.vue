@@ -28,7 +28,13 @@
   <v-dialog v-model="showWelcomeDialog" persistent :max-width="420">
     <template #default>
       <ClinicIntroduction
-        @next="() => goToStep(n => n + 1)"
+        @next="
+          () => {
+            onBoardingStarted = true
+            showWelcomeDialog = false
+            start()
+          }
+        "
         @skip="() => finishOnboarding()"
       />
     </template>
@@ -68,30 +74,32 @@ const intercomponentControlStore = useIntercomponentControlStore()
 const showWelcomeDialog = ref(false)
 const wrapper = ref(null)
 const { start, goToStep, finish } = useVOnboarding(wrapper)
+const overlay = {
+  enabled: true,
+  padding: 10,
+  borderRadius: 4,
+  preventOverlayInteraction: true,
+}
 const steps = [
   {
     attachTo: {
-      // typing of v-onboarding requires this
-      element: '#_none_',
-    },
-    content: {},
-    on: {
-      beforeStep: () => {
-        showWelcomeDialog.value = true
-      },
-      afterStep: () => {
-        showWelcomeDialog.value = false
-      },
-    },
-  },
-  {
-    attachTo: {
       element: '#patient-list',
+    },
+    options: {
+      popper: {
+        placement: 'bottom',
+      },
+      overlay,
     },
     content: {
       title: 'Patient list',
       description:
         'View patient records to review their recall, give feedback or edit patient profile. You can also check the recall and feedback history and quickly send recall completion reminders from the patient list table.',
+    },
+    on: {
+      afterStep: ({ isBackward }: { isBackward: boolean }) => {
+        if (isBackward) showWelcomeDialog.value = true
+      },
     },
   },
   {
@@ -115,6 +123,7 @@ const steps = [
       popper: {
         placement: 'right',
       },
+      overlay,
     },
   },
   {
@@ -130,6 +139,7 @@ const steps = [
       popper: {
         placement: 'left',
       },
+      overlay,
     },
   },
   {
@@ -145,6 +155,7 @@ const steps = [
       popper: {
         placement: 'left',
       },
+      overlay,
     },
   },
 ]
@@ -159,8 +170,9 @@ const onBoardingStarted = ref(false)
 watchEffect(() => {
   if (!profile.value) return
   if (!profile.value.onboardingFinished && !onBoardingStarted.value) {
-    onBoardingStarted.value = true
-    start()
+    showWelcomeDialog.value = true
+    // onBoardingStarted.value = true
+    // start()
   }
 })
 
@@ -171,6 +183,7 @@ const finishOnboarding = () => {
     dieticianProfile: { onboardingFinished: true },
   })
   finish()
+  showWelcomeDialog.value = false
 }
 
 const hideSurveyDetails = computed(() => {

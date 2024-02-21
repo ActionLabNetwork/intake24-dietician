@@ -89,6 +89,8 @@ const containerFlexDirection = computed(() => {
   height: 20px;
   transform: rotate(45deg);
   background-color: rgb(var(--v-theme-primary));
+  z-index: 1;
+  box-shadow: none;
 }
 
 .bubble-container {

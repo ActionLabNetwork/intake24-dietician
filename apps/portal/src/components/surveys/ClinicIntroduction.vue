@@ -1,17 +1,17 @@
 <template>
   <v-card>
     <v-card-text>
-      <v-container align-items="center" align="center">
-        <v-row>
+      <div>
+        <div class="hero-image">
           <v-img width="100%" src="/clinic_welcome.svg"></v-img>
-        </v-row>
-        <v-row>
-          <div class="text-h6 text-center">Welcome to your new clinic!</div>
-        </v-row>
-        <v-row class="tagline">
+        </div>
+        <div class="text header text-center mx-auto my-4 font-weight-bold">
+          Welcome to your new clinic!
+        </div>
+        <p class="text subheader mx-auto mb-2 text-center">
           Explore different functions in the clinic’s dashboard
-        </v-row>
-        <v-row class="description text-center">
+        </p>
+        <div class="text description text-center">
           <p class="text-center">
             The clinic dashboard is your
             <span class="highlight">one-stop destination</span> for viewing
@@ -20,30 +20,30 @@
             <span class="highlight">creating a new clinic</span> or making
             changes to an existing one.
           </p>
-        </v-row>
-      </v-container>
+        </div>
+      </div>
     </v-card-text>
     <v-card-actions>
       <v-col>
         <v-btn
           class="text-none"
           variant="text"
-          size="small"
           width="100%"
           @click="() => emits('skip')"
-          >Skip</v-btn
         >
+          Skip
+        </v-btn>
       </v-col>
       <v-col>
         <v-btn
           class="text-none"
           variant="flat"
-          size="small"
           width="100%"
           color="primary"
           @click="() => emits('next')"
-          >Let's dive in!</v-btn
         >
+          Let's dive in!
+        </v-btn>
       </v-col>
     </v-card-actions>
   </v-card>
@@ -56,21 +56,34 @@ const emits = defineEmits<{
 }>()
 </script>
 
-<style scoped>
-.description,
-.tagline {
-  font-size: 14px;
-  line-height: 18px;
-  letter-spacing: 0em;
-  text-align: center;
+<style scoped lang="scss">
+.hero-image {
+  border: 1px solid #f2f2f2;
+  background: #f2f2f2;
+  border-radius: 6px;
 }
 
-.tagline {
-  font-weight: 500;
+.text {
+  &.header {
+    color: #000;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  &.subheader {
+    color: #000;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  &.description {
+    color: #000;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 130%; /* 18.2px */
+  }
 }
-.description {
-  font-weight: 400;
-}
+
 .highlight {
   font-weight: 500;
   color: #ee672d;

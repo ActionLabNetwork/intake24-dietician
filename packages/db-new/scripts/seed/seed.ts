@@ -83,6 +83,7 @@ async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {
       userId: user!.id,
       firstName: 'John',
       lastName: 'Smith',
+      onboardingFinished: false,
     })
     .returning()
     .execute()
