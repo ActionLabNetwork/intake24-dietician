@@ -40,6 +40,7 @@
     "remeda": "^1.43.0",
     "roboto-fontface": "^0.10.0",
     "type-fest": "^4.10.2",
+    "v-onboarding": "^2.8.0",
     "v-phone-input": "^4.1.1",
     "vee-validate": "^4.12.5",
     "vue": "^3.4.15",

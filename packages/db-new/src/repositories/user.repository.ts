@@ -186,6 +186,7 @@ export class UserRepository {
           mobileNumber: profile.mobileNumber,
           businessAddress: profile.businessAddress,
           shortBio: profile.shortBio,
+          onboardingFinished: profile.onboardingFinished,
         })
         .execute()
       return user

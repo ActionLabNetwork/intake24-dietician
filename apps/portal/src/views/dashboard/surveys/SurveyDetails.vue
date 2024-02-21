@@ -1,4 +1,38 @@
 <template>
+  <VOnboardingWrapper
+    ref="wrapper"
+    :steps="steps"
+    :options="{
+      overlay: {
+        enabled: false,
+      },
+    }"
+  >
+    <template #default="{ previous, next, step, isLast, index }">
+      <VOnboardingStep v-if="step && step.content">
+        <OnboardingBubble
+          :title="step.content.title"
+          :description="step.content.description"
+          :is-last="isLast"
+          :num-steps="steps.length"
+          :index="index"
+          :placement="step.options?.popper?.placement ?? 'bottom'"
+          @previous="previous"
+          @next="next"
+          @finish="finishOnboarding"
+        />
+      </VOnboardingStep>
+    </template>
+  </VOnboardingWrapper>
+
+  <v-dialog v-model="showWelcomeDialog" persistent :max-width="420">
+    <template #default>
+      <ClinicIntroduction
+        @next="() => goToStep(n => n + 1)"
+        @skip="() => finishOnboarding()"
+      />
+    </template>
+  </v-dialog>
   <v-main>
     <v-row class="ml-1">
       <SurveyClinicDetails v-if="!hideSurveyDetails" />
@@ -12,17 +46,132 @@
 </template>
 
 <script lang="ts" setup>
-// import { i18nOptions } from '@intake24-dietician/i18n/index'
-// import { useI18n } from 'vue-i18n'
-import 'vue-toast-notification/dist/theme-sugar.css'
-// import NavCard from '@/components/surveys/NavCard.vue'
+import OnboardingBubble from '@/components/common/OnboardingBubble.vue'
+import ClinicIntroduction from '@/components/surveys/ClinicIntroduction.vue'
 import SurveyClinicDetails from '@/components/surveys/SurveyClinicDetails.vue'
+import { useUpdateProfile } from '@intake24-dietician/portal/mutations/useAuth'
+import { useProfile } from '@intake24-dietician/portal/queries/useAuth'
+import { useIntercomponentControlStore } from '@intake24-dietician/portal/stores/intercomponentControl'
+import {
+  VOnboardingStep,
+  VOnboardingWrapper,
+  useVOnboarding,
+} from 'v-onboarding'
+import { computed, ref, watchEffect } from 'vue'
 import { useRoute } from 'vue-router'
-import { computed } from 'vue'
-
-// const { t } = useI18n<i18nOptions>()
+import 'vue-toast-notification/dist/theme-sugar.css'
 
 const route = useRoute()
+
+const intercomponentControlStore = useIntercomponentControlStore()
+
+const showWelcomeDialog = ref(false)
+const wrapper = ref(null)
+const { start, goToStep, finish } = useVOnboarding(wrapper)
+const steps = [
+  {
+    attachTo: {
+      // typing of v-onboarding requires this
+      element: '#_none_',
+    },
+    content: {},
+    on: {
+      beforeStep: () => {
+        showWelcomeDialog.value = true
+      },
+      afterStep: () => {
+        showWelcomeDialog.value = false
+      },
+    },
+  },
+  {
+    attachTo: {
+      element: '#patient-list',
+    },
+    content: {
+      title: 'Patient list',
+      description:
+        'View patient records to review their recall, give feedback or edit patient profile. You can also check the recall and feedback history and quickly send recall completion reminders from the patient list table.',
+    },
+  },
+  {
+    attachTo: {
+      element: '#clinic-menu',
+    },
+    content: {
+      title: 'Clinics',
+      description:
+        'Select the clinic tab to quickly navigate between your clinics. You can also create a new clinic from here.',
+    },
+    on: {
+      beforeStep: () => {
+        intercomponentControlStore.setClinicMenuOpen(true)
+      },
+      afterStep: () => {
+        intercomponentControlStore.setClinicMenuOpen(false)
+      },
+    },
+    options: {
+      popper: {
+        placement: 'right',
+      },
+    },
+  },
+  {
+    attachTo: {
+      element: '#clinic-settings-btn',
+    },
+    content: {
+      title: 'Clinic settings',
+      description:
+        'Select the settings button If you want to make changes in your clinic’s setup.',
+    },
+    options: {
+      popper: {
+        placement: 'left',
+      },
+    },
+  },
+  {
+    attachTo: {
+      element: '#add-patient-btn',
+    },
+    content: {
+      title: 'Adding a new patient',
+      description:
+        'You can easily add a new patient to a clinic by clicking this button. Do note, the new patient will always get added to the selected clinic only.',
+    },
+    options: {
+      popper: {
+        placement: 'left',
+      },
+    },
+  },
+]
+
+const { data: profile } = useProfile()
+const { mutate } = useUpdateProfile()
+
+// v-onboarding does not have a hook to keep track of this,
+// so we create our own to prevent the watchEffect below from firing again.
+const onBoardingStarted = ref(false)
+
+watchEffect(() => {
+  if (!profile.value) return
+  if (!profile.value.onboardingFinished && !onBoardingStarted.value) {
+    onBoardingStarted.value = true
+    start()
+  }
+})
+
+const finishOnboarding = () => {
+  if (!profile.value) return
+  mutate({
+    emailAddress: profile.value.user.email,
+    dieticianProfile: { onboardingFinished: true },
+  })
+  finish()
+}
 
 const hideSurveyDetails = computed(() => {
   const routeNames = [

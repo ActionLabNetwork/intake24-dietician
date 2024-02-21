@@ -18,6 +18,7 @@
 
   <div class="mt-4">
     <v-data-table
+      id="patient-list"
       :items-per-page="itemsPerPage"
       :headers="headers"
       :search="search"

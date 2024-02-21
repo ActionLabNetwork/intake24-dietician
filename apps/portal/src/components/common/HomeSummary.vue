@@ -21,6 +21,7 @@
     </div>
     <div>
       <v-btn
+        id="add-patient-btn"
         color="primary"
         class="text-capitalize"
         append-icon="mdi-plus"

@@ -31,7 +31,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { useQueryClient } from '@tanstack/vue-query'
 import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
-import { useFeedbackModules } from '@intake24-dietician/portal/queries/useFeedbackModule'
+import { useFeedbackModules } from '@intake24-dietician/portal/queries/UseFeedbackModule'
 import { allowedIntake24Hosts } from '@intake24-dietician/portal/constants/integration'
 
 const $toast = useToast()

@@ -105,6 +105,7 @@ const handleProfileStepSubmit = (values: DieticianCreateDto) => {
         mobileNumber: profileValues?.mobileNumber ?? '',
         businessAddress: profileValues?.businessAddress ?? '',
         shortBio: profileValues?.shortBio ?? '',
+        onboardingFinished: false,
       },
     },
     {
