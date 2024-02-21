@@ -73,6 +73,7 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { moduleNames } from '@intake24-dietician/common/types/modules'
+import { create } from 'domain'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -176,6 +177,7 @@ const feedbackMapping = ref<FeedbackMapping>({
   'Fruit and vegetable intake': createFeedbackEntry(
     'Fruit and vegetable intake',
   ),
+  'Calorie intake': createFeedbackEntry('Calorie intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {

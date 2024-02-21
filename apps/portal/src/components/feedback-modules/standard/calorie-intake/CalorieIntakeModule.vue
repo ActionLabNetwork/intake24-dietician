@@ -1,7 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="logo" title="Energy intake" />
+    <ModuleTitle :logo="logo" title="Calorie intake" />
     <TotalNutrientsDisplay>
       Total energy: {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
@@ -18,15 +18,13 @@
           ></v-alert>
         </div>
         <!-- Success state -->
-        <div v-for="(meal, key, index) in mealCards" v-else :key="key">
-          <SummarizedCard
-            :src="meal.src"
-            :label="meal.label"
-            :alt="meal.alt"
-            :colors="getColours(colorPalette[index]!)"
-            :value="meal.value"
-          />
-        </div>
+        <PieChartsCard
+          name="Calorie intake"
+          :meals="mealCards"
+          :colors="colorPalette"
+          :recalls-count="recallStore.recallsGroupedByMeals.recallsCount"
+          :unit-of-measure="module?.nutrientTypes[0]"
+        />
       </div>
     </div>
 
@@ -62,16 +60,21 @@ import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import SummarizedCard, {
-  type SummarizedCardProps,
-} from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
-import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import PieChartsCard from '../../card-styles/PieChartsCard.vue'
+import {
+  RecallMeal,
+  RecallMealFood,
+} from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
+import {
+  calculateFoodNutrientsExchange,
+  calculateMealNutrientsExchange,
+} from '@intake24-dietician/portal/utils/feedback'
 import { usePrecision } from '@vueuse/math'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { MealCardProps } from '../../types'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -86,7 +89,7 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
-const { themeConfig } = useThemeSelector('Energy intake')
+const { themeConfig } = useThemeSelector('Calorie intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
@@ -110,14 +113,12 @@ const logo = computed(() =>
 )
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
-    module => module.name === 'Energy intake',
+    module => module.name === 'Calorie intake',
   )
 })
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
-const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
-  {},
-)
+const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -145,8 +146,8 @@ const getImageSrc = (name: string) => {
   return mealImages[mealName] || MidSnacks
 }
 
-const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
-  const mealEnergy = usePrecision(
+const calculateMealCalorieExchange = (meal: RecallMeal, recallsCount = 1) => {
+  const mealFibreExchange = usePrecision(
     calculateMealNutrientsExchange(
       meal,
       module.value?.nutrientTypes[0]?.id.toString() ??
@@ -157,13 +158,28 @@ const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
   ).value
 
   mealCards[meal.name] = {
-    src: getImageSrc(meal.name),
+    name: 'Fibre intake',
     label: meal.name,
-    alt: meal.name,
-    value: Math.floor(mealEnergy),
+    hours: meal.hours,
+    minutes: meal.minutes,
+    unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
+    foods: meal.foods.map(food => ({
+      name: food['englishName'],
+      servingWeight: food['portionSizes']?.find(
+        (item: { name: string }) => item.name === 'servingWeight',
+      )?.value,
+      value: usePrecision(
+        calculateFoodNutrientsExchange(
+          food as RecallMealFood,
+          module.value?.nutrientTypes[0]?.id.toString() ??
+            NUTRIENTS_ENERGY_INTAKE_ID,
+        ),
+        2,
+      ).value,
+    })),
   }
 
-  return mealEnergy
+  return mealFibreExchange
 }
 
 watch(
@@ -187,7 +203,7 @@ watch(
     })
 
     totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
-      return totalEnergy + calculateMealEnergy(meal)
+      return totalEnergy + calculateMealCalorieExchange(meal)
     }, 0)
   },
   { immediate: true },
@@ -206,7 +222,10 @@ watch(
     })
 
     totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
-      return totalEnergy + calculateMealEnergy(meal, combinedMeals.recallsCount)
+      return (
+        totalEnergy +
+        calculateMealCalorieExchange(meal, combinedMeals.recallsCount)
+      )
     }, 0)
   },
   { immediate: true },
@@ -224,7 +243,7 @@ watch(
 .grid-container {
   margin-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
   gap: 1rem;
 }
 </style>

@@ -55,9 +55,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import chroma from 'chroma-js'
-import { usePrecision } from '@vueuse/math'
 import { MealCardProps } from '../types'
-import { sort } from 'radash'
+import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
 
 const props = defineProps<MealCardProps>()
 
@@ -65,39 +64,7 @@ const isPlusIcon = ref(true)
 const isTransition = ref(true)
 const expand = ref(true)
 
-const formattedFoods = computed(() => {
-  // Sort the foods in descending order of value
-  const sortedFoods = sort(props.foods, food => food.value, true)
-  const topContributors = sortedFoods.filter(food => food.value > 0)
-  const n = 3
-
-  // Take top n contributors
-  const topNContributors = topContributors.slice(0, n).map(food => ({
-    name: food.name,
-    value: food.value,
-    servingWeight: roundServingWeight(food.servingWeight),
-  }))
-
-  // Calculate the value and servingWeight for 'Others'
-  const othersValue = topContributors
-    .slice(n)
-    .reduce((total, food) => total + food.value, 0)
-  const othersCount =
-    sortedFoods.length -
-    topContributors.length +
-    topContributors.slice(n).length
-
-  return othersCount > 0
-    ? [
-        ...topNContributors,
-        {
-          name: 'Others',
-          value: othersValue,
-          servingWeight: `(${othersCount} foods)`,
-        },
-      ]
-    : topNContributors
-})
+const { formattedFoods } = useProcessRecallFoods(props.foods)
 
 const toggleIcon = () => {
   isTransition.value = true
@@ -112,11 +79,6 @@ const toggleIcon = () => {
   setTimeout(() => {
     isTransition.value = false
   }, 300)
-}
-
-const roundServingWeight = (servingWeight: string) => {
-  const rounded = usePrecision(parseFloat(servingWeight), 2)
-  return rounded.value ? `(${rounded.value}g)` : ''
 }
 
 const wrapperStyle = computed(() => ({

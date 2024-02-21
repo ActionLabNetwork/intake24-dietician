@@ -49,5 +49,6 @@
     "id": 11,
     "name": "Fruit and vegetable intake",
     "nutrientTypes": [252, 262]
-  }
+  },
+  { "id": 12, "name": "Calorie intake", "nutrientTypes": [1, 2] }
 ]

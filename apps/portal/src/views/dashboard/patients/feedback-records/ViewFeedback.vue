@@ -148,6 +148,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       component: FruitAndVegetableIntakeModule,
       feedback: '',
     },
+    'Calorie intake': { component: EnergyIntakeModule, feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -212,6 +213,12 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Fruit and vegetable intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Calorie intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',

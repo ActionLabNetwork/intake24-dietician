@@ -29,7 +29,7 @@ export function useThemeSelector(moduleName: ModuleName) {
       Fun: 'carbs-exchange/svg/Logo.vue',
     },
     'Energy intake': {
-      Classic: 'energy-intake/svg/LogoAdult.vue',
+      Classic: '/feedback-modules/calorie-intake/CI-LogoAdult.png',
       Fun: 'energy-intake/svg/Logo.vue',
     },
     'Fibre intake': {
@@ -63,6 +63,10 @@ export function useThemeSelector(moduleName: ModuleName) {
     'Fruit and vegetable intake': {
       Classic: '/feedback-modules/fruit-and-vegetable-intake/FVI-LogoAdult.png',
       Fun: 'fruit-and-vegetable-intake/svg/Logo.vue',
+    },
+    'Calorie intake': {
+      Classic: '/feedback-modules/calorie-intake/CI-LogoAdult.png',
+      Fun: 'calorie-intake/svg/Logo.vue',
     },
   } as const
 

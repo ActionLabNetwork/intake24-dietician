@@ -476,6 +476,9 @@ importers:
       radash:
         specifier: ^11.0.0
         version: 11.0.0
+      remeda:
+        specifier: ^1.43.0
+        version: 1.43.0
       roboto-fontface:
         specifier: ^0.10.0
         version: 0.10.0
@@ -10239,6 +10242,10 @@ packages:
       call-bind: 1.0.2
       define-properties: 1.2.1
       set-function-name: 2.0.1
+
+  /remeda@1.43.0:
+    resolution: {integrity: sha512-YMGznJxotoGxoWH15H5v0DtceM+rKsGSO43+qULtPlFJSJ87ZWOHC1JP4iXQmVO9ZT5JFT0SPZQaZUpn4FXJbw==}
+    dev: false
 
   /remove-accents@0.4.2:
     resolution: {integrity: sha512-7pXIJqJOq5tFgG1A2Zxti3Ht8jJF337m4sowbuHsW30ZnkQFnDzy9qBNhgzX8ZLW4+UBcXiiR7SwR6pokHsxiA==}

@@ -86,7 +86,7 @@
 
 <script lang="ts" setup>
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
-import { computed, reactive, ref, watch, type Component, markRaw } from 'vue'
+import { computed, reactive, ref, type Component, markRaw } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import type {
@@ -107,6 +107,7 @@ import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-
 import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
+import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -170,6 +171,10 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
     'Fruit and vegetable intake': {
       component: markRaw(FruitAndVegetableIntakeModule),
+      feedback: '',
+    },
+    'Calorie intake': {
+      component: markRaw(CalorieIntakeModule),
       feedback: '',
     },
   })
