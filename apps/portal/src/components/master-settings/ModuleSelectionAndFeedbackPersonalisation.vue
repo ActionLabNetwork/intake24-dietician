@@ -66,6 +66,7 @@ import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
@@ -173,6 +174,13 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
     'Calorie intake': {
       component: markRaw(CalorieIntakeModule),
+      name: '',
+      feedbackBelow: '',
+      feedbackAbove: '',
+      isActive: false,
+    },
+    'Protein intake': {
+      component: markRaw(ProteinIntakeModule),
       name: '',
       feedbackBelow: '',
       feedbackAbove: '',

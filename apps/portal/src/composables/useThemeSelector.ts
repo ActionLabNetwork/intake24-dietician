@@ -68,6 +68,10 @@ export function useThemeSelector(moduleName: ModuleName) {
       Classic: '/feedback-modules/calorie-intake/CI-LogoAdult.png',
       Fun: 'calorie-intake/svg/Logo.vue',
     },
+    'Protein intake': {
+      Classic: '/feedback-modules/protein-intake/PI-LogoAdult.png',
+      Fun: 'protein-intake/svg/Logo.vue',
+    },
   } as const
 
   const theme = computed(() => clinicQuery.data?.value?.surveyPreference.theme)

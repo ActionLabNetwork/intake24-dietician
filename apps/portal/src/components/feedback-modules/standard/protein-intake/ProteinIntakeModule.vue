@@ -3,7 +3,7 @@
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle
       :logo="logo"
-      title="Water intake"
+      title="Protein intake"
       :class="{ 'text-white': mode === 'preview' }"
     />
     <div>
@@ -17,22 +17,34 @@
       </div>
       <div v-else>
         <TotalNutrientsDisplay>
-          Based on your weight, recommended daily water intake is: 8 glasses /
-          1.8 liters
+          {{ summaryText }}
         </TotalNutrientsDisplay>
         <div class="d-flex justify-space-between align-center background mt-3">
           <div class="pa-2 d-flex align-center">
-            <MascotWithBackground />
+            <MascotWithBackgroundAdult />
             <div class="ml-4">
               <p class="font-weight-bold">
-                Well done meeting your daily water intake.
+                {{ adviceText }}
               </p>
               <p class="font-weight-medium">
                 <span class="value-text" :style="textStyle">
-                  {{ totalWaterIntake / 1000 }} litres
+                  {{ totalProteinIntake }}
+                  {{ module?.nutrientTypes[0]?.unit.symbol }}
                 </span>
-                <v-icon icon="mdi-chevron-up" />
-                <span>{{ DAILY_WATER_AMOUNT / 1000 }} litres</span>
+                <v-icon
+                  v-if="metProteinAmount"
+                  :color="getColor(totalProteinIntake, requiredProteinAmount)"
+                  icon="mdi-chevron-up"
+                />
+                <v-icon
+                  v-else
+                  :color="getColor(totalProteinIntake, requiredProteinAmount)"
+                  icon="mdi-chevron-down"
+                />
+                <span>
+                  {{ requiredProteinAmount }}
+                  {{ module?.nutrientTypes[0]?.unit.symbol }}
+                </span>
               </p>
             </div>
           </div>
@@ -43,14 +55,14 @@
             "
             class="flex-container pr-10"
           >
-            <Mascot
+            <MascotAdult
               v-for="i in Math.min(
                 actualToRecommendedProportion,
                 NUMBER_OF_GLASSES,
               )"
               :key="i"
             />
-            <MascotSad
+            <MascotSadAdult
               v-for="i in NUMBER_OF_GLASSES -
               Math.min(actualToRecommendedProportion, NUMBER_OF_GLASSES)"
               :key="i"
@@ -88,11 +100,15 @@ import {
   NUMBER_OF_GLASSES,
   NUTRIENTS_WATER_INTAKE_ID,
 } from '@intake24-dietician/portal/constants/recall'
-import Mascot from '@/components/feedback-modules/standard/water-intake/svg/Mascot.vue'
-import MascotSad from '@/components/feedback-modules/standard/water-intake/svg/MascotSad.vue'
+import Mascot from '@/components/feedback-modules/standard/protein-intake/svg/Mascot.vue'
+import MascotAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotAdult.vue'
+import MascotWithBackgroundAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotWithBackgroundAdult.vue'
+import MascotSad from '@/components/feedback-modules/standard/protein-intake/svg/MascotSad.vue'
+import MascotSadAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotSadAdult.vue'
 // import MascotHalf from '@/components/feedback-modules/standard/water-intake/svg/MascotHalf.vue'
+// import MascotHalfAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotHalfAdult.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import MascotWithBackground from '@/components/feedback-modules/standard/water-intake/svg/MascotWithBackground.vue'
+import MascotWithBackground from '@/components/feedback-modules/standard/protein-intake/svg/MascotWithBackground.vue'
 import chroma from 'chroma-js'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
@@ -102,6 +118,7 @@ import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -115,9 +132,10 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
-const { themeConfig } = useThemeSelector('Water intake')
+const { themeConfig } = useThemeSelector('Protein intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
+const patientStore = usePatientStore()
 const recallStore = useRecallStore()
 const isError = computed(() =>
   props.useSampleRecall
@@ -130,13 +148,46 @@ const isPending = computed(() =>
     : recallStore.recallsQuery.isPending,
 )
 
-const totalWaterIntake = ref(0)
+const totalProteinIntake = ref(0)
 
+const requiredProteinAmount = computed(() => {
+  // Let's consider 0.8grams of protein per kilogram of body weight
+  const patientWeight = patientStore.patientQuery.data?.weightHistory[0]?.weight
+  if (!patientWeight) return NaN
+
+  return (patientWeight ?? 0) * 2.8
+})
+const summaryText = computed(() => {
+  let aboveOrBelow = ''
+  if (metProteinAmount.value) {
+    aboveOrBelow = 'above'
+  } else {
+    aboveOrBelow = 'below'
+  }
+
+  return `Your total protein intake for
+          ${recallStore.selectedRecallDateRangePretty} is
+          ${totalProteinIntake.value}${module.value?.nutrientTypes[0]?.unit.symbol} which is ${aboveOrBelow} the daily recommended amount: ${requiredProteinAmount.value}${module.value?.nutrientTypes[0]?.unit.symbol}`
+})
+const adviceText = computed(() => {
+  if (totalProteinIntake.value >= requiredProteinAmount.value) {
+    return 'Well done meeting your daily protein intake'
+  } else {
+    return 'You need to consume more protein to meet your daily intake'
+  }
+})
+const metProteinAmount = computed(() => {
+  return totalProteinIntake.value - requiredProteinAmount.value >= 0
+})
+const logo = computed(() =>
+  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
+    ? themeConfig.value.logo
+    : { path: themeConfig.value.logo },
+)
 const actualToRecommendedProportion = computed(() => {
-  return (
-    Math.floor(
-      (totalWaterIntake.value / DAILY_WATER_AMOUNT) * NUMBER_OF_GLASSES,
-    ) / recallStore.recallsGroupedByMeals.recallsCount
+  return Math.floor(
+    (totalProteinIntake.value / requiredProteinAmount.value) *
+      NUMBER_OF_GLASSES,
   )
 })
 
@@ -146,22 +197,20 @@ const getColor = (number: number, target: number) => {
   return colorScale(ratio).hex()
 }
 
-const logo = computed(() =>
-  surveyQuery.data.value?.surveyPreference.theme === 'Classic'
-    ? themeConfig.value.logo
-    : { path: themeConfig.value.logo },
-)
 const textStyle = computed(() => ({
-  '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
+  '--text-color': getColor(
+    totalProteinIntake.value,
+    requiredProteinAmount.value,
+  ),
 }))
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
-    module => module.name === 'Water intake',
+    module => module.name === 'Protein intake',
   )
 })
 
-const calculateMealWaterContent = (meal: RecallMeal, recallsCount = 1) => {
-  const mealWaterContent = usePrecision(
+const calculateMealProteinContent = (meal: RecallMeal, recallsCount = 1) => {
+  const mealProteinContent = usePrecision(
     calculateMealNutrientsExchange(
       meal,
       module.value?.nutrientTypes[0]?.id.toString() ??
@@ -171,7 +220,7 @@ const calculateMealWaterContent = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  return mealWaterContent
+  return mealProteinContent
 }
 
 watch(
@@ -180,11 +229,11 @@ watch(
     if (!data) return
     const combinedMeals = recallStore.recallsGroupedByMeals
 
-    totalWaterIntake.value = Math.floor(
-      combinedMeals.meals.reduce((totalWater, meal) => {
+    totalProteinIntake.value = Math.floor(
+      combinedMeals.meals.reduce((totalProtein, meal) => {
         return (
-          totalWater +
-          calculateMealWaterContent(meal, combinedMeals.recallsCount)
+          totalProtein +
+          calculateMealProteinContent(meal, combinedMeals.recallsCount)
         )
       }, 0),
     )
@@ -197,9 +246,9 @@ watch(
     if (!data) return
     if (!props.useSampleRecall) return
 
-    totalWaterIntake.value = Math.floor(
+    totalProteinIntake.value = Math.floor(
       data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealWaterContent(meal)
+        return totalEnergy + calculateMealProteinContent(meal)
       }, 0),
     )
   },
@@ -218,6 +267,6 @@ watch(
 }
 
 .background {
-  background-color: #f2ffff;
+  background-color: rgba(239, 209, 200, 0.25);
 }
 </style>

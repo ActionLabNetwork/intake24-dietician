@@ -108,6 +108,7 @@ import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import ProfileAndFeedbackCard from '@intake24-dietician/portal/components/feedback/ProfileAndFeedbackCard.vue'
 import { useRoute, useRouter } from 'vue-router'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -175,6 +176,10 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     },
     'Calorie intake': {
       component: markRaw(CalorieIntakeModule),
+      feedback: '',
+    },
+    'Protein intake': {
+      component: markRaw(ProteinIntakeModule),
       feedback: '',
     },
   })

@@ -21,6 +21,26 @@ export const useRecallStore = defineStore('recalls', () => {
     undefined,
     undefined,
   ])
+  const selectedRecallDateRangePretty = computed(() => {
+    if (!selectedRecallDateRange.value) return ''
+    const [startDate, endDate] = selectedRecallDateRange.value
+
+    if (startDate && !endDate) {
+      return moment(startDate).format('DD/MM/YYYY')
+    }
+
+    if (!startDate && endDate) {
+      return moment(endDate).format('DD/MM/YYYY')
+    }
+
+    if (startDate === endDate) {
+      return moment(startDate).format('DD/MM/YYYY')
+    }
+
+    return `${moment(startDate).format('DD/MM/YYYY')} - ${moment(
+      endDate,
+    ).format('DD/MM/YYYY')}`
+  })
   const recallsGroupedByMeals = ref<{
     recallsCount: number
     meals: RecallMeal[]
@@ -197,6 +217,7 @@ export const useRecallStore = defineStore('recalls', () => {
     sampleRecallQuery,
     recallsQuery,
     selectedRecallDateRange,
+    selectedRecallDateRangePretty,
     isDateRange,
     hasRecalls,
     allowedStartDates,

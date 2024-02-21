@@ -200,6 +200,10 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       component: markRaw(CalorieIntakeModule),
       feedback: '',
     },
+    'Protein intake': {
+      component: markRaw(CalorieIntakeModule),
+      feedback: '',
+    },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -270,6 +274,12 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Calorie intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Protein intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',

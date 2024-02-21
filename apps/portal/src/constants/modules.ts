@@ -52,4 +52,8 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
     mainBackground: '#ffffff',
     feedback: { background: '#ffffff', color: '#000' },
   },
+  'Protein intake': {
+    mainBackground: '#ffffff',
+    feedback: { background: '#ffffff', color: '#000' },
+  },
 }

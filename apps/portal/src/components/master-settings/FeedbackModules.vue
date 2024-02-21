@@ -178,6 +178,7 @@ const feedbackMapping = ref<FeedbackMapping>({
     'Fruit and vegetable intake',
   ),
   'Calorie intake': createFeedbackEntry('Calorie intake'),
+  'Protein intake': createFeedbackEntry('Protein intake'),
 })
 
 const handleVisualThemeUpdate = (_theme: Theme) => {

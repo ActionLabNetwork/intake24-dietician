@@ -62,6 +62,7 @@ import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-
 import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -149,6 +150,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
     'Calorie intake': { component: EnergyIntakeModule, feedback: '' },
+    'Protein intake': { component: ProteinIntakeModule, feedback: '' },
   })
 
 const feedbackMapping = ref<FeedbackMapping>({
@@ -219,6 +221,12 @@ const feedbackMapping = ref<FeedbackMapping>({
     isActive: false,
   },
   'Calorie intake': {
+    name: '',
+    feedbackBelow: '',
+    feedbackAbove: '',
+    isActive: false,
+  },
+  'Protein intake': {
     name: '',
     feedbackBelow: '',
     feedbackAbove: '',
