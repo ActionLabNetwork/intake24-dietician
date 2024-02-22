@@ -120,32 +120,6 @@ const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
 const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
-// Utility functions
-const getColours = (base: string) => {
-  let _base = base ?? '#fff'
-  return {
-    backgroundColor: _base,
-    valueCardBgColor: chroma(_base).darken(1).saturate(3).alpha(0.5).hex(),
-    valueCardBorderColor: chroma(_base).darken(2).saturate(5).hex(),
-  }
-}
-
-const getImageSrc = (name: string) => {
-  const mealImages = {
-    breakfast: Breakfast,
-    lunch: Lunch,
-    dinner: Dinner,
-    evening: Dinner,
-    midSnacks: MidSnacks,
-  }
-
-  const mealName = (Object.keys(mealImages).find(meal =>
-    name.toLowerCase().includes(meal),
-  ) ?? 'midSnacks') as keyof typeof mealImages
-
-  return mealImages[mealName] || MidSnacks
-}
-
 const calculateMealCalorieExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealFibreExchange = usePrecision(
     calculateMealNutrientsExchange(

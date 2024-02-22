@@ -110,13 +110,13 @@ const cssClasses = computed(() => {
   &.child {
     padding: 1rem;
     border-radius: 10px;
-    height: fit-content;
+    height: 100%;
   }
 
   &.adult {
     padding: 1rem;
     border-radius: 4px;
-    height: fit-content;
+    height: 100%;
   }
 }
 
