@@ -87,7 +87,7 @@ const steps = [
     },
     options: {
       popper: {
-        placement: 'bottom',
+        placement: 'top',
       },
       overlay,
     },
@@ -121,7 +121,7 @@ const steps = [
     },
     options: {
       popper: {
-        placement: 'right',
+        placement: 'bottom',
       },
       overlay,
     },

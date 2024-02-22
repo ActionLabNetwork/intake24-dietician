@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, onMounted, ref, toRefs, watch } from 'vue'
+import { Ref, defineComponent, onMounted, ref, toRefs, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -237,9 +237,9 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
   }
 }
 
-let formConfig: FormConfig
+let formConfig: Ref<FormConfig | undefined> = ref()
 onMounted(() => {
-  formConfig = {
+  formConfig.value = {
     visualThemeSelection: {
       heading: {
         label: 'Feedback template setup',
@@ -305,6 +305,7 @@ onMounted(() => {
       column: 1,
       props: {
         modelValue: feedbackMapping.value,
+        theme: theme,
       },
       onUpdate: handleFeedbackModulesUpdate,
     },

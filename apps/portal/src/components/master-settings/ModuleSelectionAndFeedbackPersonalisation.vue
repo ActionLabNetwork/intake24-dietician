@@ -86,6 +86,7 @@ import ModuleSelectList, {
   ModuleItem,
 } from '../feedback-modules/ModuleSelectList.vue'
 import { useModulePreview } from '@intake24-dietician/portal/composables/useModulePreview'
+import { Theme } from '@intake24-dietician/common/types/theme'
 
 export type FeedbackMapping = {
   [K in keyof typeof moduleNameToModuleComponentMapping]: Omit<
@@ -94,13 +95,15 @@ export type FeedbackMapping = {
   >
 }
 
+const props = defineProps<{ theme: Theme }>()
 const emit = defineEmits<{
   update: [presetModulesFeedbacks: FeedbackMapping]
 }>()
 
 const previewHelper = useModulePreview()
+const theme = computed(() => props.theme)
 const previewImgSrc = computed(() => {
-  return previewHelper.getPreview(selectedModule.value, 'Classic')
+  return previewHelper.getPreview(selectedModule.value, theme.value)
 })
 const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
