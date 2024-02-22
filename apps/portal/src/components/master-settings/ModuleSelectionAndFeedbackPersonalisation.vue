@@ -11,7 +11,7 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div v-if="true" class="ma-4">
+        <div v-if="false" class="ma-4">
           <component
             :is="moduleNameToModuleComponentMapping[selectedModule].component"
             :feedback="
@@ -38,6 +38,14 @@
                 .feedback.color
             "
           />
+        </div>
+        <div>
+          <v-img
+            width="1920"
+            height="580"
+            aspect-ratio="16/9"
+            :src="previewImgSrc"
+          ></v-img>
         </div>
 
         <v-divider class="mx-5 mb-10" />
@@ -73,10 +81,11 @@ import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
 } from '@intake24-dietician/portal/types/modules.types'
-import { markRaw, reactive, ref, watch } from 'vue'
+import { computed, markRaw, reactive, ref, watch } from 'vue'
 import ModuleSelectList, {
   ModuleItem,
 } from '../feedback-modules/ModuleSelectList.vue'
+import { useModulePreview } from '@intake24-dietician/portal/composables/useModulePreview'
 
 export type FeedbackMapping = {
   [K in keyof typeof moduleNameToModuleComponentMapping]: Omit<
@@ -89,6 +98,10 @@ const emit = defineEmits<{
   update: [presetModulesFeedbacks: FeedbackMapping]
 }>()
 
+const previewHelper = useModulePreview()
+const previewImgSrc = computed(() => {
+  return previewHelper.getPreview(selectedModule.value, 'Classic')
+})
 const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
 
