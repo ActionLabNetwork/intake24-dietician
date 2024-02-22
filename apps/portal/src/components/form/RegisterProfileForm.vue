@@ -88,6 +88,7 @@ const { values, handleSubmit, meta, resetForm } = useForm({
     mobileNumber: '',
     businessAddress: '',
     shortBio: '',
+    onboardingFinished: false,
   },
 })
 
