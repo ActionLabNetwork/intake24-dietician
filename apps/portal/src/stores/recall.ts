@@ -33,11 +33,11 @@ export const useRecallStore = defineStore('recalls', () => {
       return moment(endDate).format('DD/MM/YYYY')
     }
 
-    if (startDate === endDate) {
+    if (moment(startDate).isSame(endDate, 'day')) {
       return moment(startDate).format('DD/MM/YYYY')
     }
 
-    return `${moment(startDate).format('DD/MM/YYYY')} - ${moment(
+    return `${moment(startDate).format('DD/MM/YYYY')} to ${moment(
       endDate,
     ).format('DD/MM/YYYY')}`
   })

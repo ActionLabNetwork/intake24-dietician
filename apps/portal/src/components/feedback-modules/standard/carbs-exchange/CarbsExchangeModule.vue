@@ -7,7 +7,9 @@
       :class="{ 'text-white': mode === 'preview' }"
     />
     <TotalNutrientsDisplay>
-      Total carb exchanges: {{ averageCarbs }}
+      Your total carb exchanges for
+      {{ recallStore.selectedRecallDateRangePretty }} is:
+      {{ averageCarbs }} carb exchanges
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->

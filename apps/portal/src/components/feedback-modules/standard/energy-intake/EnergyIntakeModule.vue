@@ -3,7 +3,9 @@
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle :logo="logo" title="Energy intake" />
     <TotalNutrientsDisplay>
-      Total energy: {{ totalEnergy.toLocaleString() }}kcal
+      Your total energy intake for
+      {{ recallStore.selectedRecallDateRangePretty }} is:
+      {{ totalEnergy.toLocaleString() }}kcal
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">

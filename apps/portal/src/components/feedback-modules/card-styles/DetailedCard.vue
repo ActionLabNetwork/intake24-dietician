@@ -18,7 +18,7 @@
       </div>
     </div>
     <div
-      v-for="food in foods"
+      v-for="food in formattedFoods"
       :key="food.name"
       class="d-flex"
       :class="cssClasses.nutrientValue"
@@ -32,7 +32,7 @@
                 .hex(),
       }"
     >
-      <div v-if="food.mealDate?.startTime" class="w-100">
+      <!-- <div v-if="food.mealDate?.startTime" class="w-100">
         <v-tooltip
           location="bottom"
           :text="food.mealDate.startTime.toDateString()"
@@ -47,8 +47,8 @@
             />
           </template>
         </v-tooltip>
-      </div>
-      <div v-else>
+      </div> -->
+      <div class="w-100">
         <DetailedCardFoodItem
           :food="food"
           :mascot="mascot"
@@ -65,6 +65,7 @@ import { computed, type Component } from 'vue'
 import chroma from 'chroma-js'
 import DetailedCardFoodItem from './DetailedCardFoodItem.vue'
 import { Theme } from '@intake24-dietician/common/types/theme'
+import { useProcessRecallFoods } from '@intake24-dietician/portal/composables/useProcessRecallFoods'
 
 export interface DetailedCardProps {
   label: string
@@ -88,6 +89,7 @@ export interface DetailedCardProps {
 }
 
 const props = defineProps<DetailedCardProps>()
+const { formattedFoods } = useProcessRecallFoods(props.foods)
 
 const cssClasses = computed(() => {
   if (props.theme === 'Classic') {
