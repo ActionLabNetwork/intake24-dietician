@@ -49,7 +49,7 @@ export interface MealCardMultipleNutrientsProps {
     name: string
     servingWeight: string
     valueByNutrientType: {
-      [K: string]: { value: number }
+      [K: string]: { value: number; count: number }
     }
   }[]
 }

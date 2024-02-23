@@ -59,7 +59,7 @@
                     class="table-header"
                     :style="`background: ${colors.contentHeaderBackground}`"
                   >
-                    Serving weight
+                    Serving weight (total)
                   </v-col>
                   <v-col
                     v-for="nutrientType in meal.nutrientType"
@@ -67,7 +67,7 @@
                     class="table-header"
                     :style="`background: ${colors.contentHeaderBackground}`"
                   >
-                    {{ nutrientType.name }}
+                    {{ nutrientType.name }} (average)
                   </v-col>
                 </v-row>
                 <v-row v-for="(food, index) in meal.foods" :key="index">
