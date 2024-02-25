@@ -315,7 +315,12 @@ watch(
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
-          lastRecall: recallDates[0]?.toLocaleDateString() ?? 'N/A',
+          lastRecall:
+            recallDates[0]?.toLocaleDateString('en-AU', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }) ?? 'N/A',
           lastFeedbackSent: {
             date: getRandomDate(),
             type: patient.patientPreference.sendAutomatedFeedback

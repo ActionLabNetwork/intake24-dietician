@@ -15,7 +15,7 @@
       </div>
 
       <!-- Date -->
-      <div class="d-flex">
+      <div class="d-flex justify-center">
         <div class="d-flex align-center">
           <div class="font-weight-medium">Date:</div>
           <VueDatePicker
@@ -28,7 +28,7 @@
             range
             format="dd/MM/yyyy"
             class="ml-2"
-            style="width: 100%"
+            style="min-width: 15.8rem"
             @update:model-value="handleDaterangeUpdate"
           />
         </div>
