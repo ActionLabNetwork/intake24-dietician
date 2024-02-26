@@ -4,13 +4,31 @@
     v-if="theme"
     :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
   >
-    <ModuleTitle :logo="logo" title="Sugar intake" />
-    <div v-if="mealCards" class="mt-2">
-      <PieChartAndTimelineTab
-        v-if="tabs"
-        :tabs="tabs as unknown as PieAndTimelineTabs"
+    <div class="d-flex justify-space-between align-center">
+      <ModuleTitle :logo="logo" title="Sugar intake" />
+      <BaseTabComponent
+        v-model="activeTab"
+        :tabs="tabs"
+        :tab-style="{
+          backgroundColor: tabBackground.color,
+          height: 'fit-content',
+          width: 'fit-content',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :active-tab-style="{
+          backgroundColor: tabBackground.active,
+          borderRadius: '8px',
+        }"
+        align="center"
+        :hide-slider="true"
         :show-tabs="mode === 'edit'"
       />
+    </div>
+
+    <div v-if="mealCards" class="mt-2">
+      <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
@@ -30,6 +48,8 @@
 </template>
 
 <script setup lang="ts">
+import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
+import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -75,11 +95,16 @@ const { themeConfig } = useThemeSelector('Sugar intake')
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
+const activeTab = ref(0)
 const totalSugar = ref(0)
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
+const tabBackground = computed(() => ({
+  color: '#55555540',
+  active: '#555555',
+}))
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Sugar intake',

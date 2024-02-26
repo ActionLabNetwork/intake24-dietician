@@ -1,13 +1,31 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="{ path: themeConfig.logo }" title="Fibre intake" />
-    <div v-if="mealCards" class="mt-2">
-      <PieChartAndTimelineTab
-        v-if="tabs"
-        :tabs="tabs as unknown as PieAndTimelineTabs"
+    <div class="d-flex justify-space-between align-center">
+      <ModuleTitle :logo="{ path: themeConfig.logo }" title="Fibre intake" />
+      <BaseTabComponent
+        v-model="activeTab"
+        :tabs="tabs"
+        :tab-style="{
+          backgroundColor: tabBackground.color,
+          height: 'fit-content',
+          width: 'fit-content',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :active-tab-style="{
+          backgroundColor: tabBackground.active,
+          borderRadius: '8px',
+        }"
+        align="center"
+        :hide-slider="true"
         :show-tabs="mode === 'edit'"
       />
+    </div>
+
+    <div v-if="mealCards" class="mt-2">
+      <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
 
     <div v-if="mode !== 'view'">
@@ -28,6 +46,8 @@
 </template>
 
 <script setup lang="ts">
+import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
+import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { ref, watch, reactive, markRaw, computed } from 'vue'
 import { MealCardProps } from '../../types'
@@ -71,6 +91,7 @@ const { themeConfig } = useThemeSelector('Fibre intake')
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
+const activeTab = ref(0)
 const totalFibre = ref(0)
 const colorPalette = ref<string[]>([])
 
@@ -81,6 +102,10 @@ const module = computed(() => {
     module => module.name === 'Fibre intake',
   )
 })
+const tabBackground = computed(() => ({
+  color: '#55555540',
+  active: '#555555',
+}))
 
 const tabs = ref<PieAndTimelineTabs>([
   {
