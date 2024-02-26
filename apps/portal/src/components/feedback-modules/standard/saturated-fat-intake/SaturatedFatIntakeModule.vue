@@ -25,6 +25,20 @@
     </div>
 
     <div v-if="mealCards" class="mt-2">
+      <TotalNutrientsDisplay>
+        {{ totalNutrientsDisplayText }}
+        <span
+          v-if="dailySugarPercentage < SATURATED_FAT_CALORIE_PERCENTAGE"
+          class="text-green"
+        >
+          which is within the daily recommended level of
+          {{ SATURATED_FAT_CALORIE_PERCENTAGE }}%
+        </span>
+        <span v-else class="text-error">
+          which is more than the daily recommended level of
+          {{ SATURATED_FAT_CALORIE_PERCENTAGE }}%
+        </span>
+      </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
@@ -45,15 +59,17 @@
 </template>
 
 <script setup lang="ts">
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_SATURATED_FAT_ID } from '@intake24-dietician/portal/constants/recall'
-import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from '../../common/TimelineSection.vue'
+import {
+  NUTRIENTS_ENERGY_INTAKE_ID,
+  NUTRIENTS_SATURATED_FAT_ID,
+  SATURATED_FAT_CALORIE_PERCENTAGE,
+} from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
@@ -68,11 +84,7 @@ import {
 } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import type {
-  PieAndTimelineTabs,
-  MealCardProps,
-} from '@intake24-dietician/portal/components/feedback-modules/types/index'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
+import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 
@@ -95,6 +107,7 @@ const recallStore = useRecallStore()
 
 const activeTab = ref(0)
 const totalSaturatedFat = ref(0)
+const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
@@ -109,7 +122,19 @@ const module = computed(() => {
     module => module.name === 'Saturated fat intake',
   )
 })
+const energyModule = computed(() => {
+  return surveyQuery.data.value?.feedbackModules.find(
+    module => module.name === 'Energy intake',
+  )
+})
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const dailySugarPercentage = computed(() => {
+  return 11
+  // return ((totalSaturatedFat.value * 4) / totalEnergy.value) * 100
+})
+const totalNutrientsDisplayText = computed(() => {
+  return `Your total ${recallStore.isDateRange ? 'average' : ''} saturated fat intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
+})
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
@@ -156,6 +181,17 @@ const calculateMealSaturatedFatIntake = (
 
   return mealSaturatedFatExchange
 }
+const calculateMealEnergyExchange = (meal: RecallMeal, recallsCount = 1) => {
+  return usePrecision(
+    calculateMealNutrientsExchange(
+      meal,
+      energyModule.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_ENERGY_INTAKE_ID,
+      recallsCount,
+    ),
+    2,
+  ).value
+}
 
 watch(
   () => recallStore.recallsQuery.data,
@@ -177,29 +213,13 @@ watch(
         )
       }, 0),
     )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
 
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalSaturatedFat.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealSaturatedFatIntake(meal)
-      }, 0),
-    )
+    totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
+      return (
+        totalEnergy +
+        calculateMealEnergyExchange(meal, combinedMeals.recallsCount)
+      )
+    }, 0)
   },
   { immediate: true },
 )

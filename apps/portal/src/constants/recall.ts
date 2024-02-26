@@ -17,3 +17,4 @@ export const DAILY_WATER_AMOUNT = GLASS_TO_MILLILITRE * NUMBER_OF_GLASSES // Let
 
 // Sugar calorie daily percentage
 export const SUGAR_CALORIE_PERCENTAGE = 10
+export const SATURATED_FAT_CALORIE_PERCENTAGE = 10

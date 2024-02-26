@@ -30,11 +30,14 @@
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
         {{ totalNutrientsDisplayText }}
-        <span v-if="dailySugarPercentage < SUGAR_CALORIE_PERCENTAGE">
+        <span
+          v-if="dailySugarPercentage < SUGAR_CALORIE_PERCENTAGE"
+          class="text-green"
+        >
           which is within the daily recommended level of
           {{ SUGAR_CALORIE_PERCENTAGE }}%
         </span>
-        <span v-else>
+        <span v-else class="text-error">
           which is more than the daily recommended level of
           {{ SUGAR_CALORIE_PERCENTAGE }}%
         </span>
