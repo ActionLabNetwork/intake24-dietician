@@ -115,6 +115,7 @@ const module = computed(() => {
     module => module.name === 'Fruit and vegetable intake',
   )
 })
+
 const combinedUnitOfMeasure = computed(() => {
   if (!module.value || (module.value?.nutrientTypes.length ?? 0) < 2) return
   return {

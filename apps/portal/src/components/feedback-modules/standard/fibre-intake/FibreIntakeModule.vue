@@ -25,6 +25,12 @@
     </div>
 
     <div v-if="mealCards" class="mt-2">
+      <TotalNutrientsDisplay>
+        Your total fibre intake for
+        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ totalFibre.toLocaleString()
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
 
@@ -46,35 +52,32 @@
 </template>
 
 <script setup lang="ts">
-import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
-import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
-import { MealCardProps } from '../../types'
-import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
-import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from '../../common/TimelineSection.vue'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
-import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
-import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
   RecallMeal,
   RecallMealFood,
 } from '@intake24-dietician/common/entities-new/recall.schema'
+import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
+import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
+import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { usePrecision } from '@vueuse/math'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
   calculateFoodNutrientsExchange,
   calculateMealNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { usePrecision } from '@vueuse/math'
+import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { PieAndTimelineTabs } from '../../types'
-import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
+import { MealCardProps } from '../../types'
+import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -102,40 +105,13 @@ const module = computed(() => {
     module => module.name === 'Fibre intake',
   )
 })
-const tabBackground = computed(() => ({
-  color: '#55555540',
-  active: '#555555',
-}))
-
-const tabs = ref<PieAndTimelineTabs>([
-  {
-    name: 'Pie chart',
-    value: 0,
-    component: markRaw(PieChartSection),
-    props: {
-      name: 'Fibre intake',
-      meals: mealCards,
-      colors: colorPalette,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-      showCutlery: themeConfig.value.showCutlery,
-    },
-    icon: 'mdi-chart-pie',
-  },
-  {
-    name: 'Timeline',
-    value: 1,
-    component: markRaw(TimelineSection),
-    props: {
-      name: 'Fibre intake',
-      meals: mealCards,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-    },
-    icon: 'mdi-calendar-blank-outline',
-  },
-])
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const { tabs, tabBackground } = useTabbedModule({
+  colorPalette: colorPalette,
+  mealCards: mealCards,
+  module: module,
+  theme: theme,
+})
 
 const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealFibreExchange = usePrecision(
@@ -190,29 +166,6 @@ watch(
           totalEnergy +
           calculateMealFibreExchange(meal, combinedMeals.recallsCount)
         )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalFibre.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealFibreExchange(meal)
       }, 0),
     )
   },

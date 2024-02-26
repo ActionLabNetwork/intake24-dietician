@@ -77,6 +77,7 @@ import type {
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -101,47 +102,20 @@ const colorPalette = ref<string[]>([])
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
-const tabBackground = computed(() => ({
-  color: '#55555540',
-  active: '#555555',
-}))
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Sugar intake',
   )
 })
-
-const tabs = ref<PieAndTimelineTabs>([
-  {
-    name: 'Pie chart',
-    value: 0,
-    component: markRaw(PieChartSection),
-    props: {
-      name: 'Sugar intake',
-      meals: mealCards,
-      colors: colorPalette,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-      showCutlery: themeConfig.value.showCutlery,
-    },
-    icon: 'mdi-chart-pie',
-  },
-  {
-    name: 'Timeline',
-    value: 1,
-    component: markRaw(TimelineSection),
-    props: {
-      name: 'Sugar intake',
-      meals: mealCards,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-    },
-    icon: 'mdi-calendar-blank-outline',
-  },
-])
-
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+
+const { tabs, tabBackground } = useTabbedModule({
+  colorPalette: colorPalette,
+  mealCards: mealCards,
+  module: module,
+  theme: theme,
+})
+
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo
