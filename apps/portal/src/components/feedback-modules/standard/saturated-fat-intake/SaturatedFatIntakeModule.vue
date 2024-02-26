@@ -137,7 +137,7 @@ const calculateMealSaturatedFatIntake = (
     label: meal.name,
     hours: meal.hours,
     minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
+    unitOfMeasure: module.value?.nutrientTypes[0],
     foods: meal.foods.map(food => ({
       name: food['englishName'],
       servingWeight: food['portionSizes']?.find(

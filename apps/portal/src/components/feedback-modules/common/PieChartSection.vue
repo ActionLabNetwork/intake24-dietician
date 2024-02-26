@@ -23,9 +23,9 @@
       <PieChartSectionCard
         v-for="(meal, key, index) in meals"
         :key="key"
-        name="name"
+        :name="name"
         :label="meal.label"
-        :unit-of-measure="unitOfMeasure?.unit"
+        :unit-of-measure="unitOfMeasure"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
         :minutes="meal.minutes"

@@ -30,6 +30,15 @@
     >
       <v-expand-transition>
         <ul v-show="expand">
+          <v-row class="py-2 px-6 font-weight-bold">
+            <v-col cols="8" class="list-header d-flex align-center">
+              Top food items
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-col cols="3" class="list-header text-center">
+              {{ props.unitOfMeasure?.description }}
+            </v-col>
+          </v-row>
           <li
             v-for="food in formattedFoods"
             :key="food.name + food.servingWeight + food.value"
@@ -41,7 +50,7 @@
                   <p>{{ food.name }} {{ food.servingWeight }}</p>
                 </div>
                 <div class="font-weight-bold">
-                  {{ food.value }}{{ unitOfMeasure?.symbol }}
+                  {{ food.value }}{{ unitOfMeasure?.unit.symbol }}
                 </div>
               </div>
             </div>
@@ -87,6 +96,10 @@ const wrapperStyle = computed(() => ({
     .darken(2)
     .saturate(4)
     .hex(),
+  '--header-color': chroma(props.colors.backgroundColor)
+    .darken(1)
+    .saturate(1)
+    .hex(),
 }))
 </script>
 
@@ -108,6 +121,13 @@ const wrapperStyle = computed(() => ({
     background: var(--bg-color);
     border-radius: 20px;
   }
+}
+
+.list-header {
+  background: var(--header-color);
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin-bottom: 1rem;
 }
 
 .energy-value {

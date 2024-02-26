@@ -13,8 +13,11 @@ export interface MealCardProps {
   }
   unitOfMeasure:
     | {
-        symbol: string | null
         description: string
+        unit: {
+          symbol: string | null
+          description: string
+        }
       }
     | undefined
   foods: {
