@@ -129,8 +129,7 @@ const energyModule = computed(() => {
 })
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const dailySugarPercentage = computed(() => {
-  return 11
-  // return ((totalSaturatedFat.value * 4) / totalEnergy.value) * 100
+  return ((totalSaturatedFat.value * 4) / totalEnergy.value) * 100
 })
 const totalNutrientsDisplayText = computed(() => {
   return `Your total ${recallStore.isDateRange ? 'average' : ''} saturated fat intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`

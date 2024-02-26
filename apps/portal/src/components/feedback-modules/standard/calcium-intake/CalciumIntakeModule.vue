@@ -25,6 +25,12 @@
     </div>
 
     <div v-if="mealCards" class="mt-2">
+      <TotalNutrientsDisplay>
+        Your total calcium intake for
+        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ totalCalcium.toLocaleString()
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
@@ -45,6 +51,7 @@
 </template>
 
 <script setup lang="ts">
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
