@@ -14,3 +14,6 @@ export const CARBS_EXCHANGE_MULTIPLIER = 1 / 15
 export const GLASS_TO_MILLILITRE = 250
 export const NUMBER_OF_GLASSES = 8
 export const DAILY_WATER_AMOUNT = GLASS_TO_MILLILITRE * NUMBER_OF_GLASSES // Let's assume 8 glasses for now
+
+// Sugar calorie daily percentage
+export const SUGAR_CALORIE_PERCENTAGE = 10

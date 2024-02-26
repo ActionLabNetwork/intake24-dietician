@@ -60,7 +60,10 @@ import {
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
-import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
+import {
+  NUTRIENTS_DIETARY_FIBRE_ID,
+  NUTRIENTS_ENERGY_INTAKE_ID,
+} from '@intake24-dietician/portal/constants/recall'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
@@ -96,7 +99,7 @@ const recallStore = useRecallStore()
 
 const activeTab = ref(0)
 const totalFibre = ref(0)
-const colorPalette = ref<string[]>([])
+const colorPalette = computed(() => recallStore.colorPalette)
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
@@ -154,8 +157,6 @@ watch(
     if (!data) return
 
     const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
-
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]
     })
