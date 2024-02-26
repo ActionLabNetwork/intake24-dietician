@@ -5,7 +5,8 @@
     <TotalNutrientsDisplay>
       Your total energy intake for
       {{ recallStore.selectedRecallDateRangePretty }} is:
-      {{ totalEnergy.toLocaleString() }}kcal
+      {{ totalEnergy.toLocaleString()
+      }}{{ module?.nutrientTypes[0]?.unit.symbol }}
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
@@ -50,30 +51,30 @@
 </template>
 
 <script setup lang="ts">
-import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
-import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import { ref, watch, reactive, computed } from 'vue'
 import Breakfast from '@/assets/modules/energy-intake/breakfast.svg'
 import Dinner from '@/assets/modules/energy-intake/dinner.svg'
 import Lunch from '@/assets/modules/energy-intake/lunch.svg'
 import MidSnacks from '@/assets/modules/energy-intake/mid-snacks.svg'
-import '@vuepic/vue-datepicker/dist/main.css'
-import chroma from 'chroma-js'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
-import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
-import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
+import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
+import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import SummarizedCard, {
   type SummarizedCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/card-styles/SummarizedCard.vue'
-import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
-import { usePrecision } from '@vueuse/math'
-import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
+import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
+import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
+import '@vuepic/vue-datepicker/dist/main.css'
+import { usePrecision } from '@vueuse/math'
+import chroma from 'chroma-js'
+import { computed, reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',

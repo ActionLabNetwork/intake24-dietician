@@ -6,15 +6,15 @@
       class="d-flex align-center flex-wrap justify-space-between px-3 px-lg-0"
     >
       <div class="font-weight-medium">{{ label }}</div>
-      <div>
+      <div class="d-print-none" :class="{ 'd-none': previewing }">
         <v-btn
+          class="accordion-icon"
           :class="{
             'rotate-expand-icon': !isPlusIcon,
             transition: isTransition,
           }"
           icon="mdi-close"
           variant="flat"
-          style="background: inherit"
           @click="toggleIcon"
         />
       </div>
@@ -66,8 +66,13 @@ import { computed, ref } from 'vue'
 import chroma from 'chroma-js'
 import { MealCardProps } from '../types'
 import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
+import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@/constants/modules'
+import { useRoute } from 'vue-router'
 
 const props = defineProps<MealCardProps>()
+
+const route = useRoute()
+const previewing = route.query.preview === 'true'
 
 const isPlusIcon = ref(true)
 const isTransition = ref(true)
@@ -149,5 +154,9 @@ const wrapperStyle = computed(() => ({
 }
 .transition {
   transition: transform 0.3s ease-in-out;
+}
+
+.accordion-icon {
+  background-color: inherit;
 }
 </style>
