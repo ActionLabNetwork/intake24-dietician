@@ -63,11 +63,12 @@
 
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
-import { ref, type Component, onMounted, onUpdated } from 'vue'
+import { ref, type Component, onMounted } from 'vue'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
+import { useRoute } from 'vue-router'
 
 interface Props {
   patientName: string
@@ -83,6 +84,7 @@ withDefaults(defineProps<Props>(), {
   constrainOutputHeight: false,
 })
 
+const route = useRoute()
 const { exportToPdf } = usePdfExport()
 
 const pdfExportLoading = ref(false)
@@ -99,9 +101,11 @@ const exportContentToPdf = () => {
 }
 
 onMounted(() => {
-  setTimeout(() => {
-    window.print()
-  }, 1000)
+  if (route.name === 'Survey Patient View Feedback') {
+    setTimeout(() => {
+      window.print()
+    }, 1000)
+  }
 })
 </script>
 

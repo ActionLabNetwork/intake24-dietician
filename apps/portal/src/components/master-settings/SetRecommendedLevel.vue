@@ -415,10 +415,6 @@ watch(
     }
   },
 )
-
-const onSubmit = handleSubmit(values => {
-  console.log(values)
-})
 </script>
 
 <style scoped lang="scss">

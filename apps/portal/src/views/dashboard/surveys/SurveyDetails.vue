@@ -40,7 +40,7 @@
     </template>
   </v-dialog>
   <v-main>
-    <v-row class="ml-1">
+    <v-row class="ml-1 d-print-none">
       <SurveyClinicDetails v-if="!hideSurveyDetails" />
     </v-row>
     <v-row>

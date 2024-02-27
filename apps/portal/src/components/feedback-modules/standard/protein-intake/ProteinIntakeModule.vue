@@ -1,11 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      :logo="logo"
-      title="Protein intake"
-      :class="{ 'text-white': mode === 'preview' }"
-    />
+    <ModuleTitle :logo="logo" title="Protein intake" />
     <div>
       <BaseProgressCircular v-if="isPending" />
       <div v-if="isError" class="mt-10">

@@ -47,7 +47,6 @@ const handleConfirm = async () => {
     await props.onConfirm()
     isLoading.value = false
 
-    console.log({ isLoading: isLoading.value })
     if (!isLoading.value) {
       closeDialog()
     }
@@ -64,7 +63,6 @@ const handleCancel = () => {
 }
 
 const closeDialog = () => {
-  console.log('Closing dialog...')
   dialog.value = false
 }
 </script>

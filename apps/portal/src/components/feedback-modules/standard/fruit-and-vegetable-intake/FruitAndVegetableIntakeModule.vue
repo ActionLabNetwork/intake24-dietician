@@ -269,4 +269,42 @@ watch(
   },
   { immediate: true },
 )
+
+watch(
+  () => module.value,
+  newModule => {
+    if (!newModule) return
+
+    tabs.value = [
+      {
+        name: 'Pie chart',
+        value: 0,
+        component: markRaw(PieChartSection),
+        props: {
+          name: 'Fruit and vegetable intake',
+          meals: mealCards,
+          colors: colorPalette.value,
+          recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+          unitOfMeasure: newModule.nutrientTypes[0],
+          showCutlery: themeConfig.value.showCutlery,
+        },
+        icon: 'mdi-chart-pie',
+      },
+      {
+        name: 'Timeline',
+        value: 1,
+        component: markRaw(TimelineSection),
+        props: {
+          name: 'Fruit and vegetable intake',
+          meals: mealCards,
+          recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+          colors: colorPalette.value,
+          unitOfMeasure:
+            combinedUnitOfMeasure.value ?? newModule.nutrientTypes[0],
+        },
+        icon: 'mdi-calendar-blank-outline',
+      },
+    ]
+  },
+)
 </script>

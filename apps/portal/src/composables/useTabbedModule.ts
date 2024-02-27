@@ -1,4 +1,4 @@
-import { ComputedRef, Ref, computed, markRaw, ref } from 'vue'
+import { ComputedRef, Ref, computed, markRaw, ref, watchEffect } from 'vue'
 import {
   MealCardProps,
   PieAndTimelineTabs,
@@ -34,7 +34,7 @@ export function useTabbedModule({
       value: 0,
       component: markRaw(PieChartSection),
       props: {
-        name: 'Fibre intake',
+        name: module.value?.name || 'Fibre intake',
         meals: mealCards,
         colors: colorPalette,
         recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
@@ -48,7 +48,7 @@ export function useTabbedModule({
       value: 1,
       component: markRaw(TimelineSection),
       props: {
-        name: 'Fibre intake',
+        name: module.value?.name || 'Fibre intake',
         meals: mealCards,
         recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
         colors: colorPalette,
@@ -57,6 +57,40 @@ export function useTabbedModule({
       icon: 'mdi-calendar-blank-outline',
     },
   ])
+
+  watchEffect(() => {
+    if (module.value) {
+      tabs.value = [
+        {
+          name: 'Pie chart',
+          value: 0,
+          component: markRaw(PieChartSection),
+          props: {
+            name: module.value?.name || 'Fibre intake',
+            meals: mealCards,
+            colors: colorPalette.value,
+            recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+            unitOfMeasure: module.value?.nutrientTypes[0],
+            showCutlery: theme.value === 'Fun',
+          },
+          icon: 'mdi-chart-pie',
+        },
+        {
+          name: 'Timeline',
+          value: 1,
+          component: markRaw(TimelineSection),
+          props: {
+            name: module.value?.name || 'Fibre intake',
+            meals: mealCards,
+            recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+            colors: colorPalette.value,
+            unitOfMeasure: module.value?.nutrientTypes[0],
+          },
+          icon: 'mdi-calendar-blank-outline',
+        },
+      ]
+    }
+  })
 
   return {
     tabs,

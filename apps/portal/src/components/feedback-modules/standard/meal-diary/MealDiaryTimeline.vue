@@ -138,7 +138,7 @@ watch(
     if (newMode === 'preview' && props.mealCards) {
       openPanels.value = Object.keys(props.mealCards).map((_, index) => index)
     } else {
-      openPanels.value = []
+      openPanels.value = Object.keys(props.mealCards).map((_, index) => index)
     }
   },
   { immediate: true },

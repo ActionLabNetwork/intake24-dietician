@@ -1,6 +1,9 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card
+    v-if="module"
+    :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
+  >
     <div class="d-flex justify-space-between align-center">
       <ModuleTitle :logo="{ path: themeConfig.logo }" title="Fibre intake" />
       <BaseTabComponent
@@ -60,10 +63,7 @@ import {
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
-import {
-  NUTRIENTS_DIETARY_FIBRE_ID,
-  NUTRIENTS_ENERGY_INTAKE_ID,
-} from '@intake24-dietician/portal/constants/recall'
+import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'

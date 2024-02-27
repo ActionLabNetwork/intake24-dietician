@@ -62,9 +62,9 @@
         <v-row>
           <v-col cols="3">
             <ModuleSelectList
+              v-model:module="component"
               :default-state="feedbackMapping"
               show-switches
-              @update="handleModuleUpdate"
               @update:modules="handleModulesUpdate"
             />
           </v-col>
@@ -114,6 +114,7 @@ import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-mo
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
+import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
@@ -128,6 +129,7 @@ import cloneDeep from 'lodash.clonedeep'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
+import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 
 defineProps<{ draft: DraftDto }>()
 
@@ -154,10 +156,10 @@ const daterange = ref<[Date | undefined, Date | undefined]>([
   new Date(),
 ])
 const component = ref<ModuleName>('Meal diary')
-const previewing = ref<boolean>(false)
 const isDataLoaded = ref<boolean>(false)
 
 // Computed properties
+const previewing = ref<boolean>(route.query['preview'] === 'true' || false)
 const moduleFeedback = computed(() => {
   return moduleNameToModuleComponentMapping[component.value].feedback
 })
@@ -183,7 +185,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Water intake': { component: markRaw(WaterIntakeModule), feedback: '' },
     'Sugar intake': { component: markRaw(SugarIntakeModule), feedback: '' },
     'Saturated fat intake': {
-      component: markRaw(SugarIntakeModule),
+      component: markRaw(SaturatedFatIntakeModule),
       feedback: '',
     },
     'Calcium intake': { component: markRaw(CalciumIntakeModule), feedback: '' },
@@ -201,7 +203,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
     'Protein intake': {
-      component: markRaw(CalorieIntakeModule),
+      component: markRaw(ProteinIntakeModule),
       feedback: '',
     },
   })
@@ -339,10 +341,6 @@ const selectedModules = ref<
     }
   | undefined
 >(undefined)
-
-const handleModuleUpdate = (module: ModuleName) => {
-  component.value = module
-}
 
 const handleModulesUpdate = (modules: ModuleItem[]) => {
   const newValue = {
