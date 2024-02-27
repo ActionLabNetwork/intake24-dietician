@@ -104,6 +104,7 @@
         </template>
         <template #append-inner>
           <slot name="append-inner" />
+          <v-icon>{{ props.suffixIcon }}</v-icon>
         </template>
         <template v-if="$slots.append" #append>
           <slot name="append" />

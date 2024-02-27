@@ -119,6 +119,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import {
   NUMBER_OF_GLASSES,
   NUTRIENTS_WATER_INTAKE_ID,
+  PROTEIN_KG_PER_KG,
 } from '@intake24-dietician/portal/constants/recall'
 import Mascot from '@/components/feedback-modules/standard/protein-intake/svg/Mascot.vue'
 import MascotAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotAdult.vue'
@@ -176,7 +177,7 @@ const requiredProteinAmount = computed(() => {
   const patientWeight = patientStore.patientQuery.data?.weightHistory[0]?.weight
   if (!patientWeight) return NaN
 
-  return (patientWeight ?? 0) * 2.8
+  return (patientWeight ?? 0) * PROTEIN_KG_PER_KG
 })
 const summaryText = computed(() => {
   let aboveOrBelow = ''

@@ -48,13 +48,15 @@
           ></v-img>
         </div>
 
-        <v-divider class="mx-5 mb-10" />
+        <div v-if="selectedModule !== 'Meal diary'">
+          <v-divider class="mx-5 mb-10" />
 
-        <!-- Feedback Personalisation -->
-        <div>
-          <SetRecommendedLevel
-            v-model="moduleNameToModuleComponentMapping[selectedModule]"
-          />
+          <!-- Feedback Personalisation -->
+          <div>
+            <SetRecommendedLevel
+              v-model="moduleNameToModuleComponentMapping[selectedModule]"
+            />
+          </div>
         </div>
       </v-card>
     </v-col>
