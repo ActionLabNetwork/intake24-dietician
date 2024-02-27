@@ -1,4 +1,12 @@
-import { ComputedRef, Ref, computed, markRaw, ref, watchEffect } from 'vue'
+import {
+  ComputedRef,
+  Ref,
+  computed,
+  markRaw,
+  ref,
+  watch,
+  watchEffect,
+} from 'vue'
 import {
   MealCardProps,
   PieAndTimelineTabs,
@@ -58,8 +66,11 @@ export function useTabbedModule({
     },
   ])
 
-  watchEffect(() => {
-    if (module.value) {
+  watch(
+    () => module.value,
+    newModule => {
+      if (!newModule) return
+
       tabs.value = [
         {
           name: 'Pie chart',
@@ -89,8 +100,8 @@ export function useTabbedModule({
           icon: 'mdi-calendar-blank-outline',
         },
       ]
-    }
-  })
+    },
+  )
 
   return {
     tabs,

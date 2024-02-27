@@ -122,7 +122,6 @@ import type {
 // import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
-import { DraftDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useFeedbackDraftById } from '@intake24-dietician/portal/queries/useFeedback'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import cloneDeep from 'lodash.clonedeep'
@@ -130,8 +129,6 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
-
-defineProps<{ draft: DraftDto }>()
 
 // const { t } = useI18n<i18nOptions>()
 
