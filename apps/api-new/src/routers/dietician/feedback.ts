@@ -204,7 +204,7 @@ export class DieticianFeedbackRouter {
           opts.input.draft,
         )
       }),
-    getPdf: protectedDieticianProcedure
+    sendFeedbackPdfEmail: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
@@ -218,12 +218,12 @@ export class DieticianFeedbackRouter {
         z.object({
           url: z.string().url(),
           patientId: z.number(),
-          dieticianId: z.number(),
         }),
       )
       .output(z.unknown())
-      .query(async opts => {
-        const { url, patientId, dieticianId } = opts.input
+      .mutation(async opts => {
+        const dieticianId = opts.ctx.dieticianId
+        const { url, patientId } = opts.input
         await this.feedbackService.sendFeedbackEmailToPatient(
           url,
           patientId,

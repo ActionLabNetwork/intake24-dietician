@@ -5,11 +5,7 @@ import { ClientError } from '../utils/trpc'
 export class PdfService {
   public async getPdf(url: string) {
     // Verify that the url contains the selected and preview queries
-    if (
-      !url.includes('compose-feedback') ||
-      !url.includes('selected') ||
-      !url.includes('preview')
-    ) {
+    if (!url.includes('selected') || !url.includes('preview')) {
       throw new ClientError('Invalid feedback URL')
     }
 

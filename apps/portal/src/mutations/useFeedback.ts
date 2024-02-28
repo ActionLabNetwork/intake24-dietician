@@ -46,40 +46,30 @@ export const useEditDraft = () => {
   }
 }
 
-export const useSendFeedbackEmail = () => {
-  const { authenticatedClient } = useClientStore()
-  const mutation = useMutation({
-    mutationFn: ({
-      url,
-      patientId,
-      dieticianId,
-    }: {
-      url: string
-      patientId: number
-      dieticianId: number
-    }) => {
-      return authenticatedClient.dieticianFeedback.getPdf.query({
-        url,
-        patientId,
-        dieticianId,
-      })
-    },
-  })
-
-  return {
-    ...mutation,
-  }
-}
-
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
   const mutation = useMutation({
-    mutationFn: (body: {
+    mutationFn: async (body: {
       patientId: number
       draftId: number | undefined
       draft: DraftCreateDto
+      url: string
     }) => {
-      return authenticatedClient.dieticianFeedback.shareDraft.mutate(body)
+      const { url, ...bodyWithoutUrl } = body
+      console.log({ url })
+      // Send the email
+      await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate({
+        url,
+        patientId: body.patientId,
+      })
+
+      // Save the shared feedback
+      return await authenticatedClient.dieticianFeedback.shareDraft.mutate(
+        bodyWithoutUrl,
+      )
+    },
+    onError: error => {
+      console.log({ error })
     },
   })
 

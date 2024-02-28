@@ -70,21 +70,15 @@
         </v-btn>
         <v-btn
           class="text-none ml-3"
-          :loading="shareDraftMutation.isPending.value"
+          :loading="
+            shareDraftMutation.isPending.value &&
+            !shareDraftMutation.isError.value
+          "
           color="primary"
           variant="flat"
           @click="showDialog('share')"
         >
           Share feedback
-        </v-btn>
-        <v-btn
-          class="text-none ml-3"
-          :loading="sendFeedbackEmailMutation.isPending.value"
-          color="secondary"
-          variant="flat"
-          @click="showDialog('share')"
-        >
-          Send feedback email
         </v-btn>
       </div>
     </div>
@@ -107,6 +101,7 @@
   />
 </template>
 <script setup lang="ts">
+import { env } from '@intake24-dietician/portal/config/env'
 import {
   DraftCreateDto,
   FeedbackType,
@@ -115,7 +110,6 @@ import {
   useEditDraft,
   useSaveDraft,
   useShareDraft,
-  useSendFeedbackEmail,
 } from '@intake24-dietician/portal/mutations/useFeedback'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -163,12 +157,20 @@ const recallStore = useRecallStore()
 const { allowedStartDates } = storeToRefs(recallStore)
 
 const patient = computed(() => patientStore.patientQuery.data)
+const downloadUrl = computed(() => {
+  const route = useRoute()
+  const baseUrl = window.location.origin
+  const url = new URL(`${baseUrl}${route.fullPath}`)
+  const params = url.searchParams
+  params.set('preview', 'true')
+
+  return url.toString()
+})
 
 // Mutations
 const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
-const sendFeedbackEmailMutation = useSendFeedbackEmail()
 
 const isSubmitting = ref(false)
 const dateRange = ref()
@@ -241,11 +243,17 @@ const handleEditDraftClick = async () => {
 
 const handleShareDraftClick = async () => {
   isSubmitting.value = true
+
+  if (route.query['preview'] !== 'false') {
+    router.replace({ query: { preview: 'true' } })
+  }
+
   await shareDraftMutation.mutateAsync(
     {
       patientId: Number(patient.value?.id),
       draftId: props.draftId,
       draft: props.draft,
+      url: downloadUrl.value,
     },
     {
       onSuccess: () => {
