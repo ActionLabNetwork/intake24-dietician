@@ -74,13 +74,13 @@ export class EmailService {
 
   public sendFeedbackEmail = async (
     email: string,
-    feedbackAttachment: Buffer,
+    emailTemplate: { html: string; text: string },
   ) => {
     await this.sendEmail({
       to: email,
       subject: 'Feedback on your recall(s)',
-      text: 'Hello, here is your feedback',
-      html: `<p>Hello, here is your feedback:</p>`,
+      text: emailTemplate.text,
+      html: emailTemplate.html,
       attachments: [
         { fileName: 'YourFeedback.pdf', path: 'feedback-outputs/feedback.pdf' },
       ],

@@ -158,7 +158,6 @@ const { allowedStartDates } = storeToRefs(recallStore)
 
 const patient = computed(() => patientStore.patientQuery.data)
 const downloadUrl = computed(() => {
-  const route = useRoute()
   const baseUrl = window.location.origin
   const url = new URL(`${baseUrl}${route.fullPath}`)
   const params = url.searchParams

@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useClientStore } from '../trpc/trpc'
+import { useRender } from 'vue-email'
+import FeedbackEmailTemplate from '../components/emails/FeedbackEmailTemplate.vue'
 
 export const useSaveDraft = () => {
   const { authenticatedClient } = useClientStore()
@@ -55,12 +57,20 @@ export const useShareDraft = () => {
       draft: DraftCreateDto
       url: string
     }) => {
+      const template = await useRender(
+        FeedbackEmailTemplate,
+        {},
+        { pretty: true },
+      )
+      console.log({ template })
       const { url, ...bodyWithoutUrl } = body
       console.log({ url })
       // Send the email
       await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate({
         url,
         patientId: body.patientId,
+        emailTemplateHtml: template.html,
+        emailTemplateText: template.text,
       })
 
       // Save the shared feedback

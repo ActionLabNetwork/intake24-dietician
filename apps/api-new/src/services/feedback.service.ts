@@ -95,6 +95,7 @@ export class FeedbackService {
     feedbackUrl: string,
     patientId: number,
     dieticianId: number,
+    emailTemplate: { html: string; text: string },
   ) {
     const patient = await this.userRepository.getPatient(patientId)
     if (!patient) {
@@ -104,8 +105,8 @@ export class FeedbackService {
       throw new UnauthorizedError('Dietician has no access to this patient')
     }
 
-    const feedbackPdf = await this.pdfService.getPdf(feedbackUrl)
-    await this.emailService.sendFeedbackEmail(patient.user.email, feedbackPdf)
+    await this.pdfService.getPdf(feedbackUrl)
+    await this.emailService.sendFeedbackEmail(patient.user.email, emailTemplate)
   }
 
   public async addFeedbackLevelToFeedbackModule(

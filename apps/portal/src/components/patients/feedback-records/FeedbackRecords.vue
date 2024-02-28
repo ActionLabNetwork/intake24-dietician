@@ -26,14 +26,12 @@
       <SharedItemList />
     </v-col>
   </v-row>
-  <div class="d-flex justify-space-between"></div>
 </template>
 <script setup lang="ts">
 import DraftItemList from '@/components/patients/feedback-records/DraftItemList.vue'
 import SharedItemList from './SharedItemList.vue'
 import { useRoute } from 'vue-router'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-// import DraftItem from './DraftItem.vue'
 
 const route = useRoute()
 const recallStore = useRecallStore()

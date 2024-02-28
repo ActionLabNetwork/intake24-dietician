@@ -218,16 +218,20 @@ export class DieticianFeedbackRouter {
         z.object({
           url: z.string().url(),
           patientId: z.number(),
+          emailTemplateHtml: z.string(),
+          emailTemplateText: z.string(),
         }),
       )
       .output(z.unknown())
       .mutation(async opts => {
         const dieticianId = opts.ctx.dieticianId
-        const { url, patientId } = opts.input
+        const { url, patientId, emailTemplateHtml, emailTemplateText } =
+          opts.input
         await this.feedbackService.sendFeedbackEmailToPatient(
           url,
           patientId,
           dieticianId,
+          { html: emailTemplateHtml, text: emailTemplateText },
         )
       }),
   })
