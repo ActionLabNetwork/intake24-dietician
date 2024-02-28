@@ -72,6 +72,15 @@ export class EmailService {
     })
   }
 
+  public sendFeedbackEmail = async (email: string, feedback: string) => {
+    await this.sendEmail({
+      to: email,
+      subject: 'Feedback on your recall(s)',
+      text: `Hello, here is your feedback: ${feedback}`,
+      html: `<p>Hello, here is your feedback:</p><p>${feedback}</p>`,
+    })
+  }
+
   private sendEmail = async (args: {
     to: string
     subject: string

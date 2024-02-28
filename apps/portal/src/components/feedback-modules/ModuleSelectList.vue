@@ -31,7 +31,19 @@
                       v-model:model-value="element.selected"
                       class="d-flex align-center"
                       color="success"
-                      @update:model-value="emit('update:modules', items)"
+                      @update:model-value="
+                        () => {
+                          router.replace({
+                            query: {
+                              selected: items
+                                .filter(i => i.selected)
+                                .map(i => moduleIdentifiers[i.title])
+                                .join(','),
+                            },
+                          })
+                          emit('update:modules', items)
+                        }
+                      "
                     ></v-switch>
                   </div>
                 </div>
@@ -46,11 +58,15 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import type { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
+import {
+  moduleIdentifiers,
+  reverseModuleIdentifiers,
+} from '@intake24-dietician/common/types/modules'
 
 export interface ModuleItem {
   title: ModuleName
@@ -58,12 +74,14 @@ export interface ModuleItem {
   selected: boolean
 }
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
-    showSwitches: boolean
+    showSwitches?: boolean
+    useUrlAsState?: boolean
   }>(),
   {
     showSwitches: false,
+    useUrlAsState: false,
   },
 )
 
@@ -74,6 +92,7 @@ const emit = defineEmits<{
 const defaultState = defineModel<FeedbackMapping>('defaultState')
 const selectedModule = defineModel<ModuleName>('module')
 
+const router = useRouter()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
@@ -127,6 +146,17 @@ watch(
     // Otherwise, we are using the clinic settings
     initWithValuesFromClinicSettings()
     emit('update:modules', items.value)
+
+    // Use url as state if appropriate
+    if (props.useUrlAsState && route.query['selected']) {
+      const selected = (route.query['selected'] as string).split(',')
+
+      items.value = items.value.map(item => ({
+        ...item,
+        selected: selected.includes(moduleIdentifiers[item.title]),
+      }))
+      emit('update:modules', items.value)
+    }
   },
   { immediate: true },
 )

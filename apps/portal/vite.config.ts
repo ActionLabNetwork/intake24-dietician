@@ -19,7 +19,7 @@ export default defineConfig({
         defineModel: true,
       },
     }),
-    VueDevTools(),
+    // VueDevTools(),
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true,

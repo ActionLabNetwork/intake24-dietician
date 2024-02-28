@@ -53,6 +53,7 @@
           <v-col cols="3">
             <ModuleSelectList
               v-model:module="component"
+              use-url-as-state
               show-switches
               @update:modules="handleModulesUpdate"
             />
@@ -86,7 +87,14 @@
 
 <script lang="ts" setup>
 import BackButton from '@intake24-dietician/portal/components/common/BackButton.vue'
-import { computed, reactive, ref, type Component, markRaw } from 'vue'
+import {
+  computed,
+  reactive,
+  ref,
+  type Component,
+  markRaw,
+  onMounted,
+} from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import type {
@@ -117,6 +125,8 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import { moduleIdentifiers } from '@intake24-dietician/common/types/modules'
+import * as r from 'remeda'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables

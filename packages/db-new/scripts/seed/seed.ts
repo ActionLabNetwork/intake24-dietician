@@ -122,7 +122,7 @@ async function seedPatients(
   const [patientUser] = await drizzle
     .insert(users)
     .values({
-      email: 'p1@test.com',
+      email: 'i24-d-p1@yopmail.com',
       password: await argon2.hash('password'),
       role: 'Dietician',
     })
