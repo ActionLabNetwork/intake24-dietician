@@ -106,6 +106,12 @@ onMounted(() => {
       window.print()
     }, 1000)
   }
+
+  if (route.query['download'] === 'true') {
+    setTimeout(() => {
+      window.print()
+    }, 1000)
+  }
 })
 </script>
 

@@ -96,12 +96,13 @@
   />
   <DialogFeedbackShare
     v-model="confirmShareDialog"
+    v-model:send-mode="sendMode"
+    :download-url="downloadUrl"
     :full-name="patientStore.fullName"
     :on-confirm="handleShareDraftClick"
   />
 </template>
 <script setup lang="ts">
-import { env } from '@intake24-dietician/portal/config/env'
 import {
   DraftCreateDto,
   FeedbackType,
@@ -176,6 +177,12 @@ const dateRange = ref()
 const confirmEditDialog = ref(false)
 const confirmSaveDialog = ref(false)
 const confirmShareDialog = ref(false)
+
+const modes = [
+  { label: 'Automated', value: 'automated' },
+  { label: 'Manual', value: 'manual' },
+] as const
+const sendMode = ref<(typeof modes)[number]['value']>('automated')
 
 const handleDaterangeUpdate = (
   daterange: [Date | undefined, Date | undefined],
@@ -253,6 +260,7 @@ const handleShareDraftClick = async () => {
       draftId: props.draftId,
       draft: props.draft,
       url: downloadUrl.value,
+      sendAutomatedEmail: sendMode.value === 'automated',
     },
     {
       onSuccess: () => {

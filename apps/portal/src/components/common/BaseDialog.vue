@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="500px">
+  <v-dialog v-model="dialog" :width="width ?? '500px'">
     <v-card>
       <v-card-title class="pl-5 pt-5">
         <slot name="title"></slot>
@@ -35,6 +35,7 @@ const props = defineProps<{
   onConfirm?: () => Promise<void>
   onCancel?: Function
   onCancelText?: string
+  width?: string
 }>()
 
 const dialog = defineModel<boolean>()

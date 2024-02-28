@@ -56,6 +56,7 @@ export const useShareDraft = () => {
       draftId: number | undefined
       draft: DraftCreateDto
       url: string
+      sendAutomatedEmail: boolean
     }) => {
       const template = await useRender(
         FeedbackEmailTemplate,
@@ -63,19 +64,23 @@ export const useShareDraft = () => {
         { pretty: true },
       )
       console.log({ template })
-      const { url, ...bodyWithoutUrl } = body
-      console.log({ url })
-      // Send the email
-      await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate({
-        url,
-        patientId: body.patientId,
-        emailTemplateHtml: template.html,
-        emailTemplateText: template.text,
-      })
+      const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = body
+
+      if (sendAutomatedEmail) {
+        // Send the email
+        await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate(
+          {
+            url,
+            patientId: body.patientId,
+            emailTemplateHtml: template.html,
+            emailTemplateText: template.text,
+          },
+        )
+      }
 
       // Save the shared feedback
       return await authenticatedClient.dieticianFeedback.shareDraft.mutate(
-        bodyWithoutUrl,
+        bodyWithoutOtherFields,
       )
     },
     onError: error => {
