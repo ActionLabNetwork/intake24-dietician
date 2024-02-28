@@ -46,6 +46,31 @@ export const useEditDraft = () => {
   }
 }
 
+export const useSendFeedbackEmail = () => {
+  const { authenticatedClient } = useClientStore()
+  const mutation = useMutation({
+    mutationFn: ({
+      url,
+      patientId,
+      dieticianId,
+    }: {
+      url: string
+      patientId: number
+      dieticianId: number
+    }) => {
+      return authenticatedClient.dieticianFeedback.getPdf.query({
+        url,
+        patientId,
+        dieticianId,
+      })
+    },
+  })
+
+  return {
+    ...mutation,
+  }
+}
+
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
   const mutation = useMutation({

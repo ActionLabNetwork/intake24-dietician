@@ -77,6 +77,15 @@
         >
           Share feedback
         </v-btn>
+        <v-btn
+          class="text-none ml-3"
+          :loading="sendFeedbackEmailMutation.isPending.value"
+          color="secondary"
+          variant="flat"
+          @click="showDialog('share')"
+        >
+          Send feedback email
+        </v-btn>
       </div>
     </div>
   </v-card>
@@ -106,6 +115,7 @@ import {
   useEditDraft,
   useSaveDraft,
   useShareDraft,
+  useSendFeedbackEmail,
 } from '@intake24-dietician/portal/mutations/useFeedback'
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -158,6 +168,7 @@ const patient = computed(() => patientStore.patientQuery.data)
 const saveDraftMutation = useSaveDraft()
 const editDraftMutation = useEditDraft()
 const shareDraftMutation = useShareDraft()
+const sendFeedbackEmailMutation = useSendFeedbackEmail()
 
 const isSubmitting = ref(false)
 const dateRange = ref()

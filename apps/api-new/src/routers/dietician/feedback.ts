@@ -7,7 +7,6 @@ import {
   SharedDtoSchema,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackService } from '../../services/feedback.service'
-import { PdfService } from '../../services/pdf.service'
 
 @singleton()
 export class DieticianFeedbackRouter {
@@ -217,19 +216,24 @@ export class DieticianFeedbackRouter {
       })
       .input(
         z.object({
-          clinicId: z.number(),
+          url: z.string().url(),
           patientId: z.number(),
+          dieticianId: z.number(),
         }),
       )
-      .output(z.void())
+      .output(z.unknown())
       .query(async opts => {
-        return await this.pdfService.getPdf()
+        const { url, patientId, dieticianId } = opts.input
+        await this.feedbackService.sendFeedbackEmailToPatient(
+          url,
+          patientId,
+          dieticianId,
+        )
       }),
   })
 
   public constructor(
     @inject(FeedbackService) private feedbackService: FeedbackService,
-    @inject(PdfService) private pdfService: PdfService,
   ) {}
 
   public getRouter() {

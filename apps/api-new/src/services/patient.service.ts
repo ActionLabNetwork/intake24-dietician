@@ -151,7 +151,7 @@ export class PatientService {
       throw new NotFoundError('Patient cannot be found')
     }
     if (patient?.survey.dieticianId !== dieticianId) {
-      throw new UnauthorizedError('Dietician has access to this patient')
+      throw new UnauthorizedError('Dietician has no access to this patient')
     }
 
     const patientWithExtraFields = await this.attachExtraPatientFields(patient)

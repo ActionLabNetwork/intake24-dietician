@@ -72,12 +72,18 @@ export class EmailService {
     })
   }
 
-  public sendFeedbackEmail = async (email: string, feedback: string) => {
+  public sendFeedbackEmail = async (
+    email: string,
+    feedbackAttachment: Buffer,
+  ) => {
     await this.sendEmail({
       to: email,
       subject: 'Feedback on your recall(s)',
-      text: `Hello, here is your feedback: ${feedback}`,
-      html: `<p>Hello, here is your feedback:</p><p>${feedback}</p>`,
+      text: 'Hello, here is your feedback',
+      html: `<p>Hello, here is your feedback:</p>`,
+      attachments: [
+        { fileName: 'YourFeedback.pdf', path: 'feedback-outputs/feedback.pdf' },
+      ],
     })
   }
 
@@ -86,6 +92,10 @@ export class EmailService {
     subject: string
     text: string
     html: string
+    attachments?: {
+      fileName: string
+      path: string
+    }[]
   }) => {
     this.logger.info(
       {

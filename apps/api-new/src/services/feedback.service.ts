@@ -3,12 +3,19 @@ import type {
   FeedbackLevelRoot,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackRepository } from '@intake24-dietician/db-new/repositories/feedback.repository'
+import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
+import { NotFoundError, UnauthorizedError } from '../utils/trpc'
 import { inject, singleton } from 'tsyringe'
+import { EmailService } from './email.service'
+import { PdfService } from './pdf.service'
 
 @singleton()
 export class FeedbackService {
   public constructor(
     @inject(FeedbackRepository) private feedbackRepository: FeedbackRepository,
+    @inject(UserRepository) private userRepository: UserRepository,
+    @inject(PdfService) private pdfService: PdfService,
+    @inject(EmailService) private emailService: EmailService,
   ) {}
 
   public async getDraftById(id: number) {
@@ -82,6 +89,23 @@ export class FeedbackService {
     // TODO: Send email to patient
 
     return sharedFeedback
+  }
+
+  public async sendFeedbackEmailToPatient(
+    feedbackUrl: string,
+    patientId: number,
+    dieticianId: number,
+  ) {
+    const patient = await this.userRepository.getPatient(patientId)
+    if (!patient) {
+      throw new NotFoundError('Patient cannot be found')
+    }
+    if (patient?.survey.dieticianId !== dieticianId) {
+      throw new UnauthorizedError('Dietician has no access to this patient')
+    }
+
+    const feedbackPdf = await this.pdfService.getPdf(feedbackUrl)
+    await this.emailService.sendFeedbackEmail(patient.user.email, feedbackPdf)
   }
 
   public async addFeedbackLevelToFeedbackModule(
