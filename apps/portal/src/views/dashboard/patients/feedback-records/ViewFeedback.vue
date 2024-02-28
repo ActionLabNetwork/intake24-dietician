@@ -118,9 +118,6 @@ const isDataLoaded = ref<boolean>(false)
 const moduleFeedback = computed(() => {
   return moduleNameToModuleComponentMapping[component.value].feedback
 })
-const patientQueryData = computed(() => {
-  return patientQuery.value.data
-})
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({

@@ -3,12 +3,17 @@
     <div style="width: 100%">
       <v-card>
         <div class="pa-5 text-h6">Recall data</div>
-        <v-list>
+        <v-list v-if="moduleItemsSorted">
           <draggable
             v-model="items"
             item-key="title"
             @start="drag = true"
-            @end="drag = false"
+            @end="
+              () => {
+                persistModulesOrder()
+                drag = false
+              }
+            "
           >
             <template #item="{ element }">
               <v-list-item
@@ -57,16 +62,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import draggable from 'vuedraggable'
 import type { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { FeedbackMapping } from '@intake24-dietician/portal/components/master-settings/ModuleSelectionAndFeedbackPersonalisation.vue'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import {
-  moduleIdentifiers,
-  reverseModuleIdentifiers,
-} from '@intake24-dietician/common/types/modules'
+import { moduleIdentifiers } from '@intake24-dietician/common/types/modules'
+import { useStorage } from '@vueuse/core'
 
 export interface ModuleItem {
   title: ModuleName
@@ -92,6 +95,8 @@ const emit = defineEmits<{
 const defaultState = defineModel<FeedbackMapping>('defaultState')
 const selectedModule = defineModel<ModuleName>('module')
 
+const modulesOrdering = useStorage('modules-ordering', '')
+const moduleItemsSorted = ref(false)
 const router = useRouter()
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
@@ -103,6 +108,13 @@ const handleModuleSelect = (title: ModuleName) => {
 
   if (!item) return
   selectedModule.value = item.title
+}
+
+const persistModulesOrder = () => {
+  const moduleNames = items.value.map(i => i.title)
+  const moduleNamesSerialized = JSON.stringify(moduleNames)
+  modulesOrdering.value = moduleNamesSerialized
+  console.log({ moduleNamesSerialized })
 }
 
 const initWithDefaultValues = () => {
@@ -132,6 +144,26 @@ const initWithValuesFromClinicSettings = () => {
   })
 }
 
+const initWithSavedModulesOrdering = () => {
+  // Sort items according to the stored order
+  if (modulesOrdering.value) {
+    const moduleNames = JSON.parse(modulesOrdering.value) as ModuleName[]
+
+    // If the number of modules has changed, we don't want to use the saved ordering
+    if (moduleNames.length !== items.value.length) return
+
+    const sortedItems = moduleNames.map((name, index) => {
+      const item = items.value.find(i => i.title === name)
+      return {
+        title: item?.title ?? 'Meal diary',
+        value: index + 1,
+        selected: item?.selected ?? true,
+      }
+    })
+    items.value = sortedItems
+    moduleItemsSorted.value = true
+  }
+}
 watch(
   () => surveyQuery.data.value,
   newData => {
@@ -157,6 +189,8 @@ watch(
       }))
       emit('update:modules', items.value)
     }
+
+    initWithSavedModulesOrdering()
   },
   { immediate: true },
 )
