@@ -232,6 +232,7 @@ export class DieticianFeedbackRouter {
           patientId,
           dieticianId,
           { html: emailTemplateHtml, text: emailTemplateText },
+          opts.ctx.req.cookies,
         )
       }),
   })
