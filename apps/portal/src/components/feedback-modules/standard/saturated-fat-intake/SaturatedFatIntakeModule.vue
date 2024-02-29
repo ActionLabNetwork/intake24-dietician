@@ -132,7 +132,8 @@ const dailySugarPercentage = computed(() => {
   return ((totalSaturatedFat.value * 9) / totalEnergy.value) * 100
 })
 const totalNutrientsDisplayText = computed(() => {
-  return `Your total ${recallStore.isDateRange ? 'average' : ''} saturated fat intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
+  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+  return `Your ${totalOrAverage} saturated fat intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
 })
 
 const { tabs, tabBackground } = useTabbedModule({

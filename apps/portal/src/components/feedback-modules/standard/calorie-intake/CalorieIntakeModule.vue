@@ -3,7 +3,8 @@
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
     <ModuleTitle :logo="logo" title="Calorie intake" />
     <TotalNutrientsDisplay>
-      Your total calorie intake for
+      Your <span v-if="recallStore.isDateRange">average</span
+      ><span v-else>total</span> calorie intake for
       {{ recallStore.selectedRecallDateRangePretty }} is:
       {{ totalEnergy.toLocaleString()
       }}{{ module?.nutrientTypes[0]?.unit.symbol }}

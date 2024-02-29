@@ -7,7 +7,7 @@ export class PdfService {
     url: string,
     cookies: { accessToken: string; refreshToken: string },
   ) {
-    // Verify that the url contains the selected and preview queries
+    // Verify that the url contains the preview query
     if (!url.includes('preview')) {
       throw new ClientError('Invalid feedback URL')
     }

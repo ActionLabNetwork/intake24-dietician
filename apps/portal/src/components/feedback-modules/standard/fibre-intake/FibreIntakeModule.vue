@@ -29,7 +29,8 @@
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your total fibre intake for
+        Your <span v-if="recallStore.isDateRange"> average </span
+        ><span v-else> total </span> fibre intake for
         {{ recallStore.selectedRecallDateRangePretty }} is:
         {{ totalFibre.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}

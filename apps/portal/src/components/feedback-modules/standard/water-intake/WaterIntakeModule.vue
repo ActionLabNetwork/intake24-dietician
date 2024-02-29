@@ -189,7 +189,8 @@ const requiredWaterAmount = computed(() => {
   return (patientWeight ?? 0) * WATER_ML_PER_KG
 })
 const summaryText = computed(() => {
-  return `Your total water intake for
+  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+  return `Your ${totalOrAverage} water intake for
           ${recallStore.selectedRecallDateRangePretty} is
           ${totalWaterIntake.value}ml`
 })

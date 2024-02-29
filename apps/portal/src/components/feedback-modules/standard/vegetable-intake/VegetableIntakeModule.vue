@@ -26,7 +26,8 @@
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your total vegetable intake for
+        Your <span v-if="recallStore.isDateRange">average</span
+        ><span v-else>total</span> vegetable intake for
         {{ recallStore.selectedRecallDateRangePretty }} is:
         {{ totalVegetable.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}

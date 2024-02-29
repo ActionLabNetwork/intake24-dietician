@@ -61,12 +61,13 @@ export const useRecallStore = defineStore('recalls', () => {
     recallDates.value.map(date => date.startTime),
   )
   const isDateRange = computed(() => {
-    return (
-      selectedRecallDateRange.value &&
-      selectedRecallDateRange.value[0] &&
-      selectedRecallDateRange.value[1] &&
-      selectedRecallDateRange.value[0] !== selectedRecallDateRange.value[1]
-    )
+    const startDate = selectedRecallDateRange.value[0]
+    const endDate = selectedRecallDateRange.value[1]
+
+    console.log({ startDate, endDate })
+    if (!startDate || !endDate) return false
+    if (moment(startDate).isSame(endDate, 'day')) return false
+    return true
   })
   const colorPalette = computed(() => {
     if (!recallsGroupedByMeals.value) return []

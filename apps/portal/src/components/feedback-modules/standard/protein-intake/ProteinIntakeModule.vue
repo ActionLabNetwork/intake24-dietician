@@ -183,7 +183,9 @@ const summaryText = computed(() => {
     aboveOrBelow = 'below'
   }
 
-  return `Your total protein intake for
+  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+
+  return `Your ${totalOrAverage} protein intake for
           ${recallStore.selectedRecallDateRangePretty} is
           ${totalProteinIntake.value}${module.value?.nutrientTypes[0]?.unit.symbol} which is ${aboveOrBelow} the daily recommended amount: ${requiredProteinAmount.value}${module.value?.nutrientTypes[0]?.unit.symbol}`
 })

@@ -227,6 +227,7 @@ export class DieticianFeedbackRouter {
         const dieticianId = opts.ctx.dieticianId
         const { url, patientId, emailTemplateHtml, emailTemplateText } =
           opts.input
+        console.log('Sending feedback email to patient')
         await this.feedbackService.sendFeedbackEmailToPatient(
           url,
           patientId,

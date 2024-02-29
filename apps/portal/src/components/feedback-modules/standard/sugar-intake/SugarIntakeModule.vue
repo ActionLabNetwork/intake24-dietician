@@ -130,7 +130,8 @@ const dailySugarPercentage = computed(() => {
   return ((totalSugar.value * 4) / totalEnergy.value) * 100
 })
 const totalNutrientsDisplayText = computed(() => {
-  return `Your total ${recallStore.isDateRange ? 'average' : ''} sugar intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
+  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+  return `Your ${totalOrAverage} sugar intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
 })
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'

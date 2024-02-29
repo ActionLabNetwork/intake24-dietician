@@ -98,15 +98,6 @@
             </div>
           </td>
           <td>
-            <v-chip
-              variant="flat"
-              :color="item.patientStatus === 'Active' ? 'success' : 'neutral'"
-              :text="item.patientStatus"
-            >
-            </v-chip>
-            <span v-show="false">{{ item.patientStatus }}</span>
-          </td>
-          <td>
             <div
               class="d-flex flex-column flex-xl-row align-center justify-center"
             >

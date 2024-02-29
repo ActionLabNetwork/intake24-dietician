@@ -7,7 +7,8 @@
       :class="{ 'text-white': mode === 'preview' }"
     />
     <TotalNutrientsDisplay>
-      Your total carb exchanges for
+      Your <span v-if="recallStore.isDateRange">average</span>
+      <span v-else>total</span> carb exchanges for
       {{ recallStore.selectedRecallDateRangePretty }} is:
       {{ averageCarbs }} carb exchanges
     </TotalNutrientsDisplay>
