@@ -107,7 +107,7 @@ export class FeedbackService {
     }
 
     await this.pdfService.getPdf(feedbackUrl, cookies)
-    // await this.emailService.sendFeedbackEmail(patient.user.email, emailTemplate)
+    await this.emailService.sendFeedbackEmail(patient.user.email, emailTemplate)
   }
 
   public async addFeedbackLevelToFeedbackModule(

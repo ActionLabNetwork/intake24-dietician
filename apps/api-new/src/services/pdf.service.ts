@@ -12,23 +12,24 @@ export class PdfService {
       throw new ClientError('Invalid feedback URL')
     }
 
-    const cookieParams = []
-    cookieParams.push({
-      name: 'accessToken',
-      value: cookies.accessToken,
-      httpOnly: true,
-      secure: true,
-      path: '/',
-      domain: 'localhost',
-    })
-    cookieParams.push({
-      name: 'refreshToken',
-      value: cookies.refreshToken,
-      httpOnly: true,
-      secure: true,
-      path: '/',
-      domain: 'localhost',
-    })
+    const cookieParams = [
+      {
+        name: 'accessToken',
+        value: cookies.accessToken,
+        httpOnly: true,
+        secure: true,
+        path: '/',
+        domain: 'localhost',
+      },
+      {
+        name: 'refreshToken',
+        value: cookies.refreshToken,
+        httpOnly: true,
+        secure: true,
+        path: '/',
+        domain: 'localhost',
+      },
+    ]
 
     const browser = await puppeteer.launch({ headless: false })
     const page = await browser.newPage()

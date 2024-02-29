@@ -12,8 +12,10 @@
         </h3>
       </div>
     </div>
-    <v-stepper v-model="currentStep">
-      <v-stepper-header style="background-color: #fcf9f4">
+    <v-stepper v-model="currentStep" elevation="0" class="my-5">
+      <v-stepper-header
+        style="background-color: rgb(252, 249, 244); box-shadow: none"
+      >
         <template v-for="(step, i) in steps" :key="step.heading">
           <v-stepper-item
             :title="step.title"
@@ -32,7 +34,7 @@
             :key="step.heading"
             :value="i + 1"
           >
-            <v-row class="align-center mt-10">
+            <v-row class="mt-10">
               <v-col :cols="currentStep < 3 ? 8 : 12">
                 <div
                   v-for="(subStep, subStepIndex) in step.subSteps"
@@ -130,7 +132,6 @@
                     </template>
                   </div>
                 </div>
-                <!-- TODO: Make this config driven? -->
                 <div v-if="currentStep === 3">
                   <FeedbackModules
                     :default-state="formValues"
@@ -143,8 +144,8 @@
                 </div>
               </v-col>
               <!-- Contact / help with system setup -->
-              <v-col>
-                <v-col align-self="center">
+              <v-col v-if="currentStep === 2">
+                <v-col>
                   <v-card
                     class="pa-5 bg-grey-lighten-4 mx-auto"
                     flat
@@ -375,7 +376,7 @@ const onDialogCancel = () => {
 }
 
 // TODO: Replace this when the i18n is setup
-const steps: Step[] = [
+const steps = ref<Step[]>([
   {
     heading: 'Welcome to Intake24 clinical tool',
     subheading:
@@ -615,7 +616,7 @@ const steps: Step[] = [
       },
     },
   },
-]
+])
 
 const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
   formValues.value[fieldName] = newVal
@@ -623,7 +624,7 @@ const handleFieldUpdate = (fieldName: FormField, newVal: string) => {
 }
 
 const isNextdisabled = computed(() => {
-  const _currentStep = steps[currentStep.value - 1]
+  const _currentStep = steps.value[currentStep.value - 1]
   if (!_currentStep?.subSteps) return false
 
   const currentStepFields = _currentStep?.subSteps

@@ -1,11 +1,12 @@
 <template>
-  <v-app-bar :elevation="2" flat class="app-bar">
+  <v-app-bar :elevation="2" class="app-bar">
     <v-app-bar-title>
       <div class="d-flex align-center">
         <v-img
           max-width="10rem"
           src="@/assets/logo.svg"
-          class="ml-16"
+          class="ml-13"
+          style="cursor: pointer"
           @click="clinicStore.navigateToSurveyPatientList"
         />
         <ClinicMenu class="ml-14" />
@@ -16,7 +17,9 @@
         <v-btn icon class="mr-5">
           <v-icon icon="mdi-bell-outline" size="large" />
         </v-btn>
-        <BaseAvatar />
+        <div>
+          <BaseAvatar />
+        </div>
       </div>
       <div v-else>
         <v-btn icon class="mr-16" @click="drawer = !drawer">

@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="px-10">
+  <v-container fluid class="container-padding">
     <div v-if="!!surveyQuery.data.value" class="ma-0 pa-0">
       <BackButton class="mb-5" />
       <div
@@ -41,7 +41,7 @@
           </div>
         </div>
       </div>
-      <v-divider class="my-10" />
+      <v-divider class="mt-5 mb-2" />
       <FeedbackModules
         :default-state="surveyQuery.data.value"
         @update="handleFeedbackModulesUpdate"
@@ -51,7 +51,7 @@
         :default-state="recallReminderProps"
         @update="handleRecallRemindersUpdate"
       />
-      <div class="mt-10 ml-4">
+      <div class="my-10 ml-4">
         <p class="font-weight-medium">Review and save changes</p>
         <div v-if="formHasChanged" class="text subheading">
           You have made changes to the master module setup. Review and confirm
@@ -251,6 +251,9 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.container-padding {
+  padding: 0 5rem;
+}
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

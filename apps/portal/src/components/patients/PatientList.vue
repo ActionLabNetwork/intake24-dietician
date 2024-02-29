@@ -175,7 +175,6 @@ const headerTitles = [
   'Patient records',
   'Last recall',
   'Last feedback sent',
-  'Patient status',
   'Last reminder sent',
   'Survey URL',
 ] as const
@@ -230,12 +229,6 @@ const headers = ref<PatientTableHeaders[]>([
     title: 'Last feedback sent',
     align: 'center',
     key: 'lastFeedbackSent',
-    sortable: true,
-  },
-  {
-    title: 'Patient status',
-    align: 'center',
-    key: 'patientStatus',
     sortable: true,
   },
   {

@@ -66,17 +66,18 @@ export const useShareDraft = () => {
       console.log({ template })
       const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = body
 
-      if (sendAutomatedEmail) {
-        // Send the email
-        await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate(
-          {
-            url,
-            patientId: body.patientId,
-            emailTemplateHtml: template.html,
-            emailTemplateText: template.text,
-          },
-        )
-      }
+      // TODO: Feature toggle (uncomment once ready to send emails)
+      // if (sendAutomatedEmail) {
+      //   // Send the email
+      //   await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate(
+      //     {
+      //       url,
+      //       patientId: body.patientId,
+      //       emailTemplateHtml: template.html,
+      //       emailTemplateText: template.text,
+      //     },
+      //   )
+      // }
 
       // Save the shared feedback
       return await authenticatedClient.dieticianFeedback.shareDraft.mutate(
