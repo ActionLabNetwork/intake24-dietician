@@ -13,13 +13,12 @@ export class PdfService {
     const page = await browser.newPage()
 
     const loginUrl = `${env.PORTAL_APP_BASE_URL}/auth/login`
-    // const websiteUrl = `${env.PORTAL_APP_BASE_URL}/dashboard/my-surveys/survey-details/1/patient-list/patient-records/1/feedback-records/compose-feedback?preview=true`
     const websiteUrl = url
 
     //  TODO: Replace with admin login credentials that can access the html page
     await page.goto(loginUrl, { waitUntil: 'networkidle0' })
-    await page.type('input[name=email]', 'diet@test.com')
-    await page.type('input[name=password]', 'password')
+    await page.type('input[name=email]', env.SUPERUSER_EMAIL)
+    await page.type('input[name=password]', env.SUPERUSER_PASSWORD)
     await page.click('#login-form-submit')
     await page.waitForNavigation()
 

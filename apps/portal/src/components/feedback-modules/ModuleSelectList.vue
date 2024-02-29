@@ -3,7 +3,7 @@
     <div style="width: 100%">
       <v-card>
         <div class="pa-5 text-h6">Recall data</div>
-        <v-list v-if="moduleItemsSorted">
+        <v-list>
           <draggable
             v-model="items"
             item-key="title"
@@ -150,7 +150,10 @@ const initWithSavedModulesOrdering = () => {
     const moduleNames = JSON.parse(modulesOrdering.value) as ModuleName[]
 
     // If the number of modules has changed, we don't want to use the saved ordering
-    if (moduleNames.length !== items.value.length) return
+    if (moduleNames.length !== items.value.length) {
+      moduleItemsSorted.value = true
+      return
+    }
 
     const sortedItems = moduleNames.map((name, index) => {
       const item = items.value.find(i => i.title === name)
@@ -161,8 +164,8 @@ const initWithSavedModulesOrdering = () => {
       }
     })
     items.value = sortedItems
-    moduleItemsSorted.value = true
   }
+  moduleItemsSorted.value = true
 }
 watch(
   () => surveyQuery.data.value,
@@ -171,6 +174,7 @@ watch(
     if (defaultState.value) {
       initWithDefaultValues()
       emit('update:modules', items.value)
+      initWithSavedModulesOrdering()
       return
     }
 
