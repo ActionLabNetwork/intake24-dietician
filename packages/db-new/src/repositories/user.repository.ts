@@ -335,4 +335,21 @@ export class UserRepository {
       .where(eq(patients.id, patientId))
       .execute()
   }
+
+  public async isUserSuperuser(userId: number) {
+    return !!(await this.drizzle.query.users.findFirst({
+      where: and(eq(users.id, userId), eq(users.isSuperuser, true)),
+    }))
+  }
+
+  public async isDieticianSuperuser(dieticianId: number) {
+    const dietician = await this.drizzle.query.dieticians.findFirst({
+      where: eq(dieticians.id, dieticianId),
+      with: { user: true },
+      columns: {
+        id: true,
+      },
+    })
+    return dietician?.user.isSuperuser
+  }
 }

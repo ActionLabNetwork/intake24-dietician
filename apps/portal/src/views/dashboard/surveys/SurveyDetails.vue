@@ -191,6 +191,7 @@ const hideSurveyDetails = computed(() => {
     'Survey Master Settings',
     'Survey Patient Compose New Feedback',
     'Survey Patient Edit Draft Feedback',
+    'Survey Patient View Feedback',
   ]
   return routeNames.includes(route.name as string)
 })

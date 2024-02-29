@@ -27,6 +27,11 @@
           </v-col>
         </v-row>
       </div>
+      <div v-else class="mt-5">
+        <v-alert variant="tonal">
+          The feedback you're trying to view is not available.
+        </v-alert>
+      </div>
     </v-container>
   </div>
   <div v-show="previewing">
@@ -103,7 +108,6 @@ const route = useRoute()
 // Queries
 const _feedbackId = route.params['feedbackId'] ?? props.feedbackId
 const shareQuery = useFeedbackShareById(Number(_feedbackId))
-const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
 const daterange = ref<[Date | undefined, Date | undefined]>([
