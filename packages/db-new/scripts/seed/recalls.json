@@ -24743,6 +24743,679 @@
         "missingFoods": [],
         "foods": [
           {
+            "id": "4587c107-2270-4f98-96b1-514fb0f9838a",
+            "parentId": "02185458-9535-45e3-9d12-d1009846eb3c",
+            "mealId": "287c5205-8ab3-427c-b7fe-01f626f065c3",
+            "index": 1,
+            "code": "GRAN",
+            "englishName": "Granola",
+            "localeName": null,
+            "readyMeal": false,
+            "searchTearm": null,
+            "portionSizeMethodId": "standard-portion",
+            "reasonableAmount": true,
+            "foodGroupId": "7",
+            "foodGroupEnglishName": "Other breakfast cereals: muesli, bran flakes",
+            "foodGroupLocalName": "Other breakfast cereals: muesli, bran flakes",
+            "brand": null,
+            "nutrientTableId": "AUSNUT",
+            "nutrientTableCode": "02D10284",
+            "barcode": null,
+            "customFields": [],
+            "fields": [],
+            "nutrients": [
+              {
+                "id": "7ee8ffed-1067-4695-93f6-f61c14d2cd45",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 77.55,
+                "nutrientTypeId": "138",
+                "nutrientType": {
+                  "id": "138",
+                  "description": "Sodium",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "bcf050e5-9ccc-4be7-afee-2a72af19725e",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 12.22,
+                "nutrientTypeId": "234",
+                "nutrientType": {
+                  "id": "234",
+                  "description": "Moisture",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "52e674db-eca2-4e2b-9163-acdad8c2f13d",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 634.5,
+                "nutrientTypeId": "142",
+                "nutrientType": {
+                  "id": "142",
+                  "description": "Phosphorus",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "3ce40ae5-2171-4ccd-8abb-585dcd5d422d",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 8.976999999999999,
+                "nutrientTypeId": "153",
+                "nutrientType": {
+                  "id": "153",
+                  "description": "Linoleic acid (g)",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "28f8bfba-f16a-4dab-a9d0-956242301bb7",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 9.5175,
+                "nutrientTypeId": "52",
+                "nutrientType": {
+                  "id": "52",
+                  "description": "Polyunsaturated fatty acids (g)",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "490303a0-0672-4dff-bcb9-7c78c3598669",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 11.1625,
+                "nutrientTypeId": "125",
+                "nutrientType": {
+                  "id": "125",
+                  "description": "Niacin",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "eb39d40a-b91e-4584-87c0-e919baaee0a2",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 3.525,
+                "nutrientTypeId": "157",
+                "nutrientType": {
+                  "id": "157",
+                  "description": "Ash (g)",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "79a9be0e-50fd-4119-93c7-4af3b130814f",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "20",
+                "nutrientType": {
+                  "id": "20",
+                  "description": "Alcohol",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "07de3d16-caea-42f6-887b-b50231f8c927",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 23.5,
+                "nutrientTypeId": "152",
+                "nutrientType": {
+                  "id": "152",
+                  "description": "Selenium",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "c1f5df75-2ddb-4e1a-ae7a-14da0a021814",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 3844.6,
+                "nutrientTypeId": "238",
+                "nutrientType": {
+                  "id": "238",
+                  "description": "Energy, with dietary fibre",
+                  "unitId": "5"
+                }
+              },
+              {
+                "id": "2c678816-7bf5-4167-969b-e7e570220953",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 7.05,
+                "nutrientTypeId": "121",
+                "nutrientType": {
+                  "id": "121",
+                  "description": "Vitamin A Retionol equivelents",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "97682bb7-7a00-4e5c-909f-7f580062eae0",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 4.23,
+                "nutrientTypeId": "147",
+                "nutrientType": {
+                  "id": "147",
+                  "description": "Zinc",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "72a14e0f-a20f-4127-bf56-8783d2991fdc",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0.3525,
+                "nutrientTypeId": "132",
+                "nutrientType": {
+                  "id": "132",
+                  "description": "Vitamin B6",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "028309c8-caed-427e-af5f-d833525f12d9",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "133",
+                "nutrientType": {
+                  "id": "133",
+                  "description": "Vitamin B12",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "2faf5b69-1a8f-4456-8f28-5ab7c61889fd",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 873.0111328850002,
+                "nutrientTypeId": "1",
+                "nutrientType": {
+                  "id": "1",
+                  "description": "Energy (kcal)",
+                  "unitId": "4"
+                }
+              },
+              {
+                "id": "dd0ef352-277f-4122-aa23-367282697ad6",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 294.173,
+                "nutrientTypeId": "233",
+                "nutrientType": {
+                  "id": "233",
+                  "description": "Total trans fatty acids",
+                  "unitId": "2"
+                }
+              },
+              {
+                "id": "37c89aa3-90ec-4fa7-a08a-b167b8373167",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 47,
+                "nutrientTypeId": "117",
+                "nutrientType": {
+                  "id": "117",
+                  "description": "Beta-carotene",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "80fd4785-cb94-4929-ac3d-e63750ddb1a4",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 81.77999999999999,
+                "nutrientTypeId": "21",
+                "nutrientType": {
+                  "id": "21",
+                  "description": "Starch",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "00ff1982-eafd-4afa-8e0b-6b488c2e4ee2",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 16.45,
+                "nutrientTypeId": "229",
+                "nutrientType": {
+                  "id": "229",
+                  "description": "Free sugars",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "ac85bb70-14c1-4da4-9851-df0b038a2714",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 230.3,
+                "nutrientTypeId": "141",
+                "nutrientType": {
+                  "id": "141",
+                  "description": "Magnesium",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "edc47684-a248-4729-b186-a5a6aa7d80c4",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 1.4922499999999999,
+                "nutrientTypeId": "124",
+                "nutrientType": {
+                  "id": "124",
+                  "description": "Riboflavin",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "f4d922ab-a2a7-4dd0-8446-85b0846f9ef6",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 128.31,
+                "nutrientTypeId": "13",
+                "nutrientType": {
+                  "id": "13",
+                  "description": "Carbohydrate",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "f9854b69-b72a-407f-9791-c2d2a3adbc61",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "129",
+                "nutrientType": {
+                  "id": "129",
+                  "description": "Vitamin C",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "1d2574ac-8996-419b-8cb0-c6b19af2ffce",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 44.65,
+                "nutrientTypeId": "134",
+                "nutrientType": {
+                  "id": "134",
+                  "description": "Folate",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "b38939b9-5d6d-4947-86c3-df178e86430d",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 15.204500000000001,
+                "nutrientTypeId": "128",
+                "nutrientType": {
+                  "id": "128",
+                  "description": "Niacin equivalent",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "7d850841-d815-4435-966c-78db0d562681",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "237",
+                "nutrientType": {
+                  "id": "237",
+                  "description": "C22:6w3 Docosahexaenoic",
+                  "unitId": "2"
+                }
+              },
+              {
+                "id": "21ab0474-a59d-49c6-a04e-882a9479c05b",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 3654.25,
+                "nutrientTypeId": "2",
+                "nutrientType": {
+                  "id": "2",
+                  "description": "Energy (kJ)",
+                  "unitId": "5"
+                }
+              },
+              {
+                "id": "ced4710a-8e6d-45a2-8266-be2d9b640ecb",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 23.735,
+                "nutrientTypeId": "17",
+                "nutrientType": {
+                  "id": "17",
+                  "description": "Dietary fibre (g)     ",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "491b0676-1c82-4352-bb87-e227a156bf53",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 9.4,
+                "nutrientTypeId": "149",
+                "nutrientType": {
+                  "id": "149",
+                  "description": "Iodine",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "69d73bf5-097c-431d-83fc-99b9df23b47b",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 46.295,
+                "nutrientTypeId": "22",
+                "nutrientType": {
+                  "id": "22",
+                  "description": "Total sugars",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "ee5c08f7-4f0b-442a-b5ef-61387c1f6884",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "59",
+                "nutrientType": {
+                  "id": "59",
+                  "description": "Cholesterol",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "8e6b7059-a9e8-4d49-bc78-21968cca8014",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 47,
+                "nutrientTypeId": "118",
+                "nutrientType": {
+                  "id": "118",
+                  "description": "Beta-carotene equivalents",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "3dfb1ff1-9d9e-4f10-83ac-948218fe1138",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 31.255,
+                "nutrientTypeId": "49",
+                "nutrientType": {
+                  "id": "49",
+                  "description": "Fat",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "c85cbc10-bc40-4acd-89cd-b705c0ac88fd",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "236",
+                "nutrientType": {
+                  "id": "236",
+                  "description": "C22:5w3 Docosapentaenoic",
+                  "unitId": "2"
+                }
+              },
+              {
+                "id": "19a95b87-4b2a-40a1-8d0d-689fb708983a",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "230",
+                "nutrientType": {
+                  "id": "230",
+                  "description": "Folic acid",
+                  "unitId": "3"
+                }
+              },
+              {
+                "id": "325d4b89-b3f1-4356-94cd-099b38c14920",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 122.2,
+                "nutrientTypeId": "140",
+                "nutrientType": {
+                  "id": "140",
+                  "description": "Calcium",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "5ca0df36-da6b-4d29-82af-70263cb13989",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 128.31,
+                "nutrientTypeId": "240",
+                "nutrientType": {
+                  "id": "240",
+                  "description": "Available carbohydrates, without sugar alcohol",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "b51ceb67-80fe-4218-81f2-9b33d9dd5a34",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 3.76,
+                "nutrientTypeId": "130",
+                "nutrientType": {
+                  "id": "130",
+                  "description": "Vitamin E",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "3766ff2e-f961-463c-ab0f-632733f5aa22",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 44.65,
+                "nutrientTypeId": "135",
+                "nutrientType": {
+                  "id": "135",
+                  "description": "Folate food, naturally occurring food folates",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "38cbf386-7970-4da8-9b1f-bf9d476f8709",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 44.65,
+                "nutrientTypeId": "162",
+                "nutrientType": {
+                  "id": "162",
+                  "description": "Dietary folate equivalents",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "30eaa5df-37da-435f-887c-bd451159f382",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 1.9975,
+                "nutrientTypeId": "123",
+                "nutrientType": {
+                  "id": "123",
+                  "description": "Thiamin",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "f895c0a0-41c8-4a42-9b53-03cf091a0911",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 5.6635,
+                "nutrientTypeId": "50",
+                "nutrientType": {
+                  "id": "50",
+                  "description": "Satd FA",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "0fa584aa-b40a-4a9c-9fad-3d1c27e2ed86",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 237.35,
+                "nutrientTypeId": "127",
+                "nutrientType": {
+                  "id": "127",
+                  "description": "Tryptophan",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "abc4e165-c616-4ff2-a3d0-d3047a274d6d",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 21.15,
+                "nutrientTypeId": "11",
+                "nutrientType": {
+                  "id": "11",
+                  "description": "Protein",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "b8bf2847-8d92-417d-a329-07aba0fdbc6f",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 10.4575,
+                "nutrientTypeId": "143",
+                "nutrientType": {
+                  "id": "143",
+                  "description": "Iron",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "3c14022e-60bf-43f3-8e77-9f268e4b4682",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0.517,
+                "nutrientTypeId": "231",
+                "nutrientType": {
+                  "id": "231",
+                  "description": "Alpha-linolenic acid",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "9f9bd8e6-9861-4afa-894e-ac303334c794",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "158",
+                "nutrientType": {
+                  "id": "158",
+                  "description": "Caffeine",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "6a68cf47-0fd6-454d-9ac8-7f3fe7e1a040",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "114",
+                "nutrientType": {
+                  "id": "114",
+                  "description": "Retinol",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "ae35953c-949b-479b-ac42-c6b7fc45afd0",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 13.16,
+                "nutrientTypeId": "171",
+                "nutrientType": {
+                  "id": "171",
+                  "description": "Added sugar",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "cfb56ce7-5aeb-4822-a1b3-e41278e17c9b",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 850.7,
+                "nutrientTypeId": "139",
+                "nutrientType": {
+                  "id": "139",
+                  "description": "Potassium",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "fbcfa0c0-46ff-4bd8-aff8-ac7a1095dbac",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "235",
+                "nutrientType": {
+                  "id": "235",
+                  "description": "C20:5w3 Eicosapentaenoic",
+                  "unitId": "2"
+                }
+              },
+              {
+                "id": "26f85fc3-b133-4d20-a596-fc8c4b069891",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 13.536,
+                "nutrientTypeId": "51",
+                "nutrientType": {
+                  "id": "51",
+                  "description": "Monounsaturated fatty acids (g)",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "c824efaa-6dbe-41f3-8c4c-d76ba5f19130",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 128.31,
+                "nutrientTypeId": "239",
+                "nutrientType": {
+                  "id": "239",
+                  "description": "Available carbohydrates, with sugar alcohols",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "6b1a4e05-3313-44b7-91a2-24670856d362",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 3.76,
+                "nutrientTypeId": "131",
+                "nutrientType": {
+                  "id": "131",
+                  "description": "Vitamin E, alpha-tocopherol equivalents",
+                  "unitId": "1"
+                }
+              },
+              {
+                "id": "e43ea1e8-2681-4fa5-b100-b1fcc94f0bc4",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "amount": 0,
+                "nutrientTypeId": "232",
+                "nutrientType": {
+                  "id": "232",
+                  "description": "Total long chain omega 3 fatty acids",
+                  "unitId": "2"
+                }
+              }
+            ],
+            "portionSizes": [
+              {
+                "id": "a6175bb4-a990-40a4-b6f3-4e56bfc3ff92",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "linkedQuantity",
+                "value": "1"
+              },
+              {
+                "id": "1022e228-fb0d-4b30-b3a5-c1fcf88cb4b5",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "quantity",
+                "value": "2"
+              },
+              {
+                "id": "207dfb42-012c-43f1-afe3-546d4104f073",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "unitName",
+                "value": "cups"
+              },
+              {
+                "id": "bc6a6749-0ca6-4332-a63e-3395cd8f6867",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "unitWeight",
+                "value": "117.5"
+              },
+              {
+                "id": "8d405979-78d2-4e47-8916-cd467fe81603",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "unitOmitFoodDescription",
+                "value": "false"
+              },
+              {
+                "id": "3156b2ec-a79d-4092-af41-2ae5c069dbcf",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "leftoversWeight",
+                "value": "0"
+              },
+              {
+                "id": "2406097a-a1a0-4f32-95ea-10be955720fe",
+                "foodId": "4587c107-2270-4f98-96b1-514fb0f9838a",
+                "name": "servingWeight",
+                "value": "235"
+              }
+            ]
+          },
+          {
             "id": "ad290409-4530-43b7-8aa4-dfc496eaf6e1",
             "parentId": null,
             "mealId": "fad48655-8808-4c42-a27c-2a92c168bc33",

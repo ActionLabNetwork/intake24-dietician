@@ -90,6 +90,7 @@ import {
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import * as R from 'remeda'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -154,6 +155,12 @@ const getColours = (base: string) => {
   }
 }
 
+const getRawServingWeight = (food: { [x: string]: any[] }): string => {
+  return food['portionSizes']?.find(
+    (item: { name: string }) => item.name === 'servingWeight',
+  )?.value
+}
+
 const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealCarbsExchange = usePrecision(
     calculateMealNutrientsExchange(
@@ -165,23 +172,103 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
+  // const foods = meal.foods.map(food => ({
+  //   name: food['englishName'],
+  //   servingWeight: food['portionSizes']?.find(
+  //     (item: { name: string }) => item.name === 'servingWeight',
+  //   )?.value,
+  //   value: calculateFoodNutrientsExchange(
+  //     food as RecallMealFood,
+  //     module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
+  //     CARBS_EXCHANGE_MULTIPLIER,
+  //   ),
+  //   mealDate: food['mealDate'],
+  // }))
+  // Find duplicated foods
+  console.log({ foods: meal.foods })
+  const foods = meal.foods.map(food => ({
+    name: food['englishName'] as string,
+    servingWeight: getRawServingWeight(food),
+    value:
+      calculateFoodNutrientsExchange(
+        food as RecallMealFood,
+        module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
+        CARBS_EXCHANGE_MULTIPLIER,
+      ) / recallsCount,
+    mealDate: food['mealDate'],
+  }))
+  const duplicateFoods = R.pipe(
+    foods,
+    R.groupBy(R.prop('name')),
+    R.pickBy(foods => foods.length > 1),
+  )
+  console.log({ duplicateFoods })
+
+  const duplicatesAveraged = R.mapValues(duplicateFoods, foods => {
+    const total = foods.reduce(
+      (acc, food) => {
+        const servingWeight =
+          (parseFloat(acc.servingWeight) ?? 0) +
+          parseFloat(food.servingWeight ?? 0)
+        return {
+          name: food.name,
+          servingWeight: servingWeight.toString(),
+          value: acc.value + food.value,
+          mealDate: food.mealDate,
+        }
+      },
+      {
+        name: '',
+        servingWeight: '0',
+        value: 0,
+        mealDate: '',
+      },
+    )
+
+    return {
+      ...foods[0],
+      name: `${foods[0].name} (x${foods.length})`,
+      servingWeight: total.servingWeight,
+      value: usePrecision(total.value, 2).value,
+    }
+  })
+
+  const foodsWithDuplicatesAveraged = R.pipe(
+    foods,
+    R.map(food => {
+      if (duplicateFoods[food.name]) {
+        return duplicatesAveraged[food.name]!
+      }
+      return food
+    }),
+    R.uniqBy(food => food?.name),
+  )
+
+  const foodsWithDuplicatesAveragedAndServingWeightRounded = R.map(
+    foodsWithDuplicatesAveraged,
+    food => {
+      let servingWeight = food.servingWeight
+      if (typeof food.servingWeight === 'number') {
+        servingWeight = usePrecision(food.servingWeight, 2).value.toString()
+      } else {
+        servingWeight = usePrecision(
+          parseFloat(food.servingWeight),
+          2,
+        ).value.toString()
+      }
+
+      return {
+        ...food,
+        servingWeight: `${servingWeight}g`,
+      }
+    },
+  )
+
+  console.log({ duplicatesAveraged, foodsWithDuplicatesAveraged })
+
   mealCards[meal.name] = {
     label: meal.name,
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
-          CARBS_EXCHANGE_MULTIPLIER,
-        ),
-        2,
-      ).value,
-      mealDate: food['mealDate'],
-    })),
+    foods: foodsWithDuplicatesAveragedAndServingWeightRounded,
     mean: mealCarbsExchange,
     mascot: mascot.value,
     theme: theme.value,
@@ -210,30 +297,6 @@ watch(
           totalCarbs +
           calculateMealCarbsExchange(meal, combinedMeals.recallsCount)
         )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    // Reset meal cards
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalCarbs.value = Math.floor(
-      data.recall.meals.reduce((totalCarbs, meal) => {
-        return totalCarbs + calculateMealCarbsExchange(meal)
       }, 0),
     )
   },

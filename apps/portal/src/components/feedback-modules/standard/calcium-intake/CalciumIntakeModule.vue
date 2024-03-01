@@ -56,12 +56,10 @@ import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
+import { ref, watch, reactive, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_CALCIUM_ID } from '@intake24-dietician/portal/constants/recall'
-import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import {
@@ -76,11 +74,7 @@ import {
 } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import type {
-  PieAndTimelineTabs,
-  MealCardProps,
-} from '@intake24-dietician/portal/components/feedback-modules/types/index'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
+import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 
@@ -178,29 +172,6 @@ watch(
           totalEnergy +
           calculateMealCalciumIntake(meal, combinedMeals.recallsCount)
         )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalCalcium.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealCalciumIntake(meal)
       }, 0),
     )
   },

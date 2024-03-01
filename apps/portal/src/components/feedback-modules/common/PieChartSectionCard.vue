@@ -66,7 +66,6 @@ import { computed, ref } from 'vue'
 import chroma from 'chroma-js'
 import { MealCardProps } from '../types'
 import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
-import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@/constants/modules'
 import { useRoute } from 'vue-router'
 
 const props = defineProps<MealCardProps>()
