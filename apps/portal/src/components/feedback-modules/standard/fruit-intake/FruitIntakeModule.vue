@@ -77,6 +77,7 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -136,19 +137,12 @@ const calculateMealFruitIntake = (meal: RecallMeal, recallsCount = 1) => {
     hours: meal.hours,
     minutes: meal.minutes,
     unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
-        ),
-        2,
-      ).value,
-    })),
+    foods: extractDuplicateFoods(
+      meal.foods,
+      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+      1,
+      recallsCount,
+    ),
   }
 
   return mealFruitExchange

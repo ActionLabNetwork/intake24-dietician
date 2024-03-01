@@ -80,6 +80,7 @@ import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import { MealCardProps } from '../../types'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -128,25 +129,39 @@ const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
+  // mealCards[meal.name] = {
+  //   name: 'Fibre intake',
+  //   label: meal.name,
+  //   hours: meal.hours,
+  //   minutes: meal.minutes,
+  //   unitOfMeasure: module.value?.nutrientTypes[0],
+  //   foods: meal.foods.map(food => ({
+  //     name: food['englishName'],
+  //     servingWeight: food['portionSizes']?.find(
+  //       (item: { name: string }) => item.name === 'servingWeight',
+  //     )?.value,
+  //     value: usePrecision(
+  //       calculateFoodNutrientsExchange(
+  //         food as RecallMealFood,
+  //         NUTRIENTS_DIETARY_FIBRE_ID,
+  //       ),
+  //       2,
+  //     ).value,
+  //   })),
+  // }
   mealCards[meal.name] = {
     name: 'Fibre intake',
     label: meal.name,
     hours: meal.hours,
     minutes: meal.minutes,
     unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          NUTRIENTS_DIETARY_FIBRE_ID,
-        ),
-        2,
-      ).value,
-    })),
+    foods: extractDuplicateFoods(
+      meal.foods,
+      module.value?.nutrientTypes[0]?.id.toString() ??
+        NUTRIENTS_DIETARY_FIBRE_ID,
+      1,
+      recallsCount,
+    ),
   }
 
   return mealFibreExchange

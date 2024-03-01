@@ -1,13 +1,13 @@
 import { usePrecision } from '@vueuse/math'
 import { sort } from 'radash'
-import { computed } from 'vue'
+import { ComputedRef, computed } from 'vue'
 
 export function useProcessRecallFoods(
-  foods: { name: string; value: number; servingWeight: string }[],
+  foods: ComputedRef<{ name: string; value: number; servingWeight: string }[]>,
 ) {
   const formattedFoods = computed(() => {
     // Sort the foods in descending order of value
-    const sortedFoods = sort(foods, food => food.value, true)
+    const sortedFoods = sort(foods.value, food => food.value, true)
     const topContributors = sortedFoods.filter(food => food.value > 0)
     const n = 3
 

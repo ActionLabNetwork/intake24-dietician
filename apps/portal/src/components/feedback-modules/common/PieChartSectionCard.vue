@@ -50,7 +50,8 @@
                   <p>{{ food.name }} {{ food.servingWeight }}</p>
                 </div>
                 <div class="font-weight-bold">
-                  {{ food.value }}{{ unitOfMeasure?.unit.symbol }}
+                  {{ usePrecision(food.value, 2)
+                  }}{{ unitOfMeasure?.unit.symbol }}
                 </div>
               </div>
             </div>
@@ -67,6 +68,7 @@ import chroma from 'chroma-js'
 import { MealCardProps } from '../types'
 import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
 import { useRoute } from 'vue-router'
+import { usePrecision } from '@vueuse/math'
 
 const props = defineProps<MealCardProps>()
 
@@ -77,7 +79,7 @@ const isPlusIcon = ref(true)
 const isTransition = ref(true)
 const expand = ref(true)
 
-const { formattedFoods } = useProcessRecallFoods(props.foods)
+const { formattedFoods } = useProcessRecallFoods(computed(() => props.foods))
 
 const toggleIcon = () => {
   isTransition.value = true

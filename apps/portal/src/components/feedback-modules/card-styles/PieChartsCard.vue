@@ -10,7 +10,9 @@
     </div>
     <PieChartFood
       :name="key as string"
-      :data="useProcessRecallFoods(value.foods).formattedFoods.value"
+      :data="
+        useProcessRecallFoods(computed(() => value.foods)).formattedFoods.value
+      "
       :unit-of-measure="unitOfMeasure?.unit"
     />
   </div>

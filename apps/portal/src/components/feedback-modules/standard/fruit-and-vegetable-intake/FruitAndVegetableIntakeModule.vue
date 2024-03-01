@@ -83,7 +83,6 @@ import type {
   PieAndTimelineTabs,
   MealCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {

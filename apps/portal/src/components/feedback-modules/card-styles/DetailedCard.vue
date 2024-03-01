@@ -32,22 +32,6 @@
                 .hex(),
       }"
     >
-      <!-- <div v-if="food.mealDate?.startTime" class="w-100">
-        <v-tooltip
-          location="bottom"
-          :text="food.mealDate.startTime.toDateString()"
-        >
-          <template #activator="{ _props }">
-            <DetailedCardFoodItem
-              v-bind="_props"
-              :food="food"
-              :mascot="mascot"
-              :colors="colors"
-              :theme="theme"
-            />
-          </template>
-        </v-tooltip>
-      </div> -->
       <div class="w-100">
         <DetailedCardFoodItem
           :food="food"
@@ -89,7 +73,7 @@ export interface DetailedCardProps {
 }
 
 const props = defineProps<DetailedCardProps>()
-const { formattedFoods } = useProcessRecallFoods(props.foods)
+const { formattedFoods } = useProcessRecallFoods(computed(() => props.foods))
 
 const cssClasses = computed(() => {
   if (props.theme === 'Classic') {

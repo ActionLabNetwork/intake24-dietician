@@ -73,7 +73,6 @@ import {
 } from '@/constants/recall'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
@@ -91,6 +90,7 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import * as R from 'remeda'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -172,103 +172,14 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  // const foods = meal.foods.map(food => ({
-  //   name: food['englishName'],
-  //   servingWeight: food['portionSizes']?.find(
-  //     (item: { name: string }) => item.name === 'servingWeight',
-  //   )?.value,
-  //   value: calculateFoodNutrientsExchange(
-  //     food as RecallMealFood,
-  //     module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
-  //     CARBS_EXCHANGE_MULTIPLIER,
-  //   ),
-  //   mealDate: food['mealDate'],
-  // }))
-  // Find duplicated foods
-  console.log({ foods: meal.foods })
-  const foods = meal.foods.map(food => ({
-    name: food['englishName'] as string,
-    servingWeight: getRawServingWeight(food),
-    value:
-      calculateFoodNutrientsExchange(
-        food as RecallMealFood,
-        module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
-        CARBS_EXCHANGE_MULTIPLIER,
-      ) / recallsCount,
-    mealDate: food['mealDate'],
-  }))
-  const duplicateFoods = R.pipe(
-    foods,
-    R.groupBy(R.prop('name')),
-    R.pickBy(foods => foods.length > 1),
-  )
-  console.log({ duplicateFoods })
-
-  const duplicatesAveraged = R.mapValues(duplicateFoods, foods => {
-    const total = foods.reduce(
-      (acc, food) => {
-        const servingWeight =
-          (parseFloat(acc.servingWeight) ?? 0) +
-          parseFloat(food.servingWeight ?? 0)
-        return {
-          name: food.name,
-          servingWeight: servingWeight.toString(),
-          value: acc.value + food.value,
-          mealDate: food.mealDate,
-        }
-      },
-      {
-        name: '',
-        servingWeight: '0',
-        value: 0,
-        mealDate: '',
-      },
-    )
-
-    return {
-      ...foods[0],
-      name: `${foods[0].name} (x${foods.length})`,
-      servingWeight: total.servingWeight,
-      value: usePrecision(total.value, 2).value,
-    }
-  })
-
-  const foodsWithDuplicatesAveraged = R.pipe(
-    foods,
-    R.map(food => {
-      if (duplicateFoods[food.name]) {
-        return duplicatesAveraged[food.name]!
-      }
-      return food
-    }),
-    R.uniqBy(food => food?.name),
-  )
-
-  const foodsWithDuplicatesAveragedAndServingWeightRounded = R.map(
-    foodsWithDuplicatesAveraged,
-    food => {
-      let servingWeight = food.servingWeight
-      if (typeof food.servingWeight === 'number') {
-        servingWeight = usePrecision(food.servingWeight, 2).value.toString()
-      } else {
-        servingWeight = usePrecision(
-          parseFloat(food.servingWeight),
-          2,
-        ).value.toString()
-      }
-
-      return {
-        ...food,
-        servingWeight: `${servingWeight}g`,
-      }
-    },
-  )
-
-  console.log({ duplicatesAveraged, foodsWithDuplicatesAveraged })
-
   mealCards[meal.name] = {
     label: meal.name,
-    foods: foodsWithDuplicatesAveragedAndServingWeightRounded,
+    foods: extractDuplicateFoods(
+      meal.foods,
+      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
+      CARBS_EXCHANGE_MULTIPLIER,
+      recallsCount,
+    ),
     mean: mealCarbsExchange,
     mascot: mascot.value,
     theme: theme.value,

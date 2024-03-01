@@ -5,7 +5,7 @@
         {{ food.name }}
       </v-col>
       <v-col cols="3" align="right" class="font-weight-medium">
-        {{ food.value }}
+        {{ usePrecision(food.value, 2) }}
       </v-col>
     </v-row>
   </div>
@@ -29,6 +29,7 @@ import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import chroma from 'chroma-js'
 import type { Component } from 'vue'
+import { usePrecision } from '@vueuse/math'
 
 defineProps<{
   food: RecallDto['recall']['meals'][0]['foods'][0]
