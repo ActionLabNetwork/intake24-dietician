@@ -1,5 +1,9 @@
 <template>
-  <BarChart :data="data" :unit-of-measure="unitOfMeasure" />
+  <BarChart
+    :show-legend="_recallsCount > 1"
+    :data="data"
+    :unit-of-measure="unitOfMeasure"
+  />
 </template>
 
 <script setup lang="ts">
@@ -8,6 +12,7 @@ import { computed } from 'vue'
 import { MealCardProps } from '../types'
 import chroma from 'chroma-js'
 import moment from 'moment'
+import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 
 const props = defineProps<{
   meals: Record<string, Omit<MealCardProps, 'colors'>>
@@ -29,8 +34,13 @@ const props = defineProps<{
   }[]
 }>()
 
+const recallStore = useRecallStore()
+
+const _recallsCount = computed(
+  () => recallStore.recallsGroupedByMeals.recallsCount,
+)
 const data = computed(() => {
-  if (props.recallsCount > 1) {
+  if (_recallsCount.value > 1) {
     const acc = {} as Record<string, number[]>
     const allMealNames = new Set<string>()
 
@@ -75,14 +85,6 @@ const data = computed(() => {
       labels: props.nutrientValuesByRecall
         .toSorted((a, b) => (a.recallDate < b.recallDate ? -1 : 1))
         .map(data => moment(data.recallDate).format('DD MMM YYYY')),
-      // datasets: [
-      //   {
-      //     backgroundColor: props.nutrientValuesByRecall.map(
-      //       (_, i) => chroma.brewer.Set2[i],
-      //     ),
-      //     data: props.nutrientValuesByRecall.map(data => data.value),
-      //   },
-      // ],
       datasets: datasets,
     }
   }

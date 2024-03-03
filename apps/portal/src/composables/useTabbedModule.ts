@@ -58,7 +58,9 @@ export function useTabbedModule({
       props: {
         name: module.value?.name || 'Fibre intake',
         meals: mealCards,
-        recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+        recallsCount: computed(
+          () => recallStore.recallsGroupedByMeals.recallsCount,
+        ).value,
         colors: colorPalette,
         unitOfMeasure: module.value?.nutrientTypes[0],
         nutrientValuesByRecall: nutrientValuesByRecall,
