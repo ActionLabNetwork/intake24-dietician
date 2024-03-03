@@ -1,5 +1,5 @@
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
-import type { Component, Raw, Ref } from 'vue'
+import type { Component, ComputedRef, Raw, Ref } from 'vue'
 
 export interface MealCardProps {
   name: string
@@ -73,6 +73,9 @@ export type PieAndTimelineTabs = {
         }
       | undefined
     showCutlery?: boolean
+    nutrientValuesByRecall?: ComputedRef<
+      { recallDate: string; value: number }[]
+    >
   }
   icon: string
 }[]

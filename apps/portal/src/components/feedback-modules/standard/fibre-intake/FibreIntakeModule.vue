@@ -57,10 +57,7 @@
 
 <script setup lang="ts">
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
@@ -68,10 +65,7 @@ import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { usePrecision } from '@vueuse/math'
 import { computed, reactive, ref, watch } from 'vue'
@@ -101,6 +95,13 @@ const recallStore = useRecallStore()
 
 const activeTab = ref(0)
 const totalFibre = ref(0)
+const totalFibreByRecall = ref<
+  {
+    recallDate: string
+    valueByMeal: { mealName: string; value: number }[]
+    value: number
+  }[]
+>([])
 const colorPalette = computed(() => recallStore.colorPalette)
 
 let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
@@ -116,6 +117,7 @@ const { tabs, tabBackground } = useTabbedModule({
   mealCards: mealCards,
   module: module,
   theme: theme,
+  nutrientValuesByRecall: computed(() => totalFibreByRecall.value),
 })
 
 const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
@@ -129,26 +131,6 @@ const calculateMealFibreExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  // mealCards[meal.name] = {
-  //   name: 'Fibre intake',
-  //   label: meal.name,
-  //   hours: meal.hours,
-  //   minutes: meal.minutes,
-  //   unitOfMeasure: module.value?.nutrientTypes[0],
-  //   foods: meal.foods.map(food => ({
-  //     name: food['englishName'],
-  //     servingWeight: food['portionSizes']?.find(
-  //       (item: { name: string }) => item.name === 'servingWeight',
-  //     )?.value,
-  //     value: usePrecision(
-  //       calculateFoodNutrientsExchange(
-  //         food as RecallMealFood,
-  //         NUTRIENTS_DIETARY_FIBRE_ID,
-  //       ),
-  //       2,
-  //     ).value,
-  //   })),
-  // }
   mealCards[meal.name] = {
     name: 'Fibre intake',
     label: meal.name,
@@ -185,6 +167,21 @@ watch(
         )
       }, 0),
     )
+
+    totalFibreByRecall.value = data.map(recall => {
+      return {
+        recallDate: recall.recall.startTime.toISOString(),
+        valueByMeal: recall.recall.meals.map(meal => {
+          return {
+            mealName: meal.name,
+            value: calculateMealFibreExchange(meal),
+          }
+        }),
+        value: recall.recall.meals.reduce((totalEnergy, meal) => {
+          return totalEnergy + calculateMealFibreExchange(meal)
+        }, 0),
+      }
+    })
   },
   { immediate: true },
 )

@@ -1,12 +1,4 @@
-import {
-  ComputedRef,
-  Ref,
-  computed,
-  markRaw,
-  ref,
-  watch,
-  watchEffect,
-} from 'vue'
+import { ComputedRef, Ref, computed, markRaw, ref, watch } from 'vue'
 import {
   MealCardProps,
   PieAndTimelineTabs,
@@ -22,12 +14,20 @@ type Props = {
   mealCards: Record<string, Omit<MealCardProps, 'colors'>>
   module: ComputedRef<SurveyDto['feedbackModules'][number] | undefined>
   theme: ComputedRef<Theme | undefined>
+  nutrientValuesByRecall?: ComputedRef<
+    {
+      recallDate: string
+      valueByMeal: { mealName: string; value: number }[]
+      value: number
+    }[]
+  >
 }
 export function useTabbedModule({
   colorPalette,
   mealCards,
   module,
   theme,
+  nutrientValuesByRecall,
 }: Props) {
   const recallStore = useRecallStore()
 
@@ -61,6 +61,7 @@ export function useTabbedModule({
         recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
         colors: colorPalette,
         unitOfMeasure: module.value?.nutrientTypes[0],
+        nutrientValuesByRecall: nutrientValuesByRecall,
       },
       icon: 'mdi-calendar-blank-outline',
     },

@@ -37,8 +37,9 @@ ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 const options = {
   responsive: true,
   maintainAspectRatio: true,
-  plugins: { legend: { display: false } },
+  plugins: { legend: { display: true } },
   scales: {
+    x: { stacked: true },
     y: {
       display: true,
       title: {
@@ -50,6 +51,7 @@ const options = {
           size: 24,
         },
       },
+      stacked: true,
     },
   },
 }
