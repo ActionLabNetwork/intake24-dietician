@@ -20,7 +20,7 @@
 
 <script setup lang="ts">
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { MealCardProps } from '../types'
 import PieChartFood from '../common/PieChartFood.vue'
 import chroma from 'chroma-js'
@@ -41,14 +41,15 @@ export interface SummarizedCardProps {
 }
 
 const props = defineProps<SummarizedCardProps>()
+const _meals = ref(props.meals)
 
 const data = computed(() => {
   const _data = R.pipe(
-    Object.keys(props.meals),
+    Object.keys(_meals.value),
     R.reduce(
       (acc, meal) => {
         const foods = R.pipe(
-          props.meals[meal]!.foods,
+          _meals.value[meal]!.foods,
           R.map(food => {
             return {
               name: food.name,
@@ -106,6 +107,13 @@ const data = computed(() => {
     },
   )
 })
+
+watch(
+  () => props.meals,
+  newMeals => {
+    _meals.value = newMeals
+  },
+)
 </script>
 
 <style scoped>

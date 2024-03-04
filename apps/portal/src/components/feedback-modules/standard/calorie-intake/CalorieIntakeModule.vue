@@ -23,6 +23,7 @@
         </div>
         <!-- Success state -->
         <PieChartsCard
+          v-if="mealCards"
           name="Calorie intake"
           :meals="mealCards"
           :colors="colorPalette"
@@ -53,27 +54,21 @@
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
-import { ref, watch, reactive, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import PieChartsCard from '../../card-styles/PieChartsCard.vue'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { usePrecision } from '@vueuse/math'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { MealCardProps } from '../../types'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -116,8 +111,29 @@ const module = computed(() => {
   )
 })
 const totalEnergy = ref(0)
-const colorPalette = ref<string[]>([])
-const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+const colorPalette = computed(() => recallStore.colorPalette)
+const mealCards = computed(() => {
+  return recallStore.recallsGroupedByMeals.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        name: 'Calorie intake',
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        unitOfMeasure: module.value?.nutrientTypes[0],
+        foods: extractDuplicateFoods(
+          meal.foods,
+          module.value?.nutrientTypes[0]?.id.toString() ??
+            NUTRIENTS_ENERGY_INTAKE_ID,
+          1,
+          recallStore.recallsGroupedByMeals.recallsCount,
+        ),
+      }
+      return acc
+    },
+    {} as Record<string, Omit<MealCardProps, 'colors'>>,
+  )
+})
 
 const calculateMealCalorieExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealFibreExchange = usePrecision(
@@ -130,57 +146,8 @@ const calculateMealCalorieExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  mealCards[meal.name] = {
-    name: 'Fibre intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ??
-            NUTRIENTS_ENERGY_INTAKE_ID,
-        ),
-        2,
-      ).value,
-    })),
-  }
-
   return mealFibreExchange
 }
-
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    // Reset meal cards
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
-      return totalEnergy + calculateMealCalorieExchange(meal)
-    }, 0)
-  },
-  { immediate: true },
-)
 
 watch(
   () => recallStore.recallsQuery.data,
@@ -188,11 +155,6 @@ watch(
     if (!data) return
 
     const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
 
     totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
       return (

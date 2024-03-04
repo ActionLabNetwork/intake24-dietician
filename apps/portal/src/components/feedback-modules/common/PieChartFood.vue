@@ -12,7 +12,7 @@ import {
   LegendComponent,
 } from 'echarts/components'
 import VChart from 'vue-echarts'
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
 
 const props = defineProps<{
@@ -46,60 +46,62 @@ const radius = computed(() => {
 
 const unitSymbol = computed(() => props.unitOfMeasure?.symbol ?? '')
 
-const option = ref({
-  tooltip: {
-    trigger: 'item',
-    formatter: '{a} <br/>{b} : {c} ({d}%)',
-  },
-  label: {
-    formatter: (params: { name: string; value: number; percent: number }) => {
-      const words = params.name.split(' ')
-      let formattedLabel = ''
-
-      // Add a newline after every 2 words
-      for (let i = 0; i < words.length; i += 2) {
-        formattedLabel += words.slice(i, i + 2).join(' ') + '\n'
-      }
-
-      formattedLabel += `{bg|${params.value}${unitSymbol.value} (${params.percent}%)}`
-
-      return formattedLabel
+const option = computed(() => {
+  return {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b} : {c} ({d}%)',
     },
-    // TODO: Figure out how to use the pie slice's color as the background color for each label
-    rich: {
-      bg: {
-        backgroundColor: '#EE672D',
-        color: '#fff',
-        borderRadius: 4,
-        padding: 5,
-      },
-    },
-    lineHeight: 20,
-  },
-  series: [
-    {
-      name: props.name,
-      type: 'pie',
-      radius: radius.value,
-      center: ['50%', '50%'],
-      label: {
-        position: 'outer',
-      },
-      data: props.data.map(item => {
-        return {
-          name: item.name,
-          value: item.value,
+    label: {
+      formatter: (params: { name: string; value: number; percent: number }) => {
+        const words = params.name.split(' ')
+        let formattedLabel = ''
+
+        // Add a newline after every 2 words
+        for (let i = 0; i < words.length; i += 2) {
+          formattedLabel += words.slice(i, i + 2).join(' ') + '\n'
         }
-      }),
-      emphasis: {
-        itemStyle: {
-          shadowBlur: 10,
-          shadowOffsetX: 0,
-          shadowColor: 'rgba(0, 0, 0, 0.5)',
+
+        formattedLabel += `{bg|${params.value}${unitSymbol.value} (${params.percent}%)}`
+
+        return formattedLabel
+      },
+      // TODO: Figure out how to use the pie slice's color as the background color for each label
+      rich: {
+        bg: {
+          backgroundColor: '#EE672D',
+          color: '#fff',
+          borderRadius: 4,
+          padding: 5,
         },
       },
+      lineHeight: 20,
     },
-  ],
+    series: [
+      {
+        name: props.name,
+        type: 'pie',
+        radius: radius.value,
+        center: ['50%', '50%'],
+        label: {
+          position: 'outer',
+        },
+        data: props.data.map(item => {
+          return {
+            name: item.name,
+            value: item.value,
+          }
+        }),
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)',
+          },
+        },
+      },
+    ],
+  }
 })
 </script>
 
