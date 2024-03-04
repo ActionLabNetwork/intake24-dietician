@@ -104,7 +104,14 @@ const recallStore = useRecallStore()
 
 const activeTab = ref(0)
 const totalFruitAndVegetable = ref(0)
-const colorPalette = ref<string[]>([])
+const totalFruitAndVegetableByRecall = ref<
+  {
+    recallDate: string
+    valueByMeal: { mealName: string; value: number }[]
+    value: number
+  }[]
+>([])
+const colorPalette = computed(() => recallStore.colorPalette)
 
 const tabBackground = computed(() => ({
   color: '#55555540',
@@ -202,6 +209,9 @@ const tabs = ref<PieAndTimelineTabs>([
       colors: colorPalette,
       unitOfMeasure:
         combinedUnitOfMeasure.value ?? module.value?.nutrientTypes[0],
+      nutrientValuesByRecall: computed(
+        () => totalFruitAndVegetableByRecall.value,
+      ),
     },
     icon: 'mdi-calendar-blank-outline',
   },
@@ -237,7 +247,6 @@ watch(
     if (!data) return
 
     const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
 
     totalFruitAndVegetable.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
@@ -247,6 +256,21 @@ watch(
         )
       }, 0),
     )
+
+    totalFruitAndVegetableByRecall.value = data.map(recall => {
+      return {
+        recallDate: recall.recall.startTime.toISOString(),
+        valueByMeal: recall.recall.meals.map(meal => {
+          return {
+            mealName: meal.name,
+            value: calculateMealFruitAndVegetableIntake(meal),
+          }
+        }),
+        value: recall.recall.meals.reduce((totalNutrients, meal) => {
+          return totalNutrients + calculateMealFruitAndVegetableIntake(meal)
+        }, 0),
+      }
+    })
   },
   { immediate: true },
 )

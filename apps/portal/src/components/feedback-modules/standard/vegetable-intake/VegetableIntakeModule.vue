@@ -56,30 +56,19 @@ import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, computed } from 'vue'
+import { ref, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_VEGETABLE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { usePrecision } from '@vueuse/math'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
-import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
+import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -97,8 +86,7 @@ const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
 const activeTab = ref(0)
-const totalVegetable = ref(0)
-const colorPalette = ref<string[]>([])
+const colorPalette = computed(() => recallStore.colorPalette)
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -111,66 +99,18 @@ const module = computed(() => {
   )
 })
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
-const mealCards = computed(() => {
-  return recallStore.recallsGroupedByMeals.meals.reduce(
-    (acc, meal) => {
-      acc[meal.name] = {
-        name: 'Vegetable intake',
-        label: meal.name,
-        hours: meal.hours,
-        minutes: meal.minutes,
-        unitOfMeasure: module.value?.nutrientTypes[0],
-        foods: extractDuplicateFoods(
-          meal.foods,
-          module.value?.nutrientTypes[0]?.id.toString() ??
-            NUTRIENTS_VEGETABLE_ID,
-          1,
-          recallStore.recallsGroupedByMeals.recallsCount,
-        ),
-      }
-      return acc
-    },
-    {} as Record<string, Omit<MealCardProps, 'colors'>>,
-  )
-})
+
+const {
+  mealCards,
+  totalNutrients: totalVegetable,
+  totalNutrientsByRecall: totalVegetableByRecall,
+} = useFeedbackModule(module, NUTRIENTS_VEGETABLE_ID)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
   mealCards: mealCards,
   module: module,
   theme: theme,
+  nutrientValuesByRecall: computed(() => totalVegetableByRecall.value),
 })
-
-const calculateMealVegetableIntake = (meal: RecallMeal, recallsCount = 1) => {
-  const mealVegetableExchange = usePrecision(
-    calculateMealNutrientsExchange(
-      meal,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_VEGETABLE_ID,
-      recallsCount,
-    ),
-    2,
-  ).value
-
-  return mealVegetableExchange
-}
-
-watch(
-  () => recallStore.recallsQuery.data,
-  data => {
-    if (!data) return
-
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
-
-    totalVegetable.value = Math.floor(
-      combinedMeals.meals.reduce((totalEnergy, meal) => {
-        return (
-          totalEnergy +
-          calculateMealVegetableIntake(meal, combinedMeals.recallsCount)
-        )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
 </script>
