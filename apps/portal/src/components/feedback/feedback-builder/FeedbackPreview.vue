@@ -18,9 +18,9 @@
       elevation="2"
     >
       <v-card flat>
-        <div v-if="modules && modules.length > 0">
+        <div v-if="_modules && _modules.length > 0">
           <div
-            v-for="(module, index) in modules"
+            v-for="(module, index) in _modules"
             :key="index"
             :class="{ 'page-break': index > 1 }"
           >
@@ -38,20 +38,30 @@
               flat
               :style="{
                 'background-color':
-                  FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
-                    .mainBackground,
+                  index % 2 !== 0
+                    ? theme === 'Classic'
+                      ? '#F1F1F1'
+                      : FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                          .mainBackground
+                    : '#ffffff',
               }"
               :main-bg-color="
                 FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
                   .mainBackground
               "
               :feedback-bg-color="
-                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
-                  .background
+                theme === 'Classic'
+                  ? '#555'
+                  : index % 2 !== 0
+                    ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                        .feedback.background
+                    : '#C0C0C0'
               "
               :feedback-text-color="
-                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key].feedback
-                  .color
+                theme === 'Classic'
+                  ? '#fff'
+                  : FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                      .feedback.color
               "
             />
           </div>
@@ -63,12 +73,13 @@
 
 <script setup lang="ts">
 import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
-import { ref, type Component, onMounted } from 'vue'
+import { ref, type Component, onMounted, computed } from 'vue'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { usePdfExport } from '@/composables/usePdfExport'
 import { RecallDatesDto } from '@intake24-dietician/common/entities-new/recall.dto'
 import FeedbackIntroText from '@/components/feedback/feedback-builder/FeedbackIntroText.vue'
 import { useRoute } from 'vue-router'
+import { useClinicStore } from '@intake24-dietician/portal/stores/clinic'
 
 interface Props {
   patientName: string
@@ -79,7 +90,7 @@ interface Props {
   constrainOutputHeight?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   hideExportToPdfButton: false,
   constrainOutputHeight: false,
 })
@@ -87,7 +98,11 @@ withDefaults(defineProps<Props>(), {
 const route = useRoute()
 const { exportToPdf } = usePdfExport()
 
+const clinicStore = useClinicStore()
+
 const pdfExportLoading = ref(false)
+const _modules = computed(() => props.modules)
+const theme = computed(() => clinicStore.currentClinic?.surveyPreference.theme)
 
 const exportContentToPdf = () => {
   pdfExportLoading.value = true

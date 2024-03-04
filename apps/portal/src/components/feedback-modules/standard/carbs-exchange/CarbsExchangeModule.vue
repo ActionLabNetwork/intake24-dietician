@@ -1,11 +1,7 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle
-      :logo="logo"
-      title="Carbs Exchange"
-      :class="{ 'text-white': mode === 'preview' }"
-    />
+    <ModuleTitle :logo="logo" title="Carbs Exchange" />
     <TotalNutrientsDisplay>
       Your <span v-if="recallStore.isDateRange">average</span>
       <span v-else>total</span> carb exchanges for

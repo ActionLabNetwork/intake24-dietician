@@ -11,6 +11,7 @@
             @end="
               () => {
                 persistModulesOrder()
+                emit('update:modules', items)
                 drag = false
               }
             "

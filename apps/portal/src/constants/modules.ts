@@ -5,11 +5,11 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
   { mainBackground: string; feedback: { background: string; color: string } }
 > = {
   'Carbs exchange': {
-    mainBackground: '#08401f',
+    mainBackground: '#648122',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Fibre intake': {
-    mainBackground: '#F3EFD0',
+    mainBackground: '#E1D67A',
     feedback: { background: '#008435', color: '#fff' },
   },
   'Water intake': {
@@ -17,7 +17,7 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
     feedback: { background: '#073D64', color: '#fff' },
   },
   'Energy intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#CD6133',
     feedback: { background: '#FFCB45', color: '#000' },
   },
   'Meal diary': {
@@ -25,35 +25,35 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Sugar intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#96434A',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Saturated fat intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#7A4507',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Calcium intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#4847A1',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Fruit intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#BEAE20',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Vegetable intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#247768',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Fruit and vegetable intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#F1AF06',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Calorie intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#D7A904',
     feedback: { background: '#ffffff', color: '#000' },
   },
   'Protein intake': {
-    mainBackground: '#ffffff',
+    mainBackground: '#BE5020',
     feedback: { background: '#ffffff', color: '#000' },
   },
 }
