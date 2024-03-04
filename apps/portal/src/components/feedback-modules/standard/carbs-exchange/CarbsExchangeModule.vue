@@ -77,19 +77,12 @@ import BaseProgressCircular from '@intake24-dietician/portal/components/common/B
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import {
-  calculateMealNutrientsExchange,
-  calculateFoodNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
-import * as R from 'remeda'
 import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {

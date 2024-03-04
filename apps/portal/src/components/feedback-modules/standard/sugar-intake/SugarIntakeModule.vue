@@ -64,13 +64,9 @@
 <script setup lang="ts">
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import { SUGAR_CALORIE_PERCENTAGE } from '@/constants/recall'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
-import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import {
@@ -80,17 +76,14 @@ import {
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { usePrecision } from '@vueuse/math'
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
-import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
+import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
 
 withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -110,11 +103,8 @@ const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
 const activeTab = ref(0)
-const totalSugar = ref(0)
 const totalEnergy = ref(0)
 const colorPalette = ref<string[]>([])
-
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
@@ -127,9 +117,6 @@ const energyModule = computed(() => {
   )
 })
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
-const dailySugarPercentage = computed(() => {
-  return ((totalSugar.value * 4) / totalEnergy.value) * 100
-})
 const totalNutrientsDisplayText = computed(() => {
   const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
   return `Your ${totalOrAverage} sugar intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
@@ -140,39 +127,24 @@ const logo = computed(() =>
     : { path: themeConfig.value.logo },
 )
 
+const {
+  mealCards,
+  totalNutrients: totalSugar,
+  totalNutrientsByRecall: totalSugarByRecall,
+} = useFeedbackModule(module, NUTRIENTS_FREE_SUGARS_ID)
+
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
   mealCards: mealCards,
   module: module,
   theme: theme,
+  nutrientValuesByRecall: computed(() => totalSugarByRecall.value),
 })
 
-const calculateMealSugarIntake = (meal: RecallMeal, recallsCount = 1) => {
-  const mealSugarExchange = usePrecision(
-    calculateMealNutrientsExchange(
-      meal,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FREE_SUGARS_ID,
-      recallsCount,
-    ),
-    2,
-  ).value
+const dailySugarPercentage = computed(() => {
+  return ((totalSugar.value * 4) / totalEnergy.value) * 100
+})
 
-  mealCards[meal.name] = {
-    name: 'Sugar intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: extractDuplicateFoods(
-      meal.foods,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FREE_SUGARS_ID,
-      1,
-      recallsCount,
-    ),
-  }
-
-  return mealSugarExchange
-}
 const calculateMealEnergyExchange = (meal: RecallMeal, recallsCount = 1) => {
   return usePrecision(
     calculateMealNutrientsExchange(
@@ -192,16 +164,6 @@ watch(
 
     const combinedMeals = recallStore.recallsGroupedByMeals
     colorPalette.value = recallStore.colorPalette
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalSugar.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
-      return (
-        totalEnergy + calculateMealSugarIntake(meal, combinedMeals.recallsCount)
-      )
-    }, 0)
 
     totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
       return (
