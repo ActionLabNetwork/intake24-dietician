@@ -2,7 +2,8 @@
 <template>
   <v-card
     v-if="module"
-    :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }"
+    class="card-container"
+    :class="{ 'rounded-0': mode === 'preview' }"
   >
     <div class="d-flex justify-space-between align-center">
       <ModuleTitle :logo="{ path: themeConfig.logo }" title="Fibre intake" />
@@ -126,5 +127,9 @@ const { tabs, tabBackground } = useTabbedModule({
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1rem;
+}
+
+.card-container {
+  padding: 5rem 10rem;
 }
 </style>

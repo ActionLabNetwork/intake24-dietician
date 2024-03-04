@@ -22,7 +22,7 @@ export const FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING: Record<
   },
   'Meal diary': {
     mainBackground: '#ffffff',
-    feedback: { background: '#ffffff', color: '#000' },
+    feedback: { background: '#c4c4c4', color: '#000' },
   },
   'Sugar intake': {
     mainBackground: '#96434A',

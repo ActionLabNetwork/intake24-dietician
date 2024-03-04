@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card :class="{ 'rounded-0': mode === 'preview' }" class="card-container">
     <div class="d-flex justify-space-between align-center">
       <ModuleTitle :logo="logo" title="Vegetable intake" />
       <BaseTabComponent
@@ -114,3 +114,9 @@ const { tabs, tabBackground } = useTabbedModule({
   nutrientValuesByRecall: computed(() => totalVegetableByRecall.value),
 })
 </script>
+
+<style scoped lang="scss">
+.card-container {
+  padding: 5rem 10rem;
+}
+</style>

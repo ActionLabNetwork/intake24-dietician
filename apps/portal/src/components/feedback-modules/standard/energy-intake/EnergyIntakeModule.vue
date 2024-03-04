@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle :logo="logo" title="Energy intake" />
     <TotalNutrientsDisplay>
       Your <span v-if="recallStore.isDateRange">average</span
@@ -230,5 +230,9 @@ watch(
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
   gap: 1rem;
+}
+
+.card-container {
+  padding: 5rem 10rem;
 }
 </style>

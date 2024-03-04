@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle :logo="logo" title="Carbs Exchange" />
     <TotalNutrientsDisplay>
       Your <span v-if="recallStore.isDateRange">average</span>
@@ -144,12 +144,6 @@ const getColours = (base: string) => {
   }
 }
 
-const getRawServingWeight = (food: { [x: string]: any[] }): string => {
-  return food['portionSizes']?.find(
-    (item: { name: string }) => item.name === 'servingWeight',
-  )?.value
-}
-
 const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
   const mealCarbsExchange = usePrecision(
     calculateMealNutrientsExchange(
@@ -210,5 +204,9 @@ watch(
   grid-auto-rows: 1fr;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1rem;
+}
+
+.card-container {
+  padding: 5rem 10rem;
 }
 </style>

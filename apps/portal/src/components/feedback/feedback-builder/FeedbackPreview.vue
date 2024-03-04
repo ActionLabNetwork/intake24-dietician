@@ -55,11 +55,11 @@
                   : index % 2 !== 0
                     ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
                         .feedback.background
-                    : '#C0C0C0'
+                    : '#f1f1f1'
               "
               :feedback-text-color="
                 theme === 'Classic'
-                  ? '#fff'
+                  ? '#000'
                   : FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
                       .feedback.color
               "

@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <div class="d-flex justify-space-between align-center">
       <ModuleTitle :logo="logo" title="Fruit and vegetable intake" />
       <BaseTabComponent
@@ -275,3 +275,9 @@ watch(
   { immediate: true },
 )
 </script>
+
+<style scoped lang="scss">
+.card-container {
+  padding: 5rem 10rem;
+}
+</style>
