@@ -106,8 +106,6 @@ const activeTab = ref(0)
 const totalFruitAndVegetable = ref(0)
 const colorPalette = ref<string[]>([])
 
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
-
 const tabBackground = computed(() => ({
   color: '#55555540',
   active: '#555555',
@@ -136,6 +134,46 @@ const combinedUnitOfMeasure = computed(() => {
       description: module.value.nutrientTypes[0]!.unit.description,
     },
   }
+})
+
+const mealCards = computed(() => {
+  return recallStore.recallsGroupedByMeals.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        name: 'Fruit and vegetable intake',
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        unitOfMeasure: module.value?.nutrientTypes[0],
+        foods: meal.foods.map(food => {
+          const foodFruitNutrientsExchange = calculateFoodNutrientsExchange(
+            food as RecallMealFood,
+            module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+          )
+          const foodVegetablesNutrientsExchange =
+            calculateFoodNutrientsExchange(
+              food as RecallMealFood,
+              module.value?.nutrientTypes[1]?.id.toString() ??
+                NUTRIENTS_VEGETABLE_ID,
+            )
+          const foodFruitAndVegetablesNutrientsExchange = usePrecision(
+            foodFruitNutrientsExchange + foodVegetablesNutrientsExchange,
+            2,
+          ).value
+
+          return {
+            name: food['englishName'],
+            servingWeight: food['portionSizes']?.find(
+              (item: { name: string }) => item.name === 'servingWeight',
+            )?.value,
+            value: foodFruitAndVegetablesNutrientsExchange,
+          }
+        }),
+      }
+      return acc
+    },
+    {} as Record<string, Omit<MealCardProps, 'colors'>>,
+  )
 })
 
 const tabs = ref<PieAndTimelineTabs>([
@@ -190,36 +228,6 @@ const calculateMealFruitAndVegetableIntake = (
     2,
   ).value
 
-  mealCards[meal.name] = {
-    name: 'Fruit and vegetable intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: meal.foods.map(food => {
-      const foodFruitNutrientsExchange = calculateFoodNutrientsExchange(
-        food as RecallMealFood,
-        module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
-      )
-      const foodVegetablesNutrientsExchange = calculateFoodNutrientsExchange(
-        food as RecallMealFood,
-        module.value?.nutrientTypes[1]?.id.toString() ?? NUTRIENTS_VEGETABLE_ID,
-      )
-      const foodFruitAndVegetablesNutrientsExchange = usePrecision(
-        foodFruitNutrientsExchange + foodVegetablesNutrientsExchange,
-        2,
-      ).value
-
-      return {
-        name: food['englishName'],
-        servingWeight: food['portionSizes']?.find(
-          (item: { name: string }) => item.name === 'servingWeight',
-        )?.value,
-        value: foodFruitAndVegetablesNutrientsExchange,
-      }
-    }),
-  }
-
   return mealFruitAndVegetableExchange
 }
 
@@ -231,10 +239,6 @@ watch(
     const combinedMeals = recallStore.recallsGroupedByMeals
     colorPalette.value = recallStore.colorPalette
 
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
     totalFruitAndVegetable.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
         return (
@@ -245,66 +249,5 @@ watch(
     )
   },
   { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalFruitAndVegetable.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealFruitAndVegetableIntake(meal)
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-
-watch(
-  () => module.value,
-  newModule => {
-    if (!newModule) return
-
-    tabs.value = [
-      {
-        name: 'Pie chart',
-        value: 0,
-        component: markRaw(PieChartSection),
-        props: {
-          name: 'Fruit and vegetable intake',
-          meals: mealCards,
-          colors: colorPalette.value,
-          recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-          unitOfMeasure: newModule.nutrientTypes[0],
-          showCutlery: themeConfig.value.showCutlery,
-        },
-        icon: 'mdi-chart-pie',
-      },
-      {
-        name: 'Timeline',
-        value: 1,
-        component: markRaw(TimelineSection),
-        props: {
-          name: 'Fruit and vegetable intake',
-          meals: mealCards,
-          recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-          colors: colorPalette.value,
-          unitOfMeasure:
-            combinedUnitOfMeasure.value ?? newModule.nutrientTypes[0],
-        },
-        icon: 'mdi-calendar-blank-outline',
-      },
-    ]
-  },
 )
 </script>

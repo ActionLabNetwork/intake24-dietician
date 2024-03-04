@@ -100,8 +100,6 @@ const activeTab = ref(0)
 const totalFruit = ref(0)
 const colorPalette = ref<string[]>([])
 
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
-
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo
@@ -113,6 +111,27 @@ const module = computed(() => {
   )
 })
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const mealCards = computed(() => {
+  return recallStore.recallsGroupedByMeals.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        name: 'Fruit intake',
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        unitOfMeasure: module.value?.nutrientTypes[0],
+        foods: extractDuplicateFoods(
+          meal.foods,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+          1,
+          recallStore.recallsGroupedByMeals.recallsCount,
+        ),
+      }
+      return acc
+    },
+    {} as Record<string, Omit<MealCardProps, 'colors'>>,
+  )
+})
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
@@ -131,20 +150,6 @@ const calculateMealFruitIntake = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  mealCards[meal.name] = {
-    name: 'Fruit intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: extractDuplicateFoods(
-      meal.foods,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
-      1,
-      recallsCount,
-    ),
-  }
-
   return mealFruitExchange
 }
 
@@ -156,39 +161,12 @@ watch(
     const combinedMeals = recallStore.recallsGroupedByMeals
     colorPalette.value = recallStore.colorPalette
 
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
     totalFruit.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
         return (
           totalEnergy +
           calculateMealFruitIntake(meal, combinedMeals.recallsCount)
         )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalFruit.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealFruitIntake(meal)
       }, 0),
     )
   },

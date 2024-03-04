@@ -11,7 +11,7 @@ import { Theme } from '@intake24-dietician/common/types/theme'
 
 type Props = {
   colorPalette: Ref<string[]>
-  mealCards: Record<string, Omit<MealCardProps, 'colors'>>
+  mealCards: ComputedRef<Record<string, Omit<MealCardProps, 'colors'>>>
   module: ComputedRef<SurveyDto['feedbackModules'][number] | undefined>
   theme: ComputedRef<Theme | undefined>
   nutrientValuesByRecall?: ComputedRef<
@@ -73,7 +73,6 @@ export function useTabbedModule({
     () => module.value,
     newModule => {
       if (!newModule) return
-
       tabs.value = [
         {
           name: 'Pie chart',
@@ -81,7 +80,7 @@ export function useTabbedModule({
           component: markRaw(PieChartSection),
           props: {
             name: module.value?.name || 'Fibre intake',
-            meals: mealCards,
+            meals: mealCards.value,
             colors: colorPalette.value,
             recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
             unitOfMeasure: module.value?.nutrientTypes[0],
@@ -95,7 +94,7 @@ export function useTabbedModule({
           component: markRaw(TimelineSection),
           props: {
             name: module.value?.name || 'Fibre intake',
-            meals: mealCards,
+            meals: mealCards.value,
             recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
             colors: colorPalette.value,
             unitOfMeasure: module.value?.nutrientTypes[0],

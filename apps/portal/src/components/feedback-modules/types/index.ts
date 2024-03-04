@@ -63,7 +63,7 @@ export type PieAndTimelineTabs = {
   component: Raw<Component>
   props: {
     name: ModuleName
-    meals: Record<string, Omit<MealCardProps, 'colors'>>
+    meals: ComputedRef<Record<string, Omit<MealCardProps, 'colors'>>>
     recallsCount: number
     colors: Ref<string[]>
     unitOfMeasure:

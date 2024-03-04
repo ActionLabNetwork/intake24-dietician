@@ -1,4 +1,4 @@
-import { ComputedRef, reactive, ref, watch } from 'vue'
+import { ComputedRef, computed, reactive, ref, watch } from 'vue'
 import { useRecallStore } from '../stores/recall'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { MealCardProps } from '../components/feedback-modules/types'
@@ -20,7 +20,28 @@ export default function useFeedbackModule(
       value: number
     }[]
   >([])
-  const mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+  const mealCards = computed(() => {
+    return recallStore.recallsGroupedByMeals.meals.reduce(
+      (acc, meal) => {
+        acc[meal.name] = {
+          name: module.value?.name ?? 'Unknown',
+          label: meal.name,
+          hours: meal.hours,
+          minutes: meal.minutes,
+          unitOfMeasure: module.value?.nutrientTypes[0],
+          foods: extractDuplicateFoods(
+            meal.foods,
+            module.value?.nutrientTypes[0]?.id.toString() ??
+              fallbackModuleNutrientTypeId,
+            1,
+            recallStore.recallsGroupedByMeals.recallsCount,
+          ),
+        }
+        return acc
+      },
+      {} as Record<string, Omit<MealCardProps, 'colors'>>,
+    )
+  })
 
   const calculateMealNutrientTypeExchange = (
     meal: RecallMeal,
@@ -36,21 +57,6 @@ export default function useFeedbackModule(
       2,
     ).value
 
-    mealCards[meal.name] = {
-      name: module.value?.name ?? 'Unknown',
-      label: meal.name,
-      hours: meal.hours,
-      minutes: meal.minutes,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-      foods: extractDuplicateFoods(
-        meal.foods,
-        module.value?.nutrientTypes[0]?.id.toString() ??
-          fallbackModuleNutrientTypeId,
-        1,
-        recallsCount,
-      ),
-    }
-
     return mealNutrientsExchange
   }
 
@@ -60,9 +66,6 @@ export default function useFeedbackModule(
       if (!data) return
 
       const combinedMeals = recallStore.recallsGroupedByMeals
-      Object.keys(mealCards).forEach(key => {
-        delete mealCards[key]
-      })
 
       totalNutrients.value = Math.floor(
         combinedMeals.meals.reduce((totalEnergy, meal) => {

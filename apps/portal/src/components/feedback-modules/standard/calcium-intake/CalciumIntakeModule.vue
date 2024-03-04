@@ -56,22 +56,15 @@ import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_CALCIUM_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { usePrecision } from '@vueuse/math'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
@@ -100,8 +93,6 @@ const activeTab = ref(0)
 const totalCalcium = ref(0)
 const colorPalette = ref<string[]>([])
 
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
-
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo
@@ -113,6 +104,27 @@ const module = computed(() => {
   )
 })
 const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const mealCards = computed(() => {
+  return recallStore.recallsGroupedByMeals.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        name: 'Calcium intake',
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        unitOfMeasure: module.value?.nutrientTypes[0],
+        foods: extractDuplicateFoods(
+          meal.foods,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CALCIUM_ID,
+          1,
+          recallStore.recallsGroupedByMeals.recallsCount,
+        ),
+      }
+      return acc
+    },
+    {} as Record<string, Omit<MealCardProps, 'colors'>>,
+  )
+})
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
@@ -131,20 +143,6 @@ const calculateMealCalciumIntake = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  mealCards[meal.name] = {
-    name: 'Calcium intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0],
-    foods: extractDuplicateFoods(
-      meal.foods,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CALCIUM_ID,
-      1,
-      recallsCount,
-    ),
-  }
-
   return mealCalciumExchange
 }
 
@@ -155,10 +153,6 @@ watch(
 
     const combinedMeals = recallStore.recallsGroupedByMeals
     colorPalette.value = recallStore.colorPalette
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
 
     totalCalcium.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
