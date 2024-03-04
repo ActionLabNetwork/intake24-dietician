@@ -34,7 +34,7 @@
   </div>
   <div v-else>
     <v-card
-      class="pa-4 d-flex align-center"
+      class="preview-feedback-card pa-4 d-flex align-center"
       flat
       :style="{ 'background-color': bgColor, color: textColor }"
     >
@@ -114,5 +114,11 @@ watch(
 .btn {
   background-color: #fde4a5;
   border-radius: 2rem;
+}
+
+.preview-feedback-card {
+  border-radius: 4px;
+  border: 0.5px solid rgba(0, 0, 0, 0.25);
+  background: rgba(241, 241, 241, 0.5);
 }
 </style>

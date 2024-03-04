@@ -120,7 +120,7 @@ watch(
 .wrapper {
   border-radius: 4px;
   border: 1px solid #e4e4e4;
-  background: rgba(241, 241, 241, 0.2);
+  background: #f1f1f1;
 }
 
 .meal-text {
