@@ -115,7 +115,6 @@ const persistModulesOrder = () => {
   const moduleNames = items.value.map(i => i.title)
   const moduleNamesSerialized = JSON.stringify(moduleNames)
   modulesOrdering.value = moduleNamesSerialized
-  console.log({ moduleNamesSerialized })
 }
 
 const initWithDefaultValues = () => {

@@ -1,6 +1,6 @@
 <template>
   <v-row class="wrapper">
-    <v-col cols="12" lg="6" class="d-flex align-center justify-center">
+    <v-col cols="12" lg="6" align-self="center">
       <div v-if="showCutlery">
         <PieChartCutlery>
           <PieChart
@@ -10,7 +10,7 @@
           />
         </PieChartCutlery>
       </div>
-      <div v-else>
+      <div v-else align-self="center">
         <PieChart
           :name="name"
           :data="data"

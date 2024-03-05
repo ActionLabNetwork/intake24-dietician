@@ -64,7 +64,6 @@ export const useRecallStore = defineStore('recalls', () => {
     const startDate = selectedRecallDateRange.value[0]
     const endDate = selectedRecallDateRange.value[1]
 
-    console.log({ startDate, endDate })
     if (!startDate || !endDate) return false
     if (moment(startDate).isSame(endDate, 'day')) return false
     return true

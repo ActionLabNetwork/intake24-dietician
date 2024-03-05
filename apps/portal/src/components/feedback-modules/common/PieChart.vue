@@ -1,5 +1,5 @@
 <template>
-  <div class="h-100">
+  <div>
     <v-chart class="chart" :option="option" autoresize />
   </div>
 </template>

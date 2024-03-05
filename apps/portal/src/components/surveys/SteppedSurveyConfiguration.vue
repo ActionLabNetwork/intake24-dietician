@@ -89,6 +89,7 @@
                                 dialogTitle = field.information?.title ?? ''
                                 dialogDescription =
                                   field.information?.description ?? ''
+                                dialogImgSrc = field.information?.imgSrc ?? ''
                                 onDialogConfirm = undefined
                                 dialogCancelText = 'Close'
                               }
@@ -209,6 +210,7 @@
     >
       <template #title>{{ dialogTitle }}</template>
       {{ dialogDescription }}
+      <v-img v-if="dialogImgSrc" :src="dialogImgSrc" />
     </BaseDialog>
   </div>
 </template>
@@ -279,6 +281,7 @@ type Field = {
   information?: {
     title: string
     description: string
+    imgSrc?: string
   }
   quickAction?: {
     prepend?: {
@@ -318,6 +321,7 @@ const isDialogActive = ref(false)
 const onDialogConfirm = ref<() => Promise<void>>()
 const dialogTitle = ref('')
 const dialogDescription = ref('')
+const dialogImgSrc = ref('')
 const dialogCancelText = ref('Cancel')
 
 const handleFeedbackModulesUpdate = (value: SurveyCreateDto | undefined) => {
@@ -375,6 +379,7 @@ const onDialogCancel = () => {
   onDialogConfirm.value = undefined
 }
 
+const clinicUrl = ref('')
 // TODO: Replace this when the i18n is setup
 const steps = ref<Step[]>([
   {
@@ -434,7 +439,9 @@ const steps = ref<Step[]>([
             placeHolder: '123456',
             information: {
               title: 'Integration code',
-              description: 'Integration code information.',
+              description:
+                'Please find the following field on the Intake24 admin page (Surveys tab) and paste the code.',
+              imgSrc: '/clinic-setup/help-integration-code.png',
             },
             quickAction: {
               prepend: undefined,
@@ -457,8 +464,12 @@ const steps = ref<Step[]>([
           },
           {
             key: 'intake24Host',
-            render: values =>
-              env.VITE_AUTH_API_HOST + '/recall/' + values['alias'],
+            render: values => {
+              const _clinicUrl =
+                env.VITE_AUTH_API_HOST + '/recall/' + values['alias']
+              clinicUrl.value = _clinicUrl
+              return _clinicUrl
+            },
             required: true,
             type: 'input',
             inputType: 'text',
@@ -468,14 +479,16 @@ const steps = ref<Step[]>([
             description: undefined,
             information: {
               title: 'Clinic url',
-              description: 'Clinic url information.',
+              description:
+                'Please find the following field on the Intake24 admin page (Surveys tab) and paste the code.',
+              imgSrc: '/clinic-setup/help-clinic-url.png',
             },
             quickAction: {
               prepend: undefined,
               append: {
                 label: 'Copy',
-                action: str => {
-                  copyToClipboard(str)
+                action: () => {
+                  copyToClipboard(clinicUrl.value)
                   $toast.info('Copied to clipboard')
                 },
               },

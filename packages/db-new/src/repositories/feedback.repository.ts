@@ -44,7 +44,6 @@ export class FeedbackRepository {
     const feedbackShare = await this.drizzle.query.feedbackShares.findFirst({
       where: eq(feedbackShares.id, shareId),
     })
-    console.log({ feedbackShare })
 
     return feedbackShare
   }
