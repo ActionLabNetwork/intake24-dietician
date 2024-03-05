@@ -95,8 +95,6 @@ export default function useRecall(
       if (matchingRecallDates) {
         recallIds.value = matchingRecallDates.map(recall => recall.id)
         await recallsQuery.refetch()
-        console.log({ recalls: recallsQuery.data.value })
-        console.log({ newDateRange, recallIds })
       }
     },
     { immediate: true },

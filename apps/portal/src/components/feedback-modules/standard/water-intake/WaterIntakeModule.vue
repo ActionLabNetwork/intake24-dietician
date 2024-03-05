@@ -201,7 +201,7 @@ const requiredWaterAmount = computed(() => {
 const summaryText = computed(() => {
   const totalOrAverage = isDateRange ? 'average' : 'total'
   return `Your ${totalOrAverage} water intake for
-          ${selectedRecallDateRangePretty} is
+          ${selectedRecallDateRangePretty.value} is
           ${totalWaterIntake.value}ml`
 })
 const adviceText = computed(() => {
