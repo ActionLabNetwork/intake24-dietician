@@ -369,6 +369,7 @@ const onBackButtonClick = () => {
   dialogTitle.value = 'Changes in clinic setup'
   dialogDescription.value =
     'Are you sure you want to go back? Changes made to this clinic setup will not be updated.'
+  dialogImgSrc.value = ''
   onDialogConfirm.value = handleBackConfirm
 }
 
@@ -376,6 +377,7 @@ const onDialogCancel = () => {
   isDialogActive.value = false
   dialogTitle.value = ''
   dialogDescription.value = ''
+  dialogImgSrc.value = ''
   onDialogConfirm.value = undefined
 }
 
@@ -626,6 +628,7 @@ const steps = ref<Step[]>([
         dialogTitle.value = 'New clinic creation'
         dialogDescription.value =
           'Are you sure you want to create a new clinic?'
+        dialogImgSrc.value = ''
       },
     },
   },
