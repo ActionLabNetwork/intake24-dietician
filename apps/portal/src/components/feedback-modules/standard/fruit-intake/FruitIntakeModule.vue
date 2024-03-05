@@ -30,10 +30,9 @@
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your <span v-if="recallStore.isDateRange">average</span
+        Your <span v-if="isDateRange">average</span
         ><span v-else>total</span> fruit intake for
-        {{ recallStore.selectedRecallDateRangePretty }} is:
-        {{ totalFruit.toLocaleString()
+        {{ selectedRecallDateRangePretty }} is: {{ totalFruit.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
@@ -75,8 +74,9 @@ import type { MealCardProps } from '@intake24-dietician/portal/components/feedba
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -92,11 +92,26 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Fruit intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
 const totalFruit = ref(0)
-const colorPalette = ref<string[]>([])
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -108,9 +123,8 @@ const module = computed(() => {
     module => module.name === 'Fruit intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const mealCards = computed(() => {
-  return recallStore.recallsGroupedByMeals.meals.reduce(
+  return recallsGroupedByMeals.value.meals.reduce(
     (acc, meal) => {
       acc[meal.name] = {
         name: 'Fruit intake',
@@ -122,7 +136,7 @@ const mealCards = computed(() => {
           meal.foods,
           module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
           1,
-          recallStore.recallsGroupedByMeals.recallsCount,
+          recallsGroupedByMeals.value.recallsCount,
         ),
       }
       return acc
@@ -152,12 +166,11 @@ const calculateMealFruitIntake = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data,
   data => {
     if (!data) return
 
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
+    const combinedMeals = recallsGroupedByMeals.value
 
     totalFruit.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {

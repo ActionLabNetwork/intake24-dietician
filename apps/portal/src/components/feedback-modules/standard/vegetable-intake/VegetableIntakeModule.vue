@@ -30,9 +30,9 @@
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your <span v-if="recallStore.isDateRange">average</span
+        Your <span v-if="isDateRange">average</span
         ><span v-else>total</span> vegetable intake for
-        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ selectedRecallDateRangePretty }} is:
         {{ totalVegetable.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       </TotalNutrientsDisplay>
@@ -71,8 +71,9 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -90,8 +91,24 @@ const { themeConfig } = useThemeSelector('Vegetable intake')
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
+
 const activeTab = ref(0)
-const colorPalette = computed(() => recallStore.colorPalette)
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -103,13 +120,17 @@ const module = computed(() => {
     module => module.name === 'Vegetable intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 
 const {
   mealCards,
   totalNutrients: totalVegetable,
   totalNutrientsByRecall: totalVegetableByRecall,
-} = useFeedbackModule(module, NUTRIENTS_VEGETABLE_ID)
+} = useFeedbackModule(
+  recallsQuery.data,
+  recallsGroupedByMeals,
+  module,
+  NUTRIENTS_VEGETABLE_ID,
+)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,

@@ -142,6 +142,7 @@ import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -159,18 +160,26 @@ const route = useRoute()
 const patientStore = usePatientStore()
 const { themeConfig } = useThemeSelector('Water intake')
 
+const patientId = computed(() => route.params['patientId'] as string)
+
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
-const isError = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallsQuery.isError,
+const theme = computed(() => {
+  return surveyQuery.data.value?.surveyPreference.theme ?? 'Classic'
+})
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
 )
-const isPending = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallsQuery.isPending,
-)
+const isError = computed(() => recallsQuery.isError.value)
+const isPending = computed(() => recallsQuery.isPending.value)
 
 const totalWaterIntake = ref(0)
 
@@ -178,7 +187,7 @@ const actualToRecommendedProportion = computed(() => {
   return (
     Math.ceil(
       (totalWaterIntake.value / requiredWaterAmount.value) * mlToGlass.value,
-    ) / recallStore.recallsGroupedByMeals.recallsCount
+    ) / recallsGroupedByMeals.value.recallsCount
   )
 })
 const requiredWaterAmount = computed(() => {
@@ -190,9 +199,9 @@ const requiredWaterAmount = computed(() => {
   return (patientWeight ?? 0) * WATER_ML_PER_KG
 })
 const summaryText = computed(() => {
-  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+  const totalOrAverage = isDateRange ? 'average' : 'total'
   return `Your ${totalOrAverage} water intake for
-          ${recallStore.selectedRecallDateRangePretty} is
+          ${selectedRecallDateRangePretty} is
           ${totalWaterIntake.value}ml`
 })
 const adviceText = computed(() => {
@@ -217,7 +226,6 @@ const logo = computed(() =>
     ? themeConfig.value.logo
     : { path: themeConfig.value.logo },
 )
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const textStyle = computed(() => ({
   '--text-color': getColor(totalWaterIntake.value, DAILY_WATER_AMOUNT),
 }))
@@ -245,10 +253,9 @@ const calculateMealWaterContent = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
-  data => {
-    if (!data) return
-    const combinedMeals = recallStore.recallsGroupedByMeals
+  () => recallsGroupedByMeals.value,
+  newRecallsGroupedByMeals => {
+    const combinedMeals = newRecallsGroupedByMeals
 
     totalWaterIntake.value = combinedMeals.meals.reduce((totalWater, meal) => {
       return (

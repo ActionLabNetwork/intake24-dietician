@@ -34,10 +34,9 @@
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your <span v-if="recallStore.isDateRange"> average </span
+        Your <span v-if="isDateRange"> average </span
         ><span v-else> total </span> fibre intake for
-        {{ recallStore.selectedRecallDateRangePretty }} is:
-        {{ totalFibre.toLocaleString()
+        {{ selectedRecallDateRangePretty }} is: {{ totalFibre.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
@@ -67,7 +66,6 @@ import BaseTabContentComponent from '@intake24-dietician/portal/components/commo
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { NUTRIENTS_DIETARY_FIBRE_ID } from '@intake24-dietician/portal/constants/recall'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { computed, ref } from 'vue'
@@ -76,8 +74,9 @@ import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -93,22 +92,41 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Fibre intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
-const colorPalette = computed(() => recallStore.colorPalette)
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Fibre intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 
 const {
   mealCards,
   totalNutrients: totalFibre,
   totalNutrientsByRecall: totalFibreByRecall,
-} = useFeedbackModule(module, NUTRIENTS_DIETARY_FIBRE_ID)
+} = useFeedbackModule(
+  recallsQuery.data,
+  recallsGroupedByMeals,
+  module,
+  NUTRIENTS_DIETARY_FIBRE_ID,
+)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,

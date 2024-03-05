@@ -79,7 +79,6 @@ import {
   NUTRIENTS_FREE_SUGARS_ID,
 } from '@intake24-dietician/portal/constants/recall'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import '@vuepic/vue-datepicker/dist/main.css'
@@ -89,8 +88,9 @@ import { useRoute } from 'vue-router'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -106,11 +106,26 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Sugar intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
 const totalEnergy = ref(0)
-const colorPalette = ref<string[]>([])
 
 const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
@@ -122,10 +137,9 @@ const energyModule = computed(() => {
     module => module.name === 'Energy intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const totalNutrientsDisplayText = computed(() => {
-  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
-  return `Your ${totalOrAverage} sugar intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
+  const totalOrAverage = isDateRange.value ? 'average' : 'total'
+  return `Your ${totalOrAverage} sugar intake for ${selectedRecallDateRangePretty.value} is ${usePrecision(dailySugarPercentage, 2).value}%`
 })
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -137,7 +151,12 @@ const {
   mealCards,
   totalNutrients: totalSugar,
   totalNutrientsByRecall: totalSugarByRecall,
-} = useFeedbackModule(module, NUTRIENTS_FREE_SUGARS_ID)
+} = useFeedbackModule(
+  recallsQuery.data,
+  recallsGroupedByMeals,
+  module,
+  NUTRIENTS_FREE_SUGARS_ID,
+)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
@@ -164,12 +183,11 @@ const calculateMealEnergyExchange = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data,
   data => {
     if (!data) return
 
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
+    const combinedMeals = recallsGroupedByMeals.value
 
     totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
       return (

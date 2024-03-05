@@ -85,8 +85,9 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -102,11 +103,26 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Saturated fat intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
 const totalEnergy = ref(0)
-const colorPalette = ref<string[]>([])
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -123,20 +139,24 @@ const energyModule = computed(() => {
     module => module.name === 'Energy intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const dailySugarPercentage = computed(() => {
   return ((totalSaturatedFat.value * 9) / totalEnergy.value) * 100
 })
 const totalNutrientsDisplayText = computed(() => {
-  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
-  return `Your ${totalOrAverage} saturated fat intake for ${recallStore.selectedRecallDateRangePretty} is ${usePrecision(dailySugarPercentage, 2).value}%`
+  const totalOrAverage = isDateRange.value ? 'average' : 'total'
+  return `Your ${totalOrAverage} saturated fat intake for ${selectedRecallDateRangePretty.value} is ${usePrecision(dailySugarPercentage, 2).value}%`
 })
 
 const {
   mealCards,
   totalNutrients: totalSaturatedFat,
   totalNutrientsByRecall: totalSaturatedFatByRecall,
-} = useFeedbackModule(module, NUTRIENTS_SATURATED_FAT_ID)
+} = useFeedbackModule(
+  recallsQuery.data,
+  recallsGroupedByMeals,
+  module,
+  NUTRIENTS_SATURATED_FAT_ID,
+)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,
@@ -159,12 +179,11 @@ const calculateMealEnergyExchange = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data,
   data => {
     if (!data) return
 
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
+    const combinedMeals = recallsGroupedByMeals.value
 
     totalEnergy.value = combinedMeals.meals.reduce((totalEnergy, meal) => {
       return (
