@@ -13,6 +13,18 @@ export default function useRecall(
   dateRange: ComputedRef<[string | undefined, string | undefined] | []>,
   theme: ComputedRef<Theme>,
 ) {
+  const enhancedDateRange = computed(() => {
+    const [startDate, endDate] = dateRange.value
+    if (startDate && !endDate) {
+      return [startDate, startDate]
+    }
+
+    if (!startDate && endDate) {
+      return [endDate, endDate]
+    }
+
+    return [startDate, endDate]
+  })
   const recallIds = ref<number[]>([])
   const recallsGroupedByMeals = ref<{
     recallsCount: number
@@ -37,8 +49,8 @@ export default function useRecall(
   })
 
   const selectedRecallDateRangePretty = computed(() => {
-    if (!dateRange.value) return ''
-    const [startDate, endDate] = dateRange.value
+    if (!enhancedDateRange.value) return ''
+    const [startDate, endDate] = enhancedDateRange.value
 
     if (startDate && !endDate) {
       return moment(startDate).format('DD/MM/YYYY')
@@ -68,7 +80,7 @@ export default function useRecall(
   })
 
   watch(
-    dateRange,
+    enhancedDateRange,
     async newDateRange => {
       if (newDateRange.length === 0) return
       const [startDate, endDate] = newDateRange
