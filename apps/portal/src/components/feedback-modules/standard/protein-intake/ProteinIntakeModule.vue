@@ -1,7 +1,11 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
-    <ModuleTitle :logo="logo" title="Protein intake" />
+    <ModuleTitle
+      :logo="logo"
+      title="Protein intake"
+      :style="{ color: titleTextColor }"
+    />
     <div>
       <BaseProgressCircular v-if="isPending" />
       <div v-if="isError" class="mt-10">
@@ -143,6 +147,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -291,6 +296,6 @@ watch(
 }
 
 .card-container {
-  padding: 5rem 10rem;
+  padding: 5rem 5rem;
 }
 </style>

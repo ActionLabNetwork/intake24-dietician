@@ -1,7 +1,11 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
   <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
-    <ModuleTitle :logo="logo" title="Calorie intake" />
+    <ModuleTitle
+      :logo="logo"
+      title="Calorie intake"
+      :style="{ color: titleTextColor }"
+    />
     <TotalNutrientsDisplay>
       Your <span v-if="recallStore.isDateRange">average</span
       ><span v-else>total</span> calorie intake for
@@ -76,6 +80,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 
 const emit = defineEmits<{
@@ -183,6 +188,6 @@ watch(
 }
 
 .card-container {
-  padding: 5rem 10rem;
+  padding: 5rem 5rem;
 }
 </style>

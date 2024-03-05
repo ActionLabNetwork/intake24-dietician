@@ -2,7 +2,11 @@
 <template>
   <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <div class="d-flex justify-space-between align-center">
-      <ModuleTitle :logo="logo" title="Calcium intake" />
+      <ModuleTitle
+        :logo="logo"
+        title="Calcium intake"
+        :style="{ color: titleTextColor }"
+      />
       <BaseTabComponent
         v-model="activeTab"
         :tabs="tabs"
@@ -74,6 +78,7 @@ withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -118,6 +123,6 @@ const { tabs, tabBackground } = useTabbedModule({
 
 <style scoped lang="scss">
 .card-container {
-  padding: 5rem 10rem;
+  padding: 5rem 5rem;
 }
 </style>

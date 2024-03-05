@@ -2,7 +2,11 @@
 <template>
   <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <div class="d-flex justify-space-between align-center">
-      <ModuleTitle :logo="logo" title="Fruit and vegetable intake" />
+      <ModuleTitle
+        :logo="logo"
+        title="Fruit and vegetable intake"
+        :style="{ color: titleTextColor }"
+      />
       <BaseTabComponent
         v-model="activeTab"
         :tabs="tabs"
@@ -85,12 +89,13 @@ import type {
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -278,6 +283,6 @@ watch(
 
 <style scoped lang="scss">
 .card-container {
-  padding: 5rem 10rem;
+  padding: 5rem 5rem;
 }
 </style>

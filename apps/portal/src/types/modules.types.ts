@@ -11,6 +11,7 @@ export interface FeedbackModulesProps {
   mainBgColor?: string
   feedbackBgColor?: string
   feedbackTextColor?: string
+  titleTextColor?: string
   useSampleRecall?: boolean
 }
 

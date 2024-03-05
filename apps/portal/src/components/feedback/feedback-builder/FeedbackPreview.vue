@@ -31,6 +31,7 @@
             />
             <component
               :is="module.component"
+              v-if="theme"
               :feedback="module.feedback"
               :recalls-dates-data="recallDates"
               :recall-date="recallDaterange"
@@ -39,29 +40,32 @@
               :style="{
                 'background-color':
                   index % 2 !== 0
-                    ? theme === 'Classic'
-                      ? '#F1F1F1'
-                      : FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
-                          .mainBackground
+                    ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key][
+                        theme
+                      ].mainBackground
                     : '#ffffff',
               }"
               :main-bg-color="
-                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
+                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key][theme]
                   .mainBackground
               "
               :feedback-bg-color="
-                theme === 'Classic'
-                  ? '#555'
-                  : index % 2 !== 0
-                    ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
-                        .feedback.background
-                    : '#f1f1f1'
+                index % 2 === 0
+                  ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key][
+                      theme
+                    ].feedback.background
+                  : '#ffffff'
               "
               :feedback-text-color="
-                theme === 'Classic'
-                  ? '#000'
-                  : FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key]
-                      .feedback.color
+                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key][theme]
+                  .feedback.color
+              "
+              :title-text-color="
+                index % 2 !== 0
+                  ? FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[module.key][
+                      theme
+                    ].titleTextColor
+                  : '#000'
               "
             />
           </div>

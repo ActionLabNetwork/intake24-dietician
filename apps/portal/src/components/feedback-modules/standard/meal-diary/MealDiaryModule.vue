@@ -7,6 +7,7 @@
       :logo="logo"
       title="Meal diary"
       show-metrics
+      :style="{ color: titleTextColor }"
     />
     <MealDiaryTimeline
       :meal-cards="mealCards"
@@ -72,6 +73,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
@@ -364,6 +366,6 @@ watch(
 }
 
 .card-container {
-  padding: 5rem 10rem;
+  padding: 5rem 5rem;
 }
 </style>

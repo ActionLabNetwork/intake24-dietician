@@ -11,34 +11,6 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div v-if="false" class="ma-4">
-          <component
-            :is="moduleNameToModuleComponentMapping[selectedModule].component"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
-            "
-            mode="preview"
-            use-sample-recall
-            flat
-            :style="{
-              'background-color':
-                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                  .mainBackground,
-            }"
-            :main-bg-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .mainBackground
-            "
-            :feedback-bg-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .feedback.background
-            "
-            :feedback-text-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .feedback.color
-            "
-          />
-        </div>
         <div>
           <v-img
             width="1920"
@@ -77,7 +49,6 @@ import VegetableIntakeModule from '@intake24-dietician/portal/components/feedbac
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
 import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
-import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
   ModuleName,

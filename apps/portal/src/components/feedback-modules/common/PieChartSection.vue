@@ -1,6 +1,6 @@
 <template>
-  <v-row>
-    <v-col cols="12" lg="6">
+  <v-row class="wrapper">
+    <v-col cols="12" lg="6" class="d-flex align-center justify-center">
       <div v-if="showCutlery">
         <PieChartCutlery>
           <PieChart
@@ -79,3 +79,11 @@ const getColours = (base: string) => {
   }
 }
 </script>
+
+<style scoped lang="scss">
+.wrapper {
+  border-radius: 8px;
+  background: #fff;
+  padding: 2rem;
+}
+</style>
