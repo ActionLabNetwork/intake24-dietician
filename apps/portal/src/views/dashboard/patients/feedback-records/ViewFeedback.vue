@@ -21,7 +21,9 @@
           <v-col cols="9">
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
+              v-if="daterange"
               :feedback="moduleFeedback"
+              recall-date-range="123"
               @update:feedback="handleFeedbackUpdate"
             />
           </v-col>
@@ -38,7 +40,12 @@
     <FeedbackPreview
       v-if="selectedModules && selectedModules.recallDates"
       :recall-dates="selectedModules?.recallDates"
-      :recall-daterange="selectedModules?.recallDaterange"
+      :recall-daterange="
+        shareQuery.data.value?.shared?.recallDaterange ?? [
+          new Date(),
+          new Date(),
+        ]
+      "
       :modules="selectedModules?.modules"
       :patient-name="patientStore.fullName"
       :hide-export-to-pdf-button="constrainOutputHeight"
@@ -114,7 +121,6 @@ const daterange = ref<[Date | undefined, Date | undefined]>([
   new Date(),
   new Date(),
 ])
-const component = ref<ModuleName>('Meal diary')
 const previewing = ref<boolean>(true)
 const isDataLoaded = ref<boolean>(false)
 
@@ -280,6 +286,10 @@ const selectedModules = ref<
   | undefined
 >(undefined)
 
+const component = ref<ModuleName>(
+  selectedModules.value?.modules[0]?.key ?? 'Meal diary',
+)
+
 const handleModuleUpdate = (module: ModuleName) => {
   component.value = module
 }
@@ -347,7 +357,7 @@ watch(
   () => recallStore.recallDatesQuery.data,
   data => {
     if (data) {
-      // Default to date saved in draft
+      // Default to date saved in shared
       daterange.value = shareQuery.data.value?.shared?.recallDaterange ?? [
         new Date(),
         new Date(),
@@ -362,6 +372,7 @@ watch(
   data => {
     if (!data?.shared) return
 
+    console.log({ shared: data.shared })
     daterange.value = data.shared.recallDaterange
 
     data.shared.modules.forEach(module => {

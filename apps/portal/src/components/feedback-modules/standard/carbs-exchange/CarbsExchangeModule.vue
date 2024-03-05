@@ -7,10 +7,10 @@
       :style="{ color: titleTextColor }"
     />
     <TotalNutrientsDisplay>
-      Your <span v-if="recallStore.isDateRange">average</span>
+      Your <span v-if="isDateRange">average</span>
       <span v-else>total</span> carb exchanges for
-      {{ recallStore.selectedRecallDateRangePretty }} is:
-      {{ averageCarbs }} carb exchanges
+      {{ selectedRecallDateRangePretty }} is:
+      {{ usePrecision(averageCarbs, 2) }} carb exchanges
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
@@ -66,7 +66,7 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import DetailedCard, {
   type DetailedCardProps,
 } from '@/components/feedback-modules/card-styles/DetailedCard.vue'
-import { ref, watch, reactive, computed } from 'vue'
+import { computed } from 'vue'
 import {
   CARBS_EXCHANGE_MULTIPLIER,
   NUTRIENTS_CARBS_ID,
@@ -78,12 +78,12 @@ import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextA
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -92,6 +92,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackTextColor: '#000',
   titleTextColor: '#000',
   useSampleRecall: false,
+  recallDateRange: undefined,
 })
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
@@ -99,19 +100,27 @@ const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 const route = useRoute()
 const { themeConfig } = useThemeSelector('Carbs exchange')
 
-const recallStore = useRecallStore()
-const surveyQuery = useSurveyById(route.params['surveyId'] as string)
+const patientId = computed(() => route.params['patientId'] as string)
 
-const isError = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallsQuery.isError,
+const surveyQuery = useSurveyById(route.params['surveyId'] as string)
+const theme = computed(() => {
+  return surveyQuery.data.value?.surveyPreference.theme ?? 'Classic'
+})
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
 )
-const isPending = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallsQuery.isPending,
-)
+
+const isError = computed(() => recallsQuery.isError.value)
+const isPending = computed(() => recallsQuery.isPending.value)
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo
@@ -124,20 +133,36 @@ const module = computed(() => {
     module => module.name === 'Carbs exchange',
   )
 })
-const theme = computed(() => {
-  return surveyQuery.data.value?.surveyPreference.theme ?? 'Classic'
-})
 const mascot = computed(() => {
   return theme.value === 'Classic' ? MascotAdult : Mascot
 })
-const totalCarbs = ref(0)
 const averageCarbs = computed(() => {
-  return Object.entries(mealCards).reduce((total, [, meal]) => {
+  return Object.values(mealCards.value).reduce((total, meal) => {
     return total + meal.mean
   }, 0)
 })
-const colorPalette = ref<string[]>([])
-let mealCards = reactive<Record<string, Omit<DetailedCardProps, 'colors'>>>({})
+const mealCards = computed(() => {
+  return recallsGroupedByMeals.value.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        label: meal.name,
+        foods: extractDuplicateFoods(
+          meal.foods,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
+          CARBS_EXCHANGE_MULTIPLIER,
+          recallsGroupedByMeals.value.recallsCount,
+        ),
+        mean:
+          calculateMealCarbsExchange(meal) /
+          recallsGroupedByMeals.value.recallsCount,
+        mascot: mascot.value,
+        theme: theme.value,
+      }
+      return acc
+    },
+    {} as Record<string, Omit<DetailedCardProps, 'colors'>>,
+  )
+})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -160,47 +185,8 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
     2,
   ).value
 
-  mealCards[meal.name] = {
-    label: meal.name,
-    foods: extractDuplicateFoods(
-      meal.foods,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
-      CARBS_EXCHANGE_MULTIPLIER,
-      recallsCount,
-    ),
-    mean: mealCarbsExchange,
-    mascot: mascot.value,
-    theme: theme.value,
-  }
-
   return mealCarbsExchange
 }
-
-// Watchers
-watch(
-  () => recallStore.recallsQuery.data,
-  data => {
-    if (!data) return
-
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
-
-    // Reset meal cards
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalCarbs.value = Math.floor(
-      combinedMeals.meals.reduce((totalCarbs, meal) => {
-        return (
-          totalCarbs +
-          calculateMealCarbsExchange(meal, combinedMeals.recallsCount)
-        )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
 </script>
 <style scoped>
 .grid-container {
@@ -212,6 +198,6 @@ watch(
 }
 
 .card-container {
-  padding: 5rem 5rem;
+  padding: 5rem 4rem;
 }
 </style>

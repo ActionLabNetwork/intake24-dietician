@@ -7,7 +7,6 @@
       :style="{ color: titleTextColor }"
     />
     <div>
-      <BaseProgressCircular v-if="isPending" />
       <div v-if="isError" class="mt-10">
         <v-alert
           type="error"

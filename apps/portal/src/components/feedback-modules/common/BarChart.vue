@@ -1,5 +1,7 @@
 <template>
-  <Bar :data="data" :options="options" style="width: 90%; margin: 0 auto" />
+  <div class="bg-white pa-14">
+    <Bar :data="data" :options="options" style="width: 90%; margin: 0 auto" />
+  </div>
 </template>
 
 <script setup lang="ts">

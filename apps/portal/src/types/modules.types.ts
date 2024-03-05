@@ -13,6 +13,7 @@ export interface FeedbackModulesProps {
   feedbackTextColor?: string
   titleTextColor?: string
   useSampleRecall?: boolean
+  recallDateRange?: [string | undefined, string | undefined]
 }
 
 export type Module = (typeof modules)[number]

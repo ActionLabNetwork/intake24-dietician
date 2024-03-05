@@ -33,8 +33,7 @@
               :is="module.component"
               v-if="theme"
               :feedback="module.feedback"
-              :recalls-dates-data="recallDates"
-              :recall-date="recallDaterange"
+              :recall-date-range="recallDaterange"
               mode="preview"
               flat
               :style="{

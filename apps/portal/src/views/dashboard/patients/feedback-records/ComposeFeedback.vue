@@ -62,6 +62,7 @@
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
               :feedback="moduleFeedback"
+              :recall-date-range="recallStore.selectedRecallDateRange"
               @update:feedback="handleFeedbackUpdate"
             />
           </v-col>

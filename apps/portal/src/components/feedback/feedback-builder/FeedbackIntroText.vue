@@ -22,7 +22,7 @@ defineProps<{
 
 <style scoped lang="scss">
 .text-wrapper {
-  padding: 5rem 10.5rem;
+  padding: 5rem 5.5rem;
 }
 
 @media print {

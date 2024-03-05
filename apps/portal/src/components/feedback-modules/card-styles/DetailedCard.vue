@@ -14,7 +14,7 @@
           background: chroma(colors.backgroundColor).darken().saturate(4).hex(),
         }"
       >
-        {{ mean }}
+        {{ usePrecision(mean, 2) }}
       </div>
     </div>
     <div
@@ -50,6 +50,7 @@ import chroma from 'chroma-js'
 import DetailedCardFoodItem from './DetailedCardFoodItem.vue'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { useProcessRecallFoods } from '@intake24-dietician/portal/composables/useProcessRecallFoods'
+import { usePrecision } from '@vueuse/math'
 
 export interface DetailedCardProps {
   label: string
