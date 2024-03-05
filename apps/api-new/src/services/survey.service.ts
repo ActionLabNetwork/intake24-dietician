@@ -4,12 +4,14 @@ import type {
   SurveyDto,
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { SurveyRepository } from '@intake24-dietician/db-new/repositories/survey.repository'
+import { UserRepository } from '@intake24-dietician/db-new/repositories/user.repository'
 import { inject, singleton } from 'tsyringe'
 
 @singleton()
 export class SurveyService {
   public constructor(
     @inject(SurveyRepository) private surveyRepository: SurveyRepository,
+    @inject(UserRepository) private userRepository: UserRepository,
   ) {}
 
   public async getSurveysOfDietician(dieticianId: number) {
@@ -21,9 +23,13 @@ export class SurveyService {
     if (!survey) {
       throw new NotFoundError('Survey does not exist')
     }
-    if (survey.dieticianId !== dieticianId) {
+    if (
+      !(await this.userRepository.isDieticianSuperuser(dieticianId)) &&
+      survey.dieticianId !== dieticianId
+    ) {
       throw new UnauthorizedError('You are not allowed to access this survey')
     }
+
     return survey
   }
 

@@ -4,7 +4,7 @@ import { useClinicStore } from '../stores/clinic'
 import { Theme } from '@intake24-dietician/common/types/theme'
 import { ModuleName } from '../types/modules.types'
 
-type Logo = Record<ModuleName, Record<Theme, string>>
+type ModuleImageMapping = Record<ModuleName, Record<Theme, string>>
 type ThemeBaseSaturation = Record<Theme, number>
 
 type ThemeConfig = {
@@ -19,7 +19,7 @@ export function useThemeSelector(moduleName: ModuleName) {
     clinicStore.currentClinic?.id.toString() ?? '',
   )
 
-  const logo: Logo = {
+  const logo: ModuleImageMapping = {
     'Meal diary': {
       Classic: '/feedback-modules/meal-diary/MD-LogoAdult.png',
       Fun: 'meal-diary/svg/Logo.vue',

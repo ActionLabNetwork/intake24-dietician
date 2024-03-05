@@ -1,10 +1,10 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle
       :logo="logo"
       title="Protein intake"
-      :class="{ 'text-white': mode === 'preview' }"
+      :style="{ color: titleTextColor }"
     />
     <div>
       <BaseProgressCircular v-if="isPending" />
@@ -119,6 +119,7 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import {
   NUMBER_OF_GLASSES,
   NUTRIENTS_WATER_INTAKE_ID,
+  PROTEIN_KG_PER_KG,
 } from '@intake24-dietician/portal/constants/recall'
 import Mascot from '@/components/feedback-modules/standard/protein-intake/svg/Mascot.vue'
 import MascotAdult from '@/components/feedback-modules/standard/protein-intake/svg/MascotAdult.vue'
@@ -146,6 +147,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -176,7 +178,7 @@ const requiredProteinAmount = computed(() => {
   const patientWeight = patientStore.patientQuery.data?.weightHistory[0]?.weight
   if (!patientWeight) return NaN
 
-  return (patientWeight ?? 0) * 2.8
+  return (patientWeight ?? 0) * PROTEIN_KG_PER_KG
 })
 const summaryText = computed(() => {
   let aboveOrBelow = ''
@@ -186,7 +188,9 @@ const summaryText = computed(() => {
     aboveOrBelow = 'below'
   }
 
-  return `Your total protein intake for
+  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+
+  return `Your ${totalOrAverage} protein intake for
           ${recallStore.selectedRecallDateRangePretty} is
           ${totalProteinIntake.value}${module.value?.nutrientTypes[0]?.unit.symbol} which is ${aboveOrBelow} the daily recommended amount: ${requiredProteinAmount.value}${module.value?.nutrientTypes[0]?.unit.symbol}`
 })
@@ -289,5 +293,9 @@ watch(
 
 .background {
   background-color: rgba(239, 209, 200, 0.25);
+}
+
+.card-container {
+  padding: 5rem 5rem;
 }
 </style>

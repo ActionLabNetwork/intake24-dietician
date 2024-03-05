@@ -11,7 +11,7 @@ export const createContext = ({
 }: trpcExpress.CreateExpressContextOptions) => {
   const accessToken: string | undefined = req.cookies['accessToken']
   return { req, res, accessToken }
-} // no context
+}
 
 type Context = Awaited<ReturnType<typeof createContext>>
 

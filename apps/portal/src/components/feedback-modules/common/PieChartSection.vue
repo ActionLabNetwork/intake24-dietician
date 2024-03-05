@@ -1,6 +1,6 @@
 <template>
-  <v-row>
-    <v-col cols="12" lg="6">
+  <v-row class="wrapper">
+    <v-col cols="12" lg="6" class="d-flex align-center justify-center">
       <div v-if="showCutlery">
         <PieChartCutlery>
           <PieChart
@@ -23,9 +23,9 @@
       <PieChartSectionCard
         v-for="(meal, key, index) in meals"
         :key="key"
-        name="name"
+        :name="name"
         :label="meal.label"
-        :unit-of-measure="unitOfMeasure?.unit"
+        :unit-of-measure="unitOfMeasure"
         :colors="getColours(colors[index]!)"
         :foods="meal.foods"
         :minutes="meal.minutes"
@@ -79,3 +79,11 @@ const getColours = (base: string) => {
   }
 }
 </script>
+
+<style scoped lang="scss">
+.wrapper {
+  border-radius: 8px;
+  background: #fff;
+  padding: 2rem;
+}
+</style>

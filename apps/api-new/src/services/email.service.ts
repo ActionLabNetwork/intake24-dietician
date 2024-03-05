@@ -72,11 +72,30 @@ export class EmailService {
     })
   }
 
+  public sendFeedbackEmail = async (
+    email: string,
+    emailTemplate: { html: string; text: string },
+  ) => {
+    await this.sendEmail({
+      to: email,
+      subject: 'Feedback on your recall(s)',
+      text: emailTemplate.text,
+      html: emailTemplate.html,
+      attachments: [
+        { fileName: 'YourFeedback.pdf', path: 'feedback-outputs/feedback.pdf' },
+      ],
+    })
+  }
+
   private sendEmail = async (args: {
     to: string
     subject: string
     text: string
     html: string
+    attachments?: {
+      fileName: string
+      path: string
+    }[]
   }) => {
     this.logger.info(
       {

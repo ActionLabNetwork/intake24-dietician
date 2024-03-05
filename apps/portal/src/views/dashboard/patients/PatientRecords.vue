@@ -1,6 +1,6 @@
 <template>
   <v-main>
-    <v-container>
+    <v-container fluid class="container-padding">
       <BackButton :to="backButtonDestination">
         Back to patient list
       </BackButton>
@@ -39,3 +39,10 @@ const backButtonDestination = computed(() =>
     : undefined,
 )
 </script>
+
+<style scoped lang="scss">
+.container-padding {
+  padding: 2rem 5rem;
+  height: 100%;
+}
+</style>

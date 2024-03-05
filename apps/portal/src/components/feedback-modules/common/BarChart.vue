@@ -12,6 +12,7 @@ import {
   LinearScale,
   Title,
 } from 'chart.js'
+import { computed } from 'vue'
 import { Bar } from 'vue-chartjs'
 
 const props = defineProps<{
@@ -30,27 +31,34 @@ const props = defineProps<{
         }
       }
     | undefined
+  showLegend: boolean
 }>()
+
+const _showLegend = computed(() => props.showLegend)
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale)
 
-const options = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: { legend: { display: false } },
-  scales: {
-    y: {
-      display: true,
-      title: {
+const options = computed(() => {
+  return {
+    responsive: true,
+    maintainAspectRatio: true,
+    plugins: { legend: { display: _showLegend.value } },
+    scales: {
+      x: { stacked: true },
+      y: {
         display: true,
-        text:
-          props.unitOfMeasure?.description +
-            `(${props.unitOfMeasure?.unit.symbol ?? '()'})` || 'Weight',
-        font: {
-          size: 24,
+        title: {
+          display: true,
+          text:
+            props.unitOfMeasure?.description +
+              `(${props.unitOfMeasure?.unit.symbol ?? '()'})` || 'Weight',
+          font: {
+            size: 24,
+          },
         },
+        stacked: true,
       },
     },
-  },
-}
+  }
+})
 </script>

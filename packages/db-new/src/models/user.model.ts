@@ -38,6 +38,7 @@ export const users = pgTable('user', {
     precision: 6,
     withTimezone: true,
   }),
+  isSuperuser: boolean('is_superuser').default(false).notNull(),
 })
 
 export const userRelations = relations(users, ({ one, many }) => ({

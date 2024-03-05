@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/vue-query'
 import type { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { useClientStore } from '../trpc/trpc'
+import { useRender } from 'vue-email'
+import FeedbackEmailTemplate from '../components/emails/FeedbackEmailTemplate.vue'
 
 export const useSaveDraft = () => {
   const { authenticatedClient } = useClientStore()
@@ -49,12 +51,41 @@ export const useEditDraft = () => {
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
   const mutation = useMutation({
-    mutationFn: (body: {
+    mutationFn: async (body: {
       patientId: number
       draftId: number | undefined
       draft: DraftCreateDto
+      url: string
+      sendAutomatedEmail: boolean
     }) => {
-      return authenticatedClient.dieticianFeedback.shareDraft.mutate(body)
+      const template = await useRender(
+        FeedbackEmailTemplate,
+        {},
+        { pretty: true },
+      )
+      console.log({ template })
+      const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = body
+
+      // TODO: Feature toggle (uncomment once ready to send emails)
+      if (sendAutomatedEmail) {
+        // Send the email
+        await authenticatedClient.dieticianFeedback.sendFeedbackPdfEmail.mutate(
+          {
+            url,
+            patientId: body.patientId,
+            emailTemplateHtml: template.html,
+            emailTemplateText: template.text,
+          },
+        )
+      }
+
+      // Save the shared feedback
+      return await authenticatedClient.dieticianFeedback.shareDraft.mutate(
+        bodyWithoutOtherFields,
+      )
+    },
+    onError: error => {
+      console.log({ error })
     },
   })
 

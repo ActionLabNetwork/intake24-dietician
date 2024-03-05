@@ -4,7 +4,7 @@
       <v-row
         v-for="(fieldConfig, fieldName) in formConfig"
         :key="fieldName"
-        class="mt-5"
+        class="my-10"
       >
         <v-col cols="12" :sm="smColOptions(fieldConfig.column)">
           <div :class="fieldConfig.class">
@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, onMounted, ref, toRefs, watch } from 'vue'
+import { Ref, defineComponent, onMounted, ref, toRefs, watch } from 'vue'
 // import { i18nOptions } from '@intake24-dietician/i18n/index'
 // import { useI18n } from 'vue-i18n'
 import 'vue-toast-notification/dist/theme-sugar.css'
@@ -73,7 +73,6 @@ import {
 } from '@intake24-dietician/common/entities-new/survey.dto'
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
 import { moduleNames } from '@intake24-dietician/common/types/modules'
-import { create } from 'domain'
 // const { t } = useI18n<i18nOptions>()
 
 export type SurveyPreferenceFeedbackModules = SurveyPreferencesDTO & {
@@ -237,9 +236,9 @@ const handleFeedbackModulesUpdate = (feedbackMapping: FeedbackMapping) => {
   }
 }
 
-let formConfig: FormConfig
+let formConfig: Ref<FormConfig | undefined> = ref()
 onMounted(() => {
-  formConfig = {
+  formConfig.value = {
     visualThemeSelection: {
       heading: {
         label: 'Feedback template setup',
@@ -299,12 +298,13 @@ onMounted(() => {
       subheading: {
         label:
           'Select the templates relevant to your practise and customise the default messages as per your preference.  ',
-        class: 'font-weight-medium',
+        class: 'font-weight-medium w-75',
       },
       component: ModuleSelectionAndFeedbackPersonalisation,
       column: 1,
       props: {
         modelValue: feedbackMapping.value,
+        theme: theme,
       },
       onUpdate: handleFeedbackModulesUpdate,
     },

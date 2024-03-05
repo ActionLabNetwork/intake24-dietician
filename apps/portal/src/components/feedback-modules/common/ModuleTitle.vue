@@ -84,11 +84,15 @@ function isLogoPath(
 const logoIsComponent = computed(() => typeof props.logo !== 'string')
 const dynamicLogo = computed<Component | string>(() => {
   const logo = props.logo
+
   if (isLogoPath(logo)) {
-    return defineAsyncComponent(
-      () => import(`@/components/feedback-modules/standard/${logo.path}`),
+    return defineAsyncComponent(() =>
+      import(`@/components/feedback-modules/standard/${logo.path}`).catch(
+        () => {},
+      ),
     )
   }
+
   return props.logo
 })
 const disableCheckbox = computed(() => metrics.value?.length ?? 0 <= 1)

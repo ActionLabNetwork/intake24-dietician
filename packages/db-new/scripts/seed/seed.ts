@@ -68,6 +68,29 @@ async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {
     notifySMS: true,
   } as const
 
+  // Create superuser
+  const [superuser] = await drizzle
+    .insert(users)
+    .values({
+      email: 'superuser@i24.com',
+      password: await argon2.hash('super-secret-password'),
+      role: 'Dietician',
+      isSuperuser: true,
+    })
+    .returning()
+
+  const [superDietician] = await drizzle
+    .insert(dieticians)
+    .values({
+      userId: superuser!.id,
+      firstName: 'Super',
+      lastName: 'User',
+      onboardingFinished: true,
+    })
+    .returning()
+    .execute()
+
+  // Create normal user
   const [user] = await drizzle
     .insert(users)
     .values({
@@ -88,7 +111,7 @@ async function seedUsers(drizzle: ReturnType<typeof initDrizzle>['drizzle']) {
     .returning()
     .execute()
 
-  return { preference, dietician }
+  return { preference, dietician, superDietician }
 }
 
 async function seedSurvey(
@@ -105,7 +128,7 @@ async function seedSurvey(
       countryCode: 'au',
       intake24SurveyId: 'demo',
       intake24Secret: 'super_secret_secret',
-      alias: 'demo_clinic',
+      alias: 'demo_clinic' + Math.random(),
       surveyPreference: preference,
     })
     .returning()
@@ -122,7 +145,7 @@ async function seedPatients(
   const [patientUser] = await drizzle
     .insert(users)
     .values({
-      email: 'p1@test.com',
+      email: 'i24-d-p1@yopmail.com',
       password: await argon2.hash('password'),
       role: 'Dietician',
     })
@@ -338,14 +361,20 @@ async function main() {
   const { sql, drizzle } = initDrizzle()
 
   await cleanupTables(sql)
-  const { preference, dietician } = await seedUsers(drizzle)
+  const { preference, dietician, superDietician } = await seedUsers(drizzle)
   const { survey } = await seedSurvey(drizzle, dietician, preference)
+  const { survey: superSurvey } = await seedSurvey(
+    drizzle,
+    superDietician,
+    preference,
+  )
   const { patient1 } = await seedPatients(drizzle, survey, preference)
   await seedRecallTemplates(drizzle, patient1)
   await seedNutrientUnits(drizzle)
   await seedNutrientTypes(drizzle)
   await seedFeedbackModules(drizzle)
   await seedSurveyToFeedbackModules(drizzle, survey)
+  await seedSurveyToFeedbackModules(drizzle, superSurvey)
   await seedFeedbackModuleToNutrientTypes(drizzle)
 
   database.close()

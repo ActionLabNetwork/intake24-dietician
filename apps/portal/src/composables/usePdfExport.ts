@@ -5,11 +5,11 @@ export function usePdfExport() {
     const opt = {
       margin: 0,
       filename: filename,
-      image: { type: 'jpeg', quality: 0.95 },
+      image: { type: 'jpeg', quality: 0.9 },
       html2canvas: { allowTaint: false },
       jsPDF: {
         unit: 'in',
-        format: 'a3',
+        format: 'a2',
         orientation: 'portrait',
         compress: true,
       },

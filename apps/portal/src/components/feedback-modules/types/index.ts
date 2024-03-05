@@ -1,5 +1,5 @@
 import { ModuleName } from '@intake24-dietician/portal/types/modules.types'
-import type { Component, Raw, Ref } from 'vue'
+import type { Component, ComputedRef, Raw, Ref } from 'vue'
 
 export interface MealCardProps {
   name: string
@@ -13,8 +13,11 @@ export interface MealCardProps {
   }
   unitOfMeasure:
     | {
-        symbol: string | null
         description: string
+        unit: {
+          symbol: string | null
+          description: string
+        }
       }
     | undefined
   foods: {
@@ -49,7 +52,7 @@ export interface MealCardMultipleNutrientsProps {
     name: string
     servingWeight: string
     valueByNutrientType: {
-      [K: string]: { value: number }
+      [K: string]: { value: number; count: number }
     }
   }[]
 }
@@ -60,7 +63,7 @@ export type PieAndTimelineTabs = {
   component: Raw<Component>
   props: {
     name: ModuleName
-    meals: Record<string, Omit<MealCardProps, 'colors'>>
+    meals: ComputedRef<Record<string, Omit<MealCardProps, 'colors'>>>
     recallsCount: number
     colors: Ref<string[]>
     unitOfMeasure:
@@ -70,6 +73,9 @@ export type PieAndTimelineTabs = {
         }
       | undefined
     showCutlery?: boolean
+    nutrientValuesByRecall?: ComputedRef<
+      { recallDate: string; value: number }[]
+    >
   }
   icon: string
 }[]

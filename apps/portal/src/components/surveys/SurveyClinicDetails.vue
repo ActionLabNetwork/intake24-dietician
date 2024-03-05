@@ -1,7 +1,8 @@
 <template>
   <v-container
     v-if="clinic"
-    class="d-flex justify-space-between align-center w-100 pa-0 pr-6"
+    fluid
+    class="d-flex mx-16 justify-space-between align-center w-100 pa-0 pr-6"
   >
     <div class="d-flex align-center">
       <div>

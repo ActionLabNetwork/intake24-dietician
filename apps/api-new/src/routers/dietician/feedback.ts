@@ -7,7 +7,6 @@ import {
   SharedDtoSchema,
 } from '@intake24-dietician/common/entities-new/feedback.dto'
 import { FeedbackService } from '../../services/feedback.service'
-import { PdfService } from '../../services/pdf.service'
 
 @singleton()
 export class DieticianFeedbackRouter {
@@ -205,7 +204,7 @@ export class DieticianFeedbackRouter {
           opts.input.draft,
         )
       }),
-    getPdf: protectedDieticianProcedure
+    sendFeedbackPdfEmail: protectedDieticianProcedure
       .meta({
         openapi: {
           method: 'GET',
@@ -217,19 +216,30 @@ export class DieticianFeedbackRouter {
       })
       .input(
         z.object({
-          clinicId: z.number(),
+          url: z.string().url(),
           patientId: z.number(),
+          emailTemplateHtml: z.string(),
+          emailTemplateText: z.string(),
         }),
       )
-      .output(z.void())
-      .query(async opts => {
-        return await this.pdfService.getPdf()
+      .output(z.unknown())
+      .mutation(async opts => {
+        const dieticianId = opts.ctx.dieticianId
+        const { url, patientId, emailTemplateHtml, emailTemplateText } =
+          opts.input
+        console.log('Sending feedback email to patient')
+        await this.feedbackService.sendFeedbackEmailToPatient(
+          url,
+          patientId,
+          dieticianId,
+          { html: emailTemplateHtml, text: emailTemplateText },
+          opts.ctx.req.cookies,
+        )
       }),
   })
 
   public constructor(
     @inject(FeedbackService) private feedbackService: FeedbackService,
-    @inject(PdfService) private pdfService: PdfService,
   ) {}
 
   public getRouter() {

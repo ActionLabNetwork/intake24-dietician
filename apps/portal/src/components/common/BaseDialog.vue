@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="dialog" width="500px">
+  <v-dialog v-model="dialog" :width="width ?? '500px'">
     <v-card>
       <v-card-title class="pl-5 pt-5">
         <slot name="title"></slot>
@@ -35,6 +35,7 @@ const props = defineProps<{
   onConfirm?: () => Promise<void>
   onCancel?: Function
   onCancelText?: string
+  width?: string
 }>()
 
 const dialog = defineModel<boolean>()
@@ -47,7 +48,6 @@ const handleConfirm = async () => {
     await props.onConfirm()
     isLoading.value = false
 
-    console.log({ isLoading: isLoading.value })
     if (!isLoading.value) {
       closeDialog()
     }
@@ -64,7 +64,6 @@ const handleCancel = () => {
 }
 
 const closeDialog = () => {
-  console.log('Closing dialog...')
   dialog.value = false
 }
 </script>

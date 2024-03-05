@@ -14,3 +14,11 @@ export const CARBS_EXCHANGE_MULTIPLIER = 1 / 15
 export const GLASS_TO_MILLILITRE = 250
 export const NUMBER_OF_GLASSES = 8
 export const DAILY_WATER_AMOUNT = GLASS_TO_MILLILITRE * NUMBER_OF_GLASSES // Let's assume 8 glasses for now
+export const WATER_ML_PER_KG = 35
+
+// Sugar calorie daily percentage
+export const SUGAR_CALORIE_PERCENTAGE = 10
+export const SATURATED_FAT_CALORIE_PERCENTAGE = 10
+
+// Protein intake
+export const PROTEIN_KG_PER_KG = 0.8

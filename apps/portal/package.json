@@ -46,6 +46,7 @@
     "vue": "^3.4.15",
     "vue-chartjs": "^5.3.0",
     "vue-echarts": "^6.6.8",
+    "vue-email": "^0.8.10",
     "vue-i18n": "^9.9.1",
     "vue-router": "^4.2.5",
     "vue-toast-notification": "^3.1",

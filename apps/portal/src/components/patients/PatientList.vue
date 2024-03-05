@@ -98,15 +98,6 @@
             </div>
           </td>
           <td>
-            <v-chip
-              variant="flat"
-              :color="item.patientStatus === 'Active' ? 'success' : 'neutral'"
-              :text="item.patientStatus"
-            >
-            </v-chip>
-            <span v-show="false">{{ item.patientStatus }}</span>
-          </td>
-          <td>
             <div
               class="d-flex flex-column flex-xl-row align-center justify-center"
             >
@@ -175,7 +166,6 @@ const headerTitles = [
   'Patient records',
   'Last recall',
   'Last feedback sent',
-  'Patient status',
   'Last reminder sent',
   'Survey URL',
 ] as const
@@ -230,12 +220,6 @@ const headers = ref<PatientTableHeaders[]>([
     title: 'Last feedback sent',
     align: 'center',
     key: 'lastFeedbackSent',
-    sortable: true,
-  },
-  {
-    title: 'Patient status',
-    align: 'center',
-    key: 'patientStatus',
     sortable: true,
   },
   {
@@ -315,7 +299,12 @@ watch(
           avatar: patient.avatar,
           name: `${patient.firstName} ${patient.lastName}`,
           patientRecords: undefined,
-          lastRecall: recallDates[0]?.toLocaleDateString() ?? 'N/A',
+          lastRecall:
+            recallDates[0]?.toLocaleDateString('en-AU', {
+              day: '2-digit',
+              month: 'short',
+              year: 'numeric',
+            }) ?? 'N/A',
           lastFeedbackSent: {
             date: getRandomDate(),
             type: patient.patientPreference.sendAutomatedFeedback

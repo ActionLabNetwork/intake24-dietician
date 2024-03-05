@@ -1,13 +1,16 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle
       :logo="logo"
       title="Carbs Exchange"
-      :class="{ 'text-white': mode === 'preview' }"
+      :style="{ color: titleTextColor }"
     />
     <TotalNutrientsDisplay>
-      Total carb exchanges: {{ averageCarbs }}
+      Your <span v-if="recallStore.isDateRange">average</span>
+      <span v-else>total</span> carb exchanges for
+      {{ recallStore.selectedRecallDateRangePretty }} is:
+      {{ averageCarbs }} carb exchanges
     </TotalNutrientsDisplay>
     <div>
       <!-- Loading state -->
@@ -70,29 +73,24 @@ import {
 } from '@/constants/recall'
 import '@vuepic/vue-datepicker/dist/main.css'
 import chroma from 'chroma-js'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import BaseProgressCircular from '@intake24-dietician/portal/components/common/BaseProgressCircular.vue'
 import FeedbackTextArea from '@/components/feedback-modules/common/FeedbackTextArea.vue'
 import TotalNutrientsDisplay from '@/components/feedback-modules/common/TotalNutrientsDisplay.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import {
-  calculateMealNutrientsExchange,
-  calculateFoodNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useRoute } from 'vue-router'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
+  titleTextColor: '#000',
   useSampleRecall: false,
 })
 
@@ -164,21 +162,12 @@ const calculateMealCarbsExchange = (meal: RecallMeal, recallsCount = 1) => {
 
   mealCards[meal.name] = {
     label: meal.name,
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
-          CARBS_EXCHANGE_MULTIPLIER,
-        ),
-        2,
-      ).value,
-      mealDate: food['mealDate'],
-    })),
+    foods: extractDuplicateFoods(
+      meal.foods,
+      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_CARBS_ID,
+      CARBS_EXCHANGE_MULTIPLIER,
+      recallsCount,
+    ),
     mean: mealCarbsExchange,
     mascot: mascot.value,
     theme: theme.value,
@@ -212,30 +201,6 @@ watch(
   },
   { immediate: true },
 )
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    // Reset meal cards
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalCarbs.value = Math.floor(
-      data.recall.meals.reduce((totalCarbs, meal) => {
-        return totalCarbs + calculateMealCarbsExchange(meal)
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
 </script>
 <style scoped>
 .grid-container {
@@ -244,5 +209,9 @@ watch(
   grid-auto-rows: 1fr;
   grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
   gap: 1rem;
+}
+
+.card-container {
+  padding: 5rem 5rem;
 }
 </style>

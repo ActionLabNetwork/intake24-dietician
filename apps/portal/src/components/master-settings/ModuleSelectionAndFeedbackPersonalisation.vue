@@ -11,42 +11,24 @@
     <v-col cols="8" md="8" lg="9" width="100%">
       <v-card class="mx-auto">
         <!-- Preview -->
-        <div v-if="true" class="ma-4">
-          <component
-            :is="moduleNameToModuleComponentMapping[selectedModule].component"
-            :feedback="
-              moduleNameToModuleComponentMapping[selectedModule].feedbackBelow
-            "
-            mode="preview"
-            use-sample-recall
-            flat
-            :style="{
-              'background-color':
-                FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                  .mainBackground,
-            }"
-            :main-bg-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .mainBackground
-            "
-            :feedback-bg-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .feedback.background
-            "
-            :feedback-text-color="
-              FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING[selectedModule]
-                .feedback.color
-            "
-          />
+        <div>
+          <v-img
+            width="1920"
+            height="580"
+            aspect-ratio="16/9"
+            :src="previewImgSrc"
+          ></v-img>
         </div>
 
-        <v-divider class="mx-5 mb-10" />
+        <div v-if="selectedModule !== 'Meal diary'">
+          <v-divider class="mx-5 mb-10" />
 
-        <!-- Feedback Personalisation -->
-        <div>
-          <SetRecommendedLevel
-            v-model="moduleNameToModuleComponentMapping[selectedModule]"
-          />
+          <!-- Feedback Personalisation -->
+          <div>
+            <SetRecommendedLevel
+              v-model="moduleNameToModuleComponentMapping[selectedModule]"
+            />
+          </div>
         </div>
       </v-card>
     </v-col>
@@ -67,16 +49,17 @@ import VegetableIntakeModule from '@intake24-dietician/portal/components/feedbac
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
 import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
-import { FEEDBACK_MODULES_OUTPUT_BACKGROUND_MAPPING } from '@intake24-dietician/portal/constants/modules'
 import SetRecommendedLevel from './SetRecommendedLevel.vue'
 import {
   ModuleName,
   ModuleNameToComponentMappingWithFeedbackAboveAndBelowRecommendedLevels,
 } from '@intake24-dietician/portal/types/modules.types'
-import { markRaw, reactive, ref, watch } from 'vue'
+import { computed, markRaw, reactive, ref, watch } from 'vue'
 import ModuleSelectList, {
   ModuleItem,
 } from '../feedback-modules/ModuleSelectList.vue'
+import { useModulePreview } from '@intake24-dietician/portal/composables/useModulePreview'
+import { Theme } from '@intake24-dietician/common/types/theme'
 
 export type FeedbackMapping = {
   [K in keyof typeof moduleNameToModuleComponentMapping]: Omit<
@@ -85,10 +68,16 @@ export type FeedbackMapping = {
   >
 }
 
+const props = defineProps<{ theme: Theme }>()
 const emit = defineEmits<{
   update: [presetModulesFeedbacks: FeedbackMapping]
 }>()
 
+const previewHelper = useModulePreview()
+const theme = computed(() => props.theme)
+const previewImgSrc = computed(() => {
+  return previewHelper.getPreview(selectedModule.value, theme.value)
+})
 const defaultState = defineModel<FeedbackMapping>()
 const selectedModule = ref<ModuleName>('Meal diary')
 

@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex flex-column">
-    <v-avatar size="100%" rounded="0" class="avatar mx-auto">
+    <v-avatar size="50%" rounded="0" class="avatar mx-auto">
       <v-img :src="avatarImage" alt="Avatar" height="100%" width="100%" />
     </v-avatar>
     <div class="d-flex align-center justify-space-around mt-5">

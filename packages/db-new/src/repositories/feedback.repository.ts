@@ -41,9 +41,12 @@ export class FeedbackRepository {
   }
 
   public async getSharedFeedbackById(shareId: number) {
-    return await this.drizzle.query.feedbackShares.findFirst({
+    const feedbackShare = await this.drizzle.query.feedbackShares.findFirst({
       where: eq(feedbackShares.id, shareId),
     })
+    console.log({ feedbackShare })
+
+    return feedbackShare
   }
 
   public async getSharedFeedbacksByPatientId(

@@ -1,12 +1,13 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
     <ModuleTitle
       v-model:metrics="selectedNutrients"
       :all-metrics="allNutrients"
       :logo="logo"
       title="Meal diary"
       show-metrics
+      :style="{ color: titleTextColor }"
     />
     <MealDiaryTimeline
       :meal-cards="mealCards"
@@ -50,6 +51,7 @@ import {
   RecallMeal,
   RecallMealFood,
 } from '@intake24-dietician/common/entities-new/recall.schema'
+import * as R from 'remeda'
 import {
   calculateFoodNutrientsExchange,
   calculateMealNutrientsExchange,
@@ -71,6 +73,7 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
@@ -97,12 +100,13 @@ const nutrientType = computed(() => moduleMetrics.value ?? [])
 const allNutrients = ref<NutrientType[]>([])
 const selectedNutrients = ref<NutrientType[]>([])
 
-const getServingWeight = (food: { [x: string]: any[] }) => {
-  const rawServingWeight = parseFloat(
-    food['portionSizes']?.find(
-      (item: { name: string }) => item.name === 'servingWeight',
-    )?.value,
-  )
+const getRawServingWeight = (food: { [x: string]: any[] }): string => {
+  return food['portionSizes']?.find(
+    (item: { name: string }) => item.name === 'servingWeight',
+  )?.value
+}
+const getServingWeight = (food: { [x: string]: any[] }): string => {
+  const rawServingWeight = parseFloat(getRawServingWeight(food))
   const servingWeight = usePrecision(rawServingWeight, 2).value
   return `${servingWeight}g`
 }
@@ -199,34 +203,122 @@ const generateMealCards = (
   )
 
   // For each food, calculate nutrient intake of nutrient type(s)
-  const foods = meal.foods.map(food => {
-    return selectedNutrients.reduce(
-      (acc, nutrientType) => {
-        return {
-          ...acc,
-          valueByNutrientType: {
-            ...acc.valueByNutrientType,
-            [nutrientType.description]: {
-              value: usePrecision(
-                calculateFoodNutrientsExchange(
-                  food as RecallMealFood,
-                  nutrientType.id.toString(),
-                ),
-                2,
-              ).value,
-            },
+  const foods = R.pipe(
+    meal.foods,
+    R.map(food => {
+      return R.pipe(
+        selectedNutrients,
+        R.reduce(
+          (acc, nutrientType) => {
+            return {
+              ...acc,
+              valueByNutrientType: {
+                ...acc.valueByNutrientType,
+                [nutrientType.description]: {
+                  value: usePrecision(
+                    calculateFoodNutrientsExchange(
+                      food as RecallMealFood,
+                      nutrientType.id.toString(),
+                    ),
+                    2,
+                  ).value,
+                  count: 1,
+                },
+              },
+            }
           },
+          {
+            name: food['englishName'],
+            servingWeight: getRawServingWeight(food),
+          } as Omit<MealCardMultipleNutrientsProps, 'colors'>['foods'][number],
+        ),
+      )
+    }),
+  )
+
+  // Find duplicated foods
+  const duplicateFoods = R.pipe(
+    foods,
+    R.groupBy(R.prop('name')),
+    R.pickBy(foods => foods.length > 1),
+  )
+
+  const duplicatesAveraged = R.mapValues(duplicateFoods, foods => {
+    const total = foods.reduce(
+      (acc, food) => {
+        const servingWeight =
+          (parseFloat(acc.servingWeight) ?? 0) +
+          parseFloat(food.servingWeight ?? 0)
+        return {
+          servingWeight: servingWeight,
+          valueByNutrientType: R.mapValues(
+            food.valueByNutrientType,
+            (nutrient, key) => {
+              return {
+                value:
+                  ((acc.valueByNutrientType[key] as { value: number })?.value ??
+                    0) + nutrient.value,
+              }
+            },
+          ),
         }
       },
       {
-        name: food['englishName'],
-        servingWeight: getServingWeight(food),
-      } as Omit<MealCardMultipleNutrientsProps, 'colors'>['foods'][number],
+        servingWeight: 0,
+        valueByNutrientType: R.mapValues(foods[0].valueByNutrientType, () => {
+          return {
+            value: 0,
+          }
+        }),
+      } as any,
     )
+
+    return {
+      ...foods[0],
+      name: `${foods[0].name} (x${foods.length})`,
+      servingWeight: total.servingWeight as number,
+      valueByNutrientType: R.mapValues(total.valueByNutrientType, nutrient => {
+        return {
+          value: usePrecision(nutrient.value / foods.length, 2).value,
+          count: foods.length,
+        }
+      }),
+    }
   })
 
+  const foodsWithDuplicatesAveraged = R.pipe(
+    foods,
+    R.map(food => {
+      if (duplicateFoods[food.name]) {
+        return duplicatesAveraged[food.name]!
+      }
+      return food
+    }),
+    R.uniqBy(food => food?.name),
+  )
+
+  const foodsWithDuplicatesAveragedAndServingWeightRounded = R.map(
+    foodsWithDuplicatesAveraged,
+    food => {
+      let servingWeight = food.servingWeight
+      if (typeof food.servingWeight === 'number') {
+        servingWeight = usePrecision(food.servingWeight, 2).value.toString()
+      } else {
+        servingWeight = usePrecision(
+          parseFloat(food.servingWeight),
+          2,
+        ).value.toString()
+      }
+
+      return {
+        ...food,
+        servingWeight: `${servingWeight}g`,
+      }
+    },
+  )
+
   const sortedMealCard = sortFoodsByNutrient(
-    { ...mealCard, foods: foods },
+    { ...mealCard, foods: foodsWithDuplicatesAveragedAndServingWeightRounded },
     selectedNutrients[0]?.description ?? '',
     'desc',
   )
@@ -271,5 +363,9 @@ watch(
 .timeline-item {
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+.card-container {
+  padding: 5rem 5rem;
 }
 </style>

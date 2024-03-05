@@ -5,7 +5,7 @@
     </v-container>
   </v-main>
   <v-main v-else>
-    <v-container>
+    <v-container fluid class="container-padding">
       <div></div>
       <div>
         <HomeSummary
@@ -88,6 +88,9 @@ watch(
 </script>
 
 <style scoped lang="scss">
+.container-padding {
+  padding: 0 5rem;
+}
 .text {
   max-width: 100%;
   padding-bottom: 0.5rem;

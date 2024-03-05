@@ -1,13 +1,42 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="logo" title="Vegetable intake" />
-    <div v-if="mealCards" class="mt-2">
-      <PieChartAndTimelineTab
-        v-if="tabs"
-        :tabs="tabs as unknown as PieAndTimelineTabs"
+  <v-card :class="{ 'rounded-0': mode === 'preview' }" class="card-container">
+    <div class="d-flex justify-space-between align-center">
+      <ModuleTitle
+        :logo="logo"
+        title="Vegetable intake"
+        :style="{ color: titleTextColor }"
+      />
+      <BaseTabComponent
+        v-model="activeTab"
+        :tabs="tabs"
+        :tab-style="{
+          backgroundColor: tabBackground.color,
+          height: 'fit-content',
+          width: 'fit-content',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :active-tab-style="{
+          backgroundColor: tabBackground.active,
+          borderRadius: '8px',
+        }"
+        align="center"
+        :hide-slider="true"
         :show-tabs="mode === 'edit'"
       />
+    </div>
+
+    <div v-if="mealCards" class="mt-2">
+      <TotalNutrientsDisplay>
+        Your <span v-if="recallStore.isDateRange">average</span
+        ><span v-else>total</span> vegetable intake for
+        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ totalVegetable.toLocaleString()
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </TotalNutrientsDisplay>
+      <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
@@ -27,40 +56,29 @@
 </template>
 
 <script setup lang="ts">
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
+import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
+import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
+import { ref, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_VEGETABLE_ID } from '@intake24-dietician/portal/constants/recall'
-import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
-import { usePrecision } from '@vueuse/math'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import type {
-  PieAndTimelineTabs,
-  MealCardProps,
-} from '@intake24-dietician/portal/components/feedback-modules/types/index'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
+import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -72,10 +90,8 @@ const { themeConfig } = useThemeSelector('Vegetable intake')
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
-const totalVegetable = ref(0)
-const colorPalette = ref<string[]>([])
-
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
+const activeTab = ref(0)
+const colorPalette = computed(() => recallStore.colorPalette)
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -87,116 +103,25 @@ const module = computed(() => {
     module => module.name === 'Vegetable intake',
   )
 })
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 
-const tabs = ref<PieAndTimelineTabs>([
-  {
-    name: 'Pie chart',
-    value: 0,
-    component: markRaw(PieChartSection),
-    props: {
-      name: 'Vegetable intake',
-      meals: mealCards,
-      colors: colorPalette,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-      showCutlery: themeConfig.value.showCutlery,
-    },
-    icon: 'mdi-chart-pie',
-  },
-  {
-    name: 'Timeline',
-    value: 1,
-    component: markRaw(TimelineSection),
-    props: {
-      name: 'Vegetable intake',
-      meals: mealCards,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-    },
-    icon: 'mdi-calendar-blank-outline',
-  },
-])
+const {
+  mealCards,
+  totalNutrients: totalVegetable,
+  totalNutrientsByRecall: totalVegetableByRecall,
+} = useFeedbackModule(module, NUTRIENTS_VEGETABLE_ID)
 
-const calculateMealVegetableIntake = (meal: RecallMeal, recallsCount = 1) => {
-  const mealVegetableExchange = usePrecision(
-    calculateMealNutrientsExchange(
-      meal,
-      module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_VEGETABLE_ID,
-      recallsCount,
-    ),
-    2,
-  ).value
-
-  mealCards[meal.name] = {
-    name: 'Vegetable intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ??
-            NUTRIENTS_VEGETABLE_ID,
-        ),
-        2,
-      ).value,
-    })),
-  }
-
-  return mealVegetableExchange
-}
-
-watch(
-  () => recallStore.recallsQuery.data,
-  data => {
-    if (!data) return
-
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalVegetable.value = Math.floor(
-      combinedMeals.meals.reduce((totalEnergy, meal) => {
-        return (
-          totalEnergy +
-          calculateMealVegetableIntake(meal, combinedMeals.recallsCount)
-        )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalVegetable.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealVegetableIntake(meal)
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
+const { tabs, tabBackground } = useTabbedModule({
+  colorPalette: colorPalette,
+  mealCards: mealCards,
+  module: module,
+  theme: theme,
+  nutrientValuesByRecall: computed(() => totalVegetableByRecall.value),
+})
 </script>
+
+<style scoped lang="scss">
+.card-container {
+  padding: 5rem 5rem;
+}
+</style>

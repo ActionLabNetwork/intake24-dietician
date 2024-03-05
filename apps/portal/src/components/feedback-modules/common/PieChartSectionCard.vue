@@ -6,15 +6,15 @@
       class="d-flex align-center flex-wrap justify-space-between px-3 px-lg-0"
     >
       <div class="font-weight-medium">{{ label }}</div>
-      <div>
+      <div class="d-print-none" :class="{ 'd-none': previewing }">
         <v-btn
+          class="accordion-icon"
           :class="{
             'rotate-expand-icon': !isPlusIcon,
             transition: isTransition,
           }"
           icon="mdi-close"
           variant="flat"
-          style="background: inherit"
           @click="toggleIcon"
         />
       </div>
@@ -30,6 +30,15 @@
     >
       <v-expand-transition>
         <ul v-show="expand">
+          <v-row class="py-2 px-6 font-weight-bold">
+            <v-col cols="8" class="list-header d-flex align-center">
+              Top food items
+            </v-col>
+            <v-spacer></v-spacer>
+            <v-col cols="3" class="list-header text-center">
+              {{ props.unitOfMeasure?.description }}
+            </v-col>
+          </v-row>
           <li
             v-for="food in formattedFoods"
             :key="food.name + food.servingWeight + food.value"
@@ -41,7 +50,8 @@
                   <p>{{ food.name }} {{ food.servingWeight }}</p>
                 </div>
                 <div class="font-weight-bold">
-                  {{ food.value }}{{ unitOfMeasure?.symbol }}
+                  {{ usePrecision(food.value, 2)
+                  }}{{ unitOfMeasure?.unit.symbol }}
                 </div>
               </div>
             </div>
@@ -57,14 +67,19 @@ import { computed, ref } from 'vue'
 import chroma from 'chroma-js'
 import { MealCardProps } from '../types'
 import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
+import { useRoute } from 'vue-router'
+import { usePrecision } from '@vueuse/math'
 
 const props = defineProps<MealCardProps>()
+
+const route = useRoute()
+const previewing = route.query.preview === 'true'
 
 const isPlusIcon = ref(true)
 const isTransition = ref(true)
 const expand = ref(true)
 
-const { formattedFoods } = useProcessRecallFoods(props.foods)
+const { formattedFoods } = useProcessRecallFoods(computed(() => props.foods))
 
 const toggleIcon = () => {
   isTransition.value = true
@@ -86,6 +101,10 @@ const wrapperStyle = computed(() => ({
   '--bg-color': chroma(props.colors.backgroundColor)
     .darken(2)
     .saturate(4)
+    .hex(),
+  '--header-color': chroma(props.colors.backgroundColor)
+    .darken(1)
+    .saturate(1)
     .hex(),
 }))
 </script>
@@ -110,6 +129,13 @@ const wrapperStyle = computed(() => ({
   }
 }
 
+.list-header {
+  background: var(--header-color);
+  padding: 4px 8px;
+  border-radius: 2px;
+  margin-bottom: 1rem;
+}
+
 .energy-value {
   border-radius: 2px;
   padding: 1rem;
@@ -129,5 +155,9 @@ const wrapperStyle = computed(() => ({
 }
 .transition {
   transition: transform 0.3s ease-in-out;
+}
+
+.accordion-icon {
+  background-color: inherit;
 }
 </style>

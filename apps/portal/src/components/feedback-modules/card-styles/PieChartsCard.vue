@@ -10,7 +10,9 @@
     </div>
     <PieChartFood
       :name="key as string"
-      :data="useProcessRecallFoods(value.foods).formattedFoods.value"
+      :data="
+        useProcessRecallFoods(computed(() => value.foods)).formattedFoods.value
+      "
       :unit-of-measure="unitOfMeasure?.unit"
     />
   </div>
@@ -18,7 +20,7 @@
 
 <script setup lang="ts">
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { MealCardProps } from '../types'
 import PieChartFood from '../common/PieChartFood.vue'
 import chroma from 'chroma-js'
@@ -39,14 +41,15 @@ export interface SummarizedCardProps {
 }
 
 const props = defineProps<SummarizedCardProps>()
+const _meals = ref(props.meals)
 
 const data = computed(() => {
   const _data = R.pipe(
-    Object.keys(props.meals),
+    Object.keys(_meals.value),
     R.reduce(
       (acc, meal) => {
         const foods = R.pipe(
-          props.meals[meal]!.foods,
+          _meals.value[meal]!.foods,
           R.map(food => {
             return {
               name: food.name,
@@ -104,13 +107,20 @@ const data = computed(() => {
     },
   )
 })
+
+watch(
+  () => props.meals,
+  newMeals => {
+    _meals.value = newMeals
+  },
+)
 </script>
 
 <style scoped>
 .wrapper {
   border-radius: 4px;
   border: 1px solid #e4e4e4;
-  background: rgba(241, 241, 241, 0.2);
+  background: #f1f1f1;
 }
 
 .meal-text {

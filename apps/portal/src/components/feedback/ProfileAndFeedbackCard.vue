@@ -15,7 +15,7 @@
       </div>
 
       <!-- Date -->
-      <div class="d-flex">
+      <div class="d-flex justify-center">
         <div class="d-flex align-center">
           <div class="font-weight-medium">Date:</div>
           <VueDatePicker
@@ -28,7 +28,7 @@
             range
             format="dd/MM/yyyy"
             class="ml-2"
-            style="width: 100%"
+            style="min-width: 15.8rem"
             @update:model-value="handleDaterangeUpdate"
           />
         </div>
@@ -70,7 +70,10 @@
         </v-btn>
         <v-btn
           class="text-none ml-3"
-          :loading="shareDraftMutation.isPending.value"
+          :loading="
+            shareDraftMutation.isPending.value &&
+            !shareDraftMutation.isError.value
+          "
           color="primary"
           variant="flat"
           @click="showDialog('share')"
@@ -93,6 +96,8 @@
   />
   <DialogFeedbackShare
     v-model="confirmShareDialog"
+    v-model:send-mode="sendMode"
+    :download-url="downloadUrl"
     :full-name="patientStore.fullName"
     :on-confirm="handleShareDraftClick"
   />
@@ -153,6 +158,14 @@ const recallStore = useRecallStore()
 const { allowedStartDates } = storeToRefs(recallStore)
 
 const patient = computed(() => patientStore.patientQuery.data)
+const downloadUrl = computed(() => {
+  const baseUrl = window.location.origin
+  const url = new URL(`${baseUrl}${route.fullPath}`)
+  const params = url.searchParams
+  params.set('preview', 'true')
+
+  return url.toString()
+})
 
 // Mutations
 const saveDraftMutation = useSaveDraft()
@@ -164,6 +177,12 @@ const dateRange = ref()
 const confirmEditDialog = ref(false)
 const confirmSaveDialog = ref(false)
 const confirmShareDialog = ref(false)
+
+const modes = [
+  { label: 'Automated', value: 'automated' },
+  { label: 'Manual', value: 'manual' },
+] as const
+const sendMode = ref<(typeof modes)[number]['value']>('automated')
 
 const handleDaterangeUpdate = (
   daterange: [Date | undefined, Date | undefined],
@@ -230,11 +249,18 @@ const handleEditDraftClick = async () => {
 
 const handleShareDraftClick = async () => {
   isSubmitting.value = true
+
+  if (route.query['preview'] !== 'false') {
+    router.replace({ query: { preview: 'true' } })
+  }
+
   await shareDraftMutation.mutateAsync(
     {
       patientId: Number(patient.value?.id),
       draftId: props.draftId,
       draft: props.draft,
+      url: downloadUrl.value,
+      sendAutomatedEmail: sendMode.value === 'automated',
     },
     {
       onSuccess: () => {

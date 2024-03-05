@@ -40,7 +40,7 @@
     </template>
   </v-dialog>
   <v-main>
-    <v-row class="ml-1">
+    <v-row class="ml-1 d-print-none">
       <SurveyClinicDetails v-if="!hideSurveyDetails" />
     </v-row>
     <v-row>
@@ -87,7 +87,7 @@ const steps = [
     },
     options: {
       popper: {
-        placement: 'bottom',
+        placement: 'top',
       },
       overlay,
     },
@@ -121,7 +121,7 @@ const steps = [
     },
     options: {
       popper: {
-        placement: 'right',
+        placement: 'bottom',
       },
       overlay,
     },
@@ -191,6 +191,7 @@ const hideSurveyDetails = computed(() => {
     'Survey Master Settings',
     'Survey Patient Compose New Feedback',
     'Survey Patient Edit Draft Feedback',
+    'Survey Patient View Feedback',
   ]
   return routeNames.includes(route.name as string)
 })
@@ -199,22 +200,6 @@ const hideSurveyDetails = computed(() => {
 <style scoped lang="scss">
 .wrapper {
   background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
 }
 
 @media print {

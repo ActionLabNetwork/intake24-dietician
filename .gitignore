@@ -42,3 +42,5 @@ tmp
 # Allow only pnpm lock file
 package-lock.json
 yarn.lock
+
+feedback-outputs/

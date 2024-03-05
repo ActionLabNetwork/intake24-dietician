@@ -19,6 +19,7 @@
           flat: true,
           variant: 'solo-filled',
           density: 'comfortable',
+          placeholder: country,
         }"
         :country-props="{
           flat: true,
@@ -26,7 +27,8 @@
           density: 'comfortable',
         }"
         @update:country="country = $event"
-      />
+      >
+      </v-phone-input>
     </div>
     <div
       v-else-if="type === 'select'"

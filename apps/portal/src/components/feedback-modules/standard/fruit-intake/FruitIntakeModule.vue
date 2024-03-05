@@ -1,13 +1,42 @@
 <!-- eslint-disable vue/prefer-true-attribute-shorthand -->
 <template>
-  <v-card :class="{ 'rounded-0': mode === 'preview', 'pa-14': true }">
-    <ModuleTitle :logo="logo" title="Fruit intake" />
-    <div v-if="mealCards" class="mt-2">
-      <PieChartAndTimelineTab
-        v-if="tabs"
-        :tabs="tabs as unknown as PieAndTimelineTabs"
+  <v-card class="card-container" :class="{ 'rounded-0': mode === 'preview' }">
+    <div class="d-flex justify-space-between align-center">
+      <ModuleTitle
+        :logo="logo"
+        title="Fruit intake"
+        :style="{ color: titleTextColor }"
+      />
+      <BaseTabComponent
+        v-model="activeTab"
+        :tabs="tabs"
+        :tab-style="{
+          backgroundColor: tabBackground.color,
+          height: 'fit-content',
+          width: 'fit-content',
+          borderRadius: '8px',
+          padding: '5px',
+          color: 'white',
+        }"
+        :active-tab-style="{
+          backgroundColor: tabBackground.active,
+          borderRadius: '8px',
+        }"
+        align="center"
+        :hide-slider="true"
         :show-tabs="mode === 'edit'"
       />
+    </div>
+
+    <div v-if="mealCards" class="mt-2">
+      <TotalNutrientsDisplay>
+        Your <span v-if="recallStore.isDateRange">average</span
+        ><span v-else>total</span> fruit intake for
+        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ totalFruit.toLocaleString()
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </TotalNutrientsDisplay>
+      <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
@@ -27,40 +56,33 @@
 </template>
 
 <script setup lang="ts">
+import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
+import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
+import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { NUTRIENTS_FRUIT_ID } from '@intake24-dietician/portal/constants/recall'
-import PieChartSection from '../../common/PieChartSection.vue'
-import TimelineSection from '../../common/TimelineSection.vue'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import {
-  RecallMeal,
-  RecallMealFood,
-} from '@intake24-dietician/common/entities-new/recall.schema'
+import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { usePrecision } from '@vueuse/math'
-import {
-  calculateFoodNutrientsExchange,
-  calculateMealNutrientsExchange,
-} from '@intake24-dietician/portal/utils/feedback'
+import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import type {
-  PieAndTimelineTabs,
-  MealCardProps,
-} from '@intake24-dietician/portal/components/feedback-modules/types/index'
-import PieChartAndTimelineTab from '../../common/PieChartAndTimelineTab.vue'
+import type { MealCardProps } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
+import { extractDuplicateFoods } from '@intake24-dietician/portal/utils/recall'
 
-const props = withDefaults(defineProps<FeedbackModulesProps>(), {
+withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
   feedbackTextColor: '#000',
   useSampleRecall: false,
+  titleTextColor: '#000',
 })
 const emit = defineEmits<{
   'update:feedback': [feedback: string]
@@ -72,10 +94,9 @@ const { themeConfig } = useThemeSelector('Fruit intake')
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const recallStore = useRecallStore()
 
+const activeTab = ref(0)
 const totalFruit = ref(0)
 const colorPalette = ref<string[]>([])
-
-let mealCards = reactive<Record<string, Omit<MealCardProps, 'colors'>>>({})
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -87,36 +108,35 @@ const module = computed(() => {
     module => module.name === 'Fruit intake',
   )
 })
+const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const mealCards = computed(() => {
+  return recallStore.recallsGroupedByMeals.meals.reduce(
+    (acc, meal) => {
+      acc[meal.name] = {
+        name: 'Fruit intake',
+        label: meal.name,
+        hours: meal.hours,
+        minutes: meal.minutes,
+        unitOfMeasure: module.value?.nutrientTypes[0],
+        foods: extractDuplicateFoods(
+          meal.foods,
+          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
+          1,
+          recallStore.recallsGroupedByMeals.recallsCount,
+        ),
+      }
+      return acc
+    },
+    {} as Record<string, Omit<MealCardProps, 'colors'>>,
+  )
+})
 
-const tabs = ref<PieAndTimelineTabs>([
-  {
-    name: 'Pie chart',
-    value: 0,
-    component: markRaw(PieChartSection),
-    props: {
-      name: 'Fruit intake',
-      meals: mealCards,
-      colors: colorPalette,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-      showCutlery: themeConfig.value.showCutlery,
-    },
-    icon: 'mdi-chart-pie',
-  },
-  {
-    name: 'Timeline',
-    value: 1,
-    component: markRaw(TimelineSection),
-    props: {
-      name: 'Fruit intake',
-      meals: mealCards,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
-      colors: colorPalette,
-      unitOfMeasure: module.value?.nutrientTypes[0],
-    },
-    icon: 'mdi-calendar-blank-outline',
-  },
-])
+const { tabs, tabBackground } = useTabbedModule({
+  colorPalette: colorPalette,
+  mealCards: mealCards,
+  module: module,
+  theme: theme,
+})
 
 const calculateMealFruitIntake = (meal: RecallMeal, recallsCount = 1) => {
   const mealFruitExchange = usePrecision(
@@ -127,27 +147,6 @@ const calculateMealFruitIntake = (meal: RecallMeal, recallsCount = 1) => {
     ),
     2,
   ).value
-
-  mealCards[meal.name] = {
-    name: 'Fruit intake',
-    label: meal.name,
-    hours: meal.hours,
-    minutes: meal.minutes,
-    unitOfMeasure: module.value?.nutrientTypes[0]?.unit,
-    foods: meal.foods.map(food => ({
-      name: food['englishName'],
-      servingWeight: food['portionSizes']?.find(
-        (item: { name: string }) => item.name === 'servingWeight',
-      )?.value,
-      value: usePrecision(
-        calculateFoodNutrientsExchange(
-          food as RecallMealFood,
-          module.value?.nutrientTypes[0]?.id.toString() ?? NUTRIENTS_FRUIT_ID,
-        ),
-        2,
-      ).value,
-    })),
-  }
 
   return mealFruitExchange
 }
@@ -160,10 +159,6 @@ watch(
     const combinedMeals = recallStore.recallsGroupedByMeals
     colorPalette.value = recallStore.colorPalette
 
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
     totalFruit.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {
         return (
@@ -175,27 +170,10 @@ watch(
   },
   { immediate: true },
 )
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalFruit.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealFruitIntake(meal)
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
 </script>
+
+<style scoped lang="scss">
+.card-container {
+  padding: 5rem 5rem;
+}
+</style>

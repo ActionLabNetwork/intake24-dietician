@@ -32,6 +32,8 @@ export const env = createEnv({
     POSTGRES_PASSWORD: withDevDefault(z.string(), 'postgres'),
     POSTGRES_PORT: withDevDefault(z.string(), '5433'),
     POSTGRES_DB_NAME: withDevDefault(z.string(), 'intake24-dietician-db'),
+    SUPERUSER_EMAIL: withDevDefault(z.string(), 'superuser@i24.com'),
+    SUPERUSER_PASSWORD: withDevDefault(z.string(), 'super-secret-password'),
   },
   client: {},
   runtimeEnv: process.env,

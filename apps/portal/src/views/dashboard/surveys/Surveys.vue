@@ -106,22 +106,6 @@ const summaryKeys = computed((): SummaryKeys => {
 <style scoped lang="scss">
 .wrapper {
   background: rgb(252, 249, 244);
-  background: -moz-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: -webkit-linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  background: linear-gradient(
-    180deg,
-    rgba(252, 249, 244, 1) 20%,
-    rgba(255, 255, 255, 1) 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr="#fcf9f4",endColorstr="#ffffff",GradientType=1);
 }
 .text {
   max-width: 100%;

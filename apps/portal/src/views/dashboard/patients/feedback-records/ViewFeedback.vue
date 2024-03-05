@@ -27,6 +27,11 @@
           </v-col>
         </v-row>
       </div>
+      <div v-else class="mt-5">
+        <v-alert variant="tonal">
+          The feedback you're trying to view is not available.
+        </v-alert>
+      </div>
     </v-container>
   </div>
   <div v-show="previewing">
@@ -58,16 +63,17 @@ import EnergyIntakeModule from '@intake24-dietician/portal/components/feedback-m
 import FibreIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fibre-intake/FibreIntakeModule.vue'
 import WaterIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/water-intake/WaterIntakeModule.vue'
 import SugarIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/sugar-intake/SugarIntakeModule.vue'
+import SaturatedFatIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/saturated-fat-intake/SaturatedFatIntakeModule.vue'
 import CalciumIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calcium-intake/CalciumIntakeModule.vue'
 import FruitIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-intake/FruitIntakeModule.vue'
 import VegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/vegetable-intake/VegetableIntakeModule.vue'
 import FruitAndVegetableIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/fruit-and-vegetable-intake/FruitAndVegetableIntakeModule.vue'
 import ProteinIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/protein-intake/ProteinIntakeModule.vue'
+import CalorieIntakeModule from '@intake24-dietician/portal/components/feedback-modules/standard/calorie-intake/CalorieIntakeModule.vue'
 import type {
   ModuleNameToComponentMappingWithFeedback,
   ModuleName,
 } from '@/types/modules.types'
-// import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 // import { useToast } from 'vue-toast-notification'
 import FeedbackPreview from '@intake24-dietician/portal/components/feedback/feedback-builder/FeedbackPreview.vue'
 import { useFeedbackShareById } from '@intake24-dietician/portal/queries/useFeedback'
@@ -102,7 +108,6 @@ const route = useRoute()
 // Queries
 const _feedbackId = route.params['feedbackId'] ?? props.feedbackId
 const shareQuery = useFeedbackShareById(Number(_feedbackId))
-const patientQuery = computed(() => patientStore.patientQuery)
 
 // Refs
 const daterange = ref<[Date | undefined, Date | undefined]>([
@@ -117,18 +122,6 @@ const isDataLoaded = ref<boolean>(false)
 const moduleFeedback = computed(() => {
   return moduleNameToModuleComponentMapping[component.value].feedback
 })
-const patientQueryData = computed(() => {
-  return patientQuery.value.data
-})
-
-const patientName = computed(() => {
-  const firstName = patientQueryData.value?.firstName
-
-  if (!firstName) {
-    return ''
-  }
-  return firstName.endsWith('s') ? `${firstName}'` : `${firstName}'s`
-})
 
 const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedback =
   reactive({
@@ -139,7 +132,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
     'Water intake': { component: WaterIntakeModule, feedback: '' },
     'Sugar intake': { component: SugarIntakeModule, feedback: '' },
     'Saturated fat intake': {
-      component: SugarIntakeModule,
+      component: SaturatedFatIntakeModule,
       feedback: '',
     },
     'Calcium intake': { component: CalciumIntakeModule, feedback: '' },
@@ -149,7 +142,7 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       component: FruitAndVegetableIntakeModule,
       feedback: '',
     },
-    'Calorie intake': { component: EnergyIntakeModule, feedback: '' },
+    'Calorie intake': { component: CalorieIntakeModule, feedback: '' },
     'Protein intake': { component: ProteinIntakeModule, feedback: '' },
   })
 

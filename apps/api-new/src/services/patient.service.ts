@@ -47,10 +47,11 @@ export class PatientService {
     const recall = await this.recallRepository.getRecall(id)
     if (!recall) throw new NotFoundError('Recall not found')
     if (
-      !this.userRepository.isPatientDieticians({
+      !(await this.userRepository.isDieticianSuperuser(dieticianId)) &&
+      !(await this.userRepository.isPatientDieticians({
         patientId: recall.patientId,
         dieticianId,
-      })
+      }))
     ) {
       throw new UnauthorizedError(
         'You are not authorized to access this recall',
@@ -65,6 +66,7 @@ export class PatientService {
 
   public async getRecallsOfPatient(patientId: number, dieticianId: number) {
     if (
+      !(await this.userRepository.isDieticianSuperuser(dieticianId)) &&
       !(await this.userRepository.isPatientDieticians({
         patientId,
         dieticianId,
@@ -83,6 +85,7 @@ export class PatientService {
     recallIds: number[],
   ) {
     if (
+      !(await this.userRepository.isDieticianSuperuser(dieticianId)) &&
       !(await this.userRepository.isPatientDieticians({
         patientId,
         dieticianId,
@@ -100,6 +103,7 @@ export class PatientService {
 
   public async getRecallDatesOfPatient(patientId: number, dieticianId: number) {
     if (
+      !(await this.userRepository.isDieticianSuperuser(dieticianId)) &&
       !(await this.userRepository.isPatientDieticians({
         patientId,
         dieticianId,
@@ -151,7 +155,7 @@ export class PatientService {
       throw new NotFoundError('Patient cannot be found')
     }
     if (patient?.survey.dieticianId !== dieticianId) {
-      throw new UnauthorizedError('Dietician has access to this patient')
+      throw new UnauthorizedError('Dietician has no access to this patient')
     }
 
     const patientWithExtraFields = await this.attachExtraPatientFields(patient)
