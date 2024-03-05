@@ -18,8 +18,12 @@ export const useRecallStore = defineStore('recalls', () => {
   const patientId = ref('')
   const recallIds = ref<number[]>([])
   const selectedRecallDateRange = ref<[Date | undefined, Date | undefined]>([
-    undefined,
-    undefined,
+    route.query['dateFrom']
+      ? moment(route.query['dateFrom'] as string, 'YYYYMMDD').toDate()
+      : undefined,
+    route.query['dateTo']
+      ? moment(route.query['dateTo'] as string, 'YYYYMMDD').toDate()
+      : undefined,
   ])
   const selectedRecallDateRangePretty = computed(() => {
     if (!selectedRecallDateRange.value) return ''
@@ -101,8 +105,11 @@ export const useRecallStore = defineStore('recalls', () => {
   }
 
   watch(
-    () => selectedRecallDateRange.value,
-    async newDate => {
+    () => ({
+      newDate: selectedRecallDateRange.value,
+      recallDates: recallDatesQuery.data.value,
+    }),
+    async ({ newDate }) => {
       if (!newDate) return
 
       const [startDate, endDate] = newDate
