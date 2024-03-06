@@ -12,10 +12,12 @@
       {{ selectedRecallDateRangePretty }} is: {{ totalEnergy.toLocaleString()
       }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       <span v-if="isBelowRecommendedLevel" class="text-error">
-        which is below the recommended level of {{ REQUIRED_CALORIES }} kcal
+        which is below the recommended level of {{ REQUIRED_CALORIES
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       </span>
       <span v-else class="text-green">
-        which is within the recommended level of {{ REQUIRED_CALORIES }} kcal
+        which is within the recommended level of {{ REQUIRED_CALORIES
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
       </span>
     </TotalNutrientsDisplay>
     <div>

@@ -28,7 +28,7 @@
         }"
         align="center"
         :hide-slider="true"
-        :show-tabs="mode === 'edit'"
+        :show-tabs="mode === 'edit' || mode === 'add'"
       />
     </div>
 
@@ -51,13 +51,16 @@
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -168,6 +171,22 @@ const { tabs, tabBackground } = useTabbedModule({
 
 const dailySugarPercentage = computed(() => {
   return ((totalSugar.value * 4) / totalEnergy.value) * 100
+})
+
+const isBelowRecommendedLevel = computed(() => {
+  return dailySugarPercentage.value < SUGAR_CALORIE_PERCENTAGE
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
 })
 
 const calculateMealEnergyExchange = (meal: RecallMeal, recallsCount = 1) => {

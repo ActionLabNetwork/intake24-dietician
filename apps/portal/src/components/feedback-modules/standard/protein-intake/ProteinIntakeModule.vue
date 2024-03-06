@@ -16,7 +16,19 @@
       </div>
       <div v-else>
         <TotalNutrientsDisplay>
-          {{ summaryText }}
+          Your <span v-if="isDateRange">average</span
+          ><span v-else>total</span> protein intake for
+          {{ selectedRecallDateRangePretty }} is:
+          {{ totalProteinIntake.toLocaleString()
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          <span v-if="isBelowRecommendedLevel" class="text-error">
+            which is below the recommended level of {{ requiredProteinAmount
+            }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          </span>
+          <span v-else class="text-green">
+            which is within the recommended level of {{ requiredProteinAmount
+            }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          </span>
         </TotalNutrientsDisplay>
         <div class="d-flex justify-space-between align-center background mt-3">
           <div class="pa-2 d-flex align-center">
@@ -94,13 +106,16 @@
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
         :feedback="feedback"
-        :editable="mode === 'edit'"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -211,6 +226,9 @@ const adviceText = computed(() => {
 })
 const metProteinAmount = computed(() => {
   return totalProteinIntake.value - requiredProteinAmount.value >= 0
+})
+const isBelowRecommendedLevel = computed(() => {
+  return totalProteinIntake.value < requiredProteinAmount.value
 })
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'

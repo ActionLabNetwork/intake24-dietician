@@ -24,7 +24,7 @@
         }"
         align="center"
         :hide-slider="true"
-        :show-tabs="mode === 'edit'"
+        :show-tabs="mode === 'edit' || mode === 'add'"
       />
     </div>
 
@@ -35,18 +35,29 @@
         {{ selectedRecallDateRangePretty }} is:
         {{ totalVegetable.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        <span v-if="isBelowRecommendedLevel" class="text-error">
+          which is below the recommended level of {{ REQUIRED_VEGETABLE
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
+        <span v-else class="text-green">
+          which is within the recommended level of {{ REQUIRED_VEGETABLE
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -65,13 +76,14 @@ import '@vuepic/vue-datepicker/dist/main.css'
 import { NUTRIENTS_VEGETABLE_ID } from '@intake24-dietician/portal/constants/recall'
 import FeedbackTextArea from '../../common/FeedbackTextArea.vue'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
 import useRecall from '@intake24-dietician/portal/composables/useRecall'
+
+const REQUIRED_VEGETABLE = 450
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -89,7 +101,6 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Vegetable intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
 
 const patientId = computed(() => route.params['patientId'] as string)
 const theme = computed(
@@ -119,6 +130,22 @@ const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Vegetable intake',
   )
+})
+
+const isBelowRecommendedLevel = computed(() => {
+  return totalVegetable.value < REQUIRED_VEGETABLE
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
 })
 
 const {

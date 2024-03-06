@@ -11,6 +11,14 @@
       ><span v-else>total</span> energy intake for
       {{ selectedRecallDateRangePretty }} is: {{ totalEnergy.toLocaleString()
       }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      <span v-if="isBelowRecommendedLevel" class="text-error">
+        which is below the recommended level of {{ REQUIRED_ENERGY
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </span>
+      <span v-else class="text-green">
+        which is within the recommended level of {{ REQUIRED_ENERGY
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </span>
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
@@ -40,13 +48,16 @@
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -79,6 +90,8 @@ import chroma from 'chroma-js'
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import useRecall from '@/composables/useRecall'
+
+const REQUIRED_ENERGY = 2000
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -133,6 +146,22 @@ const totalEnergy = ref(0)
 const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
   {},
 )
+
+const isBelowRecommendedLevel = computed(() => {
+  return totalEnergy.value < REQUIRED_ENERGY
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
 
 // Utility functions
 const getColours = (base: string) => {
