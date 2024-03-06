@@ -128,6 +128,7 @@ import { useToast } from 'vue-toast-notification'
 import 'vue-toast-notification/dist/theme-sugar.css'
 import DialogFeedbackEdit from './DialogFeedbackEdit.vue'
 import DialogFeedbackSave from './DialogFeedbackSave.vue'
+import moment from 'moment'
 
 const props = withDefaults(
   defineProps<{
@@ -139,8 +140,14 @@ const props = withDefaults(
     disableDatepicker?: boolean
     hideActionButtons?: boolean
     feedbackType: FeedbackType
+    useUrlAsState?: boolean
   }>(),
-  { draftId: undefined, disableDatepicker: false, hideActionButtons: false },
+  {
+    draftId: undefined,
+    disableDatepicker: false,
+    hideActionButtons: false,
+    useUrlAsState: false,
+  },
 )
 const emit = defineEmits<{
   'update:daterange': [date: [Date | undefined, Date | undefined]]
@@ -185,9 +192,17 @@ const modes = [
 const sendMode = ref<(typeof modes)[number]['value']>('automated')
 
 const handleDaterangeUpdate = (
-  daterange: [Date | undefined, Date | undefined],
+  newDaterange: [Date | undefined, Date | undefined],
 ) => {
-  emit('update:daterange', daterange)
+  router.replace({
+    query: {
+      ...route.query,
+      dateFrom: newDaterange[0] && moment(newDaterange[0]).format('YYYYMMDD'),
+      dateTo: newDaterange[1] && moment(newDaterange[1]).format('YYYYMMDD'),
+    },
+  })
+  dateRange.value = newDaterange
+  emit('update:daterange', newDaterange)
 }
 
 const areDraftsEqual = computed(() => {
@@ -198,6 +213,21 @@ const areDraftsEqual = computed(() => {
 onMounted(() => {
   dateRange.value = recallStore.selectedRecallDateRange
   isSubmitting.value = false
+  if (
+    props.useUrlAsState &&
+    (route.query['dateFrom'] || route.query['dateTo'])
+  ) {
+    const newDateRange: [Date | undefined, Date | undefined] = [
+      route.query['dateFrom']
+        ? moment(route.query['dateFrom'] as string, 'YYYYMMDD').toDate()
+        : undefined,
+      route.query['dateTo']
+        ? moment(route.query['dateTo'] as string, 'YYYYMMDD').toDate()
+        : undefined,
+    ]
+    dateRange.value = newDateRange
+    emit('update:daterange', newDateRange)
+  }
 })
 
 const showDialog = (dialog: 'edit' | 'save' | 'share') => {

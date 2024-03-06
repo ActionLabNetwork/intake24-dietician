@@ -44,6 +44,7 @@
           :previewing="previewing"
           :editing-draft="false"
           :draft="allModules as DraftCreateDto"
+          use-url-as-state
           @click:preview="handlePreviewButtonClick"
           @update:daterange="handleDateRangeUpdate"
         />
@@ -127,6 +128,7 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
+import moment from 'moment'
 
 // const { t } = useI18n<i18nOptions>()
 // Composables
@@ -193,6 +195,20 @@ const moduleNameToModuleComponentMapping: ModuleNameToComponentMappingWithFeedba
       feedback: '',
     },
   })
+
+onMounted(() => {
+  if (route.query['dateFrom'] || route.query['dateTo']) {
+    const newDateRange: [Date | undefined, Date | undefined] = [
+      route.query['dateFrom']
+        ? moment(route.query['dateFrom'] as string, 'YYYYMMDD').toDate()
+        : undefined,
+      route.query['dateTo']
+        ? moment(route.query['dateTo'] as string, 'YYYYMMDD').toDate()
+        : undefined,
+    ]
+    handleDateRangeUpdate(newDateRange)
+  }
+})
 
 const allModules = ref<
   | {

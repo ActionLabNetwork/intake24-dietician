@@ -41,6 +41,7 @@
                         () => {
                           router.replace({
                             query: {
+                              ...route.query,
                               selected: items
                                 .filter(i => i.selected)
                                 .map(i => moduleIdentifiers[i.title])
@@ -185,6 +186,7 @@ watch(
 
     // Use url as state if appropriate
     if (props.useUrlAsState && route.query['selected']) {
+      console.log('detcted route query selected')
       const selected = (route.query['selected'] as string).split(',')
 
       items.value = items.value.map(item => ({
