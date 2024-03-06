@@ -1,0 +1,78 @@
+{
+  "name": "intake24-dietician",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "packageManager": "pnpm@8.9.2",
+  "scripts": {
+    "preinstall": "npx -y only-allow pnpm",
+    "precommit-build": "pnpm --filter ./apps/api-new build && pnpm --filter ./apps/portal build",
+    "prepare": "pnpm simple-git-hooks",
+    "clean": "rimraf --glob **/coverage **/dist **/node_modules",
+    "build": "pnpm --filter ./apps/**",
+    "lint:md": "prettier --write **/*.md",
+    "lint:ts": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix",
+    "lint": "run-s lint:md lint:ts",
+    "dev": "pnpm --recursive --parallel --stream --filter './apps/**' dev",
+    "dev:portal": "pnpm --filter ./apps/portal dev",
+    "dev:api": "pnpm --filter ./apps/api dev",
+    "test:unit": "jest",
+    "test:unit:watch": "pnpm test:unit --watch",
+    "test:unit:coverage": "pnpm test:unit --coverage",
+    "test:integration": "pnpm --filter ./apps/{api,portal} test:integration",
+    "test:integration:coverage": "pnpm --filter * test:integration:coverage",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged && pnpm precommit-build",
+    "commit-msg": "pnpm tsx scripts/verify-commit.ts $1"
+  },
+  "lint-staged": {
+    "*.md": "prettier --write",
+    "*.{ts,vue}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "dependencies": {
+    "@intake24-dietician/common": "*",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@jest/types": "^29.6.3",
+    "@types/jest": "^29.5.11",
+    "@types/node": "^20.11.13",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^12.0.0",
+    "eslint": "^8.56.0",
+    "eslint-config-alloy": "^5.1.2",
+    "eslint-plugin-unused-imports": "^3.0.0",
+    "jest": "^29.7.0",
+    "jest-extended": "^4.0.2",
+    "lint-staged": "^15.2.1",
+    "picocolors": "^1.0.0",
+    "prettier": "^3.2.4",
+    "rimraf": "^5.0.5",
+    "simple-git-hooks": "^2.9.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12",
+    "vitepress": "1.0.0-rc.40"
+  }
+}
