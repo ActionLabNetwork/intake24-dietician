@@ -105,8 +105,6 @@ export default function useRecall(
     data => {
       if (!data) return
 
-      console.log({ data })
-
       const combinedMeals = data.reduce((combinedMeals, recall) => {
         recall.recall.meals.forEach(meal => {
           const mealName = meal.name
