@@ -24,29 +24,40 @@
         }"
         align="center"
         :hide-slider="true"
-        :show-tabs="mode === 'edit'"
+        :show-tabs="mode === 'edit' || mode === 'add'"
       />
     </div>
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your <span v-if="recallStore.isDateRange">average</span
+        Your <span v-if="isDateRange">average</span
         ><span v-else>total</span> calcium intake for
-        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ selectedRecallDateRangePretty }} is:
         {{ totalCalcium.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        <span v-if="isBelowRecommendedLevel" class="text-error">
+          which is below the recommended level of {{ REQUIRED_CALCIUM
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
+        <span v-else class="text-green">
+          which is within the recommended level of {{ REQUIRED_CALCIUM
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -71,8 +82,11 @@ import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const REQUIRED_CALCIUM = 1000
+
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -88,11 +102,25 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Calcium intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
-
-const colorPalette = computed(() => recallStore.colorPalette)
 
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -104,13 +132,33 @@ const module = computed(() => {
     module => module.name === 'Calcium intake',
   )
 })
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+
+const isBelowRecommendedLevel = computed(() => {
+  return totalCalcium.value < REQUIRED_CALCIUM
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
 
 const {
   mealCards,
   totalNutrients: totalCalcium,
   totalNutrientsByRecall: totalCalciumByRecall,
-} = useFeedbackModule(module, NUTRIENTS_CALCIUM_ID)
+} = useFeedbackModule(
+  recallsQuery.data,
+  recallsGroupedByMeals,
+  module,
+  NUTRIENTS_CALCIUM_ID,
+)
 
 const { tabs, tabBackground } = useTabbedModule({
   colorPalette: colorPalette,

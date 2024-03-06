@@ -50,6 +50,8 @@ export const useEditDraft = () => {
 
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const mutation = useMutation({
     mutationFn: async (body: {
       patientId: number
@@ -58,13 +60,36 @@ export const useShareDraft = () => {
       url: string
       sendAutomatedEmail: boolean
     }) => {
+      function getFormattedDaterangeWithSingleDate(
+        daterange: [Date | undefined, Date | undefined],
+      ) {
+        const [start, end] = daterange
+        if (start && !end) {
+          return [start, start] as [Date, Date]
+        }
+
+        if (!start && end) {
+          return [end, end] as [Date, Date]
+        }
+
+        return daterange
+      }
+
       const template = await useRender(
         FeedbackEmailTemplate,
         {},
         { pretty: true },
       )
-      console.log({ template })
-      const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = body
+      const _body = {
+        ...body,
+        draft: {
+          ...body.draft,
+          recallDaterange: getFormattedDaterangeWithSingleDate(
+            body.draft.recallDaterange,
+          ),
+        },
+      }
+      const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = _body
 
       // TODO: Feature toggle (uncomment once ready to send emails)
       if (sendAutomatedEmail) {
@@ -86,6 +111,9 @@ export const useShareDraft = () => {
     },
     onError: error => {
       console.log({ error })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shares'] })
     },
   })
 

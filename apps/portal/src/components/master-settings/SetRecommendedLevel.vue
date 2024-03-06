@@ -178,7 +178,6 @@
         v-model="feedback.feedbackAbove"
         class="mt-5"
         variant="outlined"
-        suffix="g"
       ></v-text-field>
     </div>
     <div class="px-4">
@@ -189,7 +188,6 @@
         v-model="feedback.feedbackBelow"
         class="mt-5"
         variant="outlined"
-        suffix="g"
       ></v-text-field>
     </div>
   </div>

@@ -1,6 +1,6 @@
 <template>
   <BaseDialog v-model="dialog" width="40vw" :on-confirm="props.onConfirm">
-    <template #title> Saving feedback draft {{ sendMode }} </template>
+    <template #title> Sharing feedback draft </template>
     <template #default>
       Are you sure you want to share the feedback with
       <span class="font-weight-medium"> {{ fullName }} </span>?

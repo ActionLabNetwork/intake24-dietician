@@ -63,6 +63,8 @@
             <component
               :is="moduleNameToModuleComponentMapping[component].component"
               :feedback="moduleFeedback"
+              :recall-date-range="recallStore.selectedRecallDateRange"
+              mode="add"
               @update:feedback="handleFeedbackUpdate"
             />
           </v-col>
@@ -126,8 +128,6 @@ import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
 import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { useToast } from 'vue-toast-notification'
 import { DraftCreateDto } from '@intake24-dietician/common/entities-new/feedback.dto'
-import { moduleIdentifiers } from '@intake24-dietician/common/types/modules'
-import * as r from 'remeda'
 import moment from 'moment'
 
 // const { t } = useI18n<i18nOptions>()

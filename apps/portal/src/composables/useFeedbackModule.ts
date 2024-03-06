@@ -1,17 +1,21 @@
-import { ComputedRef, computed, reactive, ref, watch } from 'vue'
-import { useRecallStore } from '../stores/recall'
+import { ComputedRef, Ref, computed, reactive, ref, watch } from 'vue'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
 import { MealCardProps } from '../components/feedback-modules/types'
 import { extractDuplicateFoods } from '../utils/recall'
 import { SurveyDto } from '@intake24-dietician/common/entities-new/survey.dto'
 import { usePrecision } from '@vueuse/math'
 import { calculateMealNutrientsExchange } from '../utils/feedback'
+import { RecallDto } from '@intake24-dietician/common/entities-new/recall.dto'
 
 export default function useFeedbackModule(
+  recallsQuery: Ref<undefined> | Ref<RecallDto[]>,
+  recallsGroupedByMeals: Ref<{
+    recallsCount: number
+    meals: RecallMeal[]
+  }>,
   module: ComputedRef<SurveyDto['feedbackModules'][number] | undefined>,
   fallbackModuleNutrientTypeId: string,
 ) {
-  const recallStore = useRecallStore()
   const totalNutrients = ref(0)
   const totalNutrientsByRecall = ref<
     {
@@ -21,7 +25,7 @@ export default function useFeedbackModule(
     }[]
   >([])
   const mealCards = computed(() => {
-    return recallStore.recallsGroupedByMeals.meals.reduce(
+    return recallsGroupedByMeals.value.meals.reduce(
       (acc, meal) => {
         acc[meal.name] = {
           name: module.value?.name ?? 'Unknown',
@@ -34,7 +38,7 @@ export default function useFeedbackModule(
             module.value?.nutrientTypes[0]?.id.toString() ??
               fallbackModuleNutrientTypeId,
             1,
-            recallStore.recallsGroupedByMeals.recallsCount,
+            recallsGroupedByMeals.value.recallsCount,
           ),
         }
         return acc
@@ -61,11 +65,9 @@ export default function useFeedbackModule(
   }
 
   watch(
-    () => recallStore.recallsQuery.data,
-    data => {
-      if (!data) return
-
-      const combinedMeals = recallStore.recallsGroupedByMeals
+    () => recallsGroupedByMeals.value,
+    newRecallsGroupedByMeals => {
+      const combinedMeals = newRecallsGroupedByMeals
 
       totalNutrients.value = Math.floor(
         combinedMeals.meals.reduce((totalEnergy, meal) => {
@@ -75,7 +77,14 @@ export default function useFeedbackModule(
           )
         }, 0),
       )
+    },
+    { immediate: true },
+  )
 
+  watch(
+    () => recallsQuery.value,
+    data => {
+      if (data === undefined) return
       totalNutrientsByRecall.value = data.map(recall => {
         return {
           recallDate: recall.recall.startTime.toISOString(),

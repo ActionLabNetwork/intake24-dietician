@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto py-2 px-5 card" flat>
+  <v-card class="mx-auto py-2 px-5 card mb-4" flat>
     <div class="d-flex justify-space-between align-center">
       <div class="py-2">
         <p class="mb-2">

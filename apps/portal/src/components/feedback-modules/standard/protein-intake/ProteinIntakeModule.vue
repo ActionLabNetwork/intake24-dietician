@@ -7,7 +7,6 @@
       :style="{ color: titleTextColor }"
     />
     <div>
-      <BaseProgressCircular v-if="isPending" />
       <div v-if="isError" class="mt-10">
         <v-alert
           type="error"
@@ -17,7 +16,19 @@
       </div>
       <div v-else>
         <TotalNutrientsDisplay>
-          {{ summaryText }}
+          Your <span v-if="isDateRange">average</span
+          ><span v-else>total</span> protein intake for
+          {{ selectedRecallDateRangePretty }} is:
+          {{ totalProteinIntake.toLocaleString()
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          <span v-if="isBelowRecommendedLevel" class="text-error">
+            which is below the recommended level of {{ requiredProteinAmount
+            }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          </span>
+          <span v-else class="text-green">
+            which is within the recommended level of {{ requiredProteinAmount
+            }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+          </span>
         </TotalNutrientsDisplay>
         <div class="d-flex justify-space-between align-center background mt-3">
           <div class="pa-2 d-flex align-center">
@@ -95,13 +106,16 @@
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
         :feedback="feedback"
-        :editable="mode === 'edit'"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -140,6 +154,7 @@ import { useRoute } from 'vue-router'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { usePatientStore } from '@intake24-dietician/portal/stores/patient'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -158,21 +173,29 @@ const { themeConfig } = useThemeSelector('Protein intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 const patientStore = usePatientStore()
-const recallStore = useRecallStore()
-const isError = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallsQuery.isError,
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
 )
-const isPending = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallsQuery.isPending,
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
 )
+
+const isError = computed(() => recallsQuery.isError.value)
+const isPending = computed(() => recallsQuery.isPending.value)
 
 const totalProteinIntake = ref(0)
 
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
 const requiredProteinAmount = computed(() => {
   // Let's consider 0.8grams of protein per kilogram of body weight
   const patientWeight = patientStore.patientQuery.data?.weightHistory[0]?.weight
@@ -188,10 +211,10 @@ const summaryText = computed(() => {
     aboveOrBelow = 'below'
   }
 
-  const totalOrAverage = recallStore.isDateRange ? 'average' : 'total'
+  const totalOrAverage = isDateRange.value ? 'average' : 'total'
 
   return `Your ${totalOrAverage} protein intake for
-          ${recallStore.selectedRecallDateRangePretty} is
+          ${selectedRecallDateRangePretty.value} is
           ${totalProteinIntake.value}${module.value?.nutrientTypes[0]?.unit.symbol} which is ${aboveOrBelow} the daily recommended amount: ${requiredProteinAmount.value}${module.value?.nutrientTypes[0]?.unit.symbol}`
 })
 const adviceText = computed(() => {
@@ -203,6 +226,9 @@ const adviceText = computed(() => {
 })
 const metProteinAmount = computed(() => {
   return totalProteinIntake.value - requiredProteinAmount.value >= 0
+})
+const isBelowRecommendedLevel = computed(() => {
+  return totalProteinIntake.value < requiredProteinAmount.value
 })
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
@@ -249,10 +275,10 @@ const calculateMealProteinContent = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data.value,
   data => {
     if (!data) return
-    const combinedMeals = recallStore.recallsGroupedByMeals
+    const combinedMeals = recallsGroupedByMeals.value
 
     totalProteinIntake.value = Math.floor(
       combinedMeals.meals.reduce((totalProtein, meal) => {
@@ -260,20 +286,6 @@ watch(
           totalProtein +
           calculateMealProteinContent(meal, combinedMeals.recallsCount)
         )
-      }, 0),
-    )
-  },
-  { immediate: true },
-)
-watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    totalProteinIntake.value = Math.floor(
-      data.recall.meals.reduce((totalEnergy, meal) => {
-        return totalEnergy + calculateMealProteinContent(meal)
       }, 0),
     )
   },

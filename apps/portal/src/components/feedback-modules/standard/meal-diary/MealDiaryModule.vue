@@ -13,19 +13,22 @@
       :meal-cards="mealCards"
       :mode="mode"
       :get-serving-weight="getServingWeight"
-      :show-time="!recallStore.isDateRange"
+      :show-time="!isDateRange"
       :total-nutrients="totalNutrients"
       :theme="theme ?? 'Classic'"
     />
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
         :feedback="feedback"
-        :editable="mode === 'edit'"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -42,7 +45,6 @@ import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
 import MealDiaryTimeline from '@/components/feedback-modules/standard/meal-diary/MealDiaryTimeline.vue'
 
 import type { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { computed, reactive, ref, watch } from 'vue'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
@@ -57,6 +59,7 @@ import {
   calculateMealNutrientsExchange,
 } from '@intake24-dietician/portal/utils/feedback'
 import { MealCardMultipleNutrientsProps } from '../../types'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
 export type NutrientType = {
   id: number
@@ -79,11 +82,27 @@ const props = withDefaults(defineProps<FeedbackModulesProps>(), {
 const emit = defineEmits<{ 'update:feedback': [feedback: string] }>()
 
 const { themeConfig } = useThemeSelector('Meal diary')
-const recallStore = useRecallStore()
+
 const route = useRoute()
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
 
-const theme = computed(() => surveyQuery.data.value?.surveyPreference.theme)
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
+
 const logo = computed(() =>
   surveyQuery.data.value?.surveyPreference.theme === 'Classic'
     ? themeConfig.value.logo
@@ -112,26 +131,11 @@ const getServingWeight = (food: { [x: string]: any[] }): string => {
 }
 
 const totalNutrients = computed(() => {
-  if (!recallStore.sampleRecallQuery.data) {
-    return 0
-  }
-
   if (selectedNutrients.value.length === 0) {
     return 0
   }
 
-  if (props.useSampleRecall) {
-    return recallStore.sampleRecallQuery.data.recall.meals.reduce(
-      (total, meal) => {
-        return (
-          total + calculateMealNutrientIntake(meal, selectedNutrients.value[0]!)
-        )
-      },
-      0,
-    )
-  }
-
-  const combinedMeals = recallStore.recallsGroupedByMeals
+  const combinedMeals = recallsGroupedByMeals.value
   return Math.floor(
     combinedMeals.meals.reduce((total, meal) => {
       generateMealCards(meal, selectedNutrients.value)

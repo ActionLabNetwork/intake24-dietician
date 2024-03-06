@@ -7,11 +7,18 @@
       :style="{ color: titleTextColor }"
     />
     <TotalNutrientsDisplay>
-      Your <span v-if="recallStore.isDateRange">average</span
+      Your <span v-if="isDateRange">average</span
       ><span v-else>total</span> energy intake for
-      {{ recallStore.selectedRecallDateRangePretty }} is:
-      {{ totalEnergy.toLocaleString()
+      {{ selectedRecallDateRangePretty }} is: {{ totalEnergy.toLocaleString()
       }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      <span v-if="isBelowRecommendedLevel" class="text-error">
+        which is below the recommended level of {{ REQUIRED_ENERGY
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </span>
+      <span v-else class="text-green">
+        which is within the recommended level of {{ REQUIRED_ENERGY
+        }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+      </span>
     </TotalNutrientsDisplay>
     <div>
       <div class="grid-container">
@@ -33,6 +40,7 @@
             :alt="meal.alt"
             :colors="getColours(colorPalette[index]!)"
             :value="meal.value"
+            :theme="theme"
           />
         </div>
       </div>
@@ -40,13 +48,16 @@
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -71,15 +82,16 @@ import SummarizedCard, {
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
 import { NUTRIENTS_ENERGY_INTAKE_ID } from '@intake24-dietician/portal/constants/recall'
 import { useSurveyById } from '@intake24-dietician/portal/queries/useSurveys'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import '@vuepic/vue-datepicker/dist/main.css'
 import { usePrecision } from '@vueuse/math'
 import chroma from 'chroma-js'
 import { computed, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import useRecall from '@/composables/useRecall'
+
+const REQUIRED_ENERGY = 2000
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -98,18 +110,26 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Energy intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
 
-const isError = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isError
-    : recallStore.recallsQuery.isError,
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
 )
-const isPending = computed(() =>
-  props.useSampleRecall
-    ? recallStore.sampleRecallQuery.isPending
-    : recallStore.recallsQuery.isPending,
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
 )
+
+const isError = computed(() => recallsQuery.isError.value)
+const isPending = computed(() => recallsQuery.isPending.value)
 
 // Refs
 const logo = computed(() =>
@@ -123,10 +143,25 @@ const module = computed(() => {
   )
 })
 const totalEnergy = ref(0)
-const colorPalette = ref<string[]>([])
 const mealCards = reactive<Record<string, Omit<SummarizedCardProps, 'colors'>>>(
   {},
 )
+
+const isBelowRecommendedLevel = computed(() => {
+  return totalEnergy.value < REQUIRED_ENERGY
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
 
 // Utility functions
 const getColours = (base: string) => {
@@ -176,39 +211,11 @@ const calculateMealEnergy = (meal: RecallMeal, recallsCount = 1) => {
 }
 
 watch(
-  () => recallStore.sampleRecallQuery.data,
-  data => {
-    if (!data) return
-    if (!props.useSampleRecall) return
-
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    colorPalette.value = generatePastelPalette(
-      data.recall.meals.length + 1,
-      data.recall.meals.map(meal => meal.hours),
-    )
-
-    // Reset meal cards
-    Object.keys(mealCards).forEach(key => {
-      delete mealCards[key]
-    })
-
-    totalEnergy.value = data.recall.meals.reduce((totalEnergy, meal) => {
-      return totalEnergy + calculateMealEnergy(meal)
-    }, 0)
-  },
-  { immediate: true },
-)
-
-watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data.value,
   data => {
     if (!data) return
 
-    const combinedMeals = recallStore.recallsGroupedByMeals
-    colorPalette.value = recallStore.colorPalette
+    const combinedMeals = recallsGroupedByMeals.value
 
     Object.keys(mealCards).forEach(key => {
       delete mealCards[key]

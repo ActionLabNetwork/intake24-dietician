@@ -24,29 +24,42 @@
         }"
         align="center"
         :hide-slider="true"
-        :show-tabs="mode === 'edit'"
+        :show-tabs="mode === 'edit' || mode === 'add'"
       />
     </div>
 
     <div v-if="mealCards" class="mt-2">
       <TotalNutrientsDisplay>
-        Your <span v-if="recallStore.isDateRange">average</span
+        Your <span v-if="isDateRange">average</span
         ><span v-else>total</span> fruit and vegetable intake for
-        {{ recallStore.selectedRecallDateRangePretty }} is:
+        {{ selectedRecallDateRangePretty }} is:
         {{ totalFruitAndVegetable.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        <span v-if="isBelowRecommendedLevel" class="text-error">
+          which is below the recommended level of
+          {{ REQUIRED_FRUIT_AND_VEGETABLE
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
+        <span v-else class="text-green">
+          which is within the recommended level of
+          {{ REQUIRED_FRUIT_AND_VEGETABLE
+          }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        </span>
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'edit' || mode === 'add'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'edit' || mode === 'add'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -60,9 +73,8 @@ import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import BaseTabComponent from '@intake24-dietician/portal/components/common/BaseTabComponent.vue'
 import BaseTabContentComponent from '@intake24-dietician/portal/components/common/BaseTabContentComponent.vue'
 import ModuleTitle from '@/components/feedback-modules/common/ModuleTitle.vue'
-import { ref, watch, reactive, markRaw, computed } from 'vue'
+import { ref, watch, markRaw, computed } from 'vue'
 import '@vuepic/vue-datepicker/dist/main.css'
-import { generatePastelPalette } from '@intake24-dietician/portal/utils/colors'
 import {
   NUTRIENTS_FRUIT_ID,
   NUTRIENTS_VEGETABLE_ID,
@@ -75,7 +87,6 @@ import {
   RecallMeal,
   RecallMealFood,
 } from '@intake24-dietician/common/entities-new/recall.schema'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { usePrecision } from '@vueuse/math'
 import {
   calculateFoodNutrientsExchange,
@@ -88,8 +99,11 @@ import type {
   MealCardProps,
 } from '@intake24-dietician/portal/components/feedback-modules/types/index'
 import { useThemeSelector } from '@intake24-dietician/portal/composables/useThemeSelector'
+import useRecall from '@intake24-dietician/portal/composables/useRecall'
 
-withDefaults(defineProps<FeedbackModulesProps>(), {
+const REQUIRED_FRUIT_AND_VEGETABLE = 400
+
+const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
   mainBgColor: '#fff',
   feedbackBgColor: '#fff',
@@ -105,7 +119,23 @@ const route = useRoute()
 const { themeConfig } = useThemeSelector('Fruit and vegetable intake')
 
 const surveyQuery = useSurveyById(route.params['surveyId'] as string)
-const recallStore = useRecallStore()
+
+const patientId = computed(() => route.params['patientId'] as string)
+const theme = computed(
+  () => surveyQuery.data.value?.surveyPreference.theme ?? 'Classic',
+)
+
+const {
+  recallsQuery,
+  recallsGroupedByMeals,
+  selectedRecallDateRangePretty,
+  colorPalette,
+  isDateRange,
+} = useRecall(
+  patientId,
+  computed(() => props.recallDateRange ?? []),
+  theme,
+)
 
 const activeTab = ref(0)
 const totalFruitAndVegetable = ref(0)
@@ -116,7 +146,6 @@ const totalFruitAndVegetableByRecall = ref<
     value: number
   }[]
 >([])
-const colorPalette = computed(() => recallStore.colorPalette)
 
 const tabBackground = computed(() => ({
   color: '#55555540',
@@ -149,7 +178,7 @@ const combinedUnitOfMeasure = computed(() => {
 })
 
 const mealCards = computed(() => {
-  return recallStore.recallsGroupedByMeals.meals.reduce(
+  return recallsGroupedByMeals.value.meals.reduce(
     (acc, meal) => {
       acc[meal.name] = {
         name: 'Fruit and vegetable intake',
@@ -188,6 +217,22 @@ const mealCards = computed(() => {
   )
 })
 
+const isBelowRecommendedLevel = computed(
+  () => totalFruitAndVegetable.value < REQUIRED_FRUIT_AND_VEGETABLE,
+)
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
+
 const tabs = ref<PieAndTimelineTabs>([
   {
     name: 'Pie chart',
@@ -197,7 +242,7 @@ const tabs = ref<PieAndTimelineTabs>([
       name: 'Fruit and vegetable intake',
       meals: mealCards,
       colors: colorPalette,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+      recallsCount: recallsGroupedByMeals.value.recallsCount,
       unitOfMeasure: module.value?.nutrientTypes[0],
       showCutlery: themeConfig.value.showCutlery,
     },
@@ -210,7 +255,7 @@ const tabs = ref<PieAndTimelineTabs>([
     props: {
       name: 'Fruit and vegetable intake',
       meals: mealCards,
-      recallsCount: recallStore.recallsGroupedByMeals.recallsCount,
+      recallsCount: recallsGroupedByMeals.value.recallsCount,
       colors: colorPalette,
       unitOfMeasure:
         combinedUnitOfMeasure.value ?? module.value?.nutrientTypes[0],
@@ -247,11 +292,11 @@ const calculateMealFruitAndVegetableIntake = (
 }
 
 watch(
-  () => recallStore.recallsQuery.data,
+  () => recallsQuery.data.value,
   data => {
     if (!data) return
 
-    const combinedMeals = recallStore.recallsGroupedByMeals
+    const combinedMeals = recallsGroupedByMeals.value
 
     totalFruitAndVegetable.value = Math.floor(
       combinedMeals.meals.reduce((totalEnergy, meal) => {

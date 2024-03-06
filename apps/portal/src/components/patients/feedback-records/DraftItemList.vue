@@ -25,7 +25,6 @@
                 moment(date).format(dateRangeFormat),
               )
             "
-            class="mb-4"
             @button-click="() => handleDraftItemButtonClick(draft.id)"
           />
         </div>

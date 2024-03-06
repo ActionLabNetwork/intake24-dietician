@@ -3,7 +3,7 @@
     <div class="meal-text ma-2 pa-2 d-flex justify-space-between">
       <p class="font-weight-bold">{{ key }}</p>
       <p class="font-weight-medium">
-        {{ value.total }}{{ unitOfMeasure?.unit.symbol }} ({{
+        {{ usePrecision(value.total, 2) }}{{ unitOfMeasure?.unit.symbol }} ({{
           value.percentage
         }}%)
       </p>
@@ -19,13 +19,12 @@
 </template>
 
 <script setup lang="ts">
-import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
 import { computed, ref, watch } from 'vue'
 import { MealCardProps } from '../types'
 import PieChartFood from '../common/PieChartFood.vue'
-import chroma from 'chroma-js'
 import * as R from 'remeda'
 import { useProcessRecallFoods } from '@/composables/useProcessRecallFoods'
+import { usePrecision } from '@vueuse/math'
 
 export interface SummarizedCardProps {
   name: string

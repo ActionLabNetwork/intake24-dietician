@@ -14,6 +14,7 @@ import {
 import VChart from 'vue-echarts'
 import { computed } from 'vue'
 import { useDisplay } from 'vuetify/lib/framework.mjs'
+import { usePrecision } from '@vueuse/math'
 
 const props = defineProps<{
   data: {
@@ -62,7 +63,7 @@ const option = computed(() => {
           formattedLabel += words.slice(i, i + 2).join(' ') + '\n'
         }
 
-        formattedLabel += `{bg|${params.value}${unitSymbol.value} (${params.percent}%)}`
+        formattedLabel += `{bg|${usePrecision(params.value, 2).value}${unitSymbol.value} (${params.percent}%)}`
 
         return formattedLabel
       },

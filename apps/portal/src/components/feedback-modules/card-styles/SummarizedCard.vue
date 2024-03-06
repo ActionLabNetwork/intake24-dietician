@@ -12,7 +12,7 @@
         background: colors.valueCardBgColor,
       }"
     >
-      <img :src="Mascot" alt="mascot" />
+      <img :src="theme === 'Fun' ? Mascot : MascotAdult" alt="mascot" />
       <div>
         <p>Energy</p>
         <p class="font-weight-medium">{{ props.value }}kcal</p>
@@ -23,6 +23,8 @@
 
 <script setup lang="ts">
 import Mascot from '@/assets/modules/energy-intake/energy-mascot.svg'
+import MascotAdult from '@/assets/modules/energy-intake/energy-mascot-adult.svg'
+import { Theme } from '@intake24-dietician/common/types/theme'
 
 export interface SummarizedCardProps {
   src: string
@@ -34,6 +36,7 @@ export interface SummarizedCardProps {
     valueCardBgColor: string
     valueCardBorderColor: string
   }
+  theme?: Theme
 }
 
 const props = defineProps<SummarizedCardProps>()
