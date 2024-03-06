@@ -32,6 +32,7 @@
             :alt="meal.alt"
             :colors="getColours(colorPalette[index]!)"
             :value="meal.value"
+            :theme="theme"
           />
         </div>
       </div>
