@@ -97,13 +97,16 @@
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'add' || mode === 'edit'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'add' || mode === 'edit'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -135,7 +138,6 @@ import MascotWithBackgroundAdult from '@/components/feedback-modules/standard/wa
 import chroma from 'chroma-js'
 import { FeedbackModulesProps } from '@intake24-dietician/portal/types/modules.types'
 import { RecallMeal } from '@intake24-dietician/common/entities-new/recall.schema'
-import { useRecallStore } from '@intake24-dietician/portal/stores/recall'
 import { usePrecision } from '@vueuse/math'
 import { calculateMealNutrientsExchange } from '@intake24-dietician/portal/utils/feedback'
 import { useRoute } from 'vue-router'
@@ -198,6 +200,22 @@ const requiredWaterAmount = computed(() => {
 
   return (patientWeight ?? 0) * WATER_ML_PER_KG
 })
+const isBelowRecommendedLevel = computed(() => {
+  return totalWaterIntake.value < requiredWaterAmount.value
+})
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
+
 const summaryText = computed(() => {
   const totalOrAverage = isDateRange ? 'average' : 'total'
   return `Your ${totalOrAverage} water intake for
