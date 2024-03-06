@@ -372,7 +372,6 @@ watch(
   data => {
     if (!data?.shared) return
 
-    console.log({ shared: data.shared })
     daterange.value = data.shared.recallDaterange
 
     data.shared.modules.forEach(module => {

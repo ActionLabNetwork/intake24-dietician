@@ -48,7 +48,7 @@
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
+        :feedback="module?.feedbackAboveRecommendedLevel ?? feedback"
         :editable="mode === 'edit'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"

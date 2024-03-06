@@ -28,7 +28,7 @@
         }"
         align="center"
         :hide-slider="true"
-        :show-tabs="mode === 'edit'"
+        :show-tabs="mode === 'add' || mode === 'edit'"
       />
     </div>
 
@@ -38,19 +38,28 @@
         ><span v-else> total </span> fibre intake for
         {{ selectedRecallDateRangePretty }} is: {{ totalFibre.toLocaleString()
         }}{{ module?.nutrientTypes[0]?.unit.symbol }}
+        <span v-if="totalFibre < REQUIRED_FIBRE" class="text-error">
+          which is less than the recommended amount of 30g
+        </span>
+        <span v-else class="text-green">
+          which is within the recommended amount of 30g
+        </span>
       </TotalNutrientsDisplay>
       <BaseTabContentComponent v-model="activeTab" :tabs="tabs" />
     </div>
 
     <div v-if="mode !== 'view'">
       <!-- Spacer -->
-      <v-divider v-if="mode === 'edit'" class="my-10"></v-divider>
+      <v-divider
+        v-if="mode === 'add' || mode === 'edit'"
+        class="my-10"
+      ></v-divider>
       <div v-else class="my-6"></div>
 
       <!-- Feedback -->
       <FeedbackTextArea
-        :feedback="feedback"
-        :editable="mode === 'edit'"
+        :feedback="defaultFeedbackToUse"
+        :editable="mode === 'add' || mode === 'edit'"
         :bg-color="feedbackBgColor"
         :text-color="feedbackTextColor"
         @update:feedback="emit('update:feedback', $event)"
@@ -75,6 +84,8 @@ import TotalNutrientsDisplay from '../../common/TotalNutrientsDisplay.vue'
 import { useTabbedModule } from '@intake24-dietician/portal/composables/useTabbedModule'
 import useFeedbackModule from '@intake24-dietician/portal/composables/useFeedbackModule'
 import useRecall from '@intake24-dietician/portal/composables/useRecall'
+
+const REQUIRED_FIBRE = 30
 
 const props = withDefaults(defineProps<FeedbackModulesProps>(), {
   mode: 'edit',
@@ -115,6 +126,23 @@ const module = computed(() => {
   return surveyQuery.data.value?.feedbackModules.find(
     module => module.name === 'Fibre intake',
   )
+})
+
+const defaultFeedbackToUse = computed(() => {
+  let feedback = props.feedback
+  if (props.mode === 'add') {
+    feedback =
+      (isBelowRecommendedLevel.value
+        ? module.value?.feedbackBelowRecommendedLevel
+        : module.value?.feedbackAboveRecommendedLevel) ?? props.feedback
+  }
+
+  emit('update:feedback', feedback)
+  return feedback
+})
+
+const isBelowRecommendedLevel = computed(() => {
+  return totalFibre.value < REQUIRED_FIBRE
 })
 
 const {
