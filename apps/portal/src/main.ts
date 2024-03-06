@@ -21,7 +21,6 @@ const vueQueryPluginOptions: VueQueryPluginOptions = {
     defaultOptions: {
       queries: {
         retry: 2,
-        staleTime: 5 * 60 * 1000,
       },
     },
   },

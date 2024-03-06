@@ -50,6 +50,8 @@ export const useEditDraft = () => {
 
 export const useShareDraft = () => {
   const { authenticatedClient } = useClientStore()
+  const queryClient = useQueryClient()
+
   const mutation = useMutation({
     mutationFn: async (body: {
       patientId: number
@@ -88,7 +90,6 @@ export const useShareDraft = () => {
         },
       }
       const { url, sendAutomatedEmail, ...bodyWithoutOtherFields } = _body
-      console.log({ bodyWithoutOtherFields })
 
       // TODO: Feature toggle (uncomment once ready to send emails)
       if (sendAutomatedEmail) {
@@ -110,6 +111,9 @@ export const useShareDraft = () => {
     },
     onError: error => {
       console.log({ error })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shares'] })
     },
   })
 

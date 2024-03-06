@@ -2,7 +2,7 @@
   <v-app>
     <default-bar />
     <default-view class="wrapper" />
-    <!-- <vue-query-devtools /> -->
+    <vue-query-devtools />
   </v-app>
 </template>
 
